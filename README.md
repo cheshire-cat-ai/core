@@ -1,6 +1,8 @@
 # 🐱 Cheshire-Cat (Stregatto)
 Customizable AI architecture
 
+![Wikipedia picture of the Cheshire Cat](cheshire-cat.jpeg)
+
 ```
 "Would you tell me, please, which way I ought to go from here?"
 "That depends a good deal on where you want to get to," said the Cat.
