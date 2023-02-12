@@ -7,4 +7,5 @@ RUN pip install --upgrade --no-cache-dir \
     pandas \
     scikit-learn \
     langchain \
+    qdrant_client \
     openai

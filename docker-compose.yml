@@ -33,3 +33,5 @@ services:
       - 6333:6333
     volumes:
       - ./long_term_memory/qdrant:/qdrant/storage
+    restart: unless-stopped
+
