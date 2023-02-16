@@ -24,5 +24,7 @@ After that you can run:
 
 ```docker-compose up```
 
+Interact with the Cheshire Cat on `localhost:3000`
+
 When you finish, remember to CTRL+c in the terminal and `docker-compose down`.
 
