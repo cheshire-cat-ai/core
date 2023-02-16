@@ -9,12 +9,13 @@
 </head>
 
 <body>
-    <form action="" onsubmit="sendMessage(event)">
+    <div id='messages'></div>
+    
+    <form action="" onsubmit="sendMessage(event)" style="position:fixed;bottom:50px">
         <input type="text" id="messageText" autocomplete="off" />
         <button>Send</button>
     </form>
-    <ul id='messages'>
-    </ul>
+
     <script>
 
         let ws = new WebSocket("ws://localhost:1865/ws");
@@ -24,10 +25,22 @@
         }
 
         ws.onmessage = function (event) {
+            console.log(event)
+            let data = JSON.parse(event.data)
+
             let messages = document.getElementById('messages')
-            let message = document.createElement('li')
-            let content = document.createTextNode(event.data)
-            message.appendChild(content)
+            let message = document.createElement('div')
+
+            let message_content = document.createElement('div')
+            message_content.innerHTML = data.content
+            message.appendChild(message_content)
+            
+            let message_why  = document.createElement('div')
+            message_why.innerHTML = data.why
+            message_why.style.fontSize = '12px'
+            message_why.style.color = 'gray'
+            message.appendChild(message_why)
+            
             messages.appendChild(message)
         };
         function sendMessage(event) {

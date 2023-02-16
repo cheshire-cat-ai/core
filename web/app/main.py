@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
 from langchain.vectorstores import Qdrant
+from langchain.llms import OpenAI
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
@@ -17,6 +18,10 @@ if not 'OPENAI_KEY' in os.environ:
     raise Exception('Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"')
 openai.api_key = os.environ['OPENAI_KEY']
 
+llm = OpenAI(
+    model_name='text-davinci-003',
+    openai_api_key=openai.api_key
+)
 
 def embed(text):
     
@@ -77,12 +82,21 @@ async def websocket_endpoint(websocket: WebSocket):
                     'text': message, 
                 }]
             )
-            
-            await websocket.send_text(f'Received: {vector_ids}')
 
+            # REPLY
+            content = llm(message)
+            
+            # WHY
+            why = 'Similar found in memory:'
             episodes = vector_memory.similarity_search(message) # TODO: why embed twice?
             for episode in episodes:
-                await websocket.send_text(episode.page_content)
+                why += ' ' + episode.page_content + ' |'
+            
+            await websocket.send_json({
+                'content': content,
+                'why'    : why,
+            })
+
 
     except WebSocketDisconnect:
         print('@@ close connection')
