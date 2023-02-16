@@ -1,3 +1,4 @@
+import os
 import time
 from pprint import pprint
 
@@ -12,7 +13,9 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 
 import openai
-openai.api_key = 'INSERT KEY HERE'
+if not 'OPENAI_KEY' in os.environ:
+    raise Exception('Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"')
+openai.api_key = os.environ['OPENAI_KEY']
 
 
 def embed(text):

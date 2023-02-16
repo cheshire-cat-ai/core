@@ -11,3 +11,18 @@ Customizable AI architecture
 
 (Alice's Adventures in Wonderland - Lewis Carroll)
 ```
+
+## Quickstart
+
+You just need `docker` and `docker-compose` installed on your system.
+
+Clone the repo and cd into it. Create a `.env` file containing:
+
+```OPENAI_KEY=<your-openai-key>```
+
+After that you can run:
+
+```docker-compose up```
+
+When you finish, remember to CTRL+c in the terminal and `docker-compose down`.
+

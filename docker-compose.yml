@@ -9,6 +9,8 @@ services:
     container_name: web
     depends_on:
       - vector-memory
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
     expose:
