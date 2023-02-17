@@ -72,7 +72,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             message = await websocket.receive_text()
-            print('@@@@', message)
+            #print('@@@@', message)
 
             vector_ids = vector_memory.add_texts(
                 [message],
@@ -87,10 +87,13 @@ async def websocket_endpoint(websocket: WebSocket):
             content = llm(message)
             
             # WHY
-            why = 'Similar found in memory:'
-            episodes = vector_memory.similarity_search(message) # TODO: why embed twice?
-            for episode in episodes:
-                why += ' ' + episode.page_content + ' |'
+            why = 'here you will read WHY the cat gave a certain response'
+            print('@@@@', message)
+            #episodes = vector_memory.similarity_search(message) # TODO: why embed twice?
+            #print('@@@@', episodes)
+            #for episode in episodes:
+            #    print('@@@@@', episode)
+            #    why += ' ' + episode.page_content + ' |'
             
             await websocket.send_json({
                 'content': content,
