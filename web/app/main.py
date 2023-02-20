@@ -23,6 +23,9 @@ llm = OpenAI(
     openai_api_key=openai.api_key
 )
 
+from .agentManager import AgentManager
+am = AgentManager.singleton(llm=llm)
+
 def embed(text):
     
     embedding = openai.Embedding.create(
