@@ -2,6 +2,7 @@ from typing import Union, List
 
 from langchain.agents import load_tools
 from langchain.agents import initialize_agent, Tool
+from pprint import pprint
 
 class Tools:
     python_repl = "python_repl"
@@ -21,7 +22,7 @@ class Tools:
     
     @classmethod
     def requirement(cls, tool:str) -> str: 
-        requirement = {
+        requirement_string = {
             Tools.python_repl: """
 Tool Name: Python REPL
 Tool Description: A Python shell. Use this to execute python commands. Input should be a valid python command. If you expect output it should be printed out.
@@ -115,7 +116,7 @@ Extra Parameters: serper_api_key
 For more information on this, see this page (https://langchain.readthedocs.io/en/latest/ecosystem/google_serper.html)       
             """,
         }
-        return requirement.get(tool, f'NO specification for {tool}')
+        return requirement_string.get(tool, None)
 
 
 class AgentManager:
@@ -143,6 +144,13 @@ class AgentManager:
         Returns:
             Agent: the agent initilized with tools and llm
         """
-        tools = load_tools(tool_list, llm=AgentManager.llm)
+        good_tools = []
+        for t in tool_list:
+            if Tools.requests(t) == None:
+                pprint(f'NO specification for {t}')
+            else:
+                good_tools.append(t)
+                
+        tools = load_tools(good_tools, llm=AgentManager.llm)
         agent = initialize_agent(tools, AgentManager.llm, agent="zero-shot-react-description", verbose=True)
         return agent
