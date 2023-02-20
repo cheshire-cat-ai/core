@@ -1,7 +1,7 @@
 from typing import Union, List
 
-from langchain.agents import load_tools
-from langchain.agents import initialize_agent, Tool
+from langchain.agents import load_tools, initialize_agent
+from langchain.agents import Tool, ZeroShotAgent, AgentExecutor
 from pprint import pprint
 
 class Tools:
@@ -20,9 +20,10 @@ class Tools:
     searx_search = "searx-search"
     google_serper = "google-serper"
     
+    
     @classmethod
-    def requirement(cls, tool:str) -> str: 
-        requirement_string = {
+    def check_requirement(cls, tool:str) -> str: 
+        requirements = {
             Tools.python_repl: """
 Tool Name: Python REPL
 Tool Description: A Python shell. Use this to execute python commands. Input should be a valid python command. If you expect output it should be printed out.
@@ -116,7 +117,7 @@ Extra Parameters: serper_api_key
 For more information on this, see this page (https://langchain.readthedocs.io/en/latest/ecosystem/google_serper.html)       
             """,
         }
-        return requirement_string.get(tool, None)
+        return requirements.get(tool, None)
 
 
 class AgentManager:
@@ -135,7 +136,7 @@ class AgentManager:
 
     
     @classmethod
-    def get_agent(cls, tool_list:List(str)):
+    def get_agent(cls, tool_list:List(str), return_intermediate_steps=False):
         """get a list of tools and return an agent with the tools, the language model, and the type of agent we want to use
 
         Args:
@@ -143,14 +144,23 @@ class AgentManager:
 
         Returns:
             Agent: the agent initilized with tools and llm
+            if return_intermediate_steps == False:
+                agent.run("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
+                pprint(response["intermediate_steps"])
+            else:
+                response = agent({"input":"Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?"})
+                print(response["intermediate_steps"])
+                
+                import json
+                print(json.dumps(response["intermediate_steps"], indent=2))
         """
         good_tools = []
         for t in tool_list:
-            if Tools.requests(t) == None:
+            if Tools.check_requirement(t) == None:
                 pprint(f'NO specification for {t}')
             else:
                 good_tools.append(t)
                 
         tools = load_tools(good_tools, llm=AgentManager.llm)
-        agent = initialize_agent(tools, AgentManager.llm, agent="zero-shot-react-description", verbose=True)
+        agent = initialize_agent(tools, AgentManager.llm, agent="zero-shot-react-description", verbose=True, return_intermediate_steps=True)
         return agent

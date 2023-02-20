@@ -28,6 +28,13 @@ llm = OpenAI(
 # agent = am.get_agent([Tools.serpapi, Tools.llm_math])
 # agent.run("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
 
+# agent = am.get_agent([Tools.serpapi, Tools.llm_math], return_intermediate_steps=True)
+# response = agent({"input":"Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?"})
+# print(response["intermediate_steps"])
+
+# import json
+# print(json.dumps(response["intermediate_steps"], indent=2))
+
 def embed(text):
     
     embedding = openai.Embedding.create(
