@@ -23,8 +23,10 @@ llm = OpenAI(
     openai_api_key=openai.api_key
 )
 
-# from .agentManager import AgentManager
+# from .agentManager import AgentManager, Tools
 # am = AgentManager.singleton(llm=llm)
+# agent = am.get_agent([Tools.serpapi, Tools.llm_math])
+# agent.run("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
 
 def embed(text):
     
