@@ -25,7 +25,7 @@ llm = OpenAI(
 
 # from .agentManager import AgentManager, Tools
 # am = AgentManager.singleton(llm=llm)
-# agent = am.get_agent([Tools.serpapi, Tools.llm_math])
+# agent = am.get_agent([Tools.serpapi, Tools.llm_math], return_intermediate_steps=False)
 # agent.run("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
 
 # agent = am.get_agent([Tools.serpapi, Tools.llm_math], return_intermediate_steps=True)
