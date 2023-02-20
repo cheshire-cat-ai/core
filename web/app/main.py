@@ -1,6 +1,7 @@
 import os
 import time
 from pprint import pprint
+import json
 
 from typing import Union
 
@@ -13,27 +14,13 @@ from langchain.llms import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
 
+from .agent_manager import AgentManager
+
 import openai
 if not 'OPENAI_KEY' in os.environ:
     raise Exception('Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"')
 openai.api_key = os.environ['OPENAI_KEY']
 
-llm = OpenAI(
-    model_name='text-davinci-003',
-    openai_api_key=openai.api_key
-)
-
-# from .agentManager import AgentManager, Tools
-# am = AgentManager.singleton(llm=llm)
-# agent = am.get_agent([Tools.serpapi, Tools.llm_math], return_intermediate_steps=False)
-# agent.run("Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?")
-
-# agent = am.get_agent([Tools.serpapi, Tools.llm_math], return_intermediate_steps=True)
-# response = agent({"input":"Who is Leo DiCaprio's girlfriend? What is her current age raised to the 0.43 power?"})
-# print(response["intermediate_steps"])
-
-# import json
-# print(json.dumps(response["intermediate_steps"], indent=2))
 
 def embed(text):
     
@@ -64,6 +51,15 @@ vector_memory = Qdrant(
     main_collection_name,
     embedding_function=embed
 )
+
+llm = OpenAI(
+    model_name='text-davinci-003',
+    openai_api_key=openai.api_key
+)
+
+am = AgentManager.singleton(llm=llm)
+agent = am.get_agent(['llm-math', 'python_repl'], return_intermediate_steps=True)
+
 
 #### API endpoints
 
@@ -96,23 +92,22 @@ async def websocket_endpoint(websocket: WebSocket):
             )
 
             # REPLY
-            content = llm(message)
+            response = agent({'input': message})
             
             # WHY
-            why = 'here you will read WHY the cat gave a certain response'
-            print('@@@@', message)
-            #episodes = vector_memory.similarity_search(message) # TODO: why embed twice?
-            #print('@@@@', episodes)
-            #for episode in episodes:
-            #    print('@@@@@', episode)
-            #    why += ' ' + episode.page_content + ' |'
+            past_utterances_from_vector_memory = []
+            utterances = vector_memory.similarity_search(message) # TODO: why embed twice?
+            for utterance in utterances:
+                past_utterances_from_vector_memory.append(utterance.page_content)
             
             await websocket.send_json({
-                'content': content,
-                'why'    : why,
+                'content': response['output'],
+                'why'    : {
+                    'intermediate_steps': response['intermediate_steps'],
+                    'past_utterances_from_vector_memory' : past_utterances_from_vector_memory
+                },
             })
 
 
     except WebSocketDisconnect:
-        print('@@ close connection')
-        #del qdrant_c
+        print('@@@ close connection')

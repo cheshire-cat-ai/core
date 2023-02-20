@@ -21,12 +21,15 @@
         let ws = new WebSocket("ws://localhost:1865/ws");
         
         ws.onclose = function(){
+
             location.reload()
+
         }
 
         ws.onmessage = function (event) {
-            console.log(event)
+
             let data = JSON.parse(event.data)
+            console.log(data)
 
             let messages = document.getElementById('messages')
             let message = document.createElement('div')
@@ -36,18 +39,22 @@
             message.appendChild(message_content)
             
             let message_why  = document.createElement('div')
-            message_why.innerHTML = data.why
+            message_why.innerHTML = JSON.stringify(data.why)
             message_why.style.fontSize = '12px'
             message_why.style.color = 'gray'
             message.appendChild(message_why)
             
             messages.appendChild(message)
+
         };
+
         function sendMessage(event) {
+
             let input = document.getElementById("messageText")
             ws.send(input.value)
             input.value = ''
             event.preventDefault()
+
         }
 
     </script>
