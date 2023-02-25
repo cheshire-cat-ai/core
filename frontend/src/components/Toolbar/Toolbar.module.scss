@@ -1,0 +1,21 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  button {
+    appearance: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border: 0;
+    outline: 0;
+    padding: var(--app-space-2xs);
+    background: transparent;
+    @include transition(transform);
+
+    &:hover {
+      transform: rotate(320deg);
+    }
+  }
+}
