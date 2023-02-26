@@ -1,12 +1,15 @@
 import React, { type FC } from 'react'
+import { Link } from 'react-router-dom'
 
 /**
  * Chat page component
  */
 const Chat: FC = () => {
-  console.log('Rendering chat...')
   return (
-    <h1>Chat page</h1>
+    <div>
+      <h1>Chat page</h1>
+      <Link to="/">Home</Link>
+    </div>
   )
 }
 

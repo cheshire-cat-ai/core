@@ -69,6 +69,6 @@
   }
 }
 
-@mixin transition($property, $time: var(--app-transition-delay)) {
+@mixin transition($property, $time: var(--app-animation-duration)) {
   transition: $property $time var(--app-easing-fn);
 }

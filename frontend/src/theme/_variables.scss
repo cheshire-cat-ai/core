@@ -73,7 +73,7 @@
   --app-side-space: var(--app-space-s);
   --app-max-content-width: 1400px;
 
-  --app-easing-fn: cubic-bezier(0.23, 1, 0.32, 1);
-  --app-transition-delay: 340ms;
-  --app-shadow-s: 0 0 20px rgb(89 102 122 / 10%);
+  --app-easing-fn: ease-in-out;
+  --app-animation-duration: 500ms;
+  --app-shadow-s: 0px 4px 6px 0px #0000000D;;
 }

@@ -1,0 +1,36 @@
+.home {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 30px;
+  gap: var(--app-space-m) 0;
+  grid-template-areas: 'questions' 'input';
+  height: 100%;
+
+  .questions {
+    grid-area: questions;
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--app-space-xl);
+    align-items: center;
+
+    .question {
+      cursor: pointer;
+      @include typography-text;
+      padding: var(--app-space-s);
+      background: white;
+      box-shadow: var(--app-shadow-s);
+      border: 0;
+      outline: 0;
+      border-radius: 99px;
+
+      + .question {
+        margin-top: var(--app-space-s);
+      }
+    }
+  }
+
+  .inputWrapper {
+    grid-area: input;
+    width: 100%;
+  }
+}
