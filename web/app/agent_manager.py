@@ -8,13 +8,13 @@ from pprint import pprint
 class AgentManager:
 
     llm = None
-    
+
+    def __init__(self, llm=None) -> None:
+        AgentManager.llm = llm
+
 
     @classmethod
     def singleton(cls, llm):
-
-        AgentManager.llm = llm
-
         # a minimal list of ready available langchain tools/chains. Let's start simple!
         AgentManager.available_tools = [
             "python_repl",
@@ -26,7 +26,7 @@ class AgentManager:
         # TODO: load user created tools/chains, from a folder (like a WP plugin or a Django app)
         
         if not hasattr(cls, '_instance'):
-            cls._instance = cls()
+            cls._instance = cls(llm)
 
         return cls._instance
 
