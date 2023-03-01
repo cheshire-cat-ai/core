@@ -1,34 +1,48 @@
-import React, { type FC, useState } from 'react'
+import React, { type FC, useCallback, useState } from 'react'
+import clsx from 'clsx'
+import QuestionList from '@components/QuestionList'
+import MessageInput from '@components/MessageInput'
+import useMessagesService from '@hooks/useMessagesService'
 
 import style from './Home.module.scss'
-
-const questions = [
-  { id: 0, text: 'What\'s up?' },
-  { id: 1, text: 'Who\'s the Queen of Hearts?' },
-  { id: 2, text: 'Where is the white rabbit?' },
-  { id: 3, text: 'What is Python?' },
-  { id: 4, text: 'How do I write my own AI app?' },
-  { id: 5, text: 'Does pineapple belong on pizza?' }
-]
 
 /**
  * Home page component
  */
 const Home: FC = () => {
-  const [question, setQuestion] = useState('')
+  const { messages, dispatchMessage, isSending, defaultMessages } = useMessagesService()
+  const [nextQuestion, setNextQuestion] = useState('')
+
+  const onQuestionClick = useCallback((question: { text: string }) => {
+    setNextQuestion(question.text)
+  }, [])
+
+  const dispatchQuestion = useCallback((message: string) => {
+    setNextQuestion('')
+    dispatchMessage(message)
+  }, [setNextQuestion])
+
+  console.log({ isSending, messages })
 
   return (
     <div className={style.home}>
-      <div className={style.questions}>
-        {questions.map(({ id, text }) => (
-          <button role="button" key={id} className={style.question} onClick={() => setQuestion(text)}>
-            {text}
-          </button>
-        ))}
-      </div>
-
+      <QuestionList
+        questions={defaultMessages}
+        onQuestionClick={onQuestionClick}
+        className={clsx(style.fadeIn, nextQuestion && style.fadeOut)}
+      />
+      {messages.length > 0 && (
+        <section>
+          {messages.map((message) => (
+            <div key={message.id} className={style.message}>
+              {message.sender === 'bot' ? 'Cheshire Cat: ' : 'You: '}
+              {message.text}
+            </div>
+          ))}
+        </section>
+      )}
       <div className={style.inputWrapper}>
-        <input placeholder="Ask the cheshire cat" value={question} />
+        <MessageInput placeholder="Ask the cheshire cat" value={nextQuestion} onChange={setNextQuestion} onSubmit={dispatchQuestion} />
       </div>
     </div>
   )

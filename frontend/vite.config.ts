@@ -16,6 +16,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      '@hooks': resolve(rootDir, 'src', 'hooks'),
       '@components': resolve(rootDir, 'src', 'components'),
       '@models': resolve(rootDir, 'src', 'models'),
       '@routes': resolve(rootDir, 'src', 'routes'),

@@ -1,0 +1,49 @@
+.messageInput {
+  --gradient: linear-gradient(180deg, rgba(92, 30, 174, 0.6) 0%, rgba(219, 0, 255, 0.6) 100%);
+  box-shadow: 0 4px 2px 0 #0000000D, 0 4px 20px 0 #00000026;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: var(--app-palette-white);
+  border-radius: var(--app-border-radius);
+  padding: var(--app-space-xs) var(--app-space-s);
+  position: relative;
+
+  textarea {
+    background: transparent;
+    resize: none;
+    width: 100%;
+    height: 44px;
+    line-height: 1.2;
+    overflow-y: hidden;
+    outline: none;
+    border: 0;
+    padding: 0;
+  }
+
+  button {
+    appearance: none;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    padding: 0;
+
+    &[disabled] {
+      opacity: 0.25;
+    }
+
+    svg {
+      width: 22px;
+      fill: none;
+
+      path {
+        stroke: var(--app-palette-black);
+      }
+    }
+
+    + button {
+      margin-left: var(--app-space-xs);
+    }
+  }
+}

@@ -3,7 +3,6 @@ import { createBrowserRouter } from 'react-router-dom'
 import Scaffold from '@components/Scaffold'
 
 import Home from './Home'
-import Chat from './Chat'
 
 /**
  * Creates and exports the application routes.
@@ -18,10 +17,6 @@ export default createBrowserRouter([
       {
         path: '/',
         element: <Home />
-      },
-      {
-        path: '/chat',
-        element: <Chat />
       }
     ]
   }

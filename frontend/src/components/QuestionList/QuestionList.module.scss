@@ -1,0 +1,24 @@
+.questions {
+  grid-area: questions;
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--app-space-xl);
+  align-items: center;
+
+  animation: FadeIn 1s ease-in-out;
+
+  .question {
+    cursor: pointer;
+    @include typography-text;
+    padding: var(--app-space-s);
+    background: white;
+    box-shadow: var(--app-shadow-s);
+    border: 0;
+    outline: 0;
+    border-radius: 99px;
+
+    + .question {
+      margin-top: var(--app-space-s);
+    }
+  }
+}

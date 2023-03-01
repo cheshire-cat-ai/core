@@ -27,3 +27,11 @@ export interface CommonProps {
  * }
  */
 export type ComponentRenderer<TProps = Record<string, unknown>> = JSXElementConstructor<TProps> | string
+
+/**
+ * Defines a generic interface for defining the state of an asynchronous operation.
+ */
+export interface AsyncStateBase {
+  loading: boolean
+  error?: string
+}
