@@ -23,8 +23,9 @@ import openai
 if not 'OPENAI_KEY' in os.environ:
     raise Exception('Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"')
 
-from .agent_manager import AgentManager
 
+from .utils import log
+from .agent_manager import AgentManager
 
 #### Large Language Model
 llm = OpenAI(
@@ -46,15 +47,15 @@ collection_name = 'utterances'
 
 try:
     qd_client.get_collection(collection_name)
-    print(f'Collection "{collection_name}" already present in vector store')
+    log(f'Collection "{collection_name}" already present in vector store')
 except:
-    print(f'Creating collection {collection_name} ...')
+    log(f'Creating collection {collection_name} ...')
     qd_client.recreate_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(size=1536, distance=Distance.COSINE), # TODO: if we change the embedder, how do we know the dimensionality?
     )
     
-pprint( dict(qd_client.get_collection(collection_name)) )
+log( dict(qd_client.get_collection(collection_name)) )
 
 vector_memory = Qdrant(
     qd_client,
@@ -64,7 +65,6 @@ vector_memory = Qdrant(
 
 
 ### Agent
-
 am = AgentManager.singleton(llm=llm)
 agent = am.get_agent(['llm-math', 'python_repl'], return_intermediate_steps=True)
 
@@ -91,15 +91,18 @@ async def websocket_endpoint(websocket: WebSocket):
             # message received from user
             message = await websocket.receive_text()
 
-
-            # reply with agent
-            response = agent({'input': message})
-            
             # retrieve past memories (should be done INSIDE agent)
             past_utterances_from_vector_memory = []
             utterances = vector_memory.max_marginal_relevance_search(message) # TODO: why embed twice?
             for utterance in utterances:
                 past_utterances_from_vector_memory.append(utterance.page_content)
+
+            # reply with agent
+            response = agent({
+                'input': message,
+                'chat_history': '\n'.join(past_utterances_from_vector_memory) # TODO: this is not the way
+            })
+            
             
             # store user message in memory
             vector_ids = vector_memory.add_texts(
@@ -122,4 +125,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
     except WebSocketDisconnect:
-        print('@@@ close connection')
+        log('close connection')

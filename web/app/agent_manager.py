@@ -39,7 +39,8 @@ class AgentManager:
         agent = initialize_agent(
             tools,
             AgentManager.llm,
-            agent="zero-shot-react-description", # TODO: try out "conversational-react-description"
+            #agent="zero-shot-react-description",
+            agent="conversational-react-description",
             verbose=True,
             return_intermediate_steps=return_intermediate_steps
         )
