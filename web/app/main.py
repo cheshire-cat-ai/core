@@ -8,8 +8,12 @@ from typing import Union
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 
+import langchain
 from langchain.vectorstores import Qdrant
 from langchain.llms import OpenAI
+
+from langchain.cache import InMemoryCache # is it worth it to use a sqlite?
+langchain.llm_cache = InMemoryCache()
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams
