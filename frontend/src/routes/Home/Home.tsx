@@ -1,49 +1,41 @@
 import React, { type FC, useCallback, useState } from 'react'
-import clsx from 'clsx'
-import QuestionList from '@components/QuestionList'
+import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageInput from '@components/MessageInput'
 import useMessagesService from '@hooks/useMessagesService'
+import MessageList from '@components/MessageList'
 
 import style from './Home.module.scss'
 
 /**
- * Home page component
+ * Displays the chat interface.
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, defaultMessages } = useMessagesService()
-  const [nextQuestion, setNextQuestion] = useState('')
+  const [nextMessage, setNextMessage] = useState('')
 
-  const onQuestionClick = useCallback((question: { text: string }) => {
-    setNextQuestion(question.text)
-  }, [])
+  const onQuestionClick = useCallback((question: string) => {
+    const message = `${nextMessage} ${question}`.trim()
+    setNextMessage(message)
+  }, [nextMessage])
 
   const dispatchQuestion = useCallback((message: string) => {
-    setNextQuestion('')
+    setNextMessage('')
     dispatchMessage(message)
-  }, [setNextQuestion])
-
-  console.log({ isSending, messages })
+  }, [dispatchMessage])
 
   return (
     <div className={style.home}>
-      <QuestionList
-        questions={defaultMessages}
-        onQuestionClick={onQuestionClick}
-        className={clsx(style.fadeIn, nextQuestion && style.fadeOut)}
-      />
-      {messages.length > 0 && (
-        <section>
-          {messages.map((message) => (
-            <div key={message.id} className={style.message}>
-              {message.sender === 'bot' ? 'Cheshire Cat: ' : 'You: '}
-              {message.text}
-            </div>
-          ))}
-        </section>
-      )}
-      <div className={style.inputWrapper}>
-        <MessageInput placeholder="Ask the cheshire cat" value={nextQuestion} onChange={setNextQuestion} onSubmit={dispatchQuestion} />
-      </div>
+      <section role="document" className={style.messagesWrapper}>
+        {messages.length === 0 && (
+          <DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />
+        )}
+        {messages.length > 0 && (
+          <MessageList messages={messages} isLoading={isSending} className={style.messageList} />
+        )}
+      </section>
+      <section className={style.inputWrapper}>
+        <MessageInput value={nextMessage} onChange={setNextMessage} onSubmit={dispatchQuestion} className={style.input} />
+      </section>
     </div>
   )
 }

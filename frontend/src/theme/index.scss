@@ -16,7 +16,9 @@ html {
 body {
   @include typography-text;
   color: var(--app-palette-text);
-  background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%)
+  background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%);
+  user-select: none;
+  letter-spacing: 0.045rem;
 }
 
 

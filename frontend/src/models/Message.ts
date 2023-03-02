@@ -7,6 +7,7 @@ export interface MessageBase {
   id: number
   sender: 'user' | 'bot'
   text: string
+  timestamp: number
 }
 
 /**

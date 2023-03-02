@@ -1,42 +1,83 @@
-import React, { type ChangeEvent, type FC, type FormEvent, type HTMLAttributes, type KeyboardEvent, useCallback } from 'react'
+import React, { type FC, type HTMLAttributes, useCallback, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import style from './MessageInput.module.scss'
 
 /**
- * A stateless input component allowing the user to enter a message and/or attach a file
+ * A stateless input component for input chat messages.
  */
-const MessageInput: FC<ChatInputProps> = ({ value, onChange, onSubmit, className, ...rest }) => {
-  const classList = clsx(style.messageInput, className)
+const MessageInput: FC<ChatInputProps> = ({ value, placeholder, onChange, onSubmit, className, ...rest }) => {
+  const [isTwoLines, setIsTwoLines] = useState(false)
+  const classList = clsx(style.messageInput, isTwoLines && style.bigger, className)
+  const elRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleSubmit = useCallback((event: FormEvent) => {
+  /**
+   * Handles form submit by calling the onSubmit callback if it exists.
+   * It also prevents the default form submit behavior.
+   */
+  const handleSubmit = useCallback((event: React.FormEvent) => {
     event.preventDefault()
 
     if (onSubmit) {
+      setIsTwoLines(false)
       onSubmit(value)
     }
   }, [value, onSubmit])
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
+  /**
+   * Handles textarea change by calling the onChange callback,
+   * makes sure to prevent the default behavior.
+   */
+  const handleChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target
     event.preventDefault()
 
     onChange(value)
   }, [onChange])
 
-  const handleKeydown = useCallback((event: KeyboardEvent<HTMLTextAreaElement>) => {
+  /**
+   * Handles textarea keydown by calling the onSubmit callback if it exists.
+   */
+  const handleKeydown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const { key, keyCode } = event
     const isEnter = key === 'Enter' || keyCode === 13
 
-    if (isEnter && onSubmit) {
+    if (isEnter && onSubmit && value) {
       event.preventDefault()
       onSubmit(value)
+      setIsTwoLines(false)
     }
   }, [value, onSubmit])
 
+  /**
+   * Checks if the textarea needs to be multiline and updates the state accordingly.
+   */
+  useEffect(() => {
+    const target = elRef.current
+
+    if (target && !value) {
+      setIsTwoLines(false)
+    }
+
+    if (target && value) {
+      const letterWidth = 8.2
+      const isMultiLine = letterWidth * value.length > target.offsetWidth
+
+      setIsTwoLines(isMultiLine)
+    }
+  }, [value])
+
   return (
     <form className={classList} onSubmit={handleSubmit}>
-      <textarea value={value} name="message" onChange={handleChange} onKeyDown={handleKeydown} {...rest} />
+      <textarea
+        placeholder={placeholder ?? 'Ask the cheshire cat...'}
+        value={value}
+        name="message"
+        onChange={handleChange}
+        onKeyDown={handleKeydown}
+        ref={elRef}
+        {...rest}
+      />
       <button type="submit" disabled={!value || value.length === 0}>
         <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
           <path d="M15 1L7 9" strokeLinecap="round" strokeLinejoin="round" />

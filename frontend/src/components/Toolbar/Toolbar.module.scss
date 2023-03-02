@@ -17,5 +17,10 @@
     &:hover {
       transform: rotate(320deg);
     }
+
+    &[disabled] {
+      cursor: not-allowed;
+      opacity: 0.25;
+    }
   }
 }

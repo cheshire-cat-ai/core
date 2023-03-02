@@ -18,7 +18,19 @@ export const selectDefaultMessages = createSelector(selectRootState, (state) => 
 export const selectCurrentMessages = createSelector(selectRootState, (state) => state.messages)
 
 /**
+ * Selects the ready state from the messages slice.
+ * It tells whether the app is ready to send/receive messages.
+ */
+export const selectIsReady = createSelector(selectRootState, (state) => state.ready)
+
+/**
  * Selects the loading state from the messages slice.
  * It tells whether the app is currently sending a message.
  */
 export const selectIsSendingMessage = createSelector(selectRootState, (state) => state.loading)
+
+/**
+ * Selects the error state from the messages slice.
+ * It contains the error message if an error occurred while sending a message.
+ */
+export const selectError = createSelector(selectRootState, (state) => state.error)

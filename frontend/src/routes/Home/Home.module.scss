@@ -1,44 +1,32 @@
 .home {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr 62px;
-  gap: var(--app-space-m) 0;
-  grid-template-areas: 'questions' 'input';
+  grid-template-rows: 1fr 80px;
+  gap: var(--app-space-s) 0;
+  grid-template-areas: 'messages' 'input';
   height: 100%;
 
-  .fadeIn {
-    animation: FadeIn 1s var(--app-easing-fn);
-  }
+  .messagesWrapper {
+    grid-area: messages;
+    height: 100%;
+    max-height: 100%;
+    overflow: scroll;
 
-  .fadeOut {
-    animation: FadeOut 0.5s var(--app-easing-fn);
-    animation-fill-mode: forwards;
+    .messageList {
+      position: relative;
+      margin-top: var(--app-space-l);
+    }
   }
 
   .inputWrapper {
+    position: relative;
     grid-area: input;
-    width: 100%;
-  }
-}
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
 
-@keyframes FadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-3%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes FadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(4%);
+    .input {
+      width: 100%;
+    }
   }
 }

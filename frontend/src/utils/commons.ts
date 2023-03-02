@@ -45,3 +45,8 @@ export const handleReactElementOrRenderer = (elementOrRenderer?: ReactElement | 
 
   return createElement(elementOrRenderer)
 }
+
+/**
+ * Returns the current timestamp in milliseconds.
+ */
+export const now = () => new Date().getTime()

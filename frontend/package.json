@@ -29,6 +29,7 @@
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^8.4.21",
     "postcss-preset-env": "^8.0.1",
     "postcss-pxtorem": "^6.0.0",

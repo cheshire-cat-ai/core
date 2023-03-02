@@ -1,0 +1,37 @@
+.message {
+  position: relative;
+  @include typography-text;
+  animation: AFadeIn 240ms var(--app-easing-fn);
+  animation-iteration-count: 1;
+
+  &.user {
+    align-self: flex-end;
+    border-radius: 20px 5px 20px 20px;
+    background: linear-gradient(180deg, #1E1E1E 0%, rgba(30, 30, 30, 0.55) 100%);
+    color: var(--app-palette-white);
+    padding: var(--app-space-s);
+    text-align: right;
+  }
+
+  &.bot {
+    align-self: flex-start;
+
+    .label {
+      @include typography-action;
+      margin-bottom: var(--app-space-xs);
+    }
+  }
+
+  + .message {
+    margin-top: var(--app-space-m);
+  }
+}
+
+@keyframes AFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

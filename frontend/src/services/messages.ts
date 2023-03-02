@@ -1,7 +1,10 @@
+import getConfig from '../config'
+
 /**
  * The WebSocket instance
  */
-const socket = new WebSocket('ws://localhost:1865/ws')
+const { socketEndpoint } = getConfig()
+const socket = new WebSocket(socketEndpoint)
 
 /**
  *  MessagesService is a singleton that provides a simple interface for sending and receiving messages from the WebSocket server.
@@ -17,6 +20,14 @@ export const MessagesService = Object.freeze({
   },
 
   /**
+   * Observe the WebSocket server for connection open
+   * @param callback
+   */
+  onOpen(callback: (event: Event) => void) {
+    socket.onopen = callback
+  },
+
+  /**
    * Observe the WebSocket server for messages
    * @param callback
    */
@@ -25,6 +36,14 @@ export const MessagesService = Object.freeze({
       const data = JSON.parse(event.data) as { content: string, why: any }
       callback(data.content, data.why)
     }
+  },
+
+  /**
+   * Observe the WebSocket server for connection errors
+   * @param callback
+   */
+  onError(callback: (error: any) => void) {
+    socket.onerror = callback
   },
 
   /**

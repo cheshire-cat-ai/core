@@ -6,11 +6,11 @@ import { type CommonProps } from '@models/commons'
 import style from './Toolbar.module.scss'
 
 /**
- * Renders the header's toolbar component
+ * Renders the header's toolbar component.
  */
 const Toolbar: FC<ToolbarProps> = ({ onSettingsClick, className, ...rest }) => (
   <div className={clsx(style.toolbar, className)} role="toolbar" {...rest}>
-    <button role="button" onClick={onSettingsClick}>
+    <button role="button" onClick={onSettingsClick} disabled>
       <SettingsIcon />
     </button>
   </div>
