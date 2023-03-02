@@ -13,7 +13,7 @@ from qdrant_client.http.models import Distance, VectorParams
 
 import langchain
 from langchain.vectorstores import Qdrant
-from langchain.llms import OpenAI
+from langchain.llms import OpenAIChat
 from langchain.embeddings import OpenAIEmbeddings
 
 from langchain.cache import InMemoryCache # is it worth it to use a sqlite?
@@ -28,8 +28,8 @@ from .utils import log
 from .agent_manager import AgentManager
 
 #### Large Language Model
-llm = OpenAI(
-    model_name='text-davinci-003',
+llm = OpenAIChat(
+    model_name='gpt-3.5-turbo',
     openai_api_key=os.environ['OPENAI_KEY']
 )
 
