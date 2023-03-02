@@ -99,10 +99,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # reply with agent
             response = agent({
-                'input': message,
-                'chat_history': '\n'.join(past_utterances_from_vector_memory) # TODO: this is not the way
+                'input': message
             })
-            
+            log(response)            
             
             # store user message in memory
             vector_ids = vector_memory.add_texts(
@@ -118,7 +117,7 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json({
                 'content': response['output'],
                 'why'    : {
-                    'intermediate_steps': response['intermediate_steps'],
+                    'intermediate_steps': ['todo', 'todo', 'todo'], #response['intermediate_steps'],
                     'past_utterances_from_vector_memory' : past_utterances_from_vector_memory
                 },
             })

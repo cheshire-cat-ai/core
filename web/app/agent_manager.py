@@ -1,7 +1,9 @@
 from typing import Union, List
 
+from langchain.chains.conversation.memory import ConversationBufferMemory#, ConversationSummaryBufferMemory
 from langchain.agents import load_tools, initialize_agent
-from langchain.agents import Tool, ZeroShotAgent, AgentExecutor
+#from langchain.agents import Tool, ZeroShotAgent, AgentExecutor
+
 from pprint import pprint
 
 
@@ -34,15 +36,20 @@ class AgentManager:
     @classmethod
     def get_agent(cls, tool_list: List[str], return_intermediate_steps=False):
         
+        # memory
+        # TODO: use also vector memory as context
+        #memory = ConversationSummaryBufferMemory(llm=AgentManager.llm, memory_key='chat_history')
+        memory = ConversationBufferMemory(memory_key='chat_history')
+
         # init agent
         tools = load_tools(tool_list, llm=AgentManager.llm)
         agent = initialize_agent(
             tools,
             AgentManager.llm,
-            #agent="zero-shot-react-description",
             agent="conversational-react-description",
+            memory=memory,
             verbose=True,
-            return_intermediate_steps=return_intermediate_steps
+            #return_intermediate_steps=return_intermediate_steps
         )
         
         return agent
