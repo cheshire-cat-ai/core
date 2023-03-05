@@ -1,12 +1,9 @@
-.questions {
+.defaultMessages {
   display: flex;
   flex-direction: column;
-  margin-top: var(--app-space-xl);
   align-items: center;
 
-  animation: FadeIn 1s ease-in-out;
-
-  .question {
+  .message {
     cursor: pointer;
     @include typography-text;
     padding: var(--app-space-s);
@@ -16,7 +13,7 @@
     outline: 0;
     border-radius: 99px;
 
-    + .question {
+    + .message {
       margin-top: var(--app-space-s);
     }
   }

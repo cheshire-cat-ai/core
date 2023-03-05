@@ -1,9 +1,20 @@
 .toolbar {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  background: var(--app-palette-neutral);
+
+  .title {
+    h1 {
+      @include typography-title;
+      margin: 0;
+      font-size: var(--app-text-size-1);
+    }
+
+    flex: 1;
+  }
 
   button {
+    justify-self: flex-end;
     appearance: none;
     cursor: pointer;
     display: flex;

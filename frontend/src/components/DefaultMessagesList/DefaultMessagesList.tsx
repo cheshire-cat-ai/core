@@ -9,12 +9,12 @@ import style from './DefaultMessagesListList.module.scss'
  */
 const DefaultMessagesList: FC<DefaultMessagesListProps> = (props) => {
   const { messages, onMessageClick, className, ...rest } = props
-  const classList = clsx(style.questions, className)
+  const classList = clsx(style.defaultMessages, className)
 
   return (
     <div className={classList} {...rest}>
       {messages.map((message) => (
-        <button role="button" key={message} className={style.question} onClick={() => onMessageClick(message)}>
+        <button role="button" key={message} className={style.message} onClick={() => onMessageClick(message)}>
           {message}
         </button>
       ))}

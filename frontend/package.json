@@ -1,9 +1,11 @@
 {
   "name": "cheshire-ui",
   "private": false,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "author": "Antonio Rù <antonio.ru000@gmail.com>",
   "scripts": {
+    "start": "npx http-server ./dist -p 3000",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"

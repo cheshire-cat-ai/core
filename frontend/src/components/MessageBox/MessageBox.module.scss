@@ -4,6 +4,10 @@
   animation: AFadeIn 240ms var(--app-easing-fn);
   animation-iteration-count: 1;
 
+  @include tablet-landscape-view {
+    max-width: 80%;
+  }
+
   &.user {
     align-self: flex-end;
     border-radius: 20px 5px 20px 20px;

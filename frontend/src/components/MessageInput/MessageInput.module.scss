@@ -1,7 +1,5 @@
 .messageInput {
-  --gradient: linear-gradient(180deg, rgba(92, 30, 174, 0.6) 0%, rgba(219, 0, 255, 0.6) 100%);
-  box-shadow: 0 4px 2px 0 #0000000D, 0 4px 20px 0 #00000010;
-  overflow: hidden;
+  box-shadow: 0 4px 2px 0 #0000000D, 0 4px 10px 0 #00000010;
   display: flex;
   align-items: center;
   background: var(--app-palette-white);
@@ -12,6 +10,14 @@
 
   &:has(textarea:focus) {
     box-shadow: 0 4px 2px 0 #0000000D, 0 4px 20px 0 #00000015;
+    margin: -1px;
+    background: linear-gradient(white, white) padding-box, linear-gradient(180deg, rgba(92, 30, 174, 0.6) 0%, rgba(219, 0, 255, 0.6) 100%) border-box;
+    border: 1px solid transparent;
+  }
+
+  &:has(textarea[disabled]) {
+    background: var(--app-palette-neutral);
+    cursor: not-allowed;
   }
 
   textarea {

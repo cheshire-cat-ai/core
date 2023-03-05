@@ -1,32 +1,21 @@
 .home {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 80px;
-  gap: var(--app-space-s) 0;
-  grid-template-areas: 'messages' 'input';
-  height: 100%;
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
 
-  .messagesWrapper {
-    grid-area: messages;
-    height: 100%;
-    max-height: 100%;
-    overflow: scroll;
-
-    .messageList {
-      position: relative;
-      margin-top: var(--app-space-l);
-    }
+  .messages {
+    padding-bottom: calc(var(--app-space-s) + 70px);
   }
 
-  .inputWrapper {
-    position: relative;
-    grid-area: input;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
+  .input {
+    position: fixed;
+    inset: auto var(--app-space-s) var(--app-space-s) var(--app-space-s);
+    z-index: 1;
 
-    .input {
+    @include tablet-landscape-view {
+      max-width: 960px;
       width: 100%;
+      inset: auto auto var(--app-space-s) auto;
     }
   }
 }

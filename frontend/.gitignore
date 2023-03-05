@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 .env.local
+
+dist/
+build/
+static/

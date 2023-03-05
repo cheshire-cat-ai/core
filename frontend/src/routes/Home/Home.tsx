@@ -1,8 +1,8 @@
 import React, { type FC, useCallback, useState } from 'react'
 import DefaultMessagesList from '@components/DefaultMessagesList'
+import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
 import useMessagesService from '@hooks/useMessagesService'
-import MessageList from '@components/MessageList'
 
 import style from './Home.module.scss'
 
@@ -11,31 +11,23 @@ import style from './Home.module.scss'
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, defaultMessages } = useMessagesService()
-  const [nextMessage, setNextMessage] = useState('')
+  const [userMessage, setUserMessage] = useState('')
 
   const onQuestionClick = useCallback((question: string) => {
-    const message = `${nextMessage} ${question}`.trim()
-    setNextMessage(message)
-  }, [nextMessage])
+    const message = `${userMessage} ${question}`.trim()
+    setUserMessage(message)
+  }, [userMessage])
 
-  const dispatchQuestion = useCallback((message: string) => {
-    setNextMessage('')
+  const sendMessage = useCallback((message: string) => {
+    setUserMessage('')
     dispatchMessage(message)
   }, [dispatchMessage])
 
   return (
     <div className={style.home}>
-      <section role="document" className={style.messagesWrapper}>
-        {messages.length === 0 && (
-          <DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />
-        )}
-        {messages.length > 0 && (
-          <MessageList messages={messages} isLoading={isSending} className={style.messageList} />
-        )}
-      </section>
-      <section className={style.inputWrapper}>
-        <MessageInput value={nextMessage} onChange={setNextMessage} onSubmit={dispatchQuestion} className={style.input} />
-      </section>
+      {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
+      {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} className={style.messages} />)}
+      <MessageInput value={userMessage} onChange={setUserMessage} onSubmit={sendMessage} disabled={isSending} className={style.input} />
     </div>
   )
 }

@@ -8,13 +8,20 @@ import svgr from 'vite-plugin-svgr'
 
 const rootDir = resolve(__dirname)
 
-// https://vitejs.dev/config/
+/**
+ * The Vite configuration file.
+ * @see https://vitejs.dev/config/
+ */
 export default defineConfig({
   server: {
-    port: 8080,
+    port: 3001,
     open: true
   },
   resolve: {
+    /**
+     * Aliases for the project need to match the tsconfig.json ones.
+     * Please make sure to update both files.
+     */
     alias: {
       '@hooks': resolve(rootDir, 'src', 'hooks'),
       '@components': resolve(rootDir, 'src', 'components'),
@@ -28,6 +35,9 @@ export default defineConfig({
   },
   css: {
     preprocessorOptions: {
+      /**
+       * The mixins file is imported in every SCSS file.
+       */
       scss: {
         additionalData: `@import "@theme/mixins";`
       }

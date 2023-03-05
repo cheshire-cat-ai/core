@@ -10,6 +10,9 @@ import style from './Toolbar.module.scss'
  */
 const Toolbar: FC<ToolbarProps> = ({ onSettingsClick, className, ...rest }) => (
   <div className={clsx(style.toolbar, className)} role="toolbar" {...rest}>
+    <div className={style.title}>
+      <h1>😸 Cheshire cat</h1>
+    </div>
     <button role="button" onClick={onSettingsClick} disabled>
       <SettingsIcon />
     </button>

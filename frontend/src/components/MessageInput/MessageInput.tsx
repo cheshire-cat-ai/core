@@ -5,8 +5,10 @@ import style from './MessageInput.module.scss'
 
 /**
  * A stateless input component for input chat messages.
+ * It has a textarea for the message and a submit button as well as an attachment button.
  */
-const MessageInput: FC<ChatInputProps> = ({ value, placeholder, onChange, onSubmit, className, ...rest }) => {
+const MessageInput: FC<ChatInputProps> = (props) => {
+  const { value, onChange, onSubmit, disabled, className, ...rest } = props
   const [isTwoLines, setIsTwoLines] = useState(false)
   const classList = clsx(style.messageInput, isTwoLines && style.bigger, className)
   const elRef = useRef<HTMLTextAreaElement>(null)
@@ -60,7 +62,7 @@ const MessageInput: FC<ChatInputProps> = ({ value, placeholder, onChange, onSubm
     }
 
     if (target && value) {
-      const letterWidth = 8.2
+      const letterWidth = 7.95
       const isMultiLine = letterWidth * value.length > target.offsetWidth
 
       setIsTwoLines(isMultiLine)
@@ -70,11 +72,12 @@ const MessageInput: FC<ChatInputProps> = ({ value, placeholder, onChange, onSubm
   return (
     <form className={classList} onSubmit={handleSubmit}>
       <textarea
-        placeholder={placeholder ?? 'Ask the cheshire cat...'}
+        placeholder={disabled ? 'Wait for the reply' : 'Ask the cheshire cat...'}
         value={value}
         name="message"
         onChange={handleChange}
         onKeyDown={handleKeydown}
+        disabled={disabled}
         ref={elRef}
         {...rest}
       />
@@ -95,10 +98,11 @@ const MessageInput: FC<ChatInputProps> = ({ value, placeholder, onChange, onSubm
   )
 }
 
-export interface ChatInputProps extends Omit<HTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'onSubmit'> {
+export interface ChatInputProps extends Omit<HTMLAttributes<HTMLTextAreaElement>, 'onChange' | 'onSubmit' | 'placeholder'> {
   value: string
   onChange: (nextValue: string) => void
   onSubmit?: (nextValue: string) => void
+  disabled?: boolean
 }
 
 export default React.memo(MessageInput)
