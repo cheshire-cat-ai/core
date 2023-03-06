@@ -1,0 +1,74 @@
+/**
+ * Generates the style for titles
+ */
+@mixin typography-title($size: unset) {
+  font-family: var(--app-title-font-family);
+  font-weight: var(--app-title-font-weight);
+  letter-spacing: var(--app-title-letter-spacing);
+  line-height: var(--app-title-line-height);
+
+  @if $size {
+    font-size: $size;
+  }
+}
+
+/**
+ * Generates the style for texts
+ */
+@mixin typography-text {
+  font-family: var(--app-text-font-family);
+  font-weight: var(--app-text-font-weight);
+  letter-spacing: var(--app-text-letter-spacing);
+  line-height: var(--app-text-line-height);
+  font-size: var(--app-text-font-size);
+}
+
+/**
+ * Generates the style for actions
+ */
+@mixin typography-action {
+  font-family: var(--app-action-font-family);
+  font-weight: var(--app-action-font-weight);
+  letter-spacing: var(--app-action-letter-spacing);
+  line-height: var(--app-action-line-height);
+  font-size: var(--app-action-font-size);
+  text-decoration: none;
+  color: var(--app-palette-primary);
+}
+
+@mixin typography-text-overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * Tablet portrait media query shortcut
+ */
+@mixin tablet-portrait-view {
+  @media screen and (min-width: 768px) {
+    @content
+  }
+}
+
+/**
+ * Tablet landscape media query shortcut
+ */
+@mixin tablet-landscape-view {
+  @media screen and (min-width: 1024px) {
+    @content
+  }
+}
+
+/**
+ * Desktop media query shortcut
+ */
+@mixin desktop-view {
+  @media screen and (min-width: 1200px) {
+    @content
+  }
+}
+
+@mixin transition($property, $time: var(--app-animation-duration)) {
+  transition: $property $time var(--app-easing-fn);
+}

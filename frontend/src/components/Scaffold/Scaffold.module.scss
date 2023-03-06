@@ -1,0 +1,15 @@
+.scaffold {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  gap: var(--app-space-s);
+  overflow: hidden;
+  padding: var(--app-side-space);
+  background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%);
+
+  .content {
+    position: relative;
+    flex: 1;
+    overflow-y: scroll;
+  }
+}

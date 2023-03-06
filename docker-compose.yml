@@ -36,12 +36,8 @@ services:
     container_name: frontend
     depends_on:
       - web
-    expose:
-      - 3000
     ports:
       - 3000:3000
-    volumes:
-      - ./frontend/static:/app/public:ro
     restart: unless-stopped
 
   vector-memory:
@@ -52,7 +48,6 @@ services:
     volumes:
       - ./long_term_memory/qdrant:/qdrant/storage
     restart: unless-stopped
-
   #vector-memory:
   #  image: semitechnologies/weaviate:1.17.3
   #  container_name: vector-memory

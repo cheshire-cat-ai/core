@@ -1,0 +1,13 @@
+.messages {
+  position: relative;
+
+  .messageList {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .thinking {
+    margin-bottom: 0;
+  }
+}
