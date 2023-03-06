@@ -12,7 +12,7 @@ export default createBrowserRouter([
   {
     path: '/',
     element: <Scaffold />,
-    errorElement: <p>Error </p>,
+    errorElement: <Scaffold.ErrorPage />,
     children: [
       {
         path: '/',

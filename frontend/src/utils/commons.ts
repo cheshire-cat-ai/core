@@ -1,5 +1,6 @@
-import { createElement, isValidElement, type MouseEvent, type ReactElement } from 'react'
+import { createElement, isValidElement, type ReactElement } from 'react'
 import { type ComponentRenderer } from '@models/commons'
+import { isError, isErrorLikeObject, isString } from '@utils/typeGuards'
 
 let ids = 0
 /**
@@ -12,14 +13,14 @@ export const uniqueId = () => {
 }
 
 /**
- * Prevents the default behaviour of the event and stops it from propagating to the parent elements.
- *
- * Basic Usage:
- *
- * <button onClick={stopPropagation}>Click Me</button>
+ * Returns the error message from an error or error-like object.
+ * If the value is not an error or error-like object, the unknownError argument is returned.
  */
-export const stopPropagation = <TEvent extends MouseEvent>(event: TEvent) => {
-  event.preventDefault()
+export const getErrorMessage = (error: unknown, unknownError = 'Unknown error') => {
+  if (isString(error)) return error
+  if (isError(error) || isErrorLikeObject(error)) return error.message
+
+  return unknownError
 }
 
 /**
@@ -50,3 +51,9 @@ export const handleReactElementOrRenderer = (elementOrRenderer?: ReactElement | 
  * Returns the current timestamp in milliseconds.
  */
 export const now = () => new Date().getTime()
+
+/**
+ * Renders an empty ReactElement.
+ * Basically just a function that returns null lol
+ */
+export const EmptyReactElement = () => null
