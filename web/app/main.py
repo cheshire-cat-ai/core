@@ -123,5 +123,15 @@ async def websocket_endpoint(websocket: WebSocket):
             })
 
 
-    except WebSocketDisconnect:
-        log('close connection')
+    except Exception:#WebSocketDisconnect:
+
+        log('ERROR')
+
+        # send reply and why to user
+        await websocket.send_json({
+            'content': 'Error: I just lost my head. Please refresh.',
+            'why'    : {
+                'intermediate_steps': ['todo', 'todo', 'todo'], #response['intermediate_steps'],
+                'past_utterances_from_vector_memory' : []
+            },
+        })
