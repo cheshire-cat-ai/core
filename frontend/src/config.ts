@@ -10,8 +10,8 @@ interface Config {
  */
 const getConfig = () => Object.freeze<Config>({
   mode: import.meta.env.MODE,
-  socketEndpoint: import.meta.env.VITE_SOCKET_ENDPOINT,
-  socketTimeout: import.meta.env.VITE_SOCKET_ENDPOINT_TIMEOUT_MS || 10000
+  socketEndpoint: 'ws://localhost:1865/ws',
+  socketTimeout: 10000
 })
 
 export default getConfig
