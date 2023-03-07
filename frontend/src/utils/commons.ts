@@ -1,4 +1,9 @@
-import { createElement, isValidElement, type MouseEvent, type ReactElement } from 'react'
+/**
+ * This module defines and export a collection of utility functions that are commonly used throughout the application.
+ * The functions are grouped by their purpose and exported as named exports.
+ */
+
+import { createElement, isValidElement, type ReactElement } from 'react'
 import { type ComponentRenderer } from '@models/commons'
 
 let ids = 0
@@ -9,17 +14,6 @@ let ids = 0
 export const uniqueId = () => {
   ids += 1
   return ids
-}
-
-/**
- * Prevents the default behaviour of the event and stops it from propagating to the parent elements.
- *
- * Basic Usage:
- *
- * <button onClick={stopPropagation}>Click Me</button>
- */
-export const stopPropagation = <TEvent extends MouseEvent>(event: TEvent) => {
-  event.preventDefault()
 }
 
 /**
@@ -50,3 +44,9 @@ export const handleReactElementOrRenderer = (elementOrRenderer?: ReactElement | 
  * Returns the current timestamp in milliseconds.
  */
 export const now = () => new Date().getTime()
+
+/**
+ * Renders an empty ReactElement.
+ * Basically just a function that returns null lol
+ */
+export const EmptyReactElement = () => null

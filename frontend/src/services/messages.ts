@@ -1,4 +1,6 @@
 import getConfig from '../config'
+import { type APIMessageServiceError, type APIMessageServiceResponse } from '@models/Message'
+import { isAPIMessageServiceResponse } from '@utils/typeGuards'
 
 /**
  * The WebSocket instance
@@ -20,30 +22,31 @@ export const MessagesService = Object.freeze({
   },
 
   /**
-   * Observe the WebSocket server for connection open
-   * @param callback
+   * Open the WebSocket connection and observe the connection state.
+   * It accepts two callbacks: one for when the connection is opened and one for when the connection fails.
    */
-  onOpen(callback: (event: Event) => void) {
-    socket.onopen = callback
-  },
-
-  /**
-   * Observe the WebSocket server for messages
-   * @param callback
-   */
-  subscribe(callback: (message: string, why: any) => void) {
-    socket.onmessage = (event: MessageEvent<string>) => {
-      const data = JSON.parse(event.data) as { content: string, why: any }
-      callback(data.content, data.why)
+  onOpen(onOpen: (event: Event) => void, onError: (err: Error) => void) {
+    socket.onerror = () => {
+      onError(new Error('WebSocketConnectionError'))
     }
+    socket.onopen = onOpen
   },
 
   /**
-   * Observe the WebSocket server for connection errors
-   * @param callback
+   * Observes the WebSocket connection for incoming messages.
+   * It accepts two callbacks: one for when a message is received and one for when an error occurs.
    */
-  onError(callback: (error: any) => void) {
-    socket.onerror = callback
+  subscribe(onSuccess: (message: string, why: any) => void, onError: (err: Error) => void) {
+    socket.onmessage = (event: MessageEvent<string>) => {
+      const data = JSON.parse(event.data) as APIMessageServiceError | APIMessageServiceResponse
+
+      if (isAPIMessageServiceResponse(data)) {
+        onSuccess(data.content, data.why)
+        return
+      }
+
+      onError(new Error(data.code))
+    }
   },
 
   /**
@@ -60,5 +63,13 @@ export const MessagesService = Object.freeze({
     socket.close()
   }
 })
+
+/**
+ * MessageServiceErrorCodes is a map of error codes to error messages.
+ */
+export enum MessageServiceErrorCodes {
+  'WebSocketConnectionError' = 'Something went wrong while connecting to the server. Please try again later',
+  'APIError' = 'Something went wrong while sending your message. Please try refreshing the page',
+}
 
 export default MessagesService

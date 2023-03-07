@@ -11,7 +11,7 @@ import style from './MessageList.module.scss'
  * Displays a list of chat messages.
  * Automatically scrolls to the bottom when new messages are added.
  */
-const MessageList: FC<MessageListProps> = ({ messages, isLoading, className, ...rest }) => {
+const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, className, ...rest }) => {
   const classList = clsx(style.messages, className)
   const elRef = useRef<HTMLDivElement>(null)
 
@@ -39,7 +39,8 @@ const MessageList: FC<MessageListProps> = ({ messages, isLoading, className, ...
           <MessageBox key={message.id} text={message.text} sender={message.sender} />
         ))}
       </div>
-      {isLoading && (<LoadingLabel className={style.thinking}>Cheshire cat is thinking</LoadingLabel>)}
+      {error && (<p className={style.error}>{error}</p>)}
+      {isLoading && !error && (<LoadingLabel className={style.thinking}>Cheshire cat is thinking</LoadingLabel>)}
     </div>
   )
 }
@@ -53,6 +54,10 @@ export interface MessageListProps extends CommonProps {
    * Whether the list is loading
    */
   isLoading?: boolean
+  /**
+   * The error message to display
+   */
+  error?: string
 }
 
 export default React.memo(MessageList)

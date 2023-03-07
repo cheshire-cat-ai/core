@@ -1,9 +1,10 @@
 import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import MessagesService from '@services/messages'
+import MessagesService, { MessageServiceErrorCodes } from '@services/messages'
 import { addMessage, setError, setReady, toggleLoading } from '@store/messages/slice'
 import { selectCurrentMessages, selectDefaultMessages, selectError, selectIsReady, selectIsSendingMessage } from '@store/messages/selectors'
 import { now, uniqueId } from '@utils/commons'
+import { getErrorMessage, getErrorMessageFromErrorCodeMap } from '@utils/errors'
 
 /**
  * A custom hook that provides the messages service to the app.
@@ -25,26 +26,37 @@ const useMessagesService = () => {
 
   /**
    * Subscribes to the messages service on component mount
-   * and dispatches the received messages to the store
+   * and dispatches the received messages to the store.
+   * It also dispatches the error to the store if an error occurs.
    */
   useEffect(() => {
-    MessagesService.onOpen(() => dispatch(setReady()))
-
-    MessagesService.subscribe((nextMessage, why) => {
+    /**
+     * Dispatches the received message to the store
+     */
+    const onMessage = (message: string, why: any) => {
       dispatch(toggleLoading())
 
       dispatch(addMessage({
         id: uniqueId(),
-        text: nextMessage,
+        text: message,
         sender: 'bot',
         timestamp: now(),
         why
       }))
-    })
+    }
 
-    MessagesService.onError((error) => {
-      dispatch(setError(error))
-    })
+    /**
+     * Dispatches the error to the store
+     */
+    const onError = (error: Error) => {
+      const errorCode = getErrorMessage(error)
+      const errorMessage = getErrorMessageFromErrorCodeMap(MessageServiceErrorCodes, errorCode)
+      dispatch(setError(errorMessage))
+    }
+
+    MessagesService.onOpen(() => dispatch(setReady()), onError)
+    MessagesService.subscribe(onMessage, onError)
+
     return MessagesService.unsubscribe
   }, [dispatch])
 

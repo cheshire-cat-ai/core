@@ -4,8 +4,9 @@ import clsx from 'clsx'
 import style from './DefaultMessagesListList.module.scss'
 
 /**
- * Displays the provided list of messages in a different fashion.
- * This component is used to display the list of default messages.
+ * Displays a list of default messages that the user can click on to send.
+ * It is used to display a list of generic questions that the user can ask
+ * the Cheshire Cat.
  */
 const DefaultMessagesList: FC<DefaultMessagesListProps> = (props) => {
   const { messages, onMessageClick, className, ...rest } = props

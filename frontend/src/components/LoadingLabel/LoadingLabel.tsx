@@ -5,7 +5,8 @@ import clsx from 'clsx'
 import style from './LoadingLabel.module.scss'
 
 /**
- * A stateless spinner component.
+ * A component that displays the provided message with animated dots.
+ * It is generally used to indicate that the app is loading something.
  */
 const LoadingLabel: FC<LoadingLabelProps> = ({ className, children, ...rest }) => {
   const classList = clsx(style.loadingLabel, className)

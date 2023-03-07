@@ -2,32 +2,45 @@ import React, { type FC, useCallback, useState } from 'react'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
+import LoadingLabel from '@components/LoadingLabel'
 import useMessagesService from '@hooks/useMessagesService'
 
 import style from './Home.module.scss'
 
 /**
- * Displays the chat interface.
+ * Displays the chat interface and handles the user's input.
  */
 const Home: FC = () => {
-  const { messages, dispatchMessage, isSending, defaultMessages } = useMessagesService()
-  const [userMessage, setUserMessage] = useState('')
+  const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
+  const [inputVal, setInputVal] = useState('')
+  const inputDisabled = isSending || !isReady
 
+  /**
+   * When the user clicks on a default message, it will be appended to the input value state
+   */
   const onQuestionClick = useCallback((question: string) => {
-    const message = `${userMessage} ${question}`.trim()
-    setUserMessage(message)
-  }, [userMessage])
+    const message = `${inputVal} ${question}`.trim()
+    setInputVal(message)
+  }, [inputVal])
 
+  /**
+   * Dispatches the user's message to the service.
+   */
   const sendMessage = useCallback((message: string) => {
-    setUserMessage('')
+    setInputVal('')
     dispatchMessage(message)
   }, [dispatchMessage])
 
   return (
     <div className={style.home}>
-      {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
-      {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} className={style.messages} />)}
-      <MessageInput value={userMessage} onChange={setUserMessage} onSubmit={sendMessage} disabled={isSending} className={style.input} />
+      {!isReady && (<LoadingLabel>Getting ready</LoadingLabel>)}
+      {isReady && (
+        <>
+          {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
+          {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
+        </>
+      )}
+      <MessageInput value={inputVal} onChange={setInputVal} onSubmit={sendMessage} disabled={inputDisabled} className={style.input} />
     </div>
   )
 }
