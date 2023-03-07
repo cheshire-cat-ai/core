@@ -1,3 +1,8 @@
+/**
+ * This module defines and export a collection of utility functions that are commonly used throughout the application.
+ * The functions are grouped by their purpose and exported as named exports.
+ */
+
 import { createElement, isValidElement, type ReactElement } from 'react'
 import { type ComponentRenderer } from '@models/commons'
 

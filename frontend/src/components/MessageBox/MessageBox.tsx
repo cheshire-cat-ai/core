@@ -7,6 +7,7 @@ import style from './MessageBox.module.scss'
 
 /**
  * Displays a single chat message.
+ * It is used to display both the user's messages and the Cheshire Cat's responses.
  */
 const MessageBox: FC<MessageBoxProps> = ({ text, sender, className, ...rest }) => {
   const isBot = sender === 'bot'

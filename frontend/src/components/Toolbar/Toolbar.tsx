@@ -2,9 +2,9 @@ import React, { type FC, type ReactElement } from 'react'
 import clsx from 'clsx'
 import SettingsIcon from './settings.svg'
 import { type CommonProps, type ComponentRenderer } from '@models/commons'
+import { handleReactElementOrRenderer } from '@utils/commons'
 
 import style from './Toolbar.module.scss'
-import { handleReactElementOrRenderer } from '@utils/commons'
 
 /**
  * Renders the header's toolbar component.

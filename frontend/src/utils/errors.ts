@@ -1,3 +1,7 @@
+/**
+ * This module defines and export a collection of functions that are related to error management or error manipulation
+ * commonly used throughout the application.
+ */
 import { isError, isErrorLikeObject, isString } from '@utils/typeGuards'
 
 /**

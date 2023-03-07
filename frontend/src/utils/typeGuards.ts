@@ -1,3 +1,8 @@
+/**
+ * This module defines and export a collection of Typescript type guards commonly used throughout the
+ * application.
+ */
+
 import { type APIMessageServiceResponse } from '@models/Message'
 
 /**
