@@ -1,6 +1,5 @@
 import { createElement, isValidElement, type ReactElement } from 'react'
 import { type ComponentRenderer } from '@models/commons'
-import { isError, isErrorLikeObject, isString } from '@utils/typeGuards'
 
 let ids = 0
 /**
@@ -10,17 +9,6 @@ let ids = 0
 export const uniqueId = () => {
   ids += 1
   return ids
-}
-
-/**
- * Returns the error message from an error or error-like object.
- * If the value is not an error or error-like object, the unknownError argument is returned.
- */
-export const getErrorMessage = (error: unknown, unknownError = 'Unknown error') => {
-  if (isString(error)) return error
-  if (isError(error) || isErrorLikeObject(error)) return error.message
-
-  return unknownError
 }
 
 /**

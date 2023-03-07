@@ -2,6 +2,7 @@ import React, { type FC, useCallback, useState } from 'react'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
+import LoadingLabel from '@components/LoadingLabel'
 import useMessagesService from '@hooks/useMessagesService'
 
 import style from './Home.module.scss'
@@ -10,7 +11,7 @@ import style from './Home.module.scss'
  * Displays the chat interface and handles the user's input.
  */
 const Home: FC = () => {
-  const { messages, dispatchMessage, isSending, defaultMessages, isReady } = useMessagesService()
+  const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
   const [inputVal, setInputVal] = useState('')
   const inputDisabled = isSending || !isReady
 
@@ -32,8 +33,13 @@ const Home: FC = () => {
 
   return (
     <div className={style.home}>
-      {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
-      {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} className={style.messages} />)}
+      {!isReady && (<LoadingLabel>Getting ready</LoadingLabel>)}
+      {isReady && (
+        <>
+          {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
+          {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
+        </>
+      )}
       <MessageInput value={inputVal} onChange={setInputVal} onSubmit={sendMessage} disabled={inputDisabled} className={style.input} />
     </div>
   )

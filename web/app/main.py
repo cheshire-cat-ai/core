@@ -112,6 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # build data structure for output (response and why with memories)
             final_output = {
+                'error': False,
                 'content': cat_message['output'],
                 'why'    : {
                     'intermediate_steps' : cat_message['intermediate_steps'],
@@ -130,6 +131,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
         # send error to user
         await websocket.send_json({
-            'content': 'Error: I just lost my head. Please refresh.',
-            'why'    : {}, # TODO: pass error name? Danger zone
+            'error': True,
+            'code': type(e).__name__,
         })

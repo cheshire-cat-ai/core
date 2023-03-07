@@ -1,7 +1,8 @@
 import React from 'react'
 import { Outlet, useRouteError } from 'react-router-dom'
 import Toolbar from '@components/Toolbar'
-import { EmptyReactElement, getErrorMessage } from '@utils/commons'
+import { EmptyReactElement } from '@utils/commons'
+import { getErrorMessage } from '@utils/errors'
 
 import style from './Scaffold.module.scss'
 

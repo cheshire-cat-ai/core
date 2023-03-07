@@ -43,8 +43,9 @@ const MessageInput: FC<ChatInputProps> = (props) => {
   const handleKeydown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const { key, keyCode } = event
     const isEnter = key === 'Enter' || keyCode === 13
+    const isShiftKey = event.shiftKey
 
-    if (isEnter && onSubmit && value) {
+    if (isEnter && !isShiftKey && onSubmit && value) {
       event.preventDefault()
       onSubmit(value)
       setIsTwoLines(false)
@@ -64,8 +65,9 @@ const MessageInput: FC<ChatInputProps> = (props) => {
     if (target && value) {
       const letterWidth = 7.95
       const isMultiLine = letterWidth * value.length > target.offsetWidth
+      const hasLineBreak = !!(/\r|\n/.exec(value))
 
-      setIsTwoLines(isMultiLine)
+      setIsTwoLines(isMultiLine || hasLineBreak)
     }
   }, [value])
 
