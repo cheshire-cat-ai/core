@@ -3,7 +3,7 @@ import { type MessagesState } from '@store/messages/types'
 import { type Message } from '@models/Message'
 
 const initialState: MessagesState = {
-  ready: false,
+  ready: true,
   loading: false,
   messages: [],
   defaultMessages: [
