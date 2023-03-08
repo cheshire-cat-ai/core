@@ -1,3 +1,4 @@
+import traceback
 import os
 import time
 from pprint import pprint
@@ -154,6 +155,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:#WebSocketDisconnect as e:
 
         log(e)
+        traceback.print_exc()
 
         # send error to user
         await websocket.send_json({
