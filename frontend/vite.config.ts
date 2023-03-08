@@ -5,6 +5,7 @@ import postCSSPresetEnv from 'postcss-preset-env'
 import autoprefixer from 'autoprefixer'
 import postCSSPxToRem from 'postcss-pxtorem'
 import svgr from 'vite-plugin-svgr'
+import vitePluginFaviconsInject from 'vite-plugin-favicons-inject'
 
 const rootDir = resolve(__dirname)
 
@@ -53,6 +54,7 @@ export default defineConfig({
   },
   plugins: [
     svgr({ exportAsDefault: true }),
+    vitePluginFaviconsInject('./src/logo.svg'),
     react()
   ]
 })

@@ -10,6 +10,30 @@ from .utils import log
 class AgentManager:
 
     llm = None
+    tools = None
+    tool_names_agent = None
+    prefix_prompt = '''This is a conversation between a human and an intelligent robot cat that passes the Turing test. The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
+
+Conversation:
+{chat_history}Human: {input}
+
+What would the AI reply? Answer the user needs as best you can, according to the provided recent conversation and relevant context.
+
+Context:
+- Things Human said in the past:{episodic_memory}
+- Documents containing relevant information:{declarative_memory}
+
+Put particular attention to past conversation and context.
+To reply you have access to the following tools:
+'''
+    suffix_prompt = '''{agent_scratchpad}'''
+    input_variables = [
+                        'input',
+                        'chat_history',
+                        'episodic_memory',
+                        'declarative_memory',
+                        'agent_scratchpad'
+                    ]
 
     def __init__(self, llm=None) -> None:
         AgentManager.llm = llm
@@ -34,43 +58,54 @@ class AgentManager:
 
     
     @classmethod
-    def get_agent_executor(cls, tool_names: List[str], return_intermediate_steps=False):
-
+    def set_tools(cls, tool_names: List[str]):
 
         # tools
-        tools = load_tools(tool_names, llm=AgentManager.llm)
-        tool_names_agent = [t.name for t in tools] # naming is different for th eagent? don't know why
+        AgentManager.tools = load_tools(tool_names, llm=AgentManager.llm)
+        AgentManager.tool_names_agent = [t.name for t in AgentManager.tools] # naming is different for th eagent? don't know why
 
+    
+    @classmethod
+    def get_agent_executor(cls, return_intermediate_steps:bool=False, prefix_prompt:Union[str,None]=None, suffix_prompt:Union[str,None]=None, input_variables:Union[List[str],None]=None):
+        """
+        use am.set_tools(['llm-math', 'python_repl']) for set the tools you prefer, if you don't use the set_tools automatically will be setted 
+        AgentManager.available_tools = [
+            "python_repl",
+            "requests",
+            "terminal",
+            "llm-math",
+        ]
 
-        # main prompt
-        prefix = '''This is a conversation between a human and an intelligent robot cat that passes the Turing test. The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
+        Args:
+            return_intermediate_steps (bool, optional): _description_. Defaults to False.
+            prefix_prompt (Union[str,None], optional): _description_. Defaults to None.
+            suffix_prompt (Union[str,None], optional): _description_. Defaults to None.
+            input_variables (Union[List[str],None], optional): _description_. Defaults to None.
 
-Conversation:
-{chat_history}Human: {input}
+        Returns:
+            _type_: agent executor
+        """
+        # set the tools list
+        if AgentManager.tools == None or AgentManager.tool_names_agent:
+            AgentManager.set_tools(AgentManager.available_tools)
 
-What would the AI reply? Answer the user needs as best you can, according to the provided recent conversation and relevant context.
+        # prefix prompt
+        if prefix_prompt == None:
+            prefix_prompt = AgentManager.prefix_prompt
 
-Context:
-- Things Human said in the past:{episodic_memory}
-- Documents containing relevant information:{declarative_memory}
+        # suffix prompt
+        if suffix_prompt == None:
+            suffix_prompt = AgentManager.suffix_prompt
 
-Put particular attention to past conversation and context.
-To reply you have access to the following tools:
-'''
-
-        suffix = '''{agent_scratchpad}'''
+        # input_variables
+        if input_variables == None:
+            input_variables = AgentManager.input_variables
 
         prompt = ConversationalAgent.create_prompt(
-            tools,
-            prefix=prefix,
-            suffix=suffix,
-            input_variables=[
-                'input',
-                'chat_history',
-                'episodic_memory',
-                'declarative_memory',
-                'agent_scratchpad'
-            ],
+            AgentManager.tools,
+            prefix=prefix_prompt,
+            suffix=suffix_prompt,
+            input_variables=input_variables,
         )
 
         log('Using prompt template:')
@@ -86,14 +121,14 @@ To reply you have access to the following tools:
         # init agent
         agent = ConversationalAgent(
             llm_chain=chain,
-            allowed_tools=tool_names_agent,
+            allowed_tools=AgentManager.tool_names_agent,
             verbose=True
         )
 
         # agent executor
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
-            tools=tools,
+            tools=AgentManager.tools,
             return_intermediate_steps=return_intermediate_steps,
             verbose=True
         )
