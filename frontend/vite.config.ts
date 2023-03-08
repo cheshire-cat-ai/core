@@ -54,7 +54,6 @@ export default defineConfig({
   },
   plugins: [
     svgr({ exportAsDefault: true }),
-    vitePluginFaviconsInject('./src/logo.svg'),
     react()
   ]
 })
