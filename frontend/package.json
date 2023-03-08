@@ -6,7 +6,7 @@
   "author": "Antonio Rù <antonio.ru000@gmail.com>",
   "scripts": {
     "start": "npx http-server ./dist -p 3000",
-    "dev": "vite",
+    "dev": "vite --no-open",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

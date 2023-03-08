@@ -38,6 +38,12 @@ services:
       - web
     ports:
       - 3000:3000
+    volumes:
+      - ./frontend:/app
+    command:
+      - npm
+      - run
+      - dev
     restart: unless-stopped
 
   vector-memory:

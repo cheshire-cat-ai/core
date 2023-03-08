@@ -11,6 +11,6 @@ RUN npm install
 COPY frontend .
 RUN npm run build
 
-# Expose port 3000 and start application
+# Expose port 3000 and build + start application
 EXPOSE 3000
 CMD [ "npm", "start" ]
