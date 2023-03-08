@@ -47,8 +47,34 @@ declarative_memory = get_vector_store('documents', embedder=embedder)
 # TODO: don't know if it is better to use different collections or just different metadata
 
 ### Agent
+
+# let's cutomize .. .every aspect of agent prompt
+prefix_prompt = '''This is a conversation between a human and an intelligent robot cat that passes the Turing test. The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
+
+Conversation:
+{chat_history}Human: {input}
+
+What would the AI reply? Answer the user needs as best you can, according to the provided recent conversation and relevant context.
+
+Context:
+- Things Human said in the past:{episodic_memory}
+- Documents containing relevant information:{declarative_memory}
+
+Put particular attention to past conversation and context.
+To reply you have access to the following tools:
+'''
+suffix_prompt = '''{agent_scratchpad}'''
+input_variables = [
+                    'input',
+                    'chat_history',
+                    'episodic_memory',
+                    'declarative_memory',
+                    'agent_scratchpad'
+                ]
+
 am = AgentManager.singleton(llm=llm)
-agent_executor = am.get_agent_executor(['llm-math', 'python_repl'], return_intermediate_steps=True)
+am.set_tools(['llm-math', 'python_repl']) 
+agent_executor = am.get_agent_executor(return_intermediate_steps=True, prefix_prompt=prefix_prompt, suffix_prompt=suffix_prompt, input_variables=input_variables)
 
 
 ### API endpoints
