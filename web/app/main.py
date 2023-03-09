@@ -6,11 +6,13 @@ import json
 
 from typing import Union
 
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile
 from fastapi.responses import HTMLResponse
 
 import langchain
+from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAIChat
+from langchain.chains import LLMChain
 from langchain.embeddings import OpenAIEmbeddings
 
 from langchain.cache import InMemoryCache # is it worth it to use a sqlite?
@@ -42,6 +44,24 @@ embedder = OpenAIEmbeddings(
 )
 
 
+# HyDE chain
+hypothesis_prompt = PromptTemplate(
+    input_variables=['question'],
+    template='''What could be a plausible answer to the following question? Be concise and invent the answer even if you don't know it.
+
+Question:
+{question}
+
+Answer:
+'''
+)
+hypothetis_chain = LLMChain(
+    prompt=hypothesis_prompt,
+    llm=llm,
+    verbose=True
+)
+
+
 ### Memory
 episodic_memory    = get_vector_store('utterances', embedder=embedder)
 declarative_memory = get_vector_store('documents', embedder=embedder)
@@ -49,7 +69,7 @@ declarative_memory = get_vector_store('documents', embedder=embedder)
 
 ### Agent
 
-# let's cutomize .. .every aspect of agent prompt
+# let's cutomize ...every aspect of agent prompt
 prefix_prompt = '''This is a conversation between a human and an intelligent robot cat that passes the Turing test. The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
 
 Conversation:
@@ -80,17 +100,17 @@ agent_executor = am.get_agent_executor(return_intermediate_steps=True, prefix_pr
 
 ### API endpoints
 
-app = FastAPI()
+cheshire_cat_api = FastAPI()
 
 
-@app.get("/") 
+@cheshire_cat_api.get("/") 
 def home():
     return {
-        'status': 'ok'
+        'status': "We're all mad here, dear!"
     }
 
 
-@app.websocket("/ws")
+@cheshire_cat_api.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
 
     await websocket.accept()
@@ -104,13 +124,17 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # message received from user
             user_message = await websocket.receive_text()
+            log(user_message)
             
-            # retrieve past memories
+            # retrieve conversation memories
             episodic_memory_vectors = episodic_memory.max_marginal_relevance_search(user_message) # TODO: customize k and fetch_k
             episodic_memory_text = [m.page_content for m in episodic_memory_vectors]
             episodic_memory_content = memories_separator + memories_separator.join(episodic_memory_text) # TODO: take away duplicates; insert time information (e.g "two days ago")
             
-            declarative_memory_content = '' # TODO: search in uploaded documents!
+            # retrieve from uploaded documents
+            declarative_memory_vectors = declarative_memory.max_marginal_relevance_search(user_message) # TODO: customize k and fetch_k
+            declarative_memory_text = [m.page_content for m in declarative_memory_vectors]
+            declarative_memory_content = memories_separator + memories_separator.join(declarative_memory_text) # TODO: take away duplicates; insert SOURCE information
             
             # reply with agent
             cat_message = agent_executor({
@@ -127,13 +151,13 @@ async def websocket_endpoint(websocket: WebSocket):
             
             # store user message in episodic memory
             # TODO: also embed HyDE style
-            # TODO: vectorize and store conversation chunks
+            # TODO: vectorize and store conversation chunks (not raw dialog, but summarization)
             vector_ids = episodic_memory.add_texts(
                 [user_message],
                 [{
                     #'who' : 'user', # TODO: is this necessary if there is a dedicated collection?
                     'when': time.time(),
-                    'text': user_message, 
+                    'text': user_message,
                 }]
             )
 
@@ -162,3 +186,58 @@ async def websocket_endpoint(websocket: WebSocket):
             'error': True,
             'code': type(e).__name__,
         })
+
+# TODO: should we receive files also via websocket?
+@cheshire_cat_api.post("/rabbithole/") 
+async def rabbithole_upload(file: UploadFile):
+
+    # list of admitted MIME types
+    admitted_mime_types = [
+        'text/plain'
+    ]
+    
+    # check id MIME type of uploaded file is supported
+    if file.content_type not in admitted_mime_types:
+        return {
+            'error': f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
+        }
+
+    # read file content
+    # TODO: manage exceptions
+    content = await file.read()
+    content = str(content, 'utf-8')
+
+
+    # TODO: use langchain splitters
+    # TODO: also use an overlap window between docs and summarizations
+    docs = content.split('\n\n')
+    
+    # remove duplicates
+    docs = list(set(docs))
+    docs.remove('')
+    log(f'Preparing to memorize {len(docs)} vectors')
+
+    # TODO: add metadata to the content itself citing the source??
+
+    # classic embed
+    for doc in docs:
+        id = episodic_memory.add_texts( # TODO: search in uploaded documents!
+            [doc],
+            [{
+                'who' : 'user', # TODO: is this necessary if there is a dedicated collection?
+                'when': time.time(),
+                'text': doc,
+                # 'source': ... 
+            }]
+        )
+        time.sleep(0.5)
+
+
+    # TODO: HyDE embed    
+
+    # reply to client
+    # TODO: reply first, and then embed docs async
+    return {
+        'filename': file.filename,
+        'content-type': file.content_type,
+    }

@@ -44,7 +44,7 @@ To reply you have access to the following tools:
         # a minimal list of ready available langchain tools/chains. Let's start simple!
         AgentManager.available_tools = [
             "python_repl",
-            "requests",
+            #"requests",
             "terminal",
             "llm-math",
         ]
