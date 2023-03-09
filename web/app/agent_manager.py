@@ -12,9 +12,9 @@ class AgentManager:
     def __init__(self, llm, tool_names:List[str]) -> None:
         # a minimal list of ready available langchain tools/chains. Let's start simple!
         self.available_tools = [
-            "python_repl",
-            "requests",
-            "terminal",
+            #"python_repl",
+            #"requests",
+            #"terminal",
             "llm-math",
         ]
         # TODO: how to load tools/chains that require configuration or custom classes? Any chain could be loaded

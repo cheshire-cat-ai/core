@@ -94,7 +94,7 @@ input_variables = [
                 ]
 
 am = AgentManager(llm=llm, tool_names=['llm-math', 'python_repl'])
-# am.set_tools(['llm-math', 'python_repl']) 
+#am.set_tools(['llm-math', 'python_repl']) 
 agent_executor = am.get_agent_executor(return_intermediate_steps=True, prefix_prompt=prefix_prompt, suffix_prompt=suffix_prompt, input_variables=input_variables)
 
 
