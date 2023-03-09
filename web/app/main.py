@@ -63,7 +63,7 @@ hypothetis_chain = LLMChain(
 
 
 ### Memory
-episodic_memory    = get_vector_store('utterances', embedder=embedder)
+episodic_memory    = get_vector_store('episodes', embedder=embedder)
 declarative_memory = get_vector_store('documents', embedder=embedder)
 # TODO: don't know if it is better to use different collections or just different metadata
 
@@ -118,7 +118,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
 
         history = ''
-        memories_separator = '\n  -'
+        memories_separator = '\n  - '
 
         while True:
 
@@ -127,13 +127,15 @@ async def websocket_endpoint(websocket: WebSocket):
             log(user_message)
             
             # retrieve conversation memories
+            # TODO: HyDE
             episodic_memory_vectors = episodic_memory.max_marginal_relevance_search(user_message) # TODO: customize k and fetch_k
-            episodic_memory_text = [m.page_content for m in episodic_memory_vectors]
+            episodic_memory_text = [m.page_content.replace('\n', '. ') for m in episodic_memory_vectors]
             episodic_memory_content = memories_separator + memories_separator.join(episodic_memory_text) # TODO: take away duplicates; insert time information (e.g "two days ago")
             
             # retrieve from uploaded documents
+            # TODO: HyDE
             declarative_memory_vectors = declarative_memory.max_marginal_relevance_search(user_message) # TODO: customize k and fetch_k
-            declarative_memory_text = [m.page_content for m in declarative_memory_vectors]
+            declarative_memory_text = [m.page_content.replace('\n', '. ') for m in declarative_memory_vectors]
             declarative_memory_content = memories_separator + memories_separator.join(declarative_memory_text) # TODO: take away duplicates; insert SOURCE information
             
             # reply with agent
@@ -155,7 +157,7 @@ async def websocket_endpoint(websocket: WebSocket):
             vector_ids = episodic_memory.add_texts(
                 [user_message],
                 [{
-                    #'who' : 'user', # TODO: is this necessary if there is a dedicated collection?
+                    'source' : 'user',
                     'when': time.time(),
                     'text': user_message,
                 }]
@@ -168,7 +170,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 'why'    : {
                     'intermediate_steps' : cat_message['intermediate_steps'],
                     'episodic_memory'    : episodic_memory_text,
-                    'declarative_memory' : declarative_memory_content,
+                    'declarative_memory' : declarative_memory_content, #TODO: add sources
                 },
             }
 
@@ -186,6 +188,7 @@ async def websocket_endpoint(websocket: WebSocket):
             'error': True,
             'code': type(e).__name__,
         })
+
 
 # TODO: should we receive files also via websocket?
 @cheshire_cat_api.post("/rabbithole/") 
@@ -221,16 +224,16 @@ async def rabbithole_upload(file: UploadFile):
 
     # classic embed
     for doc in docs:
-        id = episodic_memory.add_texts( # TODO: search in uploaded documents!
+        id = declarative_memory.add_texts( # TODO: search in uploaded documents!
             [doc],
             [{
-                'who' : 'user', # TODO: is this necessary if there is a dedicated collection?
+                'source' : 'file.filename',
                 'when': time.time(),
                 'text': doc,
-                # 'source': ... 
             }]
         )
-        time.sleep(0.5)
+        log(f'Inserted into memory:\n{doc}')
+        time.sleep(0.3)
 
 
     # TODO: HyDE embed    
