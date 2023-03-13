@@ -1,6 +1,9 @@
 
 FROM tiangolo/uvicorn-gunicorn:python3.9
 
+# RUN apt-get update -y
+# RUN apt-get install -y poppler-utils tesseract-ocr libreoffice
+
 RUN pip install --upgrade --no-cache-dir \
     fastapi==0.92.0 \
     websockets==10.4 \
@@ -9,5 +12,6 @@ RUN pip install --upgrade --no-cache-dir \
     scikit-learn==1.2.1 \
     #transformers==4.26.1 add later when using local models \ 
     langchain==0.0.98 \
+    unstructured[local-inference] \
     qdrant_client==1.0.1 \
     openai==0.27.0

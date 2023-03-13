@@ -15,6 +15,8 @@ from langchain.llms import OpenAIChat
 from langchain.chains import LLMChain
 from langchain.embeddings import OpenAIEmbeddings
 
+from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
+
 from langchain.cache import InMemoryCache # is it worth it to use a sqlite?
 langchain.llm_cache = InMemoryCache()
 
@@ -26,7 +28,6 @@ if not 'OPENAI_KEY' in os.environ:
 from .utils import log
 from .agent_manager import AgentManager
 from .memory import get_vector_store
-
 
 #### Large Language Model
 # TODO: should be configurable via REST API
@@ -194,10 +195,14 @@ async def websocket_endpoint(websocket: WebSocket):
 @cheshire_cat_api.post("/rabbithole/") 
 async def rabbithole_upload(file: UploadFile):
 
+    log(file.content_type)
+
     # list of admitted MIME types
     admitted_mime_types = [
-        'text/plain'
+        'text/plain',
+        'application/pdf'
     ]
+    
     
     # check id MIME type of uploaded file is supported
     if file.content_type not in admitted_mime_types:
@@ -208,16 +213,50 @@ async def rabbithole_upload(file: UploadFile):
     # read file content
     # TODO: manage exceptions
     content = await file.read()
-    content = str(content, 'utf-8')
-
-
-    # TODO: use langchain splitters
-    # TODO: also use an overlap window between docs and summarizations
-    docs = content.split('\n\n')
     
+    import tempfile
+    temp_name = next(tempfile._get_candidate_names())
+    
+    # Open file in binary write mode
+    binary_file = open(temp_name, "wb")
+    
+    # Write bytes to file
+    binary_file.write(content)
+    
+    # Close file
+    binary_file.flush()
+    binary_file.close()
+
+    if file.content_type == 'text/plain':
+        # content = str(content, 'utf-8')
+        # TODO: use langchain splitters
+        # TODO: also use an overlap window between docs and summarizations
+        # docs = content.split('\n\n')
+        loader = UnstructuredFileLoader(f"./{temp_name}")        
+        data = loader.load()
+        
+    if file.content_type == 'application/pdf':
+        # Manage the byte stram
+        loader = PDFMinerLoader(f"./{temp_name}")
+        data = loader.load()
+        
+    # delete file
+    os.remove(f"./{temp_name}")
+    log(len(data))
+    
+    docs = []
+    # classic embed
+    for doc in data:
+        # log(dir(doc)) #.split_text('\n')
+        a = doc.dict()
+        docs = docs + [row.strip() for row in a['page_content'].split('\n')]
+        
+    log(f'Preparing to clean {len(docs)} vectors')
+
     # remove duplicates
     docs = list(set(docs))
-    docs.remove('')
+    if '' in docs:
+        docs.remove('')
     log(f'Preparing to memorize {len(docs)} vectors')
 
     # TODO: add metadata to the content itself citing the source??
@@ -240,6 +279,9 @@ async def rabbithole_upload(file: UploadFile):
 
     # reply to client
     # TODO: reply first, and then embed docs async
+            
+
+
     return {
         'filename': file.filename,
         'content-type': file.content_type,
