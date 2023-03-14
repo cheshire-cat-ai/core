@@ -22,10 +22,20 @@ if not 'OPENAI_KEY' in os.environ:
     raise Exception('Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"')
 
 
-from .utils import log
-from .rabbit_hole import ingest_file
-from .agent_manager import AgentManager
-from .memory import get_vector_store
+from cat.utils import log
+from cat.rabbit_hole import ingest_file
+from cat.agent_manager import AgentManager
+from cat.memory import get_vector_store
+
+
+import glob
+import importlib
+importlib.import_module('cat.plugins.default') 
+
+from cat.plugins.default import prefix
+log(prefix())
+
+
 
 #### Large Language Model
 # TODO: should be configurable via REST API

@@ -4,7 +4,7 @@ from pprint import pprint
 from langchain.chains import LLMChain
 from langchain.agents import load_tools, Tool, AgentExecutor, ConversationalAgent
 
-from .utils import log
+from cat.utils import log
 
 
 class AgentManager:

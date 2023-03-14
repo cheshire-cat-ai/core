@@ -8,7 +8,7 @@ from fastapi import UploadFile
 
 from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
 
-from .utils import log
+from cat.utils import log
 
 
 def ingest_file(file: UploadFile, declarative_memory):
