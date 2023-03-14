@@ -4,14 +4,12 @@ import os
 import time
 
 from fastapi import UploadFile
-
-
 from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
 
 from cat.utils import log
 
 
-def ingest_file(file: UploadFile, declarative_memory):
+def ingest_file(file: UploadFile, ccat):
 
     # read file content
     #content = file.read()
@@ -60,21 +58,18 @@ def ingest_file(file: UploadFile, declarative_memory):
         docs.remove('')
     log(f'Preparing to memorize {len(docs)} vectors')
 
-    # TODO: add metadata to the content itself citing the source??
-
     # classic embed
     for doc in docs:
-        id = declarative_memory.add_texts( # TODO: search in uploaded documents!
+        id = ccat.declarative_memory.add_texts(
             [doc],
             [{
-                'source' : 'file.filename',
+                'source' : file.filename,
                 'when': time.time(),
                 'text': doc,
             }]
         )
         log(f'Inserted into memory:\n{doc}')
         time.sleep(0.3)
-
 
     # TODO: HyDE embed    
 
