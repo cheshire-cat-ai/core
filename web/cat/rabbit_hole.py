@@ -1,76 +1,68 @@
-
-import tempfile
 import os
 import time
+import tempfile
+from typing import List
 
 from fastapi import UploadFile
-from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
-
 from cat.utils import log
+from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
 
 
 def ingest_file(file: UploadFile, ccat):
+    # Create temporary file
+    temp_file = tempfile.NamedTemporaryFile(dir=".", delete=False)
+    temp_name = temp_file.name
 
-    # read file content
-    #content = file.read()
-    
-    temp_name = next(tempfile._get_candidate_names())
-    
-    # Open file in binary write mode
-    binary_file = open(temp_name, "wb")
-    
-    # Write bytes to file
-    binary_file.write(file.file.read())
-    
-    # Close file
-    binary_file.flush()
-    binary_file.close()
+    # Open temp file in binary write mode
+    with open(temp_name, "wb") as temp_binary_file:
+        # Write bytes to file
+        temp_binary_file.write(file.file.read())
 
-    if file.content_type == 'text/plain':
+    if file.content_type == "text/plain":
         # content = str(content, 'utf-8')
         # TODO: use langchain splitters
         # TODO: also use an overlap window between docs and summarizations
         # docs = content.split('\n\n')
-        loader = UnstructuredFileLoader(f"./{temp_name}")        
+        loader = UnstructuredFileLoader(temp_name)
         data = loader.load()
-        
-    if file.content_type == 'application/pdf':
+
+    if file.content_type == "application/pdf":
         # Manage the byte stram
-        loader = PDFMinerLoader(f"./{temp_name}")
+        loader = PDFMinerLoader(temp_name)
         data = loader.load()
-        
+
     # delete file
-    os.remove(f"./{temp_name}")
+    os.remove(temp_name)
     log(len(data))
-    
-    docs = []
-    # classic embed
+
+    docs: List = []
+    # split content
     for doc in data:
-        # log(dir(doc)) #.split_text('\n')
-        a = doc.dict()
-        docs = docs + [row.strip() for row in a['page_content'].split('\n')]
-        
-    log(f'Preparing to clean {len(docs)} vectors')
+        docs = docs + [row.strip() for row in doc.page_content.split("\n\n")]
+
+    log(f"Preparing to clean {len(docs)} vectors")
 
     # remove duplicates
     docs = list(set(docs))
-    if '' in docs:
-        docs.remove('')
-    log(f'Preparing to memorize {len(docs)} vectors')
+    if "" in docs:
+        docs.remove("")
+    log(f"Preparing to memorize {len(docs)} vectors")
 
     # classic embed
-    for doc in docs:
-        id = ccat.declarative_memory.add_texts(
+    for d, doc in enumerate(docs):
+        _ = ccat.declarative_memory.add_texts(
             [doc],
-            [{
-                'source' : file.filename,
-                'when': time.time(),
-                'text': doc,
-            }]
+            [
+                {
+                    "source": file.filename,
+                    "when": time.time(),
+                    "text": doc,
+                }
+            ],
         )
-        log(f'Inserted into memory:\n{doc}')
+        log(f"Inserted into memory ({d+1}/{len(docs)}):    {doc}")
         time.sleep(0.3)
 
-    # TODO: HyDE embed    
+    log("Done uploading")  # TODO: notify client
 
-
+    # TODO: HyDE embed
