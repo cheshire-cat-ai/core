@@ -4,7 +4,7 @@ import getConfig from '../config'
  * This is a service that is used to send files to the rabbit hole.
  *
  */
-const RabbitHole = Object.freeze({
+const RabbitHoleService = Object.freeze({
   /**
    * Sends the provided file to the rabbit hole.
    */
@@ -17,4 +17,4 @@ const RabbitHole = Object.freeze({
   }
 })
 
-export default RabbitHole
+export default RabbitHoleService

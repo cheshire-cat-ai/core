@@ -5,9 +5,9 @@ import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
 import Alert from '@components/Alert'
 import useMessagesService from '@hooks/useMessagesService'
+import RabbitHoleService from '@services/rabbitHole'
 
 import style from './Home.module.scss'
-import RabbitHole from '@services/rabbitHole'
 
 /**
  * Displays the chat interface and handles the user's input.
@@ -52,7 +52,7 @@ const Home: FC = () => {
         value={inputVal}
         onChange={setInputVal}
         onUpload={(file) => {
-          RabbitHole.send(file).then(console.log).catch(console.error)
+          RabbitHoleService.send(file).then(console.log).catch(console.error)
         }}
         onSubmit={sendMessage}
         disabled={inputDisabled}
