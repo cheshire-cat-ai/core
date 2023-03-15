@@ -80,7 +80,7 @@ To reply you have access to the following tools:
             _type_: agent executor
         """
         # set the tools list
-        if len(self.tools) == 0 or self.tool_names_agent:
+        if len(self.tools) == 0 or len(self.tool_names_agent) == 0:
             self.set_tools(self.available_tools)
 
         # prefix prompt
