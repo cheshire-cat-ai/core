@@ -9,7 +9,7 @@ const RabbitHole = Object.freeze({
    * Sends the provided file to the rabbit hole.
    */
   send: async (file: File) => {
-    const endpoint = getConfig().endpoints.rabbitHole.toString()
+    const endpoint = getConfig().endpoints.rabbitHole
     const formData = new FormData()
     formData.append('file', file)
 
