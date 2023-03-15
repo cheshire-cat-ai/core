@@ -1,7 +1,7 @@
 from typing import List, Union
 
 from cat.utils import log
-from langchain.agents import AgentExecutor, ConversationalAgent  # , Tool, load_tools
+from langchain.agents import AgentExecutor, ConversationalAgent, load_tools  # , Tool
 from langchain.chains import LLMChain
 
 
@@ -18,8 +18,8 @@ class AgentManager:
         # TODO: load user created tools/chains, from a folder (like a WP plugin or a Django app)
 
         self.llm = llm
-        self.tools = None
-        self.tool_names_agent = None
+        self.tools: List = []
+        self.tool_names_agent: List = []
         self.set_tools(tool_names)
 
         self.prefix_prompt = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
@@ -47,11 +47,11 @@ To reply you have access to the following tools:
         ]
 
     def set_tools(self, tool_names: List[str]):
-        pass
-
-    #    # tools
-    #    self.tools = load_tools(tool_names, llm=self.llm)
-    #    self.tool_names_agent = [t.name for t in self.tools] # naming is different for th eagent? don't know why
+        # tools
+        self.tools = load_tools(tool_names, llm=self.llm)
+        self.tool_names_agent = [
+            t.name for t in self.tools
+        ]  # naming is different for th eagent? don't know why
 
     def get_agent_executor(
         self,
@@ -80,7 +80,7 @@ To reply you have access to the following tools:
             _type_: agent executor
         """
         # set the tools list
-        if self.tools is None or self.tool_names_agent:
+        if len(self.tools) == 0 or self.tool_names_agent:
             self.set_tools(self.available_tools)
 
         # prefix prompt
