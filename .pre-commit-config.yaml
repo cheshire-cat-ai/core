@@ -1,0 +1,36 @@
+default_stages: [ commit ]
+repos:
+   # pre-commit is also configured to format yaml, trim whitespace, add new lines,
+   # check for merge conflicts, and checks for python debug statements.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        language_version: python3.9
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies: [ "flake8-print", "flake8-builtins", "flake8-functions==0.0.4" ]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: [ "--filter-files" ]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.1.1
+    hooks:
+    -   id: mypy
+        args: [--no-strict-optional, --ignore-missing-imports]
