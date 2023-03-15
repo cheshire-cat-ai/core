@@ -1,12 +1,30 @@
+/**
+ * This module defines and exports a service that is used to send and receive messages to and from the backend.
+ * A service is a singleton object that provides a simple interface for performing backend-related tasks such as sending or receiving data.
+ */
+
 import getConfig from '../config'
 import { type APIMessageServiceError, type APIMessageServiceResponse } from '@models/Message'
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
-
-type OnConnected = (event: Event) => void
-type OnMessageHandler = (message: string, why: any) => void
-type OnErrorHandler = (err: Error) => void
+import LogService from '@services/logService'
 
 const config = getConfig()
+
+/**
+ * Defines the type for the onConnected event handler.
+ */
+type OnConnected = (event: Event) => void
+
+/**
+ * Defines the type for the onMessage event handler
+ */
+type OnMessageHandler = (message: string, why: any) => void
+
+/**
+ * Defines the type for the onError event handler
+ */
+type OnErrorHandler = (err: Error) => void
+
 /**
  * The WebSocket instance
  */
@@ -37,6 +55,7 @@ const MessagesService = Object.freeze({
 
     socket.onopen = (event) => {
       if (onConnected) {
+        LogService.print('Connected to the WebSocket server')
         onConnected(event)
         isReady = true
       }
@@ -48,6 +67,7 @@ const MessagesService = Object.freeze({
     socket.onmessage = (event: MessageEvent<string>) => {
       if (isReady && messageHandler) {
         const data = JSON.parse(event.data) as APIMessageServiceError | APIMessageServiceResponse
+        LogService.print('Received a message from the WebSocket server', data)
 
         if (isAPIMessageServiceResponse(data)) {
           messageHandler(data.content, data.why)
@@ -64,6 +84,7 @@ const MessagesService = Object.freeze({
      *  Handles the WebSocket connection errors
      */
     socket.onerror = () => {
+      LogService.print('An error occurred on the WebSocket instance')
       if (isReady && errorHandler) {
         errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
       }
