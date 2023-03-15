@@ -14,10 +14,3 @@ export const getErrorMessage = (error: unknown, unknownError = 'Unknown error') 
 
   return unknownError
 }
-
-/**
- * Safely gets the error message from a generic error map
- */
-export const getErrorMessageFromErrorCodeMap = <TErrorMap extends Record<string, string>>(map: TErrorMap, key: string, defaultErr = 'Something went wrong') => {
-  return map[key] || defaultErr
-}

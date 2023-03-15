@@ -3,7 +3,7 @@ import { type MessagesState } from '@store/messages/types'
 import { type Message } from '@models/Message'
 
 const initialState: MessagesState = {
-  ready: true,
+  ready: false,
   loading: false,
   messages: [],
   defaultMessages: [
@@ -40,24 +40,22 @@ const messagesSlice = createSlice({
      * Adds a message to the list of messages
      */
     addMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload
+
       state.error = undefined
-      state.messages.push(action.payload)
-    },
-    /**
-     * Toggles the loading state
-     */
-    toggleLoading: (state) => {
-      state.loading = !state.loading
+      state.messages.push(message)
+      state.loading = message.sender === 'bot'
     },
     /**
      * Sets the error state
      */
     setError: (state, action: PayloadAction<string>) => {
+      state.loading = false
       state.error = action.payload
     }
   }
 })
 
-export const { addMessage, setReady, setError, toggleLoading } = messagesSlice.actions
+export const { addMessage, setReady, setError } = messagesSlice.actions
 
 export default messagesSlice.reducer

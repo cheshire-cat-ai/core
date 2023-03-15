@@ -3,6 +3,7 @@ import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
+import Alert from '@components/Alert'
 import useMessagesService from '@hooks/useMessagesService'
 
 import style from './Home.module.scss'
@@ -33,7 +34,13 @@ const Home: FC = () => {
 
   return (
     <div className={style.home}>
-      {!isReady && (<LoadingLabel>Getting ready</LoadingLabel>)}
+      {/* The chat interface is only displayed when the service is ready */}
+      {!isReady && (
+        <>
+          {!error && <LoadingLabel>Getting ready</LoadingLabel>}
+          {error && <Alert variant="error">{error}</Alert>}
+        </>
+      )}
       {isReady && (
         <>
           {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
