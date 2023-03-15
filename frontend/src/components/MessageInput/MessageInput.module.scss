@@ -20,6 +20,10 @@
     cursor: not-allowed;
   }
 
+  input[type=file] {
+    display: none;
+  }
+
   textarea {
     background: transparent;
     resize: none;
@@ -32,6 +36,7 @@
     padding: 0;
     letter-spacing: 0.045rem;
   }
+
 
   button {
     appearance: none;

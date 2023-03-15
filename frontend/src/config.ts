@@ -1,7 +1,10 @@
 interface Config {
   mode: string
-  socketEndpoint: string
+  socketEndpoint: URL
   socketTimeout: number
+  endpoints: {
+    rabbitHole: URL
+  }
 }
 
 /**
@@ -10,8 +13,11 @@ interface Config {
  */
 const getConfig = () => Object.freeze<Config>({
   mode: import.meta.env.MODE,
-  socketEndpoint: 'ws://localhost:1865/ws',
-  socketTimeout: 10000
+  socketEndpoint: new URL('ws://localhost:1865/ws'),
+  socketTimeout: 10000,
+  endpoints: {
+    rabbitHole: new URL('http://localhost:1865/rabbithole')
+  }
 })
 
 export default getConfig

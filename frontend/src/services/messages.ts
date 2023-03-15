@@ -32,14 +32,21 @@ const MessagesService = Object.freeze({
    * Initializes the WebSocket connection as well as the message and error handlers
    */
   connect(onConnected: OnConnected | null = null) {
+    let isReady = false
     socket = new WebSocket(config.socketEndpoint)
-    socket.onopen = onConnected
+
+    socket.onopen = (event) => {
+      if (onConnected) {
+        onConnected(event)
+        isReady = true
+      }
+    }
 
     /**
      * Handles the incoming messages from the WebSocket server
      */
     socket.onmessage = (event: MessageEvent<string>) => {
-      if (messageHandler) {
+      if (isReady && messageHandler) {
         const data = JSON.parse(event.data) as APIMessageServiceError | APIMessageServiceResponse
 
         if (isAPIMessageServiceResponse(data)) {
@@ -57,7 +64,9 @@ const MessagesService = Object.freeze({
      *  Handles the WebSocket connection errors
      */
     socket.onerror = () => {
-      errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
+      if (isReady && errorHandler) {
+        errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
+      }
     }
 
     /**
@@ -124,6 +133,7 @@ const MessagesService = Object.freeze({
    * a map of error codes to error messages.
    */
   ErrorCodes: Object.freeze({
+    IndexError: 'Something went wrong while processing your message. Please try again later',
     SocketClosed: 'The connection to the server was closed. Please try refreshing the page',
     WebSocketConnectionError: 'Something went wrong while connecting to the server. Please try again later',
     APIError: 'Something went wrong while sending your message. Please try refreshing the page'

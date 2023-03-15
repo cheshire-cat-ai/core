@@ -7,6 +7,7 @@ import Alert from '@components/Alert'
 import useMessagesService from '@hooks/useMessagesService'
 
 import style from './Home.module.scss'
+import RabbitHole from '@services/rabbitHole'
 
 /**
  * Displays the chat interface and handles the user's input.
@@ -14,7 +15,7 @@ import style from './Home.module.scss'
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
   const [inputVal, setInputVal] = useState('')
-  const inputDisabled = isSending || !isReady
+  const inputDisabled = isSending || !isReady || Boolean(error)
 
   /**
    * When the user clicks on a default message, it will be appended to the input value state
@@ -47,7 +48,16 @@ const Home: FC = () => {
           {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
-      <MessageInput value={inputVal} onChange={setInputVal} onSubmit={sendMessage} disabled={inputDisabled} className={style.input} />
+      <MessageInput
+        value={inputVal}
+        onChange={setInputVal}
+        onUpload={(file) => {
+          RabbitHole.send(file).then(console.log).catch(console.error)
+        }}
+        onSubmit={sendMessage}
+        disabled={inputDisabled}
+        className={style.input}
+      />
     </div>
   )
 }

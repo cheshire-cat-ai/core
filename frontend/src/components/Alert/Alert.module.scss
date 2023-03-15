@@ -3,10 +3,12 @@
   border-radius: var(--app-border-radius);
 
   &.info {
-    border: 1px solid var(--app-palette-accent);
+    background: var(--app-palette-accent);
+    color: white;
   }
 
   &.error {
-    border: 1px solid var(--app-palette-accent);
+    background: var(--app-palette-danger);
+    color: white;
   }
 }

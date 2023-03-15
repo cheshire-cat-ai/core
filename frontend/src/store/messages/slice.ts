@@ -44,7 +44,7 @@ const messagesSlice = createSlice({
 
       state.error = undefined
       state.messages.push(message)
-      state.loading = message.sender === 'bot'
+      state.loading = message.sender === 'user'
     },
     /**
      * Sets the error state
