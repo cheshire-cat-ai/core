@@ -4,8 +4,7 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: ./web/Dockerfile
+      context: ./web
     container_name: web
     depends_on:
       - vector-memory
@@ -31,8 +30,7 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
+      context: ./frontend
     container_name: frontend
     depends_on:
       - web
@@ -40,7 +38,7 @@ services:
       - 3000:3000
     volumes:
       - ./frontend:/app
-    command: bash -c "npm install && npm run build && npm run dev" 
+    command: bash -c "npm install && npm run build && npm run dev"
     restart: unless-stopped
 
   vector-memory:
@@ -59,4 +57,3 @@ services:
   #  volumes:
   #    - ./long_term_memory/weaviate:/var/lib/weaviate
   #  restart: unless-stopped
-
