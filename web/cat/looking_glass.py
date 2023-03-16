@@ -2,7 +2,7 @@ import time
 
 from cat import config
 from cat.utils import log
-from cat.memory import get_vector_store
+from cat.memory import VectorStore, VectorMemoryConfig
 from cat.agent_manager import AgentManager
 
 
@@ -24,6 +24,7 @@ class CheshireCat:
         # TODO: remove .env configuration
         self.llm = config.LANGUAGE_MODEL
         self.embedder = config.LANGUAGE_EMBEDDER
+        self.vector_store = VectorStore(VectorMemoryConfig())
 
         #        # HyDE chain TODO
         #        hypothesis_prompt = PromptTemplate(
@@ -44,8 +45,12 @@ class CheshireCat:
         #        )
 
         # Memory
-        self.episodic_memory = get_vector_store("episodes", embedder=self.embedder)
-        self.declarative_memory = get_vector_store("documents", embedder=self.embedder)
+        self.episodic_memory = self.vector_store.get_vector_store(
+            "episodes", embedder=self.embedder
+        )
+        self.declarative_memory = self.vector_store.get_vector_store(
+            "documents", embedder=self.embedder
+        )
         # TODO: don't know if it is better to use different collections or just different metadata
 
         # Agent
