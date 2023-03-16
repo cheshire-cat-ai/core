@@ -7,5 +7,5 @@ import { type Notification } from '@models/Notification'
  * It extends the AsyncStateBase interface, which defines the structure of the state of an asynchronous operation.
  */
 export interface NotificationsState {
-  readonly notifications: Notification[]
+  readonly history: Notification[]
 }

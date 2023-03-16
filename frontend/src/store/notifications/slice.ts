@@ -3,7 +3,7 @@ import { type NotificationsState } from '@store/notifications/types'
 import { type Notification } from '@models/Notification'
 
 const initialState: NotificationsState = {
-  notifications: []
+  history: []
 }
 
 /**
@@ -15,14 +15,18 @@ const notificationsSlice = createSlice({
   initialState,
   reducers: {
     sendNotification: (state, action: PayloadAction<{ notification: Notification }>) => {
-      state.notifications.push(action.payload.notification)
+      state.history.push(action.payload.notification)
     },
     hideNotification: (state, action: PayloadAction<{ notificationId: Notification['id'] }>) => {
       const { notificationId } = action.payload
-      const notificationIndex = state.notifications.findIndex((notification) => notification.id === notificationId)
+      const notificationIndex = state.history.findIndex((notification) => notification.id === notificationId)
+      const notification = state.history[notificationIndex]
 
-      if (notificationIndex === -1 && state.notifications[notificationIndex]) {
-        state.notifications[notificationIndex].hidden = true
+      if (notification) {
+        state.history.splice(notificationIndex, 1, {
+          ...notification,
+          hidden: true
+        })
       }
     }
   }

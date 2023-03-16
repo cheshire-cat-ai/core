@@ -10,5 +10,5 @@ const selectRootState = (state: RootState) => state.notifications
  * Selects the current notifications
  */
 export const selectNotifications = createSelector(selectRootState, (state) => {
-  return state.notifications.filter((notification) => !notification.hidden)
+  return state.history.filter((notification) => !notification.hidden)
 })

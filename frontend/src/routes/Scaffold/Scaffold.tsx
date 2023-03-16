@@ -3,6 +3,8 @@ import { Outlet, useRouteError } from 'react-router-dom'
 import Toolbar from '@components/Toolbar'
 import { EmptyReactElement } from '@utils/commons'
 import { getErrorMessage } from '@utils/errors'
+import useNotifications from '@hooks/useNotifications'
+import NotificationStack from '@components/NotificationStack'
 
 import style from './Scaffold.module.scss'
 
@@ -11,14 +13,19 @@ import style from './Scaffold.module.scss'
  * This component acts as a fundamental layout structure for the application, offering a consistent wrapper for rendering all child routes.
  * It's worth noting that the <Outlet /> is a component of the React Router library and can solely be used within a <Router> component.
  */
-const Scaffold = () => (
-  <main className={style.scaffold}>
-    <Toolbar />
-    <div className={style.content}>
-      <Outlet />
-    </div>
-  </main>
-)
+const Scaffold = () => {
+  const { notifications } = useNotifications()
+
+  return (
+    <main className={style.scaffold}>
+      <Toolbar />
+      <div className={style.content}>
+        <Outlet />
+      </div>
+      <NotificationStack notifications={notifications} />
+    </main>
+  )
+}
 
 /**
  * A basic scaffold to render the error page.
