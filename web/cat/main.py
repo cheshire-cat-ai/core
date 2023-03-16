@@ -8,6 +8,7 @@ from typing import Union
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile, BackgroundTasks
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from cat.utils import log
 from cat.rabbit_hole import ingest_file # TODO: should be moved inside the cat as a method?
@@ -25,6 +26,21 @@ ccat = CheshireCat(
 ### API endpoints
 cheshire_cat_api = FastAPI()
 
+### list of allowed CORS origins.
+### This list allows any domain to make requests to the server, 
+### including sending cookies and using any HTTP method and header. 
+### Whilst this is useful in dev environments, it might be too permissive for production environments
+### therefore, it might be a good idea to configure the allowed origins in a differnet configuration file
+origins = ["*"]
+
+### Configures the CORS middleware for the FastAPI app
+cheshire_cat_api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # server status
 @cheshire_cat_api.get("/") 

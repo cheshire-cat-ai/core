@@ -2,8 +2,7 @@
  * This module defines and export a collection of Typescript type guards commonly used throughout the
  * application.
  */
-
-import { type APIMessageServiceResponse } from '@models/Message'
+import { type APIMessageServiceResponse } from '@services/messages'
 
 /**
  * A TypeScript type guard that takes a value of unknown type and returns a boolean indicating whether the value is of type string

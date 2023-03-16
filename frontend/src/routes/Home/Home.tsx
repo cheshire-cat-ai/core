@@ -5,7 +5,7 @@ import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
 import Alert from '@components/Alert'
 import useMessagesService from '@hooks/useMessagesService'
-import RabbitHoleService from '@services/rabbitHole'
+import useRabbitHole from '@hooks/useRabbitHole'
 
 import style from './Home.module.scss'
 
@@ -14,6 +14,7 @@ import style from './Home.module.scss'
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
+  const { sendFile, isLoading } = useRabbitHole()
   const [inputVal, setInputVal] = useState('')
   const inputDisabled = isSending || !isReady || Boolean(error)
 
@@ -51,11 +52,10 @@ const Home: FC = () => {
       <MessageInput
         value={inputVal}
         onChange={setInputVal}
-        onUpload={(file) => {
-          RabbitHoleService.send(file).then(console.log).catch(console.error)
-        }}
+        onUpload={sendFile}
         onSubmit={sendMessage}
         disabled={inputDisabled}
+        loading={isLoading}
         className={style.input}
       />
     </div>

@@ -4,26 +4,10 @@
  */
 
 import getConfig from '../config'
-import { type APIMessageServiceError, type APIMessageServiceResponse } from '@models/Message'
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
 import LogService from '@services/logService'
 
 const config = getConfig()
-
-/**
- * Defines the type for the onConnected event handler.
- */
-type OnConnected = (event: Event) => void
-
-/**
- * Defines the type for the onMessage event handler
- */
-type OnMessageHandler = (message: string, why: any) => void
-
-/**
- * Defines the type for the onError event handler
- */
-type OnErrorHandler = (err: Error) => void
 
 /**
  * The WebSocket instance
@@ -83,8 +67,8 @@ const MessagesService = Object.freeze({
     /**
      *  Handles the WebSocket connection errors
      */
-    socket.onerror = () => {
-      LogService.print('An error occurred on the WebSocket instance')
+    socket.onerror = (event) => {
+      LogService.print('An error occurred on the WebSocket instance', event)
       if (isReady && errorHandler) {
         errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
       }
@@ -95,6 +79,7 @@ const MessagesService = Object.freeze({
      */
     const tm = setTimeout(() => {
       if (socket.readyState === WebSocket.CONNECTING) {
+        LogService.print(`The socket has been forcefully closed due to a timeout of ${config.socketTimeout}ms`)
         errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
         MessagesService.disconnect()
         clearTimeout(tm)
@@ -160,5 +145,37 @@ const MessagesService = Object.freeze({
     APIError: 'Something went wrong while sending your message. Please try refreshing the page'
   })
 })
+
+/**
+ * Defines the type for the onConnected event handler.
+ */
+type OnConnected = (event: Event) => void
+
+/**
+ * Defines the type for the onMessage event handler
+ */
+type OnMessageHandler = (message: string, why: any) => void
+
+/**
+ * Defines the type for the onError event handler
+ */
+type OnErrorHandler = (err: Error) => void
+
+/**
+ * APIMessageServiceResponse is the interface for the response from the API message service.
+ */
+export interface APIMessageServiceResponse {
+  error: false
+  content: string
+  why: any
+}
+
+/**
+ *  APIMessageServiceError is the interface for the error response from the API message service.
+ */
+export interface APIMessageServiceError {
+  error: true
+  code: string
+}
 
 export default MessagesService

@@ -8,7 +8,7 @@ const config = getConfig()
 const LogService = Object.freeze({
   print: (...args: any[]) => {
     if (config.mode === 'development') {
-      console.log('🐱 cat:', ...args)
+      console.log('🐱 log:', ...args)
     }
   }
 })

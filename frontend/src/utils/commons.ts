@@ -50,3 +50,8 @@ export const now = () => new Date().getTime()
  * Basically just a function that returns null lol
  */
 export const EmptyReactElement = () => null
+
+/**
+ * Returns a promise that contains the response body as a JSON object.
+ */
+export const toJSON = async <TResult>(response: Response) => await (response.json() as Promise<TResult>)

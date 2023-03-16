@@ -29,20 +29,3 @@ export interface UserMessage extends MessageBase {
  * Message is the union type for all message types.
  */
 export type Message = BotMessage | UserMessage
-
-/**
- * APIMessageServiceResponse is the interface for the response from the API message service.
- */
-export interface APIMessageServiceResponse {
-  error: false
-  content: string
-  why: any
-}
-
-/**
- *  APIMessageServiceError is the interface for the error response from the API message service.
- */
-export interface APIMessageServiceError {
-  error: true
-  code: string
-}

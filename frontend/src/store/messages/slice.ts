@@ -17,14 +17,10 @@ const initialState: MessagesState = {
 }
 
 /**
- * The messages slice of the redux store.
+ * The 'messages' slice of the redux store.
  * It contains the state of the messages sent by the user and the bot,
  * as well as a list of default messages that can be sent by the user.
  * It also contains the loading state, which tells whether the app is currently sending a message.
- *
- * Exposes the following actions:
- * - addMessage: adds a message to the list of messages
- * - toggleLoading: toggles the loading state
  */
 const messagesSlice = createSlice({
   name: 'messages',
