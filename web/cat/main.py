@@ -1,22 +1,18 @@
 import traceback
 
-from fastapi import (  # WebSocketDisconnect,
-    FastAPI,
-    WebSocket,
-    UploadFile,
-    BackgroundTasks,
-)
+from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
 from cat.looking_glass import CheshireCat
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 #       ^._.^
 #
-#  loads Cat and plugins
+# loads Cat and plugins
 ccat = CheshireCat(verbose=True)
-
 
 # API endpoints
 cheshire_cat_api = FastAPI()
@@ -24,7 +20,7 @@ cheshire_cat_api = FastAPI()
 
 # server status
 @cheshire_cat_api.get("/")
-def home():
+async def home():
     return {"status": "We're all mad here, dear!"}
 
 
@@ -36,11 +32,9 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # message received from user
-            user_message = (
-                await websocket.receive_text()
-            )  # TODO: should be JSON with metadata
+            user_message = await websocket.receive_text()
 
-            # get reponse from the cat
+            # get response from the cat
             cat_message = ccat(user_message)
 
             # send output to user
@@ -59,6 +53,7 @@ async def websocket_endpoint(websocket: WebSocket):
         )
 
 
+# receive files via endpoint
 # TODO: should we receive files also via websocket?
 @cheshire_cat_api.post("/rabbithole/")
 async def rabbithole_upload_endpoint(
@@ -71,9 +66,12 @@ async def rabbithole_upload_endpoint(
 
     # check id MIME type of uploaded file is supported
     if file.content_type not in admitted_mime_types:
-        return {
-            "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
-        }
+        return JSONResponse(
+            status_code=422,
+            content={
+                "detail": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
+            },
+        )
 
     # upload file to long term memory, in the background
     background_tasks.add_task(ingest_file, file, ccat)
@@ -84,3 +82,12 @@ async def rabbithole_upload_endpoint(
         "content-type": file.content_type,
         "info": "File is being ingested asynchronously.",
     }
+
+
+# error handling
+@cheshire_cat_api.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
