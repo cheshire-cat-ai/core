@@ -11,9 +11,7 @@
     margin-bottom: 0;
   }
 
-  .error {
-    padding: var(--app-space-s);
-    border: 1px solid var(--app-palette-accent);
-    border-radius: var(--app-border-radius);
+  .alert {
+    margin-top: var(--app-space-s);
   }
 }

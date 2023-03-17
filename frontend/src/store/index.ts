@@ -1,9 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
 import messagesReducer from './messages/slice'
+import fileUploaderReducer from './fileUploader/slice'
+import notificationsReducer from './notifications/slice'
 
+/**
+ * The redux store
+ */
 const store = configureStore({
   reducer: {
-    messages: messagesReducer
+    notifications: notificationsReducer,
+    messages: messagesReducer,
+    fileUploader: fileUploaderReducer
   }
 })
 

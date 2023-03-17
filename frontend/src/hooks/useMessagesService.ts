@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import MessagesService, { MessageServiceErrorCodes } from '@services/messages'
-import { addMessage, setError, setReady, toggleLoading } from '@store/messages/slice'
+import MessagesService from '@services/messages'
+import { addMessage, setError, setReady } from '@store/messages/slice'
 import { selectCurrentMessages, selectDefaultMessages, selectError, selectIsReady, selectIsSendingMessage } from '@store/messages/selectors'
 import { now, uniqueId } from '@utils/commons'
-import { getErrorMessage, getErrorMessageFromErrorCodeMap } from '@utils/errors'
+import { getErrorMessage } from '@utils/errors'
 
 /**
  * A custom hook that provides the messages service to the app.
@@ -30,34 +30,25 @@ const useMessagesService = () => {
    * It also dispatches the error to the store if an error occurs.
    */
   useEffect(() => {
-    /**
-     * Dispatches the received message to the store
-     */
-    const onMessage = (message: string, why: any) => {
-      dispatch(toggleLoading())
+    MessagesService
+      .connect(() => dispatch(setReady()))
+      .onMessage((message: string, why: any) => {
+        dispatch(addMessage({
+          id: uniqueId(),
+          text: message,
+          sender: 'bot',
+          timestamp: now(),
+          why
+        }))
+      })
+      .onError((error: Error) => {
+        const errorMessage = getErrorMessage(error)
+        dispatch(setError(errorMessage))
+      })
 
-      dispatch(addMessage({
-        id: uniqueId(),
-        text: message,
-        sender: 'bot',
-        timestamp: now(),
-        why
-      }))
+    return () => {
+      MessagesService.disconnect()
     }
-
-    /**
-     * Dispatches the error to the store
-     */
-    const onError = (error: Error) => {
-      const errorCode = getErrorMessage(error)
-      const errorMessage = getErrorMessageFromErrorCodeMap(MessageServiceErrorCodes, errorCode)
-      dispatch(setError(errorMessage))
-    }
-
-    MessagesService.onOpen(() => dispatch(setReady()), onError)
-    MessagesService.subscribe(onMessage, onError)
-
-    return MessagesService.unsubscribe
   }, [dispatch])
 
   /**
@@ -65,8 +56,6 @@ const useMessagesService = () => {
    */
   const dispatchMessage = useCallback((message: string) => {
     MessagesService.send(message)
-
-    dispatch(toggleLoading())
 
     dispatch(addMessage({
       id: uniqueId(),

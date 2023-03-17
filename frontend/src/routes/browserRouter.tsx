@@ -1,6 +1,6 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
-import Scaffold from '@components/Scaffold'
+import Scaffold from './Scaffold'
 
 import Home from './Home'
 
@@ -16,6 +16,7 @@ export default createBrowserRouter([
     children: [
       {
         path: '/',
+        // todo: create a lazy loading utility to load the page components
         element: <Home />
       }
     ]

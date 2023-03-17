@@ -3,7 +3,9 @@ import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
+import Alert from '@components/Alert'
 import useMessagesService from '@hooks/useMessagesService'
+import useRabbitHole from '@hooks/useRabbitHole'
 
 import style from './Home.module.scss'
 
@@ -12,8 +14,9 @@ import style from './Home.module.scss'
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
+  const { sendFile, isLoading } = useRabbitHole()
   const [inputVal, setInputVal] = useState('')
-  const inputDisabled = isSending || !isReady
+  const inputDisabled = isSending || !isReady || Boolean(error)
 
   /**
    * When the user clicks on a default message, it will be appended to the input value state
@@ -33,14 +36,28 @@ const Home: FC = () => {
 
   return (
     <div className={style.home}>
-      {!isReady && (<LoadingLabel>Getting ready</LoadingLabel>)}
+      {/* The chat interface is only displayed when the service is ready */}
+      {!isReady && (
+        <>
+          {!error && <LoadingLabel>Getting ready</LoadingLabel>}
+          {error && <Alert variant="error">{error}</Alert>}
+        </>
+      )}
       {isReady && (
         <>
           {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
           {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
-      <MessageInput value={inputVal} onChange={setInputVal} onSubmit={sendMessage} disabled={inputDisabled} className={style.input} />
+      <MessageInput
+        value={inputVal}
+        onChange={setInputVal}
+        onUpload={sendFile}
+        onSubmit={sendMessage}
+        disabled={inputDisabled}
+        loading={isLoading}
+        className={style.input}
+      />
     </div>
   )
 }

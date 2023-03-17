@@ -3,7 +3,6 @@ import { type RootState } from '@store/index'
 
 /**
  * Selects the root state for the messages slice.
- * @param state
  */
 const selectRootState = (state: RootState) => state.messages
 

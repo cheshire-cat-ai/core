@@ -3,7 +3,7 @@ import { type MessagesState } from '@store/messages/types'
 import { type Message } from '@models/Message'
 
 const initialState: MessagesState = {
-  ready: true,
+  ready: false,
   loading: false,
   messages: [],
   defaultMessages: [
@@ -17,14 +17,10 @@ const initialState: MessagesState = {
 }
 
 /**
- * The messages slice of the redux store.
+ * The 'messages' slice of the redux store.
  * It contains the state of the messages sent by the user and the bot,
  * as well as a list of default messages that can be sent by the user.
  * It also contains the loading state, which tells whether the app is currently sending a message.
- *
- * Exposes the following actions:
- * - addMessage: adds a message to the list of messages
- * - toggleLoading: toggles the loading state
  */
 const messagesSlice = createSlice({
   name: 'messages',
@@ -40,24 +36,22 @@ const messagesSlice = createSlice({
      * Adds a message to the list of messages
      */
     addMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload
+
       state.error = undefined
-      state.messages.push(action.payload)
-    },
-    /**
-     * Toggles the loading state
-     */
-    toggleLoading: (state) => {
-      state.loading = !state.loading
+      state.messages.push(message)
+      state.loading = message.sender === 'user'
     },
     /**
      * Sets the error state
      */
     setError: (state, action: PayloadAction<string>) => {
+      state.loading = false
       state.error = action.payload
     }
   }
 })
 
-export const { addMessage, setReady, setError, toggleLoading } = messagesSlice.actions
+export const { addMessage, setReady, setError } = messagesSlice.actions
 
 export default messagesSlice.reducer

@@ -2,6 +2,7 @@ import React, { type FC, useEffect, useRef } from 'react'
 import { type Message } from '@models/Message'
 import MessageBox from '@components/MessageBox'
 import LoadingLabel from '@components/LoadingLabel'
+import Alert from '@components/Alert'
 import { type CommonProps } from '@models/commons'
 import clsx from 'clsx'
 
@@ -39,7 +40,7 @@ const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, classNa
           <MessageBox key={message.id} text={message.text} sender={message.sender} />
         ))}
       </div>
-      {error && (<p className={style.error}>{error}</p>)}
+      {error && (<Alert variant="error" className={style.alert}>{error}</Alert>)}
       {isLoading && !error && (<LoadingLabel className={style.thinking}>Cheshire cat is thinking</LoadingLabel>)}
     </div>
   )
