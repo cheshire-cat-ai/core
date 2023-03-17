@@ -32,7 +32,9 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # message received from user
-            user_message = await websocket.receive_text()
+            user_message = (
+                await websocket.receive_text()
+            )  # TODO: should receive a JSON with metadata
 
             # get response from the cat
             cat_message = ccat(user_message)
@@ -69,7 +71,7 @@ async def rabbithole_upload_endpoint(
         return JSONResponse(
             status_code=422,
             content={
-                "detail": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
+                "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
             },
         )
 
@@ -89,5 +91,5 @@ async def rabbithole_upload_endpoint(
 async def validation_exception_handler(request, exc):
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors()},
+        content={"error": exc.errors()},
     )
