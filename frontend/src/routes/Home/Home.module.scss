@@ -7,15 +7,21 @@
     padding-bottom: calc(var(--app-space-s) + 70px);
   }
 
-  .input {
+  .bottomToolbar {
     position: fixed;
     inset: auto var(--app-space-s) var(--app-space-s) var(--app-space-s);
     z-index: 1;
+    display: flex;
+    gap: var(--app-space-s);
 
     @include tablet-landscape-view {
       max-width: 960px;
       width: 100%;
       inset: auto auto var(--app-space-s) auto;
+    }
+
+    .input {
+      flex: 1;
     }
   }
 }

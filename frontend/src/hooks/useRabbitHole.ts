@@ -11,7 +11,7 @@ import { uniqueId } from '@utils/commons'
  */
 const useRabbitHole = () => {
   const { showNotification } = useNotifications()
-  const isLoading = useSelector(selectFileUploadIsLoading)
+  const isUploading = useSelector(selectFileUploadIsLoading)
   const error = useSelector(selectFileUploadError)
   const response = useSelector(selectFileUploadResponse)
   const dispatch = useDispatch()
@@ -33,7 +33,7 @@ const useRabbitHole = () => {
       .catch((error) => dispatch(setError({ error })))
   }, [dispatch, showNotification])
 
-  return { sendFile, error, isLoading, response }
+  return { sendFile, error, isUploading, response }
 }
 
 export default useRabbitHole

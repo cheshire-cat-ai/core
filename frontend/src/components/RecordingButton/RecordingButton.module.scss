@@ -1,0 +1,60 @@
+.recBtn {
+  $radius: 99px;
+
+  position: relative;
+  appearance: none;
+  cursor: pointer;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius;
+  width: 46px;
+  background: var(--app-palette-accent-light);
+  @include transition(all, 250ms);
+
+
+  &.active {
+    transform: scale(1.45);
+    background: var(--app-palette-accent);
+
+    &:before {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 0;
+      background: transparent;
+      border-radius: $radius;
+      border: var(--app-palette-accent-light) 2px solid;
+      animation: pulse 1s infinite;
+    }
+  }
+
+  &[disabled] {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 22px;
+    fill: none;
+
+    path, line {
+      stroke: var(--app-palette-white);
+    }
+  }
+
+  @include tablet-landscape-view {
+    width: 50px;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+  }
+}

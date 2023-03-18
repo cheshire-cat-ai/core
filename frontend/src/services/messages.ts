@@ -69,7 +69,7 @@ const MessagesService = Object.freeze({
      */
     socket.onerror = (event) => {
       LogService.print('An error occurred on the WebSocket instance', event)
-      if (isReady && errorHandler) {
+      if (errorHandler) {
         errorHandler(new Error(MessagesService.ErrorCodes.WebSocketConnectionError))
       }
     }
