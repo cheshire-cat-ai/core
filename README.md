@@ -1,5 +1,5 @@
 # 🐱 Cheshire-Cat (Stregatto)
-Customizable AI architecture
+
 <p align="center">
 
 <img src=cheshire-cat.jpeg width=240px alt="Wikipedia picture of the Cheshire Cat">
@@ -18,7 +18,7 @@ The Cheshire Cat AI (Stregatto) can leverage many different language models, acc
 ### Requirements
 
 - Docker installed
-- .env file for the secrets
+- .env file containing secrets
 
 
 ### Installation
@@ -42,22 +42,12 @@ OPENAI_KEY="YOUR_OPEN_AI_KEY"
 
 ## Usage
 
-Once you created the .env file and executed `docker-compose up`  you will find the UI available on `http://localhost`
+Once you created the .env file and executed `docker-compose up`  you will find the UI available at `http://localhost`.
 
 
 ## Roadmap
 
-- [x] Add Monolingual data support
-- [x] Add create engine API
-- [x] MLFlow logging
-- [x] Model specialization pipeline
-- [x] New versioning logic
-- [x] CLI commands
-- [ ] Hydra configurations
-- [ ] Add database for the versioning
-- [ ] Resource manager 
-- [ ] Job scheduler
-- [ ] Cookingbot as a service
+- [ ] Add models support
 
 
 
@@ -76,10 +66,11 @@ Don't forget to give the project a star! Thanks again!
 
 
 ## Contributors
+
+[![](https://github.com/pieroit.png?size=50)](https://github.com/pieroit)
+[![](https://github.com/antonioru.png?size=50)](https://github.com/antonioru)
+[![](https://github.com/peppicus.png?size=50)](https://github.com/peppicus)
+[![](https://github.com/umbertogriffo.png?size=50)](https://github.com/umbertogriffo)
 [![](https://github.com/samirsalman.png?size=50)](https://github.com/samirsalman)
-[![](https://github.com/davidecaroselli.png?size=50)](https://github.com/davidecaroselli)
-[<img src="https://github.com/nicolabertoldi.png?size=20" width="50px">](https://github.com/nicolabertoldi)
-[![](https://github.com/MichelaPascale.png?size=50)](https://github.com/MichelaPascale)
-[![](https://github.com/disheng.png?size=50)](https://github.com/disheng)
 
 
