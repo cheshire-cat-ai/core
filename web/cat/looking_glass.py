@@ -10,11 +10,11 @@ from web.cat.config.llm.llm import SupportedVendor, get_models
 
 # main class representing the cat
 class CheshireCat:
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, vendor: str = "OPENAI"):
         self.verbose = verbose
-
+        self.model_vendor = SupportedVendor(vendor)
         # bootstrap the cat!
-        self.load_core()
+        self.load_core(model=self.model_vendor)
         self.load_plugins()
         self.load_agent()
 
