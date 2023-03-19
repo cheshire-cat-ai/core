@@ -41,7 +41,7 @@ export default defineConfig({
        * the module name and the class name
        */
       generateScopedName: (name, filename) => {
-        var module = basename(filename).replace(/.module.(scss|css|less|sass)/g, '')
+        const module = basename(filename).replace(/.module.(scss|css|less|sass)/g, '')
 
         return `ccat-${module}-${name}`
       }
