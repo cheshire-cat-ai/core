@@ -1,4 +1,5 @@
 import React, { type FC, useEffect, useRef } from 'react'
+import useAudio from 'beautiful-react-hooks/useAudio'
 import { type Message } from '@models/Message'
 import MessageBox from '@components/MessageBox'
 import LoadingLabel from '@components/LoadingLabel'
@@ -14,6 +15,7 @@ import style from './MessageList.module.scss'
  */
 const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, className, ...rest }) => {
   const classList = clsx(style.messages, className)
+  const [, { play: playPop }] = useAudio('pop.mp3')
   const elRef = useRef<HTMLDivElement>(null)
 
   /**
@@ -32,6 +34,12 @@ const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, classNa
       }
     }
   }, [messages.length])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      playPop()
+    }
+  }, [playPop, messages.length])
 
   return (
     <div className={classList} {...rest} ref={elRef}>

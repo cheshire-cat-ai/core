@@ -4,12 +4,14 @@ import clsx from 'clsx'
 import MicIcon from './mic.svg'
 
 import style from './RecordingButton.module.scss'
+import useAudio from 'beautiful-react-hooks/useAudio'
 
 /**
  * RecordingButton description
  */
 const RecordingButton: FC<RecordingButtonProps> = (props) => {
-  const { onRecordingStart, onRecordingComplete, className, ...rest } = props
+  const { onRecordingStart, onRecordingComplete, playAudio = true, className, ...rest } = props
+  const [, { play: stayStart }] = useAudio('start-rec.mp3')
   const ref = useRef(null)
   const { isLongPressing, onLongPressEnd, onLongPressStart } = useLongPress(ref)
   const classList = clsx(style.recBtn, isLongPressing && style.active, className)
@@ -17,6 +19,10 @@ const RecordingButton: FC<RecordingButtonProps> = (props) => {
   onLongPressStart(() => {
     if (onRecordingStart) {
       onRecordingStart()
+
+      if (playAudio) {
+        stayStart()
+      }
     }
   })
 
@@ -34,6 +40,7 @@ const RecordingButton: FC<RecordingButtonProps> = (props) => {
 }
 
 export interface RecordingButtonProps extends Omit<HTMLAttributes<HTMLButtonElement>, 'onClick' | 'onMouseDown'> {
+  playAudio?: boolean
   onRecordingStart?: () => void
   onRecordingComplete?: (recorded: string) => void
 }

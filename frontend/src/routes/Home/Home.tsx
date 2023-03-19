@@ -1,4 +1,5 @@
 import React, { type FC, useCallback, useEffect, useState } from 'react'
+import useSpeechRecognition from 'beautiful-react-hooks/useSpeechRecognition'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
@@ -7,7 +8,6 @@ import Alert from '@components/Alert'
 import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
-import useSpeechRecognition from '@hooks/useSpeechRecognition'
 
 import style from './Home.module.scss'
 
@@ -17,18 +17,17 @@ import style from './Home.module.scss'
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
   const { sendFile, isUploading } = useRabbitHole()
-  const { isRecording, transcript, startRecording, stopRecording } = useSpeechRecognition()
+  const { isRecording, transcript, startRecording, stopRecording, isSupported } = useSpeechRecognition()
   const [userMessage, setUserMessage] = useState('')
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
 
   /**
-   * The user's voice message transcript gets updated, it updates the user message state too
+   * When the user stops recording, the transcript will be sent to the messages service
    */
   useEffect(() => {
-    if (transcript) {
-      setUserMessage(transcript)
-    }
-  }, [transcript])
+    if (transcript === '') return
+    dispatchMessage(transcript)
+  }, [transcript, dispatchMessage])
 
   /**
    * When the user clicks on a default message, it will be appended to the input value state
@@ -72,7 +71,9 @@ const Home: FC = () => {
           placeholder={generatePlaceholder(isSending, isRecording)}
           className={style.input}
         />
-        <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} />
+        {isSupported && (
+          <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} />
+        )}
       </div>
     </div>
   )
