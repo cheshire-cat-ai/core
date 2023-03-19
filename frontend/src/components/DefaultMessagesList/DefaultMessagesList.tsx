@@ -1,7 +1,7 @@
 import React, { type FC, type HTMLAttributes } from 'react'
 import clsx from 'clsx'
 
-import style from './DefaultMessagesListList.module.scss'
+import style from './DefaultMessagesList.module.scss'
 
 /**
  * Displays a list of default messages that the user can click on to send.

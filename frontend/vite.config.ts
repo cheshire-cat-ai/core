@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { basename, resolve } from 'path'
 import react from '@vitejs/plugin-react-swc'
 import postCSSPresetEnv from 'postcss-preset-env'
 import autoprefixer from 'autoprefixer'
 import postCSSPxToRem from 'postcss-pxtorem'
 import svgr from 'vite-plugin-svgr'
-import vitePluginFaviconsInject from 'vite-plugin-favicons-inject'
 
 const rootDir = resolve(__dirname)
 
@@ -17,7 +16,7 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    host: true,
+    host: true
   },
   resolve: {
     /**
@@ -36,6 +35,17 @@ export default defineConfig({
     }
   },
   css: {
+    modules: {
+      /**
+       * Generates a unique class name for each component composed by the 'ccat' prefix,
+       * the module name and the class name
+       */
+      generateScopedName: (name, filename) => {
+        var module = basename(filename).replace(/.module.(scss|css|less|sass)/g, '')
+
+        return `ccat-${module}-${name}`
+      }
+    },
     preprocessorOptions: {
       /**
        * The mixins file is imported in every SCSS file.

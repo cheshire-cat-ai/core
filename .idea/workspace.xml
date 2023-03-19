@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="03e82c63-e928-43a8-8ffb-48d53b21daba" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/MessageInput/mic.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/MessageInput/paperclip.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/MessageInput/send.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MessageInput/MessageInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MessageInput/MessageInput.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/hooks/useMessagesService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/hooks/useMessagesService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/routes/Home/Home.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/routes/Home/Home.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/routes/Home/Home.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/routes/Home/Home.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/services/messages.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/messages.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="2NBRJ81FdkzrJ8y5Kz312ufqfQu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="03e82c63-e928-43a8-8ffb-48d53b21daba" name="Changes" comment="" />
+      <created>1679135413888</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679135413888</updated>
+    </task>
+    <servers />
+  </component>
+</project>
