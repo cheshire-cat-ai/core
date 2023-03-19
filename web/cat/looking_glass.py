@@ -1,8 +1,10 @@
 import time
 
-from cat import config
+from cat.llm import DEFAULT_LANGUAGE_MODEL
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
+from cat.prompt import MAIN_PROMPT_PREFIX, MAIN_PROMPT_SUFFIX
+from cat.embedder import DEFAULT_LANGUAGE_EMBEDDER
 from cat.agent_manager import AgentManager
 
 
@@ -20,10 +22,10 @@ class CheshireCat:
         self.history = ""
 
     def load_core(self):
-        # TODO: llm and embedder should be loaded from db after the user has set them up
+        # TODO: llm and embedder config should be loaded from db after the user has set them up
         # TODO: remove .env configuration
-        self.llm = config.LANGUAGE_MODEL
-        self.embedder = config.LANGUAGE_EMBEDDER
+        self.llm = DEFAULT_LANGUAGE_MODEL
+        self.embedder = DEFAULT_LANGUAGE_EMBEDDER
         self.vector_store = VectorStore(VectorMemoryConfig())
 
         #        # HyDE chain TODO
@@ -55,9 +57,9 @@ class CheshireCat:
 
         # Agent
         # let's cutomize ...every aspect of agent prompt
-        self.prefix_prompt = config.MAIN_PROMPT_PREFIX
+        self.prefix_prompt = MAIN_PROMPT_PREFIX
 
-        self.suffix_prompt = config.MAIN_PROMPT_SUFFIX
+        self.suffix_prompt = MAIN_PROMPT_SUFFIX
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
