@@ -1,5 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import useDidMount from 'beautiful-react-hooks/useDidMount'
 import MessagesService from '@services/messages'
 import { addMessage, setError, setReady } from '@store/messages/slice'
 import { selectCurrentMessages, selectDefaultMessages, selectError, selectIsReady, selectIsSendingMessage } from '@store/messages/selectors'
@@ -18,6 +19,7 @@ import { getErrorMessage } from '@utils/errors'
  */
 const useMessagesService = () => {
   const dispatch = useDispatch()
+  const onMount = useDidMount()
   const messages = useSelector(selectCurrentMessages)
   const isSending = useSelector(selectIsSendingMessage)
   const isReady = useSelector(selectIsReady)
@@ -29,7 +31,7 @@ const useMessagesService = () => {
    * and dispatches the received messages to the store.
    * It also dispatches the error to the store if an error occurs.
    */
-  useEffect(() => {
+  onMount(() => {
     MessagesService
       .connect(() => dispatch(setReady()))
       .onMessage((message: string, why: any) => {
@@ -49,7 +51,7 @@ const useMessagesService = () => {
     return () => {
       MessagesService.disconnect()
     }
-  }, [dispatch])
+  })
 
   /**
    * Sends a message to the messages service and optimistically dispatches it to the store

@@ -20,14 +20,8 @@ const notificationsSlice = createSlice({
     hideNotification: (state, action: PayloadAction<{ notificationId: Notification['id'] }>) => {
       const { notificationId } = action.payload
       const notificationIndex = state.history.findIndex((notification) => notification.id === notificationId)
-      const notification = state.history[notificationIndex]
 
-      if (notification) {
-        state.history.splice(notificationIndex, 1, {
-          ...notification,
-          hidden: true
-        })
-      }
+      state.history[notificationIndex].hidden = true
     }
   }
 })
