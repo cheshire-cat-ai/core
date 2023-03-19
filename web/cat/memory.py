@@ -12,20 +12,24 @@ from qdrant_client.http.models import Distance, VectorParams
 class VectorMemoryConfig:
     host: str = os.getenv("VECTOR_MEMORY_HOST", "vector-memory")
     port: int = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
+    verbose: bool = False
 
 
 class VectorStore:
     def __init__(self, vm_config: VectorMemoryConfig) -> None:
         self.client = QdrantClient(host=vm_config.host, port=vm_config.port)
+        self.verbose = vm_config.verbose
 
     def get_vector_store(self, collection_name, embedder):
         # create collection if it does not exist
         try:
             self.client.get_collection(collection_name)
             tabula_rasa = False
-            log(f'Collection "{collection_name}" already present in vector store')
+            if self.verbose:
+                log(f'Collection "{collection_name}" already present in vector store')
         except:
-            log(f"Creating collection {collection_name} ...")
+            if self.verbose:
+                log(f"Creating collection {collection_name} ...")
             self.client.recreate_collection(
                 collection_name=collection_name,
                 vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
@@ -49,6 +53,7 @@ class VectorStore:
                 ],
             )
 
-        log(dict(self.client.get_collection(collection_name)))
+        if self.verbose:
+            log(dict(self.client.get_collection(collection_name)))
 
         return vector_memory

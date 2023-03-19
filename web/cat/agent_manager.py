@@ -6,7 +6,9 @@ from langchain.chains import LLMChain
 
 
 class AgentManager:
-    def __init__(self, llm, tool_names: List[str]) -> None:
+    def __init__(self, llm, tool_names: List[str], verbose=False) -> None:
+        self.verbose = verbose
+
         # a minimal list of ready available langchain tools/chains. Let's start simple!
         self.available_tools = [
             # "python_repl",
@@ -102,15 +104,16 @@ To reply you have access to the following tools:
             input_variables=input_variables,
         )
 
-        log("Using prompt template:")
-        log(prompt.template)
+        if self.verbose:
+            log("Using prompt template:")
+            log(prompt.template)
 
         # main chain
-        chain = LLMChain(prompt=prompt, llm=self.llm, verbose=True)
+        chain = LLMChain(prompt=prompt, llm=self.llm, verbose=self.verbose)
 
         # init agent
         agent = ConversationalAgent(
-            llm_chain=chain, allowed_tools=self.tool_names_agent, verbose=True
+            llm_chain=chain, allowed_tools=self.tool_names_agent, verbose=self.verbose
         )
 
         # agent executor
@@ -118,7 +121,7 @@ To reply you have access to the following tools:
             agent=agent,
             tools=self.tools,
             return_intermediate_steps=return_intermediate_steps,
-            verbose=True,
+            verbose=self.verbose,
         )
 
         return agent_executor

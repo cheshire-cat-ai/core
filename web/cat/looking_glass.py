@@ -10,8 +10,8 @@ from cat.agent_manager import AgentManager
 
 # main class representing the cat
 class CheshireCat:
-    def __init__(self, verbose=False):
-        self.verbose = verbose
+    def __init__(self, settings):
+        self.verbose = settings.verbose
 
         # bootstrap the cat!
         self.load_core()
@@ -26,7 +26,7 @@ class CheshireCat:
         # TODO: remove .env configuration
         self.llm = DEFAULT_LANGUAGE_MODEL
         self.embedder = DEFAULT_LANGUAGE_EMBEDDER
-        self.vector_store = VectorStore(VectorMemoryConfig())
+        self.vector_store = VectorStore(VectorMemoryConfig(verbose=self.verbose))
 
         #        # HyDE chain TODO
         #        hypothesis_prompt = PromptTemplate(
@@ -76,7 +76,7 @@ class CheshireCat:
 
     def load_agent(self):
         self.agent_manager = AgentManager(
-            llm=self.llm, tool_names=["llm-math", "python_repl"]
+            llm=self.llm, tool_names=["llm-math", "python_repl"], verbose=self.verbose
         )  # TODO: load from plugins
         self.agent_manager.set_tools(["llm-math", "python_repl"])
         self.agent_executor = self.agent_manager.get_agent_executor(
@@ -96,6 +96,8 @@ class CheshireCat:
         episodic_memory_vectors = self.episodic_memory.max_marginal_relevance_search(
             user_message
         )  # TODO: customize k and fetch_k
+        if self.verbose:
+            log(episodic_memory_vectors)
         episodic_memory_text = [
             m.page_content.replace("\n", ". ") for m in episodic_memory_vectors
         ]
@@ -115,7 +117,8 @@ class CheshireCat:
         declarative_memory_vectors = (
             self.declarative_memory.max_marginal_relevance_search(user_message)
         )  # TODO: customize k and fetch_k
-        log(declarative_memory_vectors)
+        if self.verbose:
+            log(declarative_memory_vectors)
         declarative_memory_text = [
             m.page_content.replace("\n", ". ") for m in declarative_memory_vectors
         ]

@@ -2,6 +2,7 @@ import traceback
 
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
+from cat.settings import CheshireCatSettings
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
@@ -13,7 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 #       ^._.^
 #
 # loads Cat and plugins
-ccat = CheshireCat(verbose=True)
+cheshire_cat_settings = CheshireCatSettings()
+cheshire_cat = CheshireCat(cheshire_cat_settings)
 
 # API endpoints
 cheshire_cat_api = FastAPI()
@@ -35,12 +37,6 @@ cheshire_cat_api.add_middleware(
 )
 
 
-# server status
-@cheshire_cat_api.get("/")
-async def home():
-    return {"status": "We're all mad here, dear!"}
-
-
 # main loop via websocket
 @cheshire_cat_api.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -54,7 +50,7 @@ async def websocket_endpoint(websocket: WebSocket):
             )  # TODO: should receive a JSON with metadata
 
             # get response from the cat
-            cat_message = ccat(user_message)
+            cat_message = cheshire_cat(user_message)
 
             # send output to user
             await websocket.send_json(cat_message)
@@ -70,6 +66,24 @@ async def websocket_endpoint(websocket: WebSocket):
                 "code": type(e).__name__,
             }
         )
+
+
+# server status
+@cheshire_cat_api.get("/")
+async def home():
+    return {"status": "We're all mad here, dear!"}
+
+
+# GET settings
+@cheshire_cat_api.get("/settings/")
+async def settings_read():
+    return {}
+
+
+# POST settings
+@cheshire_cat_api.post("/settings/")
+async def settings_write():
+    return {}
 
 
 # receive files via endpoint
@@ -93,7 +107,7 @@ async def rabbithole_upload_endpoint(
         )
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(ingest_file, file, ccat)
+    background_tasks.add_task(ingest_file, file, cheshire_cat)
 
     # reply to client
     return {
