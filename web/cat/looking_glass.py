@@ -1,9 +1,11 @@
+import os
 import time
 
 from cat import config
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
 from cat.agent_manager import AgentManager
+from web.cat.config.llm.llm import SupportedVendor, get_models
 
 
 # main class representing the cat
@@ -19,11 +21,17 @@ class CheshireCat:
         # recent conversation # TODO: load from episodic memory latest conversation messages
         self.history = ""
 
-    def load_core(self):
-        # TODO: llm and embedder should be loaded from db after the user has set them up
+    def load_core(self, model: SupportedVendor):
         # TODO: remove .env configuration
-        self.llm = config.LANGUAGE_MODEL
-        self.embedder = config.LANGUAGE_EMBEDDER
+        # TODO: llm and embedder should be loaded from db after the user has set them up
+        _llm = "gpt-3.5-turbo"
+        _embedder = "text-embedding-ada-002"
+        # TODO: key should be loaded from DB (hashing logic to write) or from a secret file
+        _key = os.getenv("OPENAI_KEY", default=None)
+
+        self.llm, self.embedder = get_models(
+            vendor=model, embedder_name=_embedder, llm_name=_llm, model_key=_key
+        )
         self.vector_store = VectorStore(VectorMemoryConfig())
 
         #        # HyDE chain TODO
