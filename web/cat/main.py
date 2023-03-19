@@ -23,7 +23,7 @@ cheshire_cat_api = FastAPI()
 # including sending cookies and using any HTTP method and header.
 # Whilst this is useful in dev environments, it might be too permissive for production environments
 # therefore, it might be a good idea to configure the allowed origins in a differnet configuration file
-origins = ["*"]
+origins = ["*"]  # TODO: add CORS_ALLOWED_ORIGINS support from .env
 
 # Configures the CORS middleware for the FastAPI app
 cheshire_cat_api.add_middleware(
