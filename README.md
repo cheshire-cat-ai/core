@@ -1,51 +1,70 @@
 # 🐱 Cheshire-Cat (Stregatto)
-Customizable AI architecture
 
-![Wikipedia picture of the Cheshire Cat](cheshire-cat.jpeg)
+<p align="center">
 
-```
+<img src=cheshire-cat.jpeg width=240px alt="Wikipedia picture of the Cheshire Cat">
+
+</p>
+
 "Would you tell me, please, which way I ought to go from here?"
 "That depends a good deal on where you want to get to," said the Cat.
 "I don't much care where--" said Alice.
 "Then it doesn't matter which way you go," said the Cat.
 
 (Alice's Adventures in Wonderland - Lewis Carroll)
+
+## About The Project
+
+The Cheshire Cat AI (Stregatto) can leverage many different language models, according to your taste. It's an open source layer on top of the most used language models. It features a long term memory and a plugin system so you can extend it.
+
+
+## Getting started
+
+### Requirements
+
+- Docker installed
+- .env file containing secrets
+
+
+### Installation
+
+In order to use Cheshire Cat AI you need to clone the repository from github and run it using docker-compose. Use git clone to get the repo:
+
+```bash
+git clone --branch vLATEST https://github.com/pieroit/cheshire-cat.git
+cd cheshire-cat
+# Before to run docker-compose up command you have to create a .env file containing secrets, more details on Secrets file section
+docker-compose up
 ```
 
-## Quickstart
+### Secrets file
 
-You just need `docker` and `docker-compose` installed on your system.
+To execute Cheshire Cat AI you should provide a **.env** file containing the required secrets variables, that are:
 
-Clone the repo and cd into it. Create a `.env` file containing:
+```bash
+OPENAI_KEY="YOUR_OPEN_AI_KEY"
+```
 
-```OPENAI_KEY=<your-openai-key>```
+## Usage
 
-After that you can run:
-
-```docker-compose up```
-
-The first time (only) it will take several minutes, as the images occupy a few GBs.
-
-Interact with the Cheshire Cat on `localhost:3000`
-
-When you finish, remember to CTRL+c in the terminal and `docker-compose down`.
+Once you created the .env file and executed `docker-compose up`  you will find the UI available at `http://localhost`.
 
 
-## Development
+## Roadmap
 
-This is a new and fast changing project.
-If you want the latest version, we recommend to start each session by updating the code:
+- [ ] Add models support
 
-```git pull origin main```
 
-If any `Dockerfile` or `docker-compose.yml` file has changed, rebuild the images from scratch (will take a while):
 
-```docker-compose build --no-cache```
+## Contributing
 
-Then you can start hacking:
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-```docker-compose up```
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
 
-From time to time remember to delete pending, unused images:
-
-```docker rmi -f $(docker images -f "dangling=true" -q)```
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request 
