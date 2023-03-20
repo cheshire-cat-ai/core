@@ -6,7 +6,12 @@
 
 </p>
 
+"Would you tell me, please, which way I ought to go from here?"
+"That depends a good deal on where you want to get to," said the Cat.
+"I don't much care where--" said Alice.
+"Then it doesn't matter which way you go," said the Cat.
 
+(Alice's Adventures in Wonderland - Lewis Carroll)
 
 ## About The Project
 
@@ -63,14 +68,3 @@ Don't forget to give the project a star! Thanks again!
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request 
-
-
-## Contributors
-
-[![](https://github.com/pieroit.png?size=50)](https://github.com/pieroit)
-[![](https://github.com/antonioru.png?size=50)](https://github.com/antonioru)
-[![](https://github.com/peppicus.png?size=50)](https://github.com/peppicus)
-[![](https://github.com/umbertogriffo.png?size=50)](https://github.com/umbertogriffo)
-[![](https://github.com/samirsalman.png?size=50)](https://github.com/samirsalman)
-
-
