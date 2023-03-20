@@ -1,5 +1,3 @@
-import os
-
 import langchain
 from pydantic import PyObject, BaseSettings
 from langchain.cache import InMemoryCache
@@ -86,18 +84,3 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
 ]
-
-
-# TODO: this is a temp way of starting the cat directly with openai chatGPT
-# the cat shohuld start with a light weight LM and wait to be configured with a better one
-if "OPENAI_KEY" not in os.environ:
-    raise Exception(
-        'Please create a ".env" file in root folder containing "OPENAI_KEY=<your-key>"'
-    )
-
-DEFAULT_LANGUAGE_MODEL = LLMOpenAIChatConfig.get_llm_from_config(
-    {
-        "openai_api_key": os.environ["OPENAI_KEY"],
-        # "model_name": "gpt-3.5-turbo"
-    }
-)

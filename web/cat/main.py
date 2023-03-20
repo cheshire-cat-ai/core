@@ -2,13 +2,13 @@ import traceback
 
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
-from cat.settings import CheshireCatSettings
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
 from cat.looking_glass import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from cat.config.settings import CheshireCatSettings
 from fastapi.middleware.cors import CORSMiddleware
 
 #       ^._.^

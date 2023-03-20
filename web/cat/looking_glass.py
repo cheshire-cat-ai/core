@@ -1,32 +1,48 @@
 import time
 
-from cat.llm import DEFAULT_LANGUAGE_MODEL
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
-from cat.prompt import MAIN_PROMPT_PREFIX, MAIN_PROMPT_SUFFIX
-from cat.embedder import DEFAULT_LANGUAGE_EMBEDDER
 from cat.agent_manager import AgentManager
+from cat.mad_hatter.mad_hatter import MadHatter
 
 
 # main class representing the cat
 class CheshireCat:
     def __init__(self, settings):
-        self.verbose = settings.verbose
+        self.settings = settings
 
         # bootstrap the cat!
-        self.load_core()
         self.load_plugins()
         self.load_agent()
 
+    def load_plugins(self):
         # recent conversation # TODO: load from episodic memory latest conversation messages
         self.history = ""
 
-    def load_core(self):
+        # Load plugin system
+        self.mad_hatter = MadHatter()
+
+        # LLM and embedder
         # TODO: llm and embedder config should be loaded from db after the user has set them up
         # TODO: remove .env configuration
-        self.llm = DEFAULT_LANGUAGE_MODEL
-        self.embedder = DEFAULT_LANGUAGE_EMBEDDER
-        self.vector_store = VectorStore(VectorMemoryConfig(verbose=self.verbose))
+        self.llm = self.mad_hatter.execute_hook("get_language_model")
+        self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
+
+        # Prompts
+        self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")
+        self.suffix_prompt = self.mad_hatter.execute_hook("get_main_prompt_suffix")
+
+        # Memory
+        self.vector_store = VectorStore(
+            VectorMemoryConfig(verbose=self.settings.verbose)
+        )
+        self.episodic_memory = self.vector_store.get_vector_store(
+            "episodes", embedder=self.embedder
+        )
+        self.declarative_memory = self.vector_store.get_vector_store(
+            "documents", embedder=self.embedder
+        )
+        # TODO: don't know if it is better to use different collections or just different metadata
 
         #        # HyDE chain TODO
         #        hypothesis_prompt = PromptTemplate(
@@ -46,20 +62,8 @@ class CheshireCat:
         #            verbose=True
         #        )
 
-        # Memory
-        self.episodic_memory = self.vector_store.get_vector_store(
-            "episodes", embedder=self.embedder
-        )
-        self.declarative_memory = self.vector_store.get_vector_store(
-            "documents", embedder=self.embedder
-        )
-        # TODO: don't know if it is better to use different collections or just different metadata
-
         # Agent
         # let's cutomize ...every aspect of agent prompt
-        self.prefix_prompt = MAIN_PROMPT_PREFIX
-
-        self.suffix_prompt = MAIN_PROMPT_SUFFIX
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -70,13 +74,11 @@ class CheshireCat:
             "agent_scratchpad",
         ]
 
-    def load_plugins(self):
-        # TODO: load pluging / extensions
-        pass
-
     def load_agent(self):
         self.agent_manager = AgentManager(
-            llm=self.llm, tool_names=["llm-math", "python_repl"], verbose=self.verbose
+            llm=self.llm,
+            tool_names=["llm-math", "python_repl"],
+            verbose=self.settings.verbose,
         )  # TODO: load from plugins
         self.agent_manager.set_tools(["llm-math", "python_repl"])
         self.agent_executor = self.agent_manager.get_agent_executor(
@@ -96,7 +98,7 @@ class CheshireCat:
         episodic_memory_vectors = self.episodic_memory.max_marginal_relevance_search(
             user_message
         )  # TODO: customize k and fetch_k
-        if self.verbose:
+        if self.settings.verbose:
             log(episodic_memory_vectors)
         episodic_memory_text = [
             m.page_content.replace("\n", ". ") for m in episodic_memory_vectors
@@ -117,7 +119,7 @@ class CheshireCat:
         declarative_memory_vectors = (
             self.declarative_memory.max_marginal_relevance_search(user_message)
         )  # TODO: customize k and fetch_k
-        if self.verbose:
+        if self.settings.verbose:
             log(declarative_memory_vectors)
         declarative_memory_text = [
             m.page_content.replace("\n", ". ") for m in declarative_memory_vectors
@@ -129,7 +131,7 @@ class CheshireCat:
         return declarative_memory_content
 
     def __call__(self, user_message):
-        if self.verbose:
+        if self.settings.verbose:
             log(user_message)
 
         # recall relevant memories
@@ -148,7 +150,7 @@ class CheshireCat:
             }
         )
 
-        if self.verbose:
+        if self.settings.verbose:
             log(cat_message)
 
         # update conversation history
