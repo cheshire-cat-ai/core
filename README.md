@@ -9,8 +9,9 @@
 - 100% dockerized
 - extendible via plugins
 
-
-<img align="left" src=cheshire-cat.jpeg width=250px alt="Wikipedia picture of the Cheshire Cat">
+<p align="center">
+    <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
+</p>
 
 ```
 "Would you tell me, please, which way I ought to go from here?"
