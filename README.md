@@ -10,17 +10,15 @@
 - extendible via plugins
 
 
-<img align="left" src=cheshire-cat.jpeg width=300px alt="Wikipedia picture of the Cheshire Cat">
+<img align="left" src=cheshire-cat.jpeg width=250px alt="Wikipedia picture of the Cheshire Cat">
 
 ```
-
 "Would you tell me, please, which way I ought to go from here?"
 "That depends a good deal on where you want to get to," said the Cat.
 "I don't much care where--" said Alice.
 "Then it doesn't matter which way you go," said the Cat.
 
 (Alice's Adventures in Wonderland - Lewis Carroll)
-
 
 ```
 
