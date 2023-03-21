@@ -83,18 +83,6 @@ async def home():
     return {"status": "We're all mad here, dear!"}
 
 
-# GET settings
-@cheshire_cat_api.get("/settings/")
-async def settings_read():
-    return {}
-
-
-# POST settings
-@cheshire_cat_api.post("/settings/")
-async def settings_write():
-    return {}
-
-
 # receive files via endpoint
 # TODO: should we receive files also via websocket?
 @cheshire_cat_api.post("/rabbithole/")
