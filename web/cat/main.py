@@ -1,7 +1,10 @@
 import traceback
 
+from cat import setting
+from cat.db import models
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
+from cat.db.database import engine
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
@@ -16,6 +19,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # loads Cat and plugins
 cheshire_cat_settings = CheshireCatSettings()
 cheshire_cat = CheshireCat(cheshire_cat_settings)
+
+# Create the SQL table in the SQLite database
+models.Base.metadata.create_all(bind=engine)
 
 # API endpoints
 cheshire_cat_api = FastAPI()
@@ -35,6 +41,9 @@ cheshire_cat_api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add the setting router to the middleware stack.
+cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
 
 
 # main loop via websocket
