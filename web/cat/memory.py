@@ -18,9 +18,12 @@ class VectorStore:
         self.folder_path = Path(__file__).parent.parent.resolve() / vm_config.folder
         self.verbose = vm_config.verbose
 
+    def _get_collection_path(self, collection_name):
+        return self.folder_path / collection_name
+
     def get_vector_store(self, collection_name, embedder):
-        collection_path = os.path.join(self.folder_path, collection_name)
-        index_file_path = Path(os.path.join(collection_path, "index.pkl"))
+        collection_path = self._get_collection_path(collection_name)
+        index_file_path = collection_path / "index.pkl"
 
         if self.verbose:
             log(collection_path)
@@ -48,6 +51,6 @@ class VectorStore:
         return vector_store
 
     def save_vector_store(self, collection_name, vector_store):
-        collection_path = os.path.join(self.folder_path, collection_name)
+        collection_path = self._get_collection_path(collection_name)
         vector_store.save_local(collection_path)
         log(f"{collection_name} vector store saved to disk")
