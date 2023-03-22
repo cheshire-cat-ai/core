@@ -10,7 +10,7 @@
 <!-- TABLE OF CONTENTS -->
 <details open>
   <summary>Table of Contents</summary>
-  <ol>
+  <ul>
     <li>😺 <a href="#about-the-project">About The Project</a></li>
     <li>
       🎸 <a href="#contributing">Contributing</a>
@@ -27,8 +27,12 @@
       </ul>
     </li>
     <li>📂 <a href="#folder-structure">Folder structure</a></li>
-    <li>💪 <a href="#guidelines-and-standards">Guidelines and standards</a></li>
-  </ol>
+    <li>
+    💪 <a href="#guidelines-and-standards">Guidelines and standards</a></li>
+    <ul>
+        <li><a href="./src/components/README.md">Writing components</a></li>
+    </ul>
+  </ul>
 </details>
 
 ## About the project
@@ -101,50 +105,49 @@ Runs the build and serves the built app on port `3000`
 
 Here's the folder structure of application.
 
-
 ```
 .
 ├── public/
 │   ├── public-file.img
 │   └── public-something.json
 └── src/
-├── components/
-│   ├── ComponentName/
-│   │   ├── index.ts
-│   │   ├── ComponentName.tsx
-│   │   └── ComponentName.module.scss
-│   └── ...
-├── hooks/
-│   ├── useSomething.ts
-│   ├── useSomethingElse.ts
-│   └── ...
-├── models/
-│   ├── commons.ts
-│   ├── Model.ts
-│   └── ...
-├── routes/
-│   ├── RouteName/
-│   │   ├── index.ts
-│   │   ├── RouteName.tsx
-│   │   └── RouteName.module.scss
-│   ├── OtherRoute/
-│   ├── SubRute/
-│   ├── ...
-│   └── browserRouter.ts
-├── services/
-│   ├── someService.ts
-│   └── ...
-├── theme/
-│   ├── libs/
-│   │   └── ...
-│   ├── _mixins.scss
-│   ├── _variables.scss
-│   ├── ...
-│   └── index.scss
-├── utils/
-│   └── ...
-├── main.tsx
-└── config.ts  
+    ├── components/
+    │   ├── ComponentName/
+    │   │   ├── index.ts
+    │   │   ├── ComponentName.tsx
+    │   │   └── ComponentName.module.scss
+    │   └── ...
+    ├── hooks/
+    │   ├── useSomething.ts
+    │   ├── useSomethingElse.ts
+    │   └── ...
+    ├── models/
+    │   ├── commons.ts
+    │   ├── Model.ts
+    │   └── ...
+    ├── routes/
+    │   ├── RouteName/
+    │   │   ├── index.ts
+    │   │   ├── RouteName.tsx
+    │   │   └── RouteName.module.scss
+    │   ├── OtherRoute/
+    │   ├── SubRute/
+    │   ├── ...
+    │   └── browserRouter.ts
+    ├── services/
+    │   ├── someService.ts
+    │   └── ...
+    ├── theme/
+    │   ├── libs/
+    │   │   └── ...
+    │   ├── _mixins.scss
+    │   ├── _variables.scss
+    │   ├── ...
+    │   └── index.scss
+    ├── utils/
+    │   └── ...
+    ├── main.tsx
+    └── config.ts  
 ```
 
 ## Guidelines and standards
@@ -153,3 +156,4 @@ Here's the list of guidelines and standards that must be followed while contribu
 application.
 Please read and understand these guidelines before contributing to the application.
 
+- [Writing components](./src/components/README.md)
