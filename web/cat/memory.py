@@ -20,12 +20,13 @@ class VectorStore:
 
     def get_vector_store(self, collection_name, embedder):
         collection_path = os.path.join(self.folder_path, collection_name)
+        index_file_path = Path(os.path.join(collection_path, "index.pkl"))
 
         if self.verbose:
             log(collection_path)
 
         log("Loading vector store...")
-        if not Path(os.path.join(collection_path, "index.pkl")).exists():
+        if not index_file_path.exists():
             log("index.pkl does not exist, the index is being created from scratch")
             vector_store = FAISS.from_texts(
                 ["I am the Cheshire Cat"],
