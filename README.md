@@ -59,7 +59,7 @@ docker-compose down
 
 Your contribution is **greatly appreciated**. Things you can do to help the project:
 - try out the Cat
-- read and open issues
+- read, comment and open issues
 - make a pull request (if it contains lots of code, please discuss it beforehand opening a issue)
 - making tutorials and docs
 - sharing on social media
