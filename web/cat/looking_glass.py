@@ -170,6 +170,7 @@ class CheshireCat:
                 }
             ],
         )
+        self.vector_store.save_vector_store("episodes", self.episodic_memory)
 
         # build data structure for output (response and why with memories)
         final_output = {
