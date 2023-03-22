@@ -12,5 +12,6 @@ openai==0.27.0
 cohere==4.0.4
 huggingface-hub==0.13.2
 unstructured[local-inference]==0.5.3
-SQLAlchemy==1.4.46
+SQLAlchemy==1.4.41
 fastapi-utils==0.2.1
+sqlmodel==0.0.8

@@ -1,28 +1,31 @@
-from cat.db import crud, models, schemas
+from cat.db import crud, models
 from fastapi import Depends, Response, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
-from cat.db.database import get_db
+from cat.db.database import get_db_session
 
 router = APIRouter()
 
 
 @router.get("/")
 def get_settings(
-    db: Session = Depends(get_db), limit: int = 10, page: int = 1, search: str = ""
+    db: Session = Depends(get_db_session),
+    limit: int = 10,
+    page: int = 1,
+    search: str = "",
 ):
     settings = crud.get_settings(db, limit=limit, page=page, search=search)
     return {"status": "success", "results": len(settings), "settings": settings}
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_setting(payload: schemas.SettingBaseSchema, db: Session = Depends(get_db)):
+def create_setting(payload: models.Setting, db: Session = Depends(get_db_session)):
     new_setting = crud.create_setting(db, payload)
     return {"status": "success", "setting": new_setting}
 
 
 @router.patch("/{settingId}")
 def update_setting(
-    settingId: str, payload: schemas.SettingBaseSchema, db: Session = Depends(get_db)
+    settingId: str, payload: models.Setting, db: Session = Depends(get_db_session)
 ):
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
@@ -42,7 +45,7 @@ def update_setting(
 
 
 @router.get("/{settingId}")
-def get_setting(settingId: str, db: Session = Depends(get_db)):
+def get_setting(settingId: str, db: Session = Depends(get_db_session)):
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
     if not setting:
@@ -54,7 +57,7 @@ def get_setting(settingId: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{settingId}")
-def delete_setting(settingId: str, db: Session = Depends(get_db)):
+def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
     if not setting:

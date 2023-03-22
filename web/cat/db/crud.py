@@ -1,4 +1,5 @@
-from cat.db import models, schemas
+from cat.db import models
+from sqlmodel import col
 from sqlalchemy.orm import Session
 
 
@@ -6,14 +7,14 @@ def get_settings(db: Session, limit: int = 10, page: int = 1, search: str = ""):
     skip = (page - 1) * limit
     return (
         db.query(models.Setting)
-        .filter(models.Setting.name.contains(search))
+        .where(col(models.Setting.name).contains(search))
         .limit(limit)
         .offset(skip)
         .all()
     )
 
 
-def create_setting(db: Session, payload: schemas.SettingBaseSchema):
+def create_setting(db: Session, payload: models.Setting):
     db_setting = models.Setting(**payload.dict())
     db.add(db_setting)
     db.commit()
