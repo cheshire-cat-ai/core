@@ -18,7 +18,7 @@ class VectorStore:
         self.folder_path = Path(__file__).parent.parent.resolve() / vm_config.folder
         self.verbose = vm_config.verbose
 
-    def get_vector_store(self, collection_name, embeddings):
+    def get_vector_store(self, collection_name, embedding):
         collection_path = os.path.join(self.folder_path, collection_name)
 
         if self.verbose:
@@ -29,7 +29,7 @@ class VectorStore:
             log("index.pkl does not exist, the index is being created from scratch")
             vector_store = FAISS.from_texts(
                 ["I am the Cheshire Cat"],
-                embeddings,
+                embedding,
                 [
                     {
                         "who": "cheshire-cat",
@@ -41,6 +41,6 @@ class VectorStore:
             vector_store.save_local(collection_path)
         else:
             log("Load vector store from disk")
-            vector_store = FAISS.load_local(collection_path, embeddings)
+            vector_store = FAISS.load_local(collection_path, embedding)
 
         return vector_store
