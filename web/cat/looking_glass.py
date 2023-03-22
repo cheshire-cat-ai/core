@@ -37,10 +37,10 @@ class CheshireCat:
             VectorMemoryConfig(verbose=self.settings.verbose)
         )
         self.episodic_memory = self.vector_store.get_vector_store(
-            "episodes", embedding=self.embedder
+            "episodes", embedder=self.embedder
         )
         self.declarative_memory = self.vector_store.get_vector_store(
-            "documents", embedding=self.embedder
+            "documents", embedder=self.embedder
         )
         # TODO: don't know if it is better to use different collections or just different metadata
 
@@ -170,6 +170,7 @@ class CheshireCat:
                 }
             ],
         )
+        self.vector_store.save_vector_store("episodes", self.episodic_memory)
 
         # build data structure for output (response and why with memories)
         final_output = {

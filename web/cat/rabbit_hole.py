@@ -63,6 +63,8 @@ def ingest_file(file: UploadFile, ccat):
         log(f"Inserted into memory ({d+1}/{len(docs)}):    {doc}")
         time.sleep(0.3)
 
+    ccat.vector_store.save_vector_store("documents", ccat.declarative_memory)
+
     log("Done uploading")  # TODO: notify client
 
     # TODO: HyDE embed
