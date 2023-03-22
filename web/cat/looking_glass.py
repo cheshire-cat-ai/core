@@ -37,10 +37,10 @@ class CheshireCat:
             VectorMemoryConfig(verbose=self.settings.verbose)
         )
         self.episodic_memory = self.vector_store.get_vector_store(
-            "episodes", embedder=self.embedder
+            "episodes", embeddings=self.embedder
         )
         self.declarative_memory = self.vector_store.get_vector_store(
-            "documents", embedder=self.embedder
+            "documents", embeddings=self.embedder
         )
         # TODO: don't know if it is better to use different collections or just different metadata
 
