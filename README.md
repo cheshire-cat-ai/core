@@ -41,10 +41,10 @@ cd ./web
 virtualenv env
 source ./env/bin/activate
 pip install -r requirements.txt
-pip install uvicorn gunicorn langchain beautifulsoup4 openai
-uvicorn cat.main:cheshire_cat_api --host 127.0.0.1 -port 8000 # run the backend
+pip install uvicorn[standard] gunicorn langchain beautifulsoup4 openai
+uvicorn cat.main:cheshire_cat_api --host 127.0.0.1 --port 1865 # run the backend
 
-cd ../frontend
+cd ./frontend
 npm install
 npm run build
 npm start # run the frontend
@@ -52,6 +52,9 @@ npm start # run the frontend
 
 - Chat with the Cheshire Cat on `localhost:3000`.
 - You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
+
+You need to run the 2 set of commands in 2 different shell windows as they are 2 different web servers.  
+The installation part is required just once.
 
 ### Docker
 
