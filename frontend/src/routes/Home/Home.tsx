@@ -72,7 +72,7 @@ const Home: FC = () => {
           className={style.input}
         />
         {isSupported && (
-          <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} />
+          <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} disabled={inputDisabled} />
         )}
       </div>
     </div>

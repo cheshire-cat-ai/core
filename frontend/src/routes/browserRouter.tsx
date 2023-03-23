@@ -1,8 +1,7 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
+import lazyRoute from '@routes/lazyRoute'
 import Scaffold from './Scaffold'
-
-import Home from './Home'
 
 /**
  * Creates and exports the application routes.
@@ -16,8 +15,11 @@ export default createBrowserRouter([
     children: [
       {
         path: '/',
-        // todo: create a lazy loading utility to load the page components
-        element: <Home />
+        element: lazyRoute('./Home')
+      },
+      {
+        path: '/configuration',
+        element: lazyRoute('./Configuration')
       }
     ]
   }
