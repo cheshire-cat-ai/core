@@ -6,7 +6,6 @@
   <a href="">
     <img src="https://cdn-icons-png.flaticon.com/512/3394/3394293.png" alt="Logo" width="80" height="80">
   </a>
-
   <h2 align="center">Cheshire-Cat (Stregatto)</h2>
   <h4 align="center">
     Customizable AI architecture!
