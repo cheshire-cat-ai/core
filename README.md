@@ -8,8 +8,7 @@
   </a>
 
   <h2 align="center">Cheshire-Cat (Stregatto)</h2>
-
-  <p align="center">
+  <p style="display:inline" align="center">
     Customizable AI architecture!
   </p>
 </div>
