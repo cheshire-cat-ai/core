@@ -6,8 +6,6 @@ services:
     build:
       context: ./web
     container_name: web
-    depends_on:
-      - vector-memory
     env_file:
       - .env
     environment:
@@ -40,20 +38,3 @@ services:
       - ./frontend:/app
     command: bash -c "npm install && npm run build && npm run dev"
     restart: unless-stopped
-
-  vector-memory:
-    image: qdrant/qdrant:v1.0.1
-    container_name: vector-memory
-    ports:
-      - 6333:6333
-    volumes:
-      - ./long_term_memory/qdrant:/qdrant/storage
-    restart: unless-stopped
-  #vector-memory:
-  #  image: semitechnologies/weaviate:1.17.3
-  #  container_name: vector-memory
-  #  ports:
-  #    - 8080:8080
-  #  volumes:
-  #    - ./long_term_memory/weaviate:/var/lib/weaviate
-  #  restart: unless-stopped

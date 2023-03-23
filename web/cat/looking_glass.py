@@ -1,5 +1,6 @@
 import time
 
+import langchain
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
 from cat.agent_manager import AgentManager
@@ -35,34 +36,24 @@ class CheshireCat:
         self.vector_store = VectorStore(
             VectorMemoryConfig(verbose=self.settings.verbose)
         )
-        self.episodic_memory = self.vector_store.get_vector_store(
+        episodic_memory = self.vector_store.get_vector_store(
             "episodes", embedder=self.embedder
         )
-        self.declarative_memory = self.vector_store.get_vector_store(
+        declarative_memory = self.vector_store.get_vector_store(
             "documents", embedder=self.embedder
         )
+        self.memory = {"episodes": episodic_memory, "documents": declarative_memory}
         # TODO: don't know if it is better to use different collections or just different metadata
 
-        #        # HyDE chain TODO
-        #        hypothesis_prompt = PromptTemplate(
-        #            input_variables=['question'],
-        #            template='''What could be a plausible answer to the following question? Be concise and invent the answer even if you don't know it.
-        #
-        # Question:
-        # {question}
-        #
-        # Answer:
-        # '''
-        #        )
-        #
-        #        hypothetis_chain = LLMChain(
-        #            prompt=hypothesis_prompt,
-        #            llm=self.llm,
-        #            verbose=True
-        #        )
+        # HyDE chain
+        hypothesis_prompt = langchain.PromptTemplate(
+            input_variables=["input"],
+            template=self.mad_hatter.execute_hook("get_hypothetical_embedding_prompt"),
+        )
 
-        # Agent
-        # let's cutomize ...every aspect of agent prompt
+        self.hypothetis_chain = langchain.chains.LLMChain(
+            prompt=hypothesis_prompt, llm=self.llm, verbose=True
+        )
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -76,10 +67,10 @@ class CheshireCat:
     def load_agent(self):
         self.agent_manager = AgentManager(
             llm=self.llm,
-            tool_names=["llm-math", "python_repl"],
+            tools=self.mad_hatter.tools,
             verbose=self.settings.verbose,
         )  # TODO: load from plugins
-        self.agent_manager.set_tools(["llm-math", "python_repl"])
+
         self.agent_executor = self.agent_manager.get_agent_executor(
             prefix_prompt=self.prefix_prompt,
             suffix_prompt=self.suffix_prompt,
@@ -88,56 +79,59 @@ class CheshireCat:
         )
 
     # retrieve conversation memories (things user said in conversation)
-    def recall_episodic_memories(self, user_message):
-        memories_separator = "\n  - "
+    def recall_memories(
+        self, text=None, embedding=None, collection=None, return_format=str
+    ):
+        # retrieve memories
+        memory_vectors = self.memory[collection].similarity_search_with_score_by_vector(
+            embedding, k=1000
+        )
+        log(memory_vectors)
+        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_vectors]
 
-        # retrieve conversation memories
-        # TODO: HyDE
-        # TODO: choose return format (list vs string)
-        episodic_memory_vectors = self.episodic_memory.max_marginal_relevance_search(
-            user_message
-        )  # TODO: customize k and fetch_k
+        # TODO: filter by metadata (e.g. questions --> answer)
+
+        if return_format == str:
+            memories_separator = "\n  - "
+            memory_content = memories_separator + memories_separator.join(memory_texts)
+        else:
+            memory_content = memory_texts
+
+        # TODO: take away duplicates
+        # TODO: insert time information (e.g "two days ago") in episodic memories
+        # TODO: insert sources in document memories
+
         if self.settings.verbose:
-            log(episodic_memory_vectors)
-        episodic_memory_text = [
-            m.page_content.replace("\n", ". ") for m in episodic_memory_vectors
-        ]
-        episodic_memory_content = memories_separator + memories_separator.join(
-            episodic_memory_text
-        )  # TODO: take away duplicates; insert time information (e.g "two days ago")
+            log(memory_content)
 
-        return episodic_memory_content
+        return memory_content
 
-    # retrieve external memories (uploaded documents)
-    def recall_declarative_memories(self, user_message):
-        memories_separator = "\n  - "
-
-        # retrieve from uploaded documents
-        # TODO: HyDE
-        # TODO: choose return format (list vs string)
-        declarative_memory_vectors = (
-            self.declarative_memory.max_marginal_relevance_search(user_message)
-        )  # TODO: customize k and fetch_k
+    def get_hyde_text_and_embedding(self, user_message):
+        # HyDE text
+        hyde_text = self.hypothetis_chain.run(user_message)
         if self.settings.verbose:
-            log(declarative_memory_vectors)
-        declarative_memory_text = [
-            m.page_content.replace("\n", ". ") for m in declarative_memory_vectors
-        ]
-        declarative_memory_content = memories_separator + memories_separator.join(
-            declarative_memory_text
-        )  # TODO: take away duplicates; insert SOURCE information
+            log(hyde_text)
 
-        return declarative_memory_content
+        # HyDE embedding
+        hyde_embedding = self.embedder.embed_query(hyde_text)
+
+        return hyde_text, hyde_embedding
 
     def __call__(self, user_message):
         if self.settings.verbose:
             log(user_message)
 
-        # recall relevant memories
-        episodic_memory_content = self.recall_episodic_memories(
-            user_message
-        )  # TODO: choose return format (list vs string)
-        declarative_memory_content = self.recall_declarative_memories(user_message)
+        hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
+
+        # recall relevant memories (episodic)
+        episodic_memory_content = self.recall_memories(
+            collection="episodes", text=hyde_text, embedding=hyde_embedding
+        )
+
+        # recall relevant memories (declarative)
+        declarative_memory_content = self.recall_memories(
+            collection="documents", text=hyde_text, embedding=hyde_embedding
+        )
 
         # reply with agent
         cat_message = self.agent_executor(
@@ -159,7 +153,7 @@ class CheshireCat:
         # store user message in episodic memory
         # TODO: also embed HyDE style
         # TODO: vectorize and store conversation chunks (not raw dialog, but summarization)
-        _ = self.episodic_memory.add_texts(
+        _ = self.memory["episodes"].add_texts(
             [user_message],
             [
                 {
@@ -169,6 +163,7 @@ class CheshireCat:
                 }
             ],
         )
+        self.vector_store.save_vector_store("episodes", self.memory["episodes"])
 
         # build data structure for output (response and why with memories)
         final_output = {

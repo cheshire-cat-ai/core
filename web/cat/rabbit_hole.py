@@ -50,7 +50,7 @@ def ingest_file(file: UploadFile, ccat):
 
     # classic embed
     for d, doc in enumerate(docs):
-        _ = ccat.declarative_memory.add_texts(
+        _ = ccat.memory["documents"].add_texts(
             [doc],
             [
                 {
@@ -62,6 +62,8 @@ def ingest_file(file: UploadFile, ccat):
         )
         log(f"Inserted into memory ({d+1}/{len(docs)}):    {doc}")
         time.sleep(0.3)
+
+    ccat.vector_store.save_vector_store("documents", ccat.memory["documents"])
 
     log("Done uploading")  # TODO: notify client
 

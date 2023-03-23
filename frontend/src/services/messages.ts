@@ -35,7 +35,7 @@ const MessagesService = Object.freeze({
    */
   connect(onConnected: OnConnected | null = null) {
     let isReady = false
-    socket = new WebSocket(config.socketEndpoint)
+    socket = new WebSocket(config.endpoints.chat)
 
     socket.onopen = (event) => {
       if (onConnected) {

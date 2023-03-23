@@ -2,6 +2,7 @@ import glob
 import importlib
 from inspect import getmembers, isfunction  # , signature
 
+import langchain
 from cat.utils import log
 
 
@@ -16,37 +17,44 @@ class MadHatter:
     # exposes functionality to the cat
 
     def __init__(self):
-        self.plugins = self.find_plugins()
+        self.hooks, self.tools = self.find_plugins()
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
         py_files = glob.glob("cat/plugins/**/*.py", recursive=True)
 
         all_hooks = {}
+        all_tools = []
         for py_file in py_files:
             plugin_name = py_file.replace("/", ".").replace(
                 ".py", ""
             )  # this is UGLY I know. I'm sorry
             plugin_module = importlib.import_module(plugin_name)
             all_hooks[plugin_name] = dict(getmembers(plugin_module, self.is_cat_hook))
+            all_tools += getmembers(plugin_module, self.is_cat_tool)
 
-        log("Loaded plugins:")
+        log("Loaded hooks:")
         log(all_hooks)
 
+        log("Loaded tools:")
+        all_tools = [t[1] for t in all_tools]
+        log(all_tools)
+
         # TODO: sort plugins by priority
-        return all_hooks
+        return all_hooks, all_tools
 
     # a plugin function has to be decorated with @hook (which returns a function named "cat_function_wrapper")
-    def is_cat_hook(self, func):
-        return isfunction(func) and (
-            (func.__name__ == "cat_hook_wrapper")
-            or ((func.__name__ == "cat_tool_wrapper"))
-        )
+    def is_cat_hook(self, obj):
+        return isfunction(obj) and obj.__name__ == "cat_hook_wrapper"
+
+    # a plugin tool function has to be decorated with @tool (which returns an instance of langchain.agents.Tool)
+    def is_cat_tool(self, obj):
+        return isinstance(obj, langchain.agents.Tool)
 
     # execute requested hook
     def execute_hook(self, hook_name, hook_input=None):
         # TODO: deal with priority and pipelining
-        for plugin_name, plugin in self.plugins.items():
+        for plugin_name, plugin in self.hooks.items():
             if hook_name in plugin.keys():
                 hook = plugin[hook_name]
                 if hook_input is None:
