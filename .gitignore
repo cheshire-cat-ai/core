@@ -5,3 +5,4 @@ __pycache__
 .idea
 
 *long_term_memory
+/web/env/

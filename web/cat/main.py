@@ -1,6 +1,7 @@
 import traceback
 
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
+from dotenv import load_dotenv
 from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
@@ -14,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 #       ^._.^
 #
 # loads Cat and plugins
+load_dotenv()
 cheshire_cat_settings = CheshireCatSettings()
 cheshire_cat = CheshireCat(cheshire_cat_settings)
 

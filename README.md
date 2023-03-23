@@ -34,6 +34,27 @@ Clone the repo and cd into it. Create a `.env` file containing:
 OPENAI_KEY=<your-openai-key>
 ```
 
+### Without Docker
+
+```
+cd ./web
+virtualenv env
+source ./env/bin/activate
+pip install -r requirements.txt
+pip install uvicorn gunicorn langchain beautifulsoup4 openai
+uvicorn cat.main:cheshire_cat_api --host 127.0.0.1 -port 8000 # run the backend
+
+cd ../frontend
+npm install
+npm run build
+npm start # run the frontend
+```
+
+- Chat with the Cheshire Cat on `localhost:3000`.
+- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
+
+### Docker
+
 After that you can run:
 
 ```bash
