@@ -5,7 +5,6 @@ from cat.memory import VectorStore, VectorMemoryConfig
 from cat.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
 
-
 # main class representing the cat
 class CheshireCat:
     def __init__(self, settings):
