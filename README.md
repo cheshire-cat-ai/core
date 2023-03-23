@@ -1,13 +1,20 @@
 <a name="readme-top"></a>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="">
+    <img src="https://cdn-icons-png.flaticon.com/512/3394/3394293.png" alt="Logo" width="80" height="80">
+  </a>
 
-# 🐱 Cheshire-Cat (Stregatto)
+  <h2 align="center">Cheshire-Cat (Stregatto)</h2>
 
-## Customizable AI architecture
+  <p align="center">
+    Customizable AI architecture!
+  </p>
+</div>
+
+## About
 
 - Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
 - Long term memory
