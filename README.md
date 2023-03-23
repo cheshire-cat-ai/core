@@ -47,7 +47,7 @@ uvicorn cat.main:cheshire_cat_api --host 127.0.0.1 --port 1865 # run the backend
 cd ./frontend
 npm install
 npm run build
-npm start # run the frontend
+npm run dev # run the frontend
 ```
 
 - Chat with the Cheshire Cat on `localhost:3000`.
