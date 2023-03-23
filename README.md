@@ -1,5 +1,10 @@
 <a name="readme-top"></a>
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+
 # 🐱 Cheshire-Cat (Stregatto)
 
 ## Customizable AI architecture
@@ -73,7 +78,7 @@ Don't forget to give the project a star! Thanks again!
 
 You can start simply by:
 - Making tutorials and docs
-- Sharing on social media
+- Sharing on social media 
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
 
