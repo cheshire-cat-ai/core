@@ -4,9 +4,11 @@
 # TODO: can be overridden from REST API
 
 from pydantic import BaseSettings
-
-# from cat.llm import
+from cat.config.llm import SUPPORTED_LANGUAGE_MODELS
 
 
 class CheshireCatSettings(BaseSettings):
+    supported_language_models = SUPPORTED_LANGUAGE_MODELS
+    chosen_language_model = 0
+    chosen_embedder = 0
     verbose: bool = True

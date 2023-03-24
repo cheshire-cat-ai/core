@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 #
 # loads Cat and plugins
 cheshire_cat_settings = CheshireCatSettings()
+log(cheshire_cat_settings)
 cheshire_cat = CheshireCat(cheshire_cat_settings)
 
 # API endpoints

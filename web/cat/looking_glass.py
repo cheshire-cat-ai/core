@@ -6,6 +6,7 @@ from cat.memory import VectorStore, VectorMemoryConfig
 from cat.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
 
+
 # main class representing the cat
 class CheshireCat:
     def __init__(self, settings):
@@ -25,8 +26,8 @@ class CheshireCat:
         # LLM and embedder
         # TODO: llm and embedder config should be loaded from db after the user has set them up
         # TODO: remove .env configuration
-        self.llm = self.mad_hatter.execute_hook("get_language_model")
-        self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
+        self.llm = self.mad_hatter.execute_hook("get_language_model", self)
+        self.embedder = self.mad_hatter.execute_hook("get_language_embedder", self)
 
         # Prompts
         self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")
