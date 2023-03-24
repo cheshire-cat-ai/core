@@ -10,15 +10,12 @@ from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a metho
 from cat.looking_glass import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from cat.config.settings import CheshireCatSettings
 from fastapi.middleware.cors import CORSMiddleware
 
 #       ^._.^
 #
 # loads Cat and plugins
-cheshire_cat_settings = CheshireCatSettings()
-log(cheshire_cat_settings)
-cheshire_cat = CheshireCat(cheshire_cat_settings)
+cheshire_cat = CheshireCat()
 
 # API endpoints
 cheshire_cat_api = FastAPI()

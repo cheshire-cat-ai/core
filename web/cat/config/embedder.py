@@ -18,7 +18,7 @@ class EmbedderSettings(BaseSettings):
 
 
 class EmbedderFakeConfig(EmbedderSettings):
-    size: int = 1024  # size of the embedding # TODO: if embedder (and embedding size) changes at runtime, it will break the vector db
+    size: int = 10
     _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
 
     class Config:

@@ -9,8 +9,8 @@ from cat.mad_hatter.mad_hatter import MadHatter
 
 # main class representing the cat
 class CheshireCat:
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, verbose=True):
+        self.verbose = verbose
 
         # bootstrap the cat!
         self.load_plugins()
@@ -34,9 +34,7 @@ class CheshireCat:
         self.suffix_prompt = self.mad_hatter.execute_hook("get_main_prompt_suffix")
 
         # Memory
-        self.vector_store = VectorStore(
-            VectorMemoryConfig(verbose=self.settings.verbose)
-        )
+        self.vector_store = VectorStore(VectorMemoryConfig(verbose=self.verbose))
         episodic_memory = self.vector_store.get_vector_store(
             "episodes", embedder=self.embedder
         )
@@ -69,7 +67,7 @@ class CheshireCat:
         self.agent_manager = AgentManager(
             llm=self.llm,
             tools=self.mad_hatter.tools,
-            verbose=self.settings.verbose,
+            verbose=self.verbose,
         )  # TODO: load from plugins
 
         self.agent_executor = self.agent_manager.get_agent_executor(
@@ -102,7 +100,7 @@ class CheshireCat:
         # TODO: insert time information (e.g "two days ago") in episodic memories
         # TODO: insert sources in document memories
 
-        if self.settings.verbose:
+        if self.verbose:
             log(memory_content)
 
         return memory_content
@@ -110,7 +108,7 @@ class CheshireCat:
     def get_hyde_text_and_embedding(self, user_message):
         # HyDE text
         hyde_text = self.hypothetis_chain.run(user_message)
-        if self.settings.verbose:
+        if self.verbose:
             log(hyde_text)
 
         # HyDE embedding
@@ -119,7 +117,7 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     def __call__(self, user_message):
-        if self.settings.verbose:
+        if self.verbose:
             log(user_message)
 
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
@@ -144,7 +142,7 @@ class CheshireCat:
             }
         )
 
-        if self.settings.verbose:
+        if self.verbose:
             log(cat_message)
 
         # update conversation history
