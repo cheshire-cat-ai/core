@@ -3,6 +3,7 @@ import traceback
 from cat import setting
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
+from cat.db.database import create_db_and_tables
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
