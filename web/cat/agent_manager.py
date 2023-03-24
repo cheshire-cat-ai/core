@@ -11,11 +11,7 @@ class AgentManager:
 
         self.llm = llm
 
-        self.tools: List = tools
-        for t in tools:
-            t.description = t.description.split(" - ")[1]
-        self.tool_names = [t.name for t in tools]
-        # ["llm-math", "python_repl"] + tool_names
+        self.set_tools(tools)
 
         self.prefix_prompt = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
 The robot cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
@@ -42,8 +38,11 @@ To reply you have access to the following tools:
         ]
 
     def set_tools(self, tools: List[Tool]):
-        pass
-        # TODO: move tool preparation here
+        self.tools = tools
+        for t in self.tools:
+            t.description = t.description.split(" - ")[1]
+        self.tool_names = [t.name for t in tools]
+        # ["llm-math", "python_repl"] + tool_names
 
     def get_agent_executor(
         self,
@@ -80,7 +79,9 @@ To reply you have access to the following tools:
 
         # init agent
         agent = ConversationalAgent(
-            llm_chain=chain, allowed_tools=self.tool_names, verbose=self.verbose
+            llm_chain=chain,
+            allowed_tools=self.tool_names,
+            verbose=self.verbose,
         )
 
         # agent executor
