@@ -5,6 +5,8 @@ import AttachmentIcon from './paperclip.svg'
 import SendIcon from './send.svg'
 
 import style from './MessageInput.module.scss'
+import FeatureGuard from '@components/FeatureGuard/FeatureGuard'
+import { AppFeatures } from '@models/AppFeatures'
 
 /**
  * A stateless input component for input chat messages.
@@ -114,12 +116,14 @@ const MessageInput: FC<ChatInputProps> = (props) => {
       <button type="submit" disabled={!value || value.length === 0}>
         <SendIcon />
       </button>
-      {isUploading && (<Spinner size={22} />)}
-      {!isUploading && (
-        <button type="button" onClick={onFileUploadClick} disabled={disabled}>
-          <AttachmentIcon />
-        </button>
-      )}
+      <FeatureGuard feature={AppFeatures.FileUpload}>
+        {isUploading && (<Spinner size={22} />)}
+        {!isUploading && (
+          <button type="button" onClick={onFileUploadClick} disabled={disabled}>
+            <AttachmentIcon />
+          </button>
+        )}
+      </FeatureGuard>
     </form>
   )
 }

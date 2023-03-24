@@ -1,28 +1,21 @@
 from typing import List, Union
 
 from cat.utils import log
-from langchain.agents import AgentExecutor, ConversationalAgent, load_tools  # , Tool
+from langchain.agents import Tool, AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
 
 
 class AgentManager:
-    def __init__(self, llm, tool_names: List[str], verbose=False) -> None:
+    def __init__(self, llm, tools: List[Tool], verbose=False) -> None:
         self.verbose = verbose
 
-        # a minimal list of ready available langchain tools/chains. Let's start simple!
-        self.available_tools = [
-            # "python_repl",
-            # "requests",
-            # "terminal",
-            "llm-math",
-        ]
-        # TODO: how to load tools/chains that require configuration or custom classes? Any chain could be loaded
-        # TODO: load user created tools/chains, from a folder (like a WP plugin or a Django app)
-
         self.llm = llm
-        self.tools: List = []
-        self.tool_names_agent: List = []
-        self.set_tools(tool_names)
+
+        self.tools: List = tools
+        for t in tools:
+            t.description = t.description.split(" - ")[1]
+        self.tool_names = [t.name for t in tools]
+        # ["llm-math", "python_repl"] + tool_names
 
         self.prefix_prompt = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
 The robot cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
@@ -48,12 +41,9 @@ To reply you have access to the following tools:
             "agent_scratchpad",
         ]
 
-    def set_tools(self, tool_names: List[str]):
-        # tools
-        self.tools = load_tools(tool_names, llm=self.llm)
-        self.tool_names_agent = [
-            t.name for t in self.tools
-        ]  # naming is different for th eagent? don't know why
+    def set_tools(self, tools: List[Tool]):
+        pass
+        # TODO: move tool preparation here
 
     def get_agent_executor(
         self,
@@ -62,29 +52,6 @@ To reply you have access to the following tools:
         suffix_prompt: Union[str, None] = None,
         input_variables: Union[List[str], None] = None,
     ):
-        """
-        # To set the tools you prefer, if you don't use the set_tools automatically will be setted
-        use am.set_tools(['llm-math', 'python_repl'])
-        AgentManager.available_tools = [
-            "python_repl",
-            "requests",
-            "terminal",
-            "llm-math",
-        ]
-
-        Args:
-            return_intermediate_steps (bool, optional): _description_. Defaults to False.
-            prefix_prompt (Union[str,None], optional): _description_. Defaults to None.
-            suffix_prompt (Union[str,None], optional): _description_. Defaults to None.
-            input_variables (Union[List[str],None], optional): _description_. Defaults to None.
-
-        Returns:
-            _type_: agent executor
-        """
-        # set the tools list
-        if len(self.tools) == 0 or len(self.tool_names_agent) == 0:
-            self.set_tools(self.available_tools)
-
         # prefix prompt
         if prefix_prompt is None:
             prefix_prompt = self.prefix_prompt
@@ -113,7 +80,7 @@ To reply you have access to the following tools:
 
         # init agent
         agent = ConversationalAgent(
-            llm_chain=chain, allowed_tools=self.tool_names_agent, verbose=self.verbose
+            llm_chain=chain, allowed_tools=self.tool_names, verbose=self.verbose
         )
 
         # agent executor

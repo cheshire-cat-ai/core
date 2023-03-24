@@ -1,7 +1,7 @@
 import os
 
 import langchain
-from cat.config.llm import LLMOpenAIChatConfig
+from cat.config.llm import LLMOpenAIChatConfig  # , LLMOpenAIConfig,
 from langchain.cache import InMemoryCache  # is it worth it to use a sqlite?
 from langchain.embeddings import OpenAIEmbeddings
 from cat.mad_hatter.decorators import hook
@@ -22,6 +22,13 @@ def get_language_model():
             # "model_name": "gpt-3.5-turbo"
         }
     )
+
+    # llm = LLMOpenAIConfig.get_llm_from_config(
+    #    {
+    #        "openai_api_key": os.environ["OPENAI_KEY"],
+    #        # "model_name": "gpt-3.5-turbo"
+    #    }
+    # )
 
     return llm
 

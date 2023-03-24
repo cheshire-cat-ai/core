@@ -1,13 +1,27 @@
-# 🐱 Cheshire-Cat (Stregatto)
+<a name="readme-top"></a>
 
-## Customizable AI architecture
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="">
+    <img src="https://cdn-icons-png.flaticon.com/512/3394/3394293.png" alt="Logo" width="80" height="80">
+  </a>
+  <h2 align="center">Cheshire-Cat (Stregatto)</h2>
+  <h4 align="center">
+    Customizable AI architecture
+  </h4>
+</div>
 
-- language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
-- long term memory
-- can use external tools (APIs, other models)
-- can ingest documents (.pdf, .txt)
-- 100% dockerized
-- extendible via plugins
+## What is this?
+
+If you want to build a custom AI on top of a language model, the Cat can help you:
+
+- Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
+- Long term memory
+- Can use external tools (APIs, custom python code, other models)
+- Can ingest documents (.pdf, .txt)
+- Extendible via plugins
+- 100% [dockerized](https://www.docker.com/)
 
 <p align="center">
     <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
@@ -27,7 +41,6 @@
 ## Quickstart
 
 You just need `docker` and `docker-compose` installed on your system.
-
 Clone the repo and cd into it. Create a `.env` file containing:
 
 ```
@@ -45,23 +58,38 @@ The first time (only) it will take several minutes, as the images occupy a few G
 - Chat with the Cheshire Cat on `localhost:3000`.
 - You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
 
-When you finish, remember to CTRL+c in the terminal and
+When you're done, remember to CTRL+c in the terminal and
 ```
 docker-compose down
 ```
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Roadmap
 
-- Coming soon
-
+- QA / tests
+- docs and tutorials
+- online demo
+- voice interface
+- more plugins shipped by default
+- (surprise!!!) PURR
 
 ## Contributing
 
-Your contribution is **greatly appreciated**. Things you can do to help the project:
-- try out the Cat
-- read and open issues
-- make a pull request (if it contains lots of code, please discuss it beforehand opening a issue)
-- making tutorials and docs
-- sharing on social media
+If you have a suggestion that would make this better, open an issue and we can reason about it.
+If you want to contribute code, fork the repo and create a pull request.
 
-Don't forget to give the project a star! Thanks again!
+1. Try out the Cat
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request ((if it contains lots of code, please discuss it beforehand opening a issue))
+
+You can start simply by:
+- Making tutorials and docs
+- Sharing on social media
+
+Don't forget to give the project a star!⭐ Thanks again!🙏
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
