@@ -8,18 +8,20 @@
   </a>
   <h2 align="center">Cheshire-Cat (Stregatto)</h2>
   <h4 align="center">
-    Customizable AI architecture!
+    Customizable AI architecture
   </h4>
 </div>
 
-## About
+## What is this?
+
+If you want to build a custom AI on top of a language model, the Cat can help you:
 
 - Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
 - Long term memory
-- Can use external tools (APIs, other models)
+- Can use external tools (APIs, custom python code, other models)
 - Can ingest documents (.pdf, .txt)
-- 100% [dockerized](https://www.docker.com/)
 - Extendible via plugins
+- 100% [dockerized](https://www.docker.com/)
 
 <p align="center">
     <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
@@ -36,7 +38,7 @@
 ```
 
 
-## Quickstart 
+## Quickstart
 
 You just need `docker` and `docker-compose` installed on your system.
 Clone the repo and cd into it. Create a `.env` file containing:
@@ -63,16 +65,19 @@ docker-compose down
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Roadmap 
+## Roadmap
 
-- Coming soon...
-
+- QA / tests
+- docs and tutorials
+- online demo
+- voice interface
+- more plugins shipped by default
+- (surprise!!!) PURR
 
 ## Contributing
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
+If you have a suggestion that would make this better, open an issue and we can reason about it.
+If you want to contribute code, fork the repo and create a pull request.
 
 1. Try out the Cat
 1. Fork the Project
@@ -83,11 +88,8 @@ Don't forget to give the project a star! Thanks again!
 
 You can start simply by:
 - Making tutorials and docs
-- Sharing on social media 
+- Sharing on social media
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
