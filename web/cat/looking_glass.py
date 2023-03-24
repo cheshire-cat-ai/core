@@ -3,17 +3,32 @@ import time
 import langchain
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
+from cat.db.database import get_db_session, create_db_and_tables
 from cat.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
 
+
 # main class representing the cat
 class CheshireCat:
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, verbose=True):
+        self.verbose = verbose
 
         # bootstrap the cat!
+        self.load_db()
         self.load_plugins()
         self.load_agent()
+
+    def load_db(self):
+        # if there is no db, create it
+        create_db_and_tables()
+
+        db_session = get_db_session()
+
+        # if there is no chosen LLM / EMBEDDER, set default ones
+        # if there is a chosen non-default LLM / EMBEDDER, instantiate them
+
+        # access db from instance
+        self.db_session = db_session
 
     def load_plugins(self):
         # recent conversation # TODO: load from episodic memory latest conversation messages
@@ -23,19 +38,15 @@ class CheshireCat:
         self.mad_hatter = MadHatter()
 
         # LLM and embedder
-        # TODO: llm and embedder config should be loaded from db after the user has set them up
-        # TODO: remove .env configuration
-        self.llm = self.mad_hatter.execute_hook("get_language_model")
-        self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
+        self.llm = self.mad_hatter.execute_hook("get_language_model", self)
+        self.embedder = self.mad_hatter.execute_hook("get_language_embedder", self)
 
         # Prompts
         self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")
         self.suffix_prompt = self.mad_hatter.execute_hook("get_main_prompt_suffix")
 
         # Memory
-        self.vector_store = VectorStore(
-            VectorMemoryConfig(verbose=self.settings.verbose)
-        )
+        self.vector_store = VectorStore(VectorMemoryConfig(verbose=self.verbose))
         episodic_memory = self.vector_store.get_vector_store(
             "episodes", embedder=self.embedder
         )
@@ -68,7 +79,7 @@ class CheshireCat:
         self.agent_manager = AgentManager(
             llm=self.llm,
             tools=self.mad_hatter.tools,
-            verbose=self.settings.verbose,
+            verbose=self.verbose,
         )  # TODO: load from plugins
 
         self.agent_executor = self.agent_manager.get_agent_executor(
@@ -101,7 +112,7 @@ class CheshireCat:
         # TODO: insert time information (e.g "two days ago") in episodic memories
         # TODO: insert sources in document memories
 
-        if self.settings.verbose:
+        if self.verbose:
             log(memory_content)
 
         return memory_content
@@ -109,7 +120,7 @@ class CheshireCat:
     def get_hyde_text_and_embedding(self, user_message):
         # HyDE text
         hyde_text = self.hypothetis_chain.run(user_message)
-        if self.settings.verbose:
+        if self.verbose:
             log(hyde_text)
 
         # HyDE embedding
@@ -118,7 +129,7 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     def __call__(self, user_message):
-        if self.settings.verbose:
+        if self.verbose:
             log(user_message)
 
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
@@ -143,7 +154,7 @@ class CheshireCat:
             }
         )
 
-        if self.settings.verbose:
+        if self.verbose:
             log(cat_message)
 
         # update conversation history

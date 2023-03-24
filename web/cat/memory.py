@@ -28,6 +28,7 @@ class VectorStore:
         if self.verbose:
             log(collection_path)
 
+        # TODO: if the embedder changed, a new vectorstore must be created
         log("Loading vector store...")
         if not index_file_path.exists():
             log("index.pkl does not exist, the index is being created from scratch")
