@@ -89,18 +89,39 @@ class CheshireCat:
             return_intermediate_steps=True,
         )
 
-    # retrieve conversation memories (things user said in conversation)
-    def recall_memories(
-        self, text=None, embedding=None, collection=None, return_format=str
-    ):
+    # retrieve similar memories from text
+    def recall_memories_from_text(self, text=None, collection=None, metadata={}, k=5):
         # retrieve memories
-        memory_vectors = self.memory[collection].similarity_search_with_score_by_vector(
-            embedding, k=1000
-        )
-        log(memory_vectors)
-        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_vectors]
+        memories = self.memory[collection].similarity_search_with_score(query=text, k=k)
 
-        # TODO: filter by metadata (e.g. questions --> answer)
+        # TODO: filter by metadata
+        # With FAISS we need to first recall a lot of vectors from memory and filter afterwards.
+        # With Qdrant we can use filters directly in the query
+
+        return memories
+
+    # retrieve similar memories from embedding
+    def recall_memories_from_embedding(
+        self, embedding=None, collection=None, metadata={}, k=5
+    ):
+        # recall from memory
+        memories = self.memory[collection].similarity_search_with_score_by_vector(
+            embedding=embedding, k=k
+        )
+
+        # TODO: filter by metadata
+        # With FAISS we need to first recall a lot of vectors from memory and filter afterwards.
+        # With Qdrant we can use filters directly in the query
+
+        return memories
+
+    # TODO: this should be a hook
+    def format_memories_for_prompt(self, memory_docs, return_format=str):
+        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
+
+        # TODO: take away duplicates
+        # TODO: insert time information (e.g "two days ago") in episodic memories
+        # TODO: insert sources in document memories
 
         if return_format == str:
             memories_separator = "\n  - "
@@ -108,18 +129,14 @@ class CheshireCat:
         else:
             memory_content = memory_texts
 
-        # TODO: take away duplicates
-        # TODO: insert time information (e.g "two days ago") in episodic memories
-        # TODO: insert sources in document memories
-
         if self.verbose:
             log(memory_content)
 
         return memory_content
 
-    def get_hyde_text_and_embedding(self, user_message):
+    def get_hyde_text_and_embedding(self, text):
         # HyDE text
-        hyde_text = self.hypothetis_chain.run(user_message)
+        hyde_text = self.hypothetis_chain.run(text)
         if self.verbose:
             log(hyde_text)
 
@@ -135,21 +152,27 @@ class CheshireCat:
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
 
         # recall relevant memories (episodic)
-        episodic_memory_content = self.recall_memories(
-            collection="episodes", text=hyde_text, embedding=hyde_embedding
+        episodic_memory_content = self.recall_memories_from_embedding(
+            embedding=hyde_embedding, collection="episodes"
+        )
+        episodic_memory_formatted_content = self.format_memories_for_prompt(
+            episodic_memory_content
         )
 
         # recall relevant memories (declarative)
-        declarative_memory_content = self.recall_memories(
-            collection="documents", text=hyde_text, embedding=hyde_embedding
+        declarative_memory_content = self.recall_memories_from_embedding(
+            embedding=hyde_embedding, collection="documents"
+        )
+        declarative_memory_formatted_content = self.format_memories_for_prompt(
+            declarative_memory_content
         )
 
         # reply with agent
         cat_message = self.agent_executor(
             {
                 "input": user_message,
-                "episodic_memory": episodic_memory_content,
-                "declarative_memory": declarative_memory_content,
+                "episodic_memory": episodic_memory_formatted_content,
+                "declarative_memory": declarative_memory_formatted_content,
                 "chat_history": self.history,
             }
         )
@@ -162,8 +185,7 @@ class CheshireCat:
         self.history += f'AI: {cat_message["output"]}\n'
 
         # store user message in episodic memory
-        # TODO: also embed HyDE style
-        # TODO: vectorize and store conversation chunks (not raw dialog, but summarization)
+        # TODO: vectorize and store also conversation chunks (not raw dialog, but summarization)
         _ = self.memory["episodes"].add_texts(
             [user_message],
             [
@@ -182,8 +204,13 @@ class CheshireCat:
             "content": cat_message["output"],
             "why": {
                 **cat_message,
-                "episodic_memory": episodic_memory_content,
-                "declarative_memory": declarative_memory_content,  # TODO: add sources
+                "episodic_memory": [
+                    dict(d[0]) | {"score": float(d[1])} for d in episodic_memory_content
+                ],
+                "declarative_memory": [
+                    dict(d[0]) | {"score": float(d[1])}
+                    for d in declarative_memory_content
+                ],
             },
         }
 

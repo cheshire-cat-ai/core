@@ -3,7 +3,6 @@ import traceback
 from cat import setting
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
-from cat.db.database import create_db_and_tables
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
@@ -41,13 +40,6 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
 
 
-# MOVED INTO THE CheshireCat class
-# @cheshire_cat_api.on_event("startup")
-# def on_startup():
-# Create the SQL table in the SQLite database
-#    create_db_and_tables()
-
-
 # main loop via websocket
 @cheshire_cat_api.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -83,6 +75,33 @@ async def websocket_endpoint(websocket: WebSocket):
 @cheshire_cat_api.get("/")
 async def home():
     return {"status": "We're all mad here, dear!"}
+
+
+# POST delete_memories
+@cheshire_cat_api.delete("/delete_memories/")
+async def delete_memories(memory_id: str):
+    return {"error": "to be implemented"}
+
+
+# POST read_memories
+@cheshire_cat_api.post("/recall_memories/")
+async def recall_memories_from_text(text: str):
+    memories = cheshire_cat.recall_memories_from_text(
+        text=text, collection="episodes", k=100
+    )
+    documents = cheshire_cat.recall_memories_from_text(
+        text=text, collection="documents", k=100
+    )
+
+    memories = [dict(m[0]) | {"score": float(m[1])} for m in memories]
+    documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
+
+    return (
+        {
+            "memories": memories,
+            "documents": documents,
+        },
+    )
 
 
 # receive files via endpoint

@@ -29,7 +29,7 @@ def get_main_prompt_suffix():
 @hook
 def get_hypothetical_embedding_prompt():
     hyde_prompt = """You will be given a sentence.
-If the sentence is a question, convert it to a plausible answer. If the sentence does not contain an question, repeat the sentence as is without adding anything to it.
+If the sentence is a question, convert it to a plausible answer. If the sentence does not contain an question, just repeat the sentence as is without adding anything to it.
 
 Examples:
 - what furniture there is in my room? --> In my room there is a bed, a guardrobe and a desk with my computer
