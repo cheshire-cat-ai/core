@@ -21,7 +21,7 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - Can use external tools (APIs, custom python code, other models)
 - Can ingest documents (.pdf, .txt)
 - Extendible via plugins
-- 100% [dockerized](https://www.docker.com/)
+- 100% [dockerized](https://docs.docker.com/get-docker/)
 
 <p align="center">
     <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
