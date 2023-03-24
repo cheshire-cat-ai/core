@@ -80,13 +80,25 @@ class CheshireCat:
         )
 
     # retrieve conversation memories (things user said in conversation)
+    def read_memories(
+        self, text=None, embedding=None, collection=None, k=1000
+    ):
+        # embedding
+        if embedding == None:
+            text, embedding = self.get_hyde_text_and_embedding(text)
+
+        # retrieve memories
+        memory_vectors = self.memory[collection].similarity_search_with_score_by_vector(
+            embedding=embedding, k=k
+        )
+        return memory_vectors
+
+    # retrieve conversation memories (things user said in conversation)
     def recall_memories(
         self, text=None, embedding=None, collection=None, return_format=str
     ):
-        # retrieve memories
-        memory_vectors = self.memory[collection].similarity_search_with_score_by_vector(
-            embedding, k=1000
-        )
+        # read from memory
+        memory_vectors = self.read_memories(text=text, embedding=embedding, collection=collection, k=1000)
         log(memory_vectors)
         memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_vectors]
 

@@ -86,6 +86,32 @@ async def settings_write():
     return {}
 
 
+# POST delete_memories
+@cheshire_cat_api.post("/delete_memories/")
+async def delete_memories(id:str):
+    return {}
+
+
+# POST read_memories
+@cheshire_cat_api.post("/read_memories/")
+async def read_memories(text:str):
+    memories = cheshire_cat.read_memories(text=text, embedding=None, collection="episodes", k=100)
+    documents = cheshire_cat.read_memories(text=text, embedding=None, collection="documents", k=100)
+    # log(memories)
+    # log("documents")
+    # log(documents)
+    memories = str([ dict(m[0]) | {'measure': m[1]} for m in memories])
+    documents = str([ dict(m[0]) | {'measure': m[1]} for m in documents])
+    log(memories)
+    log(documents)
+    return JSONResponse(
+        content={
+            "memories": memories,
+            "documents": documents,
+        },
+    )
+
+
 # receive files via endpoint
 # TODO: should we receive files also via websocket?
 @cheshire_cat_api.post("/rabbithole/")
