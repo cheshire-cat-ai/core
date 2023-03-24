@@ -1,5 +1,6 @@
 import traceback
 
+from cat import setting
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
@@ -8,17 +9,16 @@ from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a metho
 from cat.looking_glass import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from cat.config.settings import CheshireCatSettings
 from fastapi.middleware.cors import CORSMiddleware
 
 #       ^._.^
 #
 # loads Cat and plugins
-cheshire_cat_settings = CheshireCatSettings()
-cheshire_cat = CheshireCat(cheshire_cat_settings)
+cheshire_cat = CheshireCat()
 
 # API endpoints
 cheshire_cat_api = FastAPI()
+
 
 # list of allowed CORS origins.
 # This list allows any domain to make requests to the server,
@@ -35,6 +35,16 @@ cheshire_cat_api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add the setting router to the middleware stack.
+cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
+
+
+# MOVED INTO THE CheshireCat class
+# @cheshire_cat_api.on_event("startup")
+# def on_startup():
+# Create the SQL table in the SQLite database
+#    create_db_and_tables()
 
 
 # main loop via websocket
@@ -72,18 +82,6 @@ async def websocket_endpoint(websocket: WebSocket):
 @cheshire_cat_api.get("/")
 async def home():
     return {"status": "We're all mad here, dear!"}
-
-
-# GET settings
-@cheshire_cat_api.get("/settings/")
-async def settings_read():
-    return {}
-
-
-# POST settings
-@cheshire_cat_api.post("/settings/")
-async def settings_write():
-    return {}
 
 
 # receive files via endpoint

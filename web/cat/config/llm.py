@@ -1,8 +1,5 @@
 import langchain
 from pydantic import PyObject, BaseSettings
-from langchain.cache import InMemoryCache
-
-langchain.llm_cache = InMemoryCache()
 
 
 # Base class to manage LLM configuration.
@@ -18,6 +15,24 @@ class LLMSettings(BaseSettings):
                 "Language model configuration class has self._pyclass = None. Should be a valid LLM class"
             )
         return cls._pyclass(**config)
+
+
+class LLMDefault(langchain.llms.base.LLM):
+    @property
+    def _llm_type(self):
+        return ""
+
+    def _call(self, prompt, stop=None):
+        # TODO: if AI prefix in the agent changes, this will break
+        return "AI: You did not configure a Language Model. Send a POST request to ... [TODO: instructions here]"
+
+
+class LLMDefaultConfig(LLMSettings):
+    _pyclass: PyObject = LLMDefault
+
+    class Config:
+        title = "Default LLM"
+        description = "Configuration for default LLM"
 
 
 class LLMOpenAIConfig(LLMSettings):
@@ -77,6 +92,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
 
 
 SUPPORTED_LANGUAGE_MODELS = [
+    LLMDefaultConfig,
     LLMOpenAIConfig,
     LLMOpenAIChatConfig,
     LLMCohereChatConfig,
