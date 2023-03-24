@@ -10,10 +10,6 @@ The cat replies are based on the Context provided below.
 Context of things the Human said in the past:{episodic_memory}
 Context of documents containing relevant information:{declarative_memory}
 
-Conversation until now:
-{chat_history}Human: {input}
-
-What would the AI reply? Answer concisely to the user needs as best you can, according to the provided recent conversation and relevant context.
 If Context is not enough, you have access to the following tools:
 """
 
@@ -22,7 +18,14 @@ If Context is not enough, you have access to the following tools:
 
 @hook
 def get_main_prompt_suffix():
-    suffix = """{agent_scratchpad}"""
+    suffix = """Conversation until now:
+{chat_history}Human: {input}
+
+What would the AI reply?
+Answer concisely to the user needs as best you can, according to the provided recent conversation, context and tools.
+
+
+{agent_scratchpad}"""
     return suffix
 
 

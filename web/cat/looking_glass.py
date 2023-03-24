@@ -80,11 +80,13 @@ class CheshireCat:
             llm=self.llm,
             tools=self.mad_hatter.tools,
             verbose=self.verbose,
-        )  # TODO: load from plugins
+        )  # TODO: load agent from plugins? It's gonna be a MESS
 
         self.agent_executor = self.agent_manager.get_agent_executor(
             prefix_prompt=self.prefix_prompt,
             suffix_prompt=self.suffix_prompt,
+            # ai_prefix="AI",
+            # human_prefix="Human",
             input_variables=self.input_variables,
             return_intermediate_steps=True,
         )
