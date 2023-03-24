@@ -3,7 +3,6 @@ import traceback
 from cat import setting
 from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
 from cat.utils import log
-from cat.db.database import create_db_and_tables
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
@@ -41,10 +40,11 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
 
 
-@cheshire_cat_api.on_event("startup")
-def on_startup():
-    # Create the SQL table in the SQLite database
-    create_db_and_tables()
+# MOVED INTO THE CheshireCat class
+# @cheshire_cat_api.on_event("startup")
+# def on_startup():
+# Create the SQL table in the SQLite database
+#    create_db_and_tables()
 
 
 # main loop via websocket

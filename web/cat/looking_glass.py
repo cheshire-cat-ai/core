@@ -3,6 +3,7 @@ import time
 import langchain
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
+from cat.db.database import get_db_session, create_db_and_tables
 from cat.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
 
@@ -13,8 +14,21 @@ class CheshireCat:
         self.verbose = verbose
 
         # bootstrap the cat!
+        self.load_db()
         self.load_plugins()
         self.load_agent()
+
+    def load_db(self):
+        # if there is no db, create it
+        create_db_and_tables()
+
+        db_session = get_db_session()
+
+        # if there is no chosen LLM / EMBEDDER, set default ones
+        # if there is a chosen non-default LLM / EMBEDDER, instantiate them
+
+        # access db from instance
+        self.db_session = db_session
 
     def load_plugins(self):
         # recent conversation # TODO: load from episodic memory latest conversation messages
@@ -24,8 +38,6 @@ class CheshireCat:
         self.mad_hatter = MadHatter()
 
         # LLM and embedder
-        # TODO: llm and embedder config should be loaded from db after the user has set them up
-        # TODO: remove .env configuration
         self.llm = self.mad_hatter.execute_hook("get_language_model", self)
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder", self)
 

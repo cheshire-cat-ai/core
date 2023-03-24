@@ -1,3 +1,5 @@
+import os
+
 import cat.config.llm as llms
 import cat.config.embedder as embedders
 
@@ -11,21 +13,15 @@ from cat.mad_hatter.decorators import hook
 def get_language_model(cat):
     # TODO: give more example configurations
 
-    # llm = LLMOpenAIChatConfig.get_llm_from_config(
-    #    {
-    #        "openai_api_key": os.environ["OPENAI_KEY"],
-    #        # "model_name": "gpt-3.5-turbo"
-    #    }
-    # )
-
-    # llm = LLMOpenAIConfig.get_llm_from_config(
-    #    {
-    #        "openai_api_key": os.environ["OPENAI_KEY"],
-    #        # "model_name": "gpt-3.5-turbo"
-    #    }
-    # )
-
-    llm = llms.LLMDefaultConfig.get_llm_from_config({})
+    if "OPENAI_KEY" in os.environ:
+        llm = llms.LLMOpenAIChatConfig.get_llm_from_config(
+            {
+                "openai_api_key": os.environ["OPENAI_KEY"],
+                # "model_name": "gpt-3.5-turbo" # TODO: allow optional kwargs
+            }
+        )
+    else:
+        llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
     return llm
 
@@ -35,11 +31,15 @@ def get_language_embedder(cat):
     # TODO: give more example ocnfigurations
 
     # Embedding LLM
-    # embedder = OpenAIEmbeddings(
-    #    document_model_name="text-embedding-ada-002",
-    #    openai_api_key=,
-    # )
 
-    embedder = embedders.EmbedderFakeConfig.get_embedder_from_config({"size": 10})
+    if "OPENAI_KEY" in os.environ:
+        embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
+            {
+                "openai_api_key": os.environ["OPENAI_KEY"],
+                # model_name: '....'  # TODO: allow optional kwargs
+            }
+        )
+    else:
+        embedder = embedders.EmbedderFakeConfig.get_embedder_from_config({"size": 10})
 
     return embedder
