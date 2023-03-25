@@ -1,6 +1,7 @@
 import time
 
 import langchain
+from langchain.chains.summarize import load_summarize_chain
 from cat.utils import log
 from cat.memory import VectorStore, VectorMemoryConfig
 from cat.db.database import get_db_session, create_db_and_tables
@@ -65,6 +66,9 @@ class CheshireCat:
         self.hypothetis_chain = langchain.chains.LLMChain(
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
+
+        # TODO: import chain_type from settings
+        self.summarization_chain = load_summarize_chain(self.llm, chain_type="map_reduce")
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -146,6 +150,12 @@ class CheshireCat:
         hyde_embedding = self.embedder.embed_query(hyde_text)
 
         return hyde_text, hyde_embedding
+
+    def get_summary_text(self, docs):
+        summary = self.summarization_chain.run(docs)
+        if self.verbose:
+            log(summary)
+        return summary
 
     def __call__(self, user_message):
         if self.verbose:

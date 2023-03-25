@@ -19,3 +19,4 @@ SQLAlchemy==1.4.41
 fastapi-utils==0.2.1
 sqlmodel==0.0.8
 faiss-cpu==1.7.3
+tiktoken==0.3.2
