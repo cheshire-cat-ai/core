@@ -15,8 +15,5 @@ cohere==4.0.4
 huggingface-hub==0.13.2
 beautifulsoup4==4.12.0
 unstructured[local-inference]==0.5.3
-SQLAlchemy==1.4.41
-fastapi-utils==0.2.1
-sqlmodel==0.0.8
 faiss-cpu==1.7.3
 tiktoken==0.3.2
