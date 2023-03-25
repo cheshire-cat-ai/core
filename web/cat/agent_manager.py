@@ -17,7 +17,6 @@ class AgentManager:
 
         self.tools = tools + default_tools
         self.tool_names = [t.name for t in self.tools]
-        #
 
     def get_agent_executor(
         self,
