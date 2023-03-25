@@ -14,3 +14,16 @@ export const getErrorMessage = (error: unknown, unknownError = 'Unknown error') 
 
   return unknownError
 }
+
+/**
+ * Returns the error code from an error or error-like object.
+ * If the value is not an error or error-like object 'null' is returned.
+ */
+export const getErrorCode = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false
+
+  const code = (error as { code?: unknown })?.code
+  if (code && typeof code === 'number') return code
+
+  return false
+}

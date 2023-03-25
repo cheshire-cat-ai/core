@@ -1,0 +1,26 @@
+.nav {
+  padding: var(--app-space-s);
+  max-width: 100%;
+
+  ul {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    gap: var(--app-space-s);
+
+    li {
+      list-style: none;
+
+      .link {
+        opacity: 0.5;
+        padding-bottom: var(--app-space-xs);
+      }
+
+      .active {
+        opacity: 1;
+        border-bottom: 2px solid var(--app-palette-accent);
+      }
+    }
+  }
+}

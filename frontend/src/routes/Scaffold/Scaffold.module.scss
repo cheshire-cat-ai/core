@@ -1,15 +1,42 @@
 .scaffold {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   gap: var(--app-space-s);
-  overflow: hidden;
-  padding: var(--app-side-space);
   background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%);
+
+  .header {
+    z-index: 2;
+  }
 
   .content {
     position: relative;
-    flex: 1;
-    overflow-y: scroll;
+    padding: var(--app-side-space);
+
+    .sidebar {
+      --inset: var(--app-header-height) 0 0 0;
+
+      z-index: 1;
+      display: flex;
+
+      @include tablet-landscape-view {
+        display: none;
+      }
+
+      .nav {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        padding-top: 20%;
+        font-size: var(--app-text-size-3);
+        color: var(--app-palette-white);
+
+        ul {
+          flex-direction: column;
+          align-items: center;
+          gap: var(--app-space-xl);
+        }
+      }
+    }
   }
 }

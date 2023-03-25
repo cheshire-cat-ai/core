@@ -1,0 +1,25 @@
+.slidePanel {
+  --background: rgba(15, 23, 42, 0.9);
+  --blur: blur(5px);
+  --inset: 0 0 0 0;
+
+  position: fixed;
+  inset: var(--inset);
+  background: var(--background);
+  backdrop-filter: var(--blur);
+  transition: transform 250ms var(--app-easing-fn), opacity 350ms ease-in-out;
+  opacity: 0;
+
+  &.fromLeft {
+    transform: translateX(-100%);
+  }
+
+  &.fromRight {
+    transform: translateX(0%);
+  }
+
+  &.active {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

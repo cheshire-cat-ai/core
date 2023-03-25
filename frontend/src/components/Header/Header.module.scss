@@ -1,0 +1,49 @@
+.header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-content: center;
+  padding: 0 var(--app-side-space);
+  height: var(--app-header-height);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--app-shadow-s);
+
+  .content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--app-space-m);
+    max-width: var(--app-max-content-width);
+    margin: 0 auto;
+
+    .logoWrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+
+      .hmgBtn {
+        @include tablet-landscape-view {
+          display: none;
+        }
+      }
+
+      .navigation {
+        display: none;
+
+        @include tablet-landscape-view {
+          display: block;
+        }
+      }
+    }
+  }
+}

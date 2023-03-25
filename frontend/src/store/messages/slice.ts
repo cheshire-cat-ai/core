@@ -5,7 +5,10 @@ import { type Message } from '@models/Message'
 const initialState: MessagesState = {
   ready: false,
   loading: false,
-  messages: [],
+  messages: [
+    { id: 1, text: 'Hi!', sender: 'bot', timestamp: 0, why: 'default' },
+    { id: 1, text: 'Lorem ipsum dolor sit amet ri', sender: 'user', timestamp: 0 }
+  ],
   defaultMessages: [
     'What\'s up?',
     'Who\'s the Queen of Hearts?',

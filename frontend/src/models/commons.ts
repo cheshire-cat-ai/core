@@ -1,4 +1,4 @@
-import { type JSXElementConstructor, type ReactNode } from 'react'
+import { type HTMLAttributes, type JSXElementConstructor } from 'react'
 
 /**
  * Defines a shared interface for specifying the properties that are ubiquitous across all components.
@@ -10,9 +10,9 @@ import { type JSXElementConstructor, type ReactNode } from 'react'
  *  // ... other props
  * }
  */
-export interface CommonProps {
-  className?: string
-  children?: ReactNode
+export interface CommonProps<TElement extends HTMLElement = HTMLElement> {
+  className?: HTMLAttributes<TElement>['className']
+  style?: HTMLAttributes<TElement>['style']
 }
 
 /**

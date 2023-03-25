@@ -1,10 +1,12 @@
 import React from 'react'
 import { Outlet, useRouteError } from 'react-router-dom'
-import Toolbar from '@components/Toolbar'
-import { EmptyReactElement } from '@utils/commons'
-import { getErrorMessage } from '@utils/errors'
-import useNotifications from '@hooks/useNotifications'
+import Header from '@components/Header'
+import SlidePanel from '@components/SlidePanel'
 import NotificationStack from '@components/NotificationStack'
+import Navigation from '@components/Navigation'
+import useToggle from 'beautiful-react-hooks/useToggle'
+import { getErrorCode, getErrorMessage } from '@utils/errors'
+import useNotifications from '@hooks/useNotifications'
 
 import style from './Scaffold.module.scss'
 
@@ -14,16 +16,20 @@ import style from './Scaffold.module.scss'
  * It's worth noting that the <Outlet /> is a component of the React Router library and can solely be used within a <Router> component.
  */
 const Scaffold = () => {
+  const [sideNavActive, toggleSideNav] = useToggle()
   const { notifications } = useNotifications()
 
   return (
-    <main className={style.scaffold}>
-      <Toolbar />
-      <div className={style.content}>
+    <div className={style.scaffold}>
+      <Header active={sideNavActive} onToggle={toggleSideNav} className={style.header} />
+      <main className={style.content}>
         <Outlet />
-      </div>
+        <SlidePanel active={sideNavActive} className={style.sidebar}>
+          <Navigation className={style.nav} />
+        </SlidePanel>
+      </main>
       <NotificationStack notifications={notifications} />
-    </main>
+    </div>
   )
 }
 
@@ -38,14 +44,15 @@ const Scaffold = () => {
 const ErrorPage = () => {
   const error = useRouteError()
   const errorMessage = getErrorMessage(error)
+  const errorCode = getErrorCode(error)
 
   return (
-    <main className={style.scaffold}>
-      <Toolbar title="Ops... something went wrong" ToolbarActions={EmptyReactElement} />
-      <div className={style.content}>
-        <h1>{errorMessage}</h1>
-      </div>
-    </main>
+    <div className={style.scaffold}>
+      <Header />
+      <main className={style.content}>
+        <h1>{errorCode && `${errorCode}: `}{errorMessage}</h1>
+      </main>
+    </div>
   )
 }
 
