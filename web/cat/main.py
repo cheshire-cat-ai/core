@@ -9,6 +9,7 @@ from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a metho
 from cat.looking_glass import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 
 #       ^._.^
