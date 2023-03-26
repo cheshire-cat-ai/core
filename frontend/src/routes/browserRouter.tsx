@@ -1,6 +1,7 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
-import lazyRoute from '@routes/lazyRoute'
+import lazyGuardedRoute from '@routes/lazyGuardedRoute'
+import { AppFeatures } from '@models/AppFeatures'
 import Scaffold from './Scaffold'
 
 /**
@@ -15,19 +16,19 @@ export default createBrowserRouter([
     children: [
       {
         path: '/',
-        element: lazyRoute('./Home')
+        element: lazyGuardedRoute('./Home')
       },
       {
         path: '/configurations',
-        element: lazyRoute('./WorkInProgress')
+        element: lazyGuardedRoute('./Configurations', AppFeatures.Configurations)
       },
       {
         path: '/memory',
-        element: lazyRoute('./WorkInProgress')
+        element: lazyGuardedRoute('./WorkInProgress', AppFeatures.MemoryManagement)
       },
       {
         path: '/documentation',
-        element: lazyRoute('./WorkInProgress')
+        element: lazyGuardedRoute('./WorkInProgress')
       }
     ]
   }

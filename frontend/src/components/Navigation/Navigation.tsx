@@ -2,18 +2,20 @@ import React, { type FC } from 'react'
 import clsx from 'clsx'
 import { NavLink } from 'react-router-dom'
 import { type CommonProps } from '@models/commons'
+import { AppFeatures } from '@models/AppFeatures'
+import FeatureGuard from '@components/FeatureGuard'
 
 import style from './Navigation.module.scss'
 
 const defaultLinks = [
   { to: '/', label: 'Chat' },
-  { to: '/memory', label: 'Memory' },
-  { to: '/configurations', label: 'Configurations' },
+  { to: '/memory', label: 'Memory', guard: AppFeatures.MemoryManagement },
+  { to: '/configurations', label: 'Configurations', guard: AppFeatures.MemoryManagement },
   { to: '/documentation', label: 'Documentation' }
 ]
 
 /**
- * Navigation component description
+ * Displays the application's navigation
  */
 const Navigation: FC<NavigationProps> = (props) => {
   const { className, variant = 'horizontal', links = defaultLinks, ...rest } = props
@@ -25,12 +27,14 @@ const Navigation: FC<NavigationProps> = (props) => {
   return (
     <nav className={classList} {...rest}>
       <ul>
-        {links.map(({ to, label }) => (
-          <li key={to}>
-            <NavLink to={to} className={({ isActive }) => isActive ? style.active : ''}>
-              {label}
-            </NavLink>
-          </li>
+        {links.map(({ to, label, guard }) => (
+          <FeatureGuard key={to} feature={guard}>
+            <li>
+              <NavLink to={to} className={({ isActive }) => isActive ? style.active : ''}>
+                {label}
+              </NavLink>
+            </li>
+          </FeatureGuard>
         ))}
       </ul>
     </nav>
@@ -38,7 +42,7 @@ const Navigation: FC<NavigationProps> = (props) => {
 }
 
 export interface NavigationProps extends CommonProps {
-  links?: Array<{ to: string, label: string }>
+  links?: Array<{ to: string, label: string, guard?: AppFeatures }>
   variant?: 'vertical' | 'horizontal'
 }
 

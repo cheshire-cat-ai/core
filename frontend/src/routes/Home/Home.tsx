@@ -1,5 +1,7 @@
 import React, { type FC, useCallback, useEffect, useState } from 'react'
 import useSpeechRecognition from 'beautiful-react-hooks/useSpeechRecognition'
+import useToggle from 'beautiful-react-hooks/useToggle'
+import clsx from 'clsx'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
@@ -17,9 +19,10 @@ import style from './Home.module.scss'
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
-  const { sendFile, isUploading } = useRabbitHole()
   const { isRecording, transcript, startRecording, stopRecording, isSupported } = useSpeechRecognition()
+  const { sendFile, isUploading } = useRabbitHole()
   const [userMessage, setUserMessage] = useState('')
+  const [animateInput, toggleAnimation] = useToggle(false)
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
 
   /**
@@ -29,6 +32,19 @@ const Home: FC = () => {
     if (transcript === '') return
     dispatchMessage(transcript)
   }, [transcript, dispatchMessage])
+
+  /**
+   * Displays the input with a 1-second delay
+   */
+  useEffect(() => {
+    const timout = setTimeout(() => {
+      toggleAnimation()
+    }, 1000)
+
+    return () => {
+      clearTimeout(timout)
+    }
+  }, [])
 
   /**
    * When the user clicks on a default message, it will be appended to the input value state
@@ -63,7 +79,7 @@ const Home: FC = () => {
             <MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
-      <div className={style.bottomToolbar}>
+      <div className={clsx(style.bottomToolbar, animateInput ? style.inputIn : '')}>
         <MessageInput
           value={userMessage}
           onChange={setUserMessage}
@@ -71,7 +87,7 @@ const Home: FC = () => {
           onSubmit={sendMessage}
           disabled={inputDisabled}
           isUploading={isUploading}
-          placeholder={generatePlaceholder(isSending, isRecording)}
+          placeholder={generatePlaceholder(isSending, isRecording, error)}
           className={style.input}
         />
         {isSupported && (
@@ -89,11 +105,12 @@ const Home: FC = () => {
 /**
  * Generates a placeholder for the input based on the current state.
  */
-const generatePlaceholder = (isLoading: boolean, isRecording: boolean) => {
-  if (isLoading) return 'Cheshire cat is thinking...'
-  if (isRecording) return 'Cheshire cat is listening...'
+const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: string) => {
+  if (error) return 'Well, well, well, looks like something has gone amiss'
+  if (isLoading) return 'The enigmatic Cheshire cat is pondering...'
+  if (isRecording) return 'The curious Cheshire cat is all ear...'
 
-  return 'Ask the Cheshire cat...'
+  return 'Ask the Cheshire Cat...'
 }
 
 export default React.memo(Home)

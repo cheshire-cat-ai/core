@@ -7,7 +7,12 @@ import { AppFeatures } from '@models/AppFeatures'
 const getConfig = () => Object.freeze<Config>({
   mode: import.meta.env.MODE,
   socketTimeout: 10000,
-  features: [AppFeatures.FileUpload, AppFeatures.AudioRecording],
+  features: [
+    AppFeatures.FileUpload,
+    AppFeatures.AudioRecording,
+    AppFeatures.Configurations,
+    AppFeatures.MemoryManagement
+  ],
   endpoints: {
     chat: new URL('ws://localhost:1865/ws'),
     rabbitHole: new URL('http://localhost:1865/rabbithole')

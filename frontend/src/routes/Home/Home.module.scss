@@ -1,4 +1,6 @@
 .home {
+  position: relative;
+
   .messages {
     padding-bottom: calc(var(--app-space-s) + 70px);
   }
@@ -9,27 +11,23 @@
     z-index: 1;
     display: flex;
     gap: var(--app-space-s);
-    animation: InputAnimation var(--app-animation-duration) var(--app-easing-fn);
-    animation-delay: 1.25s;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 500ms var(--app-easing-fn), transform 500ms var(--app-easing-fn);
 
     @include tablet-landscape-view {
       max-width: 960px;
       width: 100%;
-      left: 50%;
-      transform: translateX(-50%);
+      left: calc(50% - 480px);
     }
 
     .input {
       flex: 1;
     }
-  }
-}
 
-@keyframes InputAnimation {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+    &.inputIn {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

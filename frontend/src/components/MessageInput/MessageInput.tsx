@@ -3,10 +3,10 @@ import Spinner from '@components/Spinner'
 import clsx from 'clsx'
 import AttachmentIcon from './paperclip.svg'
 import SendIcon from './send.svg'
-
-import style from './MessageInput.module.scss'
 import FeatureGuard from '@components/FeatureGuard/FeatureGuard'
 import { AppFeatures } from '@models/AppFeatures'
+
+import style from './MessageInput.module.scss'
 
 /**
  * A stateless input component for input chat messages.
