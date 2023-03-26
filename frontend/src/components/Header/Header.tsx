@@ -12,7 +12,7 @@ import style from './Header.module.scss'
  * The application's header.
  * Contains the application's logo and a hamburger button to toggle the slide-in panel on mobile devices.
  */
-const Header: FC<HeaderProps> = ({ className, ...rest }) => {
+const Header: FC<HeaderProps> = ({ onLogoClick, className, ...rest }) => {
   const [sideNavActive, toggleSideNave] = useToggle()
   const classList = clsx(style.header, className)
 
@@ -20,7 +20,7 @@ const Header: FC<HeaderProps> = ({ className, ...rest }) => {
     <>
       <header className={classList} {...rest}>
         <div className={style.content}>
-          <div className={style.logoWrapper}>
+          <div className={style.logoWrapper} onClick={onLogoClick}>
             <Logo />
           </div>
           <div className={style.actions}>
@@ -37,6 +37,7 @@ const Header: FC<HeaderProps> = ({ className, ...rest }) => {
 }
 
 export interface HeaderProps extends CommonProps {
+  onLogoClick?: () => void
 }
 
 export default Header

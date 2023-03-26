@@ -9,6 +9,7 @@ import { getErrorCode, getErrorMessage } from '@utils/errors'
 import useNotifications from '@hooks/useNotifications'
 
 import style from './Scaffold.module.scss'
+import { uniqueId } from '@utils/commons'
 
 /**
  * Renders the primary element and utilizes the <Outlet /> component to display its child routes.
@@ -16,12 +17,12 @@ import style from './Scaffold.module.scss'
  * It's worth noting that the <Outlet /> is a component of the React Router library and can solely be used within a <Router> component.
  */
 const Scaffold = () => {
-  const { notifications } = useNotifications()
+  const { notifications, showNotification } = useNotifications()
   const { pathname } = useLocation()
 
   return (
     <div className={style.scaffold}>
-      <Header />
+      <Header onLogoClick={() => showNotification({ id: uniqueId(), message: 'foo', type: 'info' })} />
       <main className={style.content} key={pathname}>
         <Outlet />
       </main>
@@ -50,7 +51,7 @@ const ErrorPage = () => {
         <Page variant="narrow">
           <header>
             <Logo />
-            <h1>Purrr...something went wrong</h1>
+            <h1>Hmm... it appears that something has caused a disturbance in my purr</h1>
           </header>
           <h2>{errorCode && `${errorCode}: `}{errorMessage}</h2>
         </Page>
