@@ -31,6 +31,9 @@ def ingest_file(file: UploadFile, ccat):
         loader = PDFMinerLoader(temp_name)
         data = loader.load()
 
+    # example: pass data to cat to get summary
+    # summary = ccat.get_summary_text(data)
+
     # delete file
     os.remove(temp_name)
     log(len(data))
