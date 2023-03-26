@@ -5,11 +5,11 @@
   right: 0;
   display: flex;
   align-content: center;
-  padding: 0 var(--app-side-space);
   height: var(--app-header-height);
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   box-shadow: var(--app-shadow-s);
+  z-index: 3;
 
   .content {
     display: flex;
@@ -19,6 +19,7 @@
     gap: var(--app-space-m);
     max-width: var(--app-max-content-width);
     margin: 0 auto;
+    padding: 0 var(--app-side-space);
 
     .logoWrapper {
       display: flex;
@@ -37,13 +38,43 @@
         }
       }
 
-      .navigation {
+      .desktopNav {
         display: none;
 
         @include tablet-landscape-view {
           display: block;
         }
       }
+    }
+  }
+}
+
+.slideInNav {
+  position: fixed;
+  inset: var(--app-header-height) 0 0 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2;
+  transform: translateX(-100%);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: transform 250ms var(--app-easing-fn), opacity 400ms ease-in-out;
+
+  @include tablet-landscape-view {
+    display: none;
+  }
+
+  &.active {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .mobileNav {
+    padding-top: var(--app-header-height);
+    color: var(--app-palette-white);
+    font-size: var(--app-text-size-4);
+
+    ul {
+      gap: var(--app-space-l);
     }
   }
 }

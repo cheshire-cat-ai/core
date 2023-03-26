@@ -3,24 +3,39 @@
   max-width: 100%;
 
   ul {
+    display: flex;
     padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: row;
-    gap: var(--app-space-s);
 
     li {
       list-style: none;
 
-      .link {
-        opacity: 0.5;
-        padding-bottom: var(--app-space-xs);
-      }
+      a {
+        opacity: 0.45;
+        transition: opacity var(--app-animation-duration) var(--app-easing-fn);
+        @include typography-action;
 
-      .active {
-        opacity: 1;
-        border-bottom: 2px solid var(--app-palette-accent);
+
+        &:hover,
+        &.active {
+          opacity: 1;
+        }
+
+        &.active {
+          border-bottom: 2px solid var(--app-palette-accent);
+        }
       }
     }
+  }
+
+  &.horizontal ul {
+    flex-direction: row;
+    gap: var(--app-space-s)
+  }
+
+  &.vertical ul {
+    flex-direction: column;
+    gap: var(--app-space-s);
+    align-items: center;
   }
 }

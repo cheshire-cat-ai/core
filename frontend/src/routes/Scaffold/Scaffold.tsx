@@ -1,10 +1,9 @@
 import React from 'react'
 import { Outlet, useRouteError } from 'react-router-dom'
+import clsx from 'clsx'
 import Header from '@components/Header'
-import SlidePanel from '@components/SlidePanel'
+import Logo from '@components/Logo'
 import NotificationStack from '@components/NotificationStack'
-import Navigation from '@components/Navigation'
-import useToggle from 'beautiful-react-hooks/useToggle'
 import { getErrorCode, getErrorMessage } from '@utils/errors'
 import useNotifications from '@hooks/useNotifications'
 
@@ -16,17 +15,13 @@ import style from './Scaffold.module.scss'
  * It's worth noting that the <Outlet /> is a component of the React Router library and can solely be used within a <Router> component.
  */
 const Scaffold = () => {
-  const [sideNavActive, toggleSideNav] = useToggle()
   const { notifications } = useNotifications()
 
   return (
     <div className={style.scaffold}>
-      <Header active={sideNavActive} onToggle={toggleSideNav} className={style.header} />
+      <Header />
       <main className={style.content}>
         <Outlet />
-        <SlidePanel active={sideNavActive} className={style.sidebar}>
-          <Navigation className={style.nav} />
-        </SlidePanel>
       </main>
       <NotificationStack notifications={notifications} />
     </div>
@@ -49,8 +44,12 @@ const ErrorPage = () => {
   return (
     <div className={style.scaffold}>
       <Header />
-      <main className={style.content}>
-        <h1>{errorCode && `${errorCode}: `}{errorMessage}</h1>
+      <main className={clsx(style.content, style.error)}>
+        <header>
+          <Logo />
+          <h1>Purrr...something went wrong</h1>
+        </header>
+        <h2>{errorCode && `${errorCode}: `}{errorMessage}</h2>
       </main>
     </div>
   )

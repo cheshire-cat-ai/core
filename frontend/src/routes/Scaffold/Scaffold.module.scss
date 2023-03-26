@@ -5,38 +5,28 @@
   gap: var(--app-space-s);
   background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%);
 
-  .header {
-    z-index: 2;
-  }
-
   .content {
     position: relative;
     padding: var(--app-side-space);
+    max-width: var(--app-max-content-width);
+    margin: 0 auto;
+  }
 
-    .sidebar {
-      --inset: var(--app-header-height) 0 0 0;
+  .error {
 
-      z-index: 1;
+    header {
       display: flex;
+      gap: var(--app-space-m);
+      margin-bottom: var(--app-space-m);
+    }
 
-      @include tablet-landscape-view {
-        display: none;
-      }
+    h1 {
+      @include typography-title(var(--app-text-size-3));
+    }
 
-      .nav {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        padding-top: 20%;
-        font-size: var(--app-text-size-3);
-        color: var(--app-palette-white);
-
-        ul {
-          flex-direction: column;
-          align-items: center;
-          gap: var(--app-space-xl);
-        }
-      }
+    h2 {
+      @include typography-title;
+      color: var(--app-palette-accent);
     }
   }
 }

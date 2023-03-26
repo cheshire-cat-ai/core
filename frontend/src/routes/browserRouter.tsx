@@ -18,8 +18,16 @@ export default createBrowserRouter([
         element: lazyRoute('./Home')
       },
       {
-        path: '/configuration',
-        element: lazyRoute('./Configuration')
+        path: '/configurations',
+        element: lazyRoute('./Configurations')
+      },
+      {
+        path: '/memory',
+        element: lazyRoute('./WorkInProgress')
+      },
+      {
+        path: '/documentation',
+        element: lazyRoute('./WorkInProgress')
       }
     ]
   }

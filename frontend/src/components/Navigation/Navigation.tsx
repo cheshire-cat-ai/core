@@ -15,15 +15,19 @@ const defaultLinks = [
 /**
  * Navigation component description
  */
-const Navigation: FC<NavigationProps> = ({ className, links = defaultLinks, ...rest }) => {
-  const classList = clsx(style.nav, className)
+const Navigation: FC<NavigationProps> = (props) => {
+  const { className, variant = 'horizontal', links = defaultLinks, ...rest } = props
+  const classList = clsx(style.nav, {
+    [style.vertical]: !variant || variant === 'vertical',
+    [style.horizontal]: variant === 'horizontal'
+  }, className)
 
   return (
     <nav className={classList} {...rest}>
       <ul>
         {links.map(({ to, label }) => (
           <li key={to}>
-            <NavLink to={to} className={({ isActive }) => isActive ? style.active : style.link}>
+            <NavLink to={to} className={({ isActive }) => isActive ? style.active : ''}>
               {label}
             </NavLink>
           </li>
@@ -35,6 +39,7 @@ const Navigation: FC<NavigationProps> = ({ className, links = defaultLinks, ...r
 
 export interface NavigationProps extends CommonProps {
   links?: Array<{ to: string, label: string }>
+  variant?: 'vertical' | 'horizontal'
 }
 
 export default Navigation
