@@ -31,9 +31,6 @@ def ingest_file(file: UploadFile, ccat):
         loader = PDFMinerLoader(temp_name)
         data = loader.load()
 
-    # example: pass data to cat to get summary
-    # summary = ccat.get_summary_text(data)
-
     # delete file
     os.remove(temp_name)
     log(len(data))
@@ -45,10 +42,15 @@ def ingest_file(file: UploadFile, ccat):
 
     log(f"Preparing to clean {len(docs)} vectors")
 
+    # TODO: hierarchical summarization
+    # example: pass data to cat to get summary
+    # summary = ccat.get_summary_text(data)
+
     # remove duplicates
     docs = list(set(docs))
     if "" in docs:
         docs.remove("")
+
     log(f"Preparing to memorize {len(docs)} vectors")
 
     # classic embed
