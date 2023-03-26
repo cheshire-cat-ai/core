@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Outlet, useLocation, useRouteError } from 'react-router-dom'
+import { uniqueId } from '@utils/commons'
 import clsx from 'clsx'
 import Page from '@components/Page'
 import Header from '@components/Header'
@@ -7,9 +8,9 @@ import Logo from '@components/Logo'
 import NotificationStack from '@components/NotificationStack'
 import { getErrorCode, getErrorMessage } from '@utils/errors'
 import useNotifications from '@hooks/useNotifications'
+import CatPersonality from '@services/CatPersonality'
 
 import style from './Scaffold.module.scss'
-import { uniqueId } from '@utils/commons'
 
 /**
  * Renders the primary element and utilizes the <Outlet /> component to display its child routes.
@@ -20,9 +21,17 @@ const Scaffold = () => {
   const { notifications, showNotification } = useNotifications()
   const { pathname } = useLocation()
 
+  const purrNotification = useCallback(() => {
+    showNotification({
+      id: uniqueId(),
+      message: CatPersonality.catchPhrase,
+      type: 'info'
+    })
+  }, [showNotification])
+
   return (
     <div className={style.scaffold}>
-      <Header onLogoClick={() => showNotification({ id: uniqueId(), message: 'foo', type: 'info' })} />
+      <Header onLogoClick={purrNotification} />
       <main className={style.content} key={pathname}>
         <Outlet />
       </main>
