@@ -5,6 +5,7 @@ import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
 import Alert from '@components/Alert'
+import Page from '@components/Page'
 import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
@@ -46,7 +47,7 @@ const Home: FC = () => {
   }, [dispatchMessage])
 
   return (
-    <div className={style.home}>
+    <Page variant="narrow" className={style.home}>
       {/* The chat interface is only displayed when the service is ready */}
       {!isReady && (
         <>
@@ -56,8 +57,10 @@ const Home: FC = () => {
       )}
       {isReady && (
         <>
-          {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
-          {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
+          {messages.length === 0 && (
+            <DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
+          {messages.length > 0 && (
+            <MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
       <div className={style.bottomToolbar}>
@@ -72,10 +75,14 @@ const Home: FC = () => {
           className={style.input}
         />
         {isSupported && (
-          <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} disabled={inputDisabled} />
+          <RecordingButton
+            onRecordingStart={startRecording}
+            onRecordingComplete={stopRecording}
+            disabled={inputDisabled}
+          />
         )}
       </div>
-    </div>
+    </Page>
   )
 }
 

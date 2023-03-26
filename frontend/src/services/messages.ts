@@ -5,7 +5,7 @@
 
 import getConfig from '../config'
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
-import LogService from '@services/logService'
+import LogService from '@services/LogService'
 
 const config = getConfig()
 

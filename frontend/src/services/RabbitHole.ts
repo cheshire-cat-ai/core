@@ -2,14 +2,15 @@
  * This module defines and exports a service that is used to send files to the backend.
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as sending or receiving data.
  */
-import LogService from '@services/logService'
+import LogService from '@services/LogService'
 import { toJSON } from '@utils/commons'
 import getConfig from '../config'
 
 const endpoint = getConfig().endpoints.rabbitHole
 
-/**
- * This is a service that is used to send files to the rabbit hole.
+/*
+ * This is a service that is used to send files down to the rabbit hole.
+ * Meaning this service sends files to the backend.
  */
 const RabbitHoleService = Object.freeze({
   send: async (file: File) => {

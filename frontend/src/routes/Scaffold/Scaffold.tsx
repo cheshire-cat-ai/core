@@ -1,6 +1,7 @@
 import React from 'react'
-import { Outlet, useRouteError } from 'react-router-dom'
+import { Outlet, useLocation, useRouteError } from 'react-router-dom'
 import clsx from 'clsx'
+import Page from '@components/Page'
 import Header from '@components/Header'
 import Logo from '@components/Logo'
 import NotificationStack from '@components/NotificationStack'
@@ -16,11 +17,12 @@ import style from './Scaffold.module.scss'
  */
 const Scaffold = () => {
   const { notifications } = useNotifications()
+  const { pathname } = useLocation()
 
   return (
     <div className={style.scaffold}>
       <Header />
-      <main className={style.content}>
+      <main className={style.content} key={pathname}>
         <Outlet />
       </main>
       <NotificationStack notifications={notifications} />
@@ -45,11 +47,13 @@ const ErrorPage = () => {
     <div className={style.scaffold}>
       <Header />
       <main className={clsx(style.content, style.error)}>
-        <header>
-          <Logo />
-          <h1>Purrr...something went wrong</h1>
-        </header>
-        <h2>{errorCode && `${errorCode}: `}{errorMessage}</h2>
+        <Page variant="narrow">
+          <header>
+            <Logo />
+            <h1>Purrr...something went wrong</h1>
+          </header>
+          <h2>{errorCode && `${errorCode}: `}{errorMessage}</h2>
+        </Page>
       </main>
     </div>
   )

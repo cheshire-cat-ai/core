@@ -9,15 +9,19 @@
     position: relative;
     padding: var(--app-side-space);
     max-width: var(--app-max-content-width);
+    width: 100%;
     margin: 0 auto;
+    animation: PageAnimation var(--app-animation-duration) var(--app-easing-fn)
   }
 
   .error {
+    text-align: center;
 
     header {
       display: flex;
       gap: var(--app-space-m);
       margin-bottom: var(--app-space-m);
+      justify-content: center;
     }
 
     h1 {
@@ -28,5 +32,16 @@
       @include typography-title;
       color: var(--app-palette-accent);
     }
+  }
+}
+
+@keyframes PageAnimation {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

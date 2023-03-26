@@ -19,7 +19,7 @@ export default createBrowserRouter([
       },
       {
         path: '/configurations',
-        element: lazyRoute('./Configurations')
+        element: lazyRoute('./WorkInProgress')
       },
       {
         path: '/memory',

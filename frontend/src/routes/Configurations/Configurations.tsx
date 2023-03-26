@@ -1,4 +1,5 @@
 import React, { type FC } from 'react'
+import Page from '@components/Page'
 
 import styles from './Configurations.module.scss'
 
@@ -6,9 +7,9 @@ import styles from './Configurations.module.scss'
  * Configurations component description
  */
 const Configurations: FC = ({ ...rest }) => (
-  <div className={styles.config} {...rest}>
+  <Page className={styles.config} {...rest}>
     Hello, Configuration
-  </div>
+  </Page>
 )
 
 export default Configurations

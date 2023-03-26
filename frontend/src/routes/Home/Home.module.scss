@@ -1,5 +1,4 @@
 .home {
-
   .messages {
     padding-bottom: calc(var(--app-space-s) + 70px);
   }
@@ -10,6 +9,8 @@
     z-index: 1;
     display: flex;
     gap: var(--app-space-s);
+    animation: InputAnimation var(--app-animation-duration) var(--app-easing-fn);
+    animation-delay: 1.25s;
 
     @include tablet-landscape-view {
       max-width: 960px;
@@ -21,5 +22,14 @@
     .input {
       flex: 1;
     }
+  }
+}
+
+@keyframes InputAnimation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
