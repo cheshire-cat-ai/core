@@ -51,7 +51,6 @@ When you're done, remember to CTRL+c in the terminal and
 docker-compose down
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap
 
@@ -80,4 +79,4 @@ You can start simply by:
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
