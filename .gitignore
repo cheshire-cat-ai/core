@@ -1,8 +1,0 @@
-__pycache__
-.env
-
-.DS_Store
-.idea
-
-*long_term_memory
-*metadata.db
