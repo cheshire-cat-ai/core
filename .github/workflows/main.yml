@@ -3,7 +3,7 @@ name: Build and deploy mkdocs on gh-pages
 on:
   push:
     branches:
-      - gh-pages
+      - docs
 
 jobs:
   build:
