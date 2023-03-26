@@ -1,6 +1,9 @@
 site_name: Cheshire Cat Docs
 repo_url: https://github.com/pieroit/cheshire-cat
 
+docs_dir: mkdocs
+site_dir: docs
+
 theme:
   name: material
   favicon: assets/img/favicon.ico
