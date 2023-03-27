@@ -37,11 +37,15 @@ class MadHatter:
         log(all_hooks)
 
         log("Loaded tools:")
-        all_tools = [t[1] for t in all_tools]
-        log(all_tools)
+        all_tools_fixed = []
+        for t in all_tools:
+            t_fix = t[1]  # it was a tuple, the Tool is the second element
+            t_fix.description = t_fix.description.split(" - ")[1]
+            all_tools_fixed.append(t_fix)
+        log(all_tools_fixed)
 
         # TODO: sort plugins by priority
-        return all_hooks, all_tools
+        return all_hooks, all_tools_fixed
 
     # a plugin function has to be decorated with @hook (which returns a function named "cat_function_wrapper")
     def is_cat_hook(self, obj):

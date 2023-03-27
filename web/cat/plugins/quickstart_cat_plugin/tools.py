@@ -1,13 +1,15 @@
+from datetime import datetime
+
 from cat.mad_hatter.decorators import tool
 
 
 @tool
-def my_shoes(tool_input):
-    """Retrieves information about shoes"""
-    return "I own Nike air MAXXXX"
+def get_the_time(tool_input):
+    """Retrieves current time and clock. Input is always None."""
+    return str(datetime.now())
 
 
 @tool
 def my_shoes_color(tool_input):
-    """Retrieves color of shoes"""
+    """Retrieves color of shoes. Input is always None."""
     return "pink shoes"

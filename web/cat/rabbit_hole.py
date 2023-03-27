@@ -4,11 +4,13 @@ import tempfile
 from typing import List
 
 from fastapi import UploadFile
+from cat.looking_glass import CheshireCat
 from cat.utils import log
-from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader
+from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader, TextLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
-def ingest_file(file: UploadFile, ccat):
+def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chunk_overlap : int = 100):
     # Create temporary file
     temp_file = tempfile.NamedTemporaryFile(dir=".", delete=False)
     temp_name = temp_file.name
@@ -18,53 +20,60 @@ def ingest_file(file: UploadFile, ccat):
         # Write bytes to file
         temp_binary_file.write(file.file.read())
 
+    # decide loader
     if file.content_type == "text/plain":
-        # content = str(content, 'utf-8')
-        # TODO: use langchain splitters
-        # TODO: also use an overlap window between docs and summarizations
-        # docs = content.split('\n\n')
         loader = UnstructuredFileLoader(temp_name)
-        data = loader.load()
-
-    if file.content_type == "application/pdf":
-        # Manage the byte stram
+    elif file.content_type == "text/markdown":
+        loader = UnstructuredMarkdownLoader(temp_name)  
+    elif file.content_type == "application/pdf":
         loader = PDFMinerLoader(temp_name)
-        data = loader.load()
+    else:
+        raise Exception('MIME type not supported for upload')
+    
+    # extract text from file
+    text = loader.load()
 
-    # delete file
+    # delete tmp file
     os.remove(temp_name)
-    log(len(data))
 
-    docs: List = []
-    # split content
-    for doc in data:
-        docs = docs + [row.strip() for row in doc.page_content.split("\n\n")]
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""]
+    )
+    docs = text_splitter.split_documents(text)
 
-    log(f"Preparing to clean {len(docs)} vectors")
+    log(f"Preparing to clean {len(docs)} text chunks")
 
-    # remove duplicates
-    docs = list(set(docs))
-    if "" in docs:
-        docs.remove("")
+
+    # remove short texts (page numbers, isolated words, etc.)
+    docs = list(filter(lambda d: len(d.page_content) > 10, docs))
+
+
     log(f"Preparing to memorize {len(docs)} vectors")
+
+
+    # TODO: hierarchical summarization
+    # example: pass data to cat to get summary
+    # summary = ccat.get_summary_text(data)
+
 
     # classic embed
     for d, doc in enumerate(docs):
         _ = ccat.memory["documents"].add_texts(
-            [doc],
+            [doc.page_content],
             [
                 {
                     "source": file.filename,
                     "when": time.time(),
-                    "text": doc,
+                    "text": doc.page_content,
                 }
             ],
         )
-        log(f"Inserted into memory ({d+1}/{len(docs)}):    {doc}")
-        time.sleep(0.3)
+        log(f"Inserted into memory ({d+1}/{len(docs)}):    {doc.page_content}")
+        time.sleep(0.1)
 
     ccat.vector_store.save_vector_store("documents", ccat.memory["documents"])
 
     log("Done uploading")  # TODO: notify client
 
-    # TODO: HyDE embed

@@ -1,11 +1,4 @@
-interface Config {
-  mode: string
-  socketEndpoint: URL
-  socketTimeout: number
-  endpoints: {
-    rabbitHole: URL
-  }
-}
+import { AppFeatures } from '@models/AppFeatures'
 
 /**
  * Returns the application configuration.
@@ -13,11 +6,22 @@ interface Config {
  */
 const getConfig = () => Object.freeze<Config>({
   mode: import.meta.env.MODE,
-  socketEndpoint: new URL('ws://localhost:1865/ws'),
   socketTimeout: 10000,
+  features: [AppFeatures.FileUpload, AppFeatures.AudioRecording],
   endpoints: {
+    chat: new URL('ws://localhost:1865/ws'),
     rabbitHole: new URL('http://localhost:1865/rabbithole')
   }
 })
+
+export interface Config {
+  readonly mode: string
+  readonly socketTimeout: number
+  readonly features: AppFeatures[]
+  readonly endpoints: {
+    readonly chat: URL
+    readonly rabbitHole: URL
+  }
+}
 
 export default getConfig
