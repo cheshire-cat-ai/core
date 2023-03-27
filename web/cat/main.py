@@ -6,7 +6,7 @@ from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
-from cat.looking_glass import CheshireCat
+from cat.cheshire_cat import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi

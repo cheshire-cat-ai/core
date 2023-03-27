@@ -4,7 +4,7 @@ import tempfile
 from typing import List
 
 from fastapi import UploadFile
-from cat.looking_glass import CheshireCat
+from cat.cheshire_cat import CheshireCat
 from cat.utils import log
 from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter

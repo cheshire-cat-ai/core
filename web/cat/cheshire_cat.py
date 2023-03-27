@@ -9,7 +9,7 @@ from cat.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
 
 
-# main class representing the cat
+# main class
 class CheshireCat:
     def __init__(self, verbose=True):
         self.verbose = verbose
