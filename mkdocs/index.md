@@ -9,7 +9,7 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - Long term memory
 - Can use external tools (APIs, custom python code, other models)
 - Can ingest documents (.txt, .pdf)
-- Extendible via plugins in Python
+- Extendible via [plugins](plugins/plugins.md) in Python
 - 100% [dockerized](https://docs.docker.com/get-docker/)
 
 <p align="center">
@@ -77,6 +77,6 @@ You can start simply by:
 - Making tutorials and docs
 - Sharing on social media
 
-Don't forget to give the project a star!⭐ Thanks again!🙏
+Don't forget to give the project a star! ⭐ Thanks again!🙏
 
 

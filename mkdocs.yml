@@ -4,6 +4,14 @@ repo_url: https://github.com/pieroit/cheshire-cat
 docs_dir: mkdocs
 site_dir: docs
 
+nav:
+  - Hello, dear: index.md
+  - How the Cat works: how-the-cat-works.md
+  - Plugins:
+    - How to write a plugin: plugins/plugins.md
+    - Tools: plugins/tools.md
+    - Hooks: plugins/hooks.md
+
 theme:
   name: material
   favicon: assets/img/favicon.ico
@@ -16,6 +24,7 @@ theme:
     - navigation.sections
     - navigation.indexes
     - navigation.footer
+    - navigation.top
 
 extra:
   social:
