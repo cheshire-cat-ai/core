@@ -47,7 +47,25 @@ Clone the repo and cd into it. Create a `.env` file containing:
 OPENAI_KEY=<your-openai-key>
 ```
 
-### Without Docker
+### Docker
+
+After that you can run:
+
+```bash
+docker-compose up
+```
+
+The first time (only) it will take several minutes, as the images occupy a few GBs.
+
+- Chat with the Cheshire Cat on `localhost:3000`.
+- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
+
+When you're done, remember to CTRL+c in the terminal and
+```
+docker-compose down
+```
+
+### [Advanced] Manual way
 
 ```
 cd ./web
@@ -68,24 +86,6 @@ npm run dev # run the frontend
 
 You need to run the 2 set of commands in 2 different shell windows as they are 2 different web servers.  
 The installation part is required just once.
-
-### Docker
-
-After that you can run:
-
-```bash
-docker-compose up
-```
-
-The first time (only) it will take several minutes, as the images occupy a few GBs.
-
-- Chat with the Cheshire Cat on `localhost:3000`.
-- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
-
-When you're done, remember to CTRL+c in the terminal and
-```
-docker-compose down
-```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
