@@ -65,7 +65,7 @@ When you're done, remember to CTRL+c in the terminal and
 docker-compose down
 ```
 
-### [Advanced] Manual way
+### [Advanced] Linux: Manual way
 
 ```
 cd ./web
