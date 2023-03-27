@@ -1,7 +1,7 @@
 import traceback
 
 from cat import setting
-from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks
+from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks, Body, Query
 from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
@@ -75,23 +75,31 @@ async def websocket_endpoint(websocket: WebSocket):
 # server status
 @cheshire_cat_api.get("/")
 async def home():
+    """Server status"""
     return {"status": "We're all mad here, dear!"}
 
 
-# POST delete_memories
-@cheshire_cat_api.delete("/delete_memories/")
+# DELETE delete_memories
+@cheshire_cat_api.delete("/delete_memories/{memory_id}")
 async def delete_memories(memory_id: str):
+    """Delete specific memory. 
+    """
     return {"error": "to be implemented"}
 
 
-# POST read_memories
-@cheshire_cat_api.post("/recall_memories/")
-async def recall_memories_from_text(text: str):
+# GET recall_memories
+@cheshire_cat_api.get("/recall_memories/")
+async def recall_memories_from_text(
+        text: str = Query(description="Find memories similar to this text."),
+        k: int = Query(default=100, description="How many memories to return.")
+    ):
+    """Search k memories similar to given text. 
+    """
     memories = cheshire_cat.recall_memories_from_text(
-        text=text, collection="episodes", k=100
+        text=text, collection="episodes", k=k
     )
     documents = cheshire_cat.recall_memories_from_text(
-        text=text, collection="documents", k=100
+        text=text, collection="documents", k=k
     )
 
     memories = [dict(m[0]) | {"score": float(m[1])} for m in memories]
@@ -111,10 +119,13 @@ async def recall_memories_from_text(text: str):
 async def rabbithole_upload_endpoint(
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    chunk_size: int = 400,
-    chunk_overlap : int = 100
+    chunk_size: int = Body(default=400, description="Maximum length of each chunk after the document is splitted (in characters)"),
+    chunk_overlap : int = Body(default=100, description="Chunk overlap (in characters)")
 ):
-    log(file.content_type)
+    """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
+       Chunks will be then vectorized and stored into documents memory. 
+    """
+    log(f"Uploaded {file.content_type} down the rabbit hole")
 
     # list of admitted MIME types
     admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
