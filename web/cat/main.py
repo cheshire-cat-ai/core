@@ -109,14 +109,17 @@ async def recall_memories_from_text(text: str):
 # TODO: should we receive files also via websocket?
 @cheshire_cat_api.post("/rabbithole/")
 async def rabbithole_upload_endpoint(
-    file: UploadFile, background_tasks: BackgroundTasks
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    chunk_size: int = 400,
+    chunk_overlap : int = 100
 ):
     log(file.content_type)
 
     # list of admitted MIME types
-    admitted_mime_types = ["text/plain", "application/pdf"]
+    admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
 
-    # check id MIME type of uploaded file is supported
+    # check if MIME type of uploaded file is supported
     if file.content_type not in admitted_mime_types:
         return JSONResponse(
             status_code=422,
@@ -126,7 +129,7 @@ async def rabbithole_upload_endpoint(
         )
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(ingest_file, file, cheshire_cat)
+    background_tasks.add_task(ingest_file, cheshire_cat, file, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
     # reply to client
     return {
