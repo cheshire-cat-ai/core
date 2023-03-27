@@ -1,16 +1,15 @@
 import traceback
 
-from cat.routes import setting, memory, base, websocket, upload
-from fastapi import FastAPI, Body, Query, Request
-from cat.utils import log
-from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
-    ingest_file,
-)
-from cat.looking_glass.cheshire_cat import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Body, Query, Request
+
+from cat.utils import log
+from cat.routes import setting, memory, base, websocket, upload
+from cat.routes.openapi import get_openapi_configuration_function
+from cat.looking_glass.cheshire_cat import CheshireCat
 
 #       ^._.^
 #
@@ -52,6 +51,9 @@ cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory"
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
+# openapi customization
+cheshire_cat_api.openapi = get_openapi_configuration_function()
+
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
@@ -61,28 +63,6 @@ async def validation_exception_handler(request, exc):
     )
 
 
-# Configure openAPI schema for swagger and redoc
-def custom_openapi():
-    if cheshire_cat_api.openapi_schema:
-        return cheshire_cat_api.openapi_schema
-    openapi_schema = get_openapi(
-        title="😸 Cheshire-Cat API",
-        version="0.1 (beta)",
-        # TODO: this description should be more descriptive about the APIs capabilities
-        description="Customizable AI architecture",
-        routes=cheshire_cat_api.routes,
-    )
-    # Image should be an url and it's mostly used for redoc
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://github.com/pieroit/cheshire-cat/blob/main/cheshire-cat.jpeg?raw=true"
-    }
-    # Defines preconfigured examples for swagger
-    # This example set parameter of /settings/ get: 'limit' to 3, page to 2 and search to "XYZ"
-    # openapi_schema["paths"]["/settings/"]["get"]["parameters"][0]["example"] = 3
-    # openapi_schema["paths"]["/settings/"]["get"]["parameters"][0]["example"] = 2
-    # openapi_schema["paths"]["/settings/"]["get"]["parameters"][2]["example"] = "XYZ"
-    cheshire_cat_api.openapi_schema = openapi_schema
-    return cheshire_cat_api.openapi_schema
 
 
-cheshire_cat_api.openapi = custom_openapi
+
