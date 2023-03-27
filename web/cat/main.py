@@ -1,12 +1,12 @@
 import traceback
 
-from cat import setting
-from fastapi import FastAPI, WebSocket, UploadFile, BackgroundTasks, Body, Query
+from cat.routes import setting, memory, base, websocket, upload
+from fastapi import FastAPI, Body, Query, Request
 from cat.utils import log
 from cat.rabbit_hole import (  # TODO: should be moved inside the cat as a method?
     ingest_file,
 )
-from cat.cheshire_cat import CheshireCat
+from cat.looking_glass.cheshire_cat import CheshireCat
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -17,8 +17,16 @@ from fastapi.middleware.cors import CORSMiddleware
 # loads Cat and plugins
 cheshire_cat = CheshireCat()
 
-# API endpoints
+
+# REST API
 cheshire_cat_api = FastAPI()
+    
+
+# Every endpoint can access the cat instance via request.app.state.ccat
+# - Not using midlleware because I can't make it work with both http and websocket;
+# - Not using Depends because it only supports callables (not instances)
+# - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
+cheshire_cat_api.state.ccat = cheshire_cat
 
 
 # list of allowed CORS origins.
@@ -37,118 +45,12 @@ cheshire_cat_api.add_middleware(
     allow_headers=["*"],
 )
 
-# Add the setting router to the middleware stack.
+# Add routers to the middleware stack.
+cheshire_cat_api.include_router(base.router, tags=["Base"])
 cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
-
-
-# main loop via websocket
-@cheshire_cat_api.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-
-    try:
-        while True:
-            # message received from user
-            user_message = (
-                await websocket.receive_text()
-            )  # TODO: should receive a JSON with metadata
-
-            # get response from the cat
-            cat_message = cheshire_cat(user_message)
-
-            # send output to user
-            await websocket.send_json(cat_message)
-
-    except Exception as e:  # WebSocketDisconnect as e:
-        log(e)
-        traceback.print_exc()
-
-        # send error to user
-        await websocket.send_json(
-            {
-                "error": True,
-                "code": type(e).__name__,
-            }
-        )
-
-
-# server status
-@cheshire_cat_api.get("/")
-async def home():
-    """Server status"""
-    return {"status": "We're all mad here, dear!"}
-
-
-# DELETE delete_memories
-@cheshire_cat_api.delete("/delete_memories/{memory_id}")
-async def delete_memories(memory_id: str):
-    """Delete specific memory. 
-    """
-    return {"error": "to be implemented"}
-
-
-# GET recall_memories
-@cheshire_cat_api.get("/recall_memories/")
-async def recall_memories_from_text(
-        text: str = Query(description="Find memories similar to this text."),
-        k: int = Query(default=100, description="How many memories to return.")
-    ):
-    """Search k memories similar to given text. 
-    """
-    memories = cheshire_cat.recall_memories_from_text(
-        text=text, collection="episodes", k=k
-    )
-    documents = cheshire_cat.recall_memories_from_text(
-        text=text, collection="documents", k=k
-    )
-
-    memories = [dict(m[0]) | {"score": float(m[1])} for m in memories]
-    documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
-
-    return (
-        {
-            "memories": memories,
-            "documents": documents,
-        },
-    )
-
-
-# receive files via endpoint
-# TODO: should we receive files also via websocket?
-@cheshire_cat_api.post("/rabbithole/")
-async def rabbithole_upload_endpoint(
-    file: UploadFile,
-    background_tasks: BackgroundTasks,
-    chunk_size: int = Body(default=400, description="Maximum length of each chunk after the document is splitted (in characters)"),
-    chunk_overlap : int = Body(default=100, description="Chunk overlap (in characters)")
-):
-    """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
-       Chunks will be then vectorized and stored into documents memory. 
-    """
-    log(f"Uploaded {file.content_type} down the rabbit hole")
-
-    # list of admitted MIME types
-    admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
-
-    # check if MIME type of uploaded file is supported
-    if file.content_type not in admitted_mime_types:
-        return JSONResponse(
-            status_code=422,
-            content={
-                "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
-            },
-        )
-
-    # upload file to long term memory, in the background
-    background_tasks.add_task(ingest_file, cheshire_cat, file, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-
-    # reply to client
-    return {
-        "filename": file.filename,
-        "content-type": file.content_type,
-        "info": "File is being ingested asynchronously.",
-    }
-
+cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
+cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)

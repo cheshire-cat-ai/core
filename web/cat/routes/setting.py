@@ -5,7 +5,6 @@ from cat.db.database import get_db_session
 
 router = APIRouter()
 
-
 @router.get("/")
 def get_settings(
     db: Session = Depends(get_db_session),
