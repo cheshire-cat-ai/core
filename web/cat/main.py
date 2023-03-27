@@ -2,7 +2,6 @@ import traceback
 
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Body, Query, Request
 
@@ -51,9 +50,6 @@ cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory"
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
-# openapi customization
-cheshire_cat_api.openapi = get_openapi_configuration_function()
-
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
@@ -61,6 +57,10 @@ async def validation_exception_handler(request, exc):
         status_code=422,
         content={"error": exc.errors()},
     )
+
+# openapi customization
+cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
+
 
 
 
