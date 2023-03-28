@@ -1,3 +1,9 @@
-.configurations {
+.config {
   position: relative;
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--app-space-m);
+  }
 }

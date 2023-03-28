@@ -14,9 +14,9 @@ const Page: FC<PageProps> = ({ children, variant, className, ...rest }) => {
   }, className)
 
   return (
-    <div className={classList} {...rest}>
+    <section className={classList} {...rest}>
       {children}
-    </div>
+    </section>
   )
 }
 

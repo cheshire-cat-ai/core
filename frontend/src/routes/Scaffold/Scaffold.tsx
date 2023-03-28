@@ -24,7 +24,7 @@ const Scaffold = () => {
   const purrNotification = useCallback(() => {
     showNotification({
       id: uniqueId(),
-      message: CatPersonality.catchPhrase,
+      message: CatPersonality.catchPhrase(),
       type: 'info'
     })
   }, [showNotification])

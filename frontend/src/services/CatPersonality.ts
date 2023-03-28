@@ -25,7 +25,7 @@ const catchPhrases = [
  * TODO: document this
  */
 const CatPersonality = Object.freeze({
-  get catchPhrase() {
+  catchPhrase() {
     const randomIndex = Math.floor(Math.random() * catchPhrases.length)
 
     return catchPhrases[randomIndex]
