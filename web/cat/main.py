@@ -1,31 +1,29 @@
-import traceback
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from cat.routes import base, memory, upload, setting, websocket
 from fastapi.responses import JSONResponse
+from cat.routes.openapi import get_openapi_configuration_function
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Body, Query, Request
-
-from cat.utils import log
-from cat.routes import setting, memory, base, websocket, upload
-from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 
-#       ^._.^
-#
-# loads Cat and plugins
-cheshire_cat = CheshireCat()
+cheshire_cat_resources = {}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #       ^._.^
+    #
+    # loads Cat and plugins
+    cheshire_cat_resources["cat"] = CheshireCat()
+    yield
+    # Clean up Cat and plugins and release the resources
+    cheshire_cat_resources.clear()
 
 
 # REST API
-cheshire_cat_api = FastAPI()
-    
-
-# Every endpoint can access the cat instance via request.app.state.ccat
-# - Not using midlleware because I can't make it work with both http and websocket;
-# - Not using Depends because it only supports callables (not instances)
-# - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
-cheshire_cat_api.state.ccat = cheshire_cat
-
+cheshire_cat_api = FastAPI(lifespan=lifespan)
 
 # list of allowed CORS origins.
 # This list allows any domain to make requests to the server,
@@ -47,8 +45,11 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(base.router, tags=["Base"])
 cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
+cheshire_cat_api.include_router(
+    upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"
+)
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
+
 
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)
@@ -58,11 +59,6 @@ async def validation_exception_handler(request, exc):
         content={"error": exc.errors()},
     )
 
+
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
-
-
-
-
-
-

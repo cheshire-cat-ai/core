@@ -1,5 +1,5 @@
 python-multipart==0.0.6
-fastapi==0.92.0
+fastapi==0.93.0
 fastapi-utils==0.2.1
 websockets==10.4
 SQLAlchemy==1.4.41
