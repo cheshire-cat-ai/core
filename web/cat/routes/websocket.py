@@ -1,7 +1,6 @@
 import traceback
 
 from fastapi import APIRouter, WebSocket
-from cat.main import cheshire_cat_resources
 from cat.utils import log
 
 router = APIRouter()
@@ -10,7 +9,7 @@ router = APIRouter()
 # main loop via websocket
 @router.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    ccat = cheshire_cat_resources["cat"]
+    ccat = websocket.app.state.ccat
 
     await websocket.accept()
 

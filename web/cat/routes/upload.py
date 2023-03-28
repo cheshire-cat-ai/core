@@ -1,5 +1,4 @@
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from cat.main import cheshire_cat_resources
 from cat.utils import log
 from cat.rabbit_hole import ingest_file
 from fastapi.responses import JSONResponse
@@ -24,7 +23,7 @@ async def rabbithole_upload_endpoint(
     Chunks will be then vectorized and stored into documents memory.
     """
 
-    ccat = cheshire_cat_resources["cat"]
+    ccat = request.app.state.ccat
 
     log(f"Uploaded {file.content_type} down the rabbit hole")
 

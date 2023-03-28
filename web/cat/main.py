@@ -8,18 +8,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from cat.looking_glass.cheshire_cat import CheshireCat
 
-cheshire_cat_resources = {}
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     #       ^._.^
     #
     # loads Cat and plugins
-    cheshire_cat_resources["cat"] = CheshireCat()
+    app.state.ccat = CheshireCat()
     yield
-    # Clean up Cat and plugins and release the resources
-    cheshire_cat_resources.clear()
 
 
 # REST API

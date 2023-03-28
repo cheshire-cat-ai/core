@@ -1,5 +1,4 @@
 from fastapi import Query, Request, APIRouter
-from cat.main import cheshire_cat_resources
 
 router = APIRouter()
 
@@ -20,7 +19,7 @@ async def recall_memories_from_text(
 ):
     """Search k memories similar to given text."""
 
-    ccat = cheshire_cat_resources["cat"]
+    ccat = request.app.state.ccat
 
     memories = ccat.recall_memories_from_text(text=text, collection="episodes", k=k)
     documents = ccat.recall_memories_from_text(text=text, collection="documents", k=k)
