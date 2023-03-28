@@ -14,6 +14,10 @@ async def lifespan(app: FastAPI):
     #       ^._.^
     #
     # loads Cat and plugins
+    # Every endpoint can access the cat instance via request.app.state.ccat
+    # - Not using midlleware because I can't make it work with both http and websocket;
+    # - Not using Depends because it only supports callables (not instances)
+    # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
     yield
 
