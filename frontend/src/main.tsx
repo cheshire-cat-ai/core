@@ -1,8 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider as AntDesignConfigProvider } from 'antd'
 import { Provider as ReduxProvider } from 'react-redux'
 import { RouterProvider } from 'react-router-dom'
+import { getCSSVariableValue } from '@utils/commons'
 
 import router from '@routes/browserRouter'
 import store from '@store/index'
@@ -17,7 +18,7 @@ import './theme/index.scss'
  */
 const theme = {
   token: {
-    colorPrimary: '#5C1EAE'
+    colorPrimary: getCSSVariableValue('--app-palette-accent')
   }
 }
 
@@ -28,9 +29,9 @@ const theme = {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ReduxProvider store={store}>
-      <ConfigProvider theme={theme}>
+      <AntDesignConfigProvider theme={theme}>
         <RouterProvider router={router} />
-      </ConfigProvider>
+      </AntDesignConfigProvider>
     </ReduxProvider>
   </React.StrictMode>
 )

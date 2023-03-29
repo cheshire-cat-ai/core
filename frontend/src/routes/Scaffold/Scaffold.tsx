@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Outlet, useLocation, useRouteError } from 'react-router-dom'
+import { Outlet, useRouteError } from 'react-router-dom'
 import { uniqueId } from '@utils/commons'
 import clsx from 'clsx'
 import Page from '@components/Page'
@@ -14,12 +14,12 @@ import style from './Scaffold.module.scss'
 
 /**
  * Renders the primary element and utilizes the <Outlet /> component to display its child routes.
- * This component acts as a fundamental layout structure for the application, offering a consistent wrapper for rendering all child routes.
- * It's worth noting that the <Outlet /> is a component of the React Router library and can solely be used within a <Router> component.
+ * This component acts as a fundamental layout structure for the application, offering a consistent wrapper for
+ * rendering all child routes. It's worth noting that the <Outlet /> is a component of the React Router library and can
+ * solely be used within a <Router> component.
  */
 const Scaffold = () => {
   const { notifications, showNotification } = useNotifications()
-  const { pathname } = useLocation()
 
   const purrNotification = useCallback(() => {
     showNotification({
@@ -32,7 +32,7 @@ const Scaffold = () => {
   return (
     <div className={style.scaffold}>
       <Header onLogoClick={purrNotification} />
-      <main className={style.content} key={pathname}>
+      <main className={style.content}>
         <Outlet />
       </main>
       <NotificationStack notifications={notifications} />
@@ -43,10 +43,10 @@ const Scaffold = () => {
 /**
  * A basic scaffold to render the error page.
  * This component is used as the errorElement prop of the <BrowserRouter /> component.
- * The reason this component has been included in the same file as the Scaffold component is because it conceptually belongs to the
- * application's Scaffold. In fact, it has been attached to the Scaffold component as a property. This is a common pattern in React
- * applications where components are attached to other components as properties either as children or because they belong to the same
- * context (it in fact uses the same styling as well)
+ * The reason this component has been included in the same file as the Scaffold component is because it conceptually
+ * belongs to the application's Scaffold. In fact, it has been attached to the Scaffold component as a property. This
+ * is a common pattern in React applications where components are attached to other components as properties either as
+ * children or because they belong to the same context (it in fact uses the same styling as well)
  */
 const ErrorPage = () => {
   const error = useRouteError()

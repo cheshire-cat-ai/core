@@ -11,7 +11,6 @@
     max-width: var(--app-max-content-width);
     width: 100%;
     margin: 0 auto;
-    animation: PageAnimation var(--app-animation-duration) var(--app-easing-fn)
   }
 
   .error {
@@ -32,16 +31,5 @@
       @include typography-title;
       color: var(--app-palette-accent);
     }
-  }
-}
-
-@keyframes PageAnimation {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

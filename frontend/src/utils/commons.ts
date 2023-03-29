@@ -18,8 +18,8 @@ export const uniqueId = () => {
 
 /**
  * Accepts a value that may be either a ReactElement or a ComponentRenderer and ensures that the corresponding
- * React Element instance is returned. This function is commonly employed by components that accept both ReactElements and
- * ComponentRenderers as props to guarantee that they are handled appropriately.
+ * React Element instance is returned. This function is commonly employed by components that accept both ReactElements
+ * and ComponentRenderers as props to guarantee that they are handled appropriately.
  *
  * Basic Usage:
  *
@@ -55,3 +55,13 @@ export const EmptyReactElement = () => null
  * Returns a promise that contains the response body as a JSON object.
  */
 export const toJSON = async <TResult>(response: Response) => await (response.json() as Promise<TResult>)
+
+/**
+ * Returns the value of a CSS variable from the document root.
+ * This function is currently used to make AntDesign match the "_variables.css" file
+ * but, it'll be removed once we'll remove AntDesign.
+ */
+export const getCSSVariableValue = (variableName: `--app-${string}`) => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(variableName)
+  return value.trim()
+}

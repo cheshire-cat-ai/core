@@ -9,6 +9,7 @@
   backdrop-filter: var(--blur);
   transition: transform 250ms var(--app-easing-fn), opacity 350ms ease-in-out;
   opacity: 0;
+  z-index: 5;
 
   &.fromLeft {
     transform: translateX(-100%);

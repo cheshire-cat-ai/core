@@ -20,7 +20,13 @@ export default createBrowserRouter([
       },
       {
         path: '/configurations',
-        element: lazyGuardedRoute('./Configurations', AppFeatures.Configurations)
+        element: lazyGuardedRoute('./WorkInProgress', AppFeatures.Configurations),
+        children: [
+          {
+            path: 'provider',
+            element: lazyGuardedRoute('./LLMProvider', AppFeatures.Configurations)
+          }
+        ]
       },
       {
         path: '/memory',
