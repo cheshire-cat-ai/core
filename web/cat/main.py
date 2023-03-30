@@ -29,8 +29,6 @@ async def lifespan(app: FastAPI):
 cheshire_cat_api = FastAPI(lifespan=lifespan)
 
 
-load_dotenv()
-
 cors_allowed_origins_str = os.getenv("CORS_ALLOWED_ORIGINS", "")
 origins = cors_allowed_origins_str.split(",") if cors_allowed_origins_str else ["*"]
 
