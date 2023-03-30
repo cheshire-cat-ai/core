@@ -1,7 +1,7 @@
-
-import logging
 import json
+import logging
 from pprint import pprint
+
 
 def log(msg):
 

@@ -1,7 +1,9 @@
-from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from cat.utils import log
 from cat.rabbit_hole import ingest_file
+from cat.utils import log
+
+from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from fastapi.responses import JSONResponse
+
 
 router = APIRouter()
 

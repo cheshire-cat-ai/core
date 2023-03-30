@@ -1,13 +1,12 @@
 # SQLModel Models
 # Here we create for each table a database model that has the fields required to add a new record to the database.
 
-
-from typing import Union, Optional
 from datetime import datetime
+from typing import Union, Optional
 
-from sqlmodel import Field, SQLModel
-from sqlalchemy import TIMESTAMP, Column, func
 from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
+from sqlalchemy import TIMESTAMP, Column, func
+from sqlmodel import Field, SQLModel
 
 
 class Setting(SQLModel, table=True):

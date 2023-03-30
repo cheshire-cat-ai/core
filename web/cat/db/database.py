@@ -3,6 +3,7 @@ import os
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.orm import sessionmaker
 
+
 SQLITE_DATABASE_URL = os.getenv("SQLITE_DATABASE_URL", "sqlite:///./metadata.db")
 
 # `check_same_thread` equals to False enables multithreading for SQLite.

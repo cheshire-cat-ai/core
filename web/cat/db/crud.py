@@ -1,6 +1,7 @@
-from cat.db import models
 from sqlmodel import col
 from sqlalchemy.orm import Session
+
+from cat.db import models
 
 
 def get_settings(db: Session, limit: int = 10, page: int = 1, search: str = ""):

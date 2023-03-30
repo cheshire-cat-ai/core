@@ -1,7 +1,9 @@
 import traceback
 
 from fastapi import APIRouter, WebSocket
+
 from cat.utils import log
+
 
 router = APIRouter()
 

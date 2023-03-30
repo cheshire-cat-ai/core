@@ -1,10 +1,11 @@
-import os
-import time
-from pathlib import Path
 from dataclasses import dataclass
+import os
+from pathlib import Path
+import time
+
+from langchain import FAISS
 
 from cat.utils import log
-from langchain import FAISS
 
 
 @dataclass
