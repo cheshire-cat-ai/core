@@ -65,6 +65,12 @@ docker-compose down
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+## Docs and Learning Resources
+
+- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
+
+
 ## Roadmap
 
 - QA / tests
