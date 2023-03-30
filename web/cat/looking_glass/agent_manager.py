@@ -1,8 +1,9 @@
 from typing import List
 
-from cat.utils import log
 from langchain.agents import Tool, AgentExecutor, ConversationalAgent, load_tools
 from langchain.chains import LLMChain
+
+from cat.utils import log
 
 
 class AgentManager:

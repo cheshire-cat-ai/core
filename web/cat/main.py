@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from cat.routes import base, memory, upload, setting, websocket
-from fastapi.responses import JSONResponse
-from cat.routes.openapi import get_openapi_configuration_function
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.routes import base, memory, upload, setting, websocket
+from cat.routes.openapi import get_openapi_configuration_function
 
 
 @asynccontextmanager

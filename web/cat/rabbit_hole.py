@@ -1,13 +1,14 @@
 import os
-import time
 import tempfile
+import time
 from typing import List
 
-from fastapi import UploadFile
-from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.utils import log
 from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from fastapi import UploadFile
+
+from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.utils import log
 
 
 def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chunk_overlap : int = 100):

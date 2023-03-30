@@ -2,11 +2,12 @@ import time
 
 import langchain
 from langchain.chains.summarize import load_summarize_chain
-from cat.utils import log
-from cat.memory import VectorStore, VectorMemoryConfig
+
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.looking_glass.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.memory import VectorStore, VectorMemoryConfig
+from cat.utils import log
 
 
 # main class
