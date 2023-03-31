@@ -69,7 +69,7 @@ class CheshireCat:
         )
 
         # TODO: import chain_type from settings
-        self.summarization_chain = load_summarize_chain(self.llm, chain_type="map_reduce")
+        self.summarization_chain = load_summarize_chain(self.llm, chain_type="stuff")
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -153,10 +153,11 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     def get_summary_text(self, docs):
-        summary = self.summarization_chain.run(docs)
+        # TODO: should we summarize group of documents?
+        summaries = [self.summarization_chain.run([doc]) for doc in docs]
         if self.verbose:
-            log(summary)
-        return summary
+            log(summaries)
+        return summaries
 
     def __call__(self, user_message):
         if self.verbose:
