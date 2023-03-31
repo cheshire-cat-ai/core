@@ -68,8 +68,18 @@ class CheshireCat:
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
+        
+        # TODO: we could import this from plugins
+        self.summarization_prompt = """Write a concise summary of the following:
+{text}
+"""
         # TODO: import chain_type from settings
-        self.summarization_chain = load_summarize_chain(self.llm, chain_type="stuff")
+        self.summarization_chain = load_summarize_chain(
+            self.llm, chain_type="stuff",
+            prompt=langchain.PromptTemplate(
+                template=self.summarization_prompt, input_variables=["text"]
+            )
+        )
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [

@@ -56,7 +56,7 @@ def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chun
 
     # TODO: hierarchical summarization
     # example: pass data to cat to get summary
-    summary = ccat.get_summary_text(docs)
+    # summary = ccat.get_summary_text(docs)
 
 
     # classic embed
