@@ -6,9 +6,10 @@ import Page from '@components/Page'
 import Header from '@components/Header'
 import Logo from '@components/Logo'
 import NotificationStack from '@components/NotificationStack'
+import PageLoadingSpinner from '@components/PageLoadingSpinner'
 import { getErrorCode, getErrorMessage } from '@utils/errors'
 import useNotifications from '@hooks/useNotifications'
-import CatPersonality from '@services/CatPersonality'
+import WittyService from '@services/WittyService'
 
 import style from './Scaffold.module.scss'
 
@@ -24,7 +25,7 @@ const Scaffold = () => {
   const purrNotification = useCallback(() => {
     showNotification({
       id: uniqueId(),
-      message: CatPersonality.catchPhrase(),
+      message: WittyService.catchPhrase(),
       type: 'info'
     })
   }, [showNotification])
@@ -33,7 +34,9 @@ const Scaffold = () => {
     <div className={style.scaffold}>
       <Header onLogoClick={purrNotification} />
       <main className={style.content}>
-        <Outlet />
+        <React.Suspense fallback={<PageLoadingSpinner />}>
+          <Outlet />
+        </React.Suspense>
       </main>
       <NotificationStack notifications={notifications} />
     </div>

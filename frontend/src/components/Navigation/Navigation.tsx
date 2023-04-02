@@ -9,8 +9,8 @@ import style from './Navigation.module.scss'
 
 const defaultLinks = [
   { to: '/', label: 'Chat' },
-  { to: '/memory', label: 'Memory', guard: AppFeatures.MemoryManagement },
-  { to: '/configurations', label: 'Configurations', guard: AppFeatures.MemoryManagement },
+  { to: '/plugins', label: 'Plugins', guard: AppFeatures.Plugins },
+  { to: '/configurations', label: 'Configurations', guard: AppFeatures.Plugins },
   { to: '/documentation', label: 'Documentation' }
 ]
 
@@ -19,6 +19,7 @@ const defaultLinks = [
  */
 const Navigation: FC<NavigationProps> = (props) => {
   const { className, variant = 'horizontal', links = defaultLinks, ...rest } = props
+
   const classList = clsx(style.nav, {
     [style.vertical]: !variant || variant === 'vertical',
     [style.horizontal]: variant === 'horizontal'

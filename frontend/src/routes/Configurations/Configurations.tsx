@@ -19,9 +19,6 @@ const Configurations: FC = ({ ...rest }) => {
           Discover and tailor your language model to suit your specific requirements by choosing from a list of
           providers.
         </Card>
-        <Card title="Plugins" actions={[Action]}>
-          Personalize the functionality of your language model by selecting from a range of available plugins.
-        </Card>
       </div>
 
       <Outlet />

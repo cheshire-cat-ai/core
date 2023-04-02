@@ -33,11 +33,12 @@ export const uniqueId = () => {
  *  )
  *  }
  */
-export const handleReactElementOrRenderer = (elementOrRenderer?: ReactElement | ComponentRenderer) => {
+export const handleReactElementOrRenderer = <TProps extends Record<string, unknown>>
+  (elementOrRenderer?: ReactElement | ComponentRenderer, props?: TProps) => {
   if (!elementOrRenderer) return null
   if (isValidElement(elementOrRenderer)) return elementOrRenderer as ReactElement
 
-  return createElement(elementOrRenderer)
+  return createElement(elementOrRenderer, props)
 }
 
 /**

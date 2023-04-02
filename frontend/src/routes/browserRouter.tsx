@@ -1,8 +1,11 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
-import lazyGuardedRoute from '@routes/lazyGuardedRoute'
-import { AppFeatures } from '@models/AppFeatures'
 import Scaffold from './Scaffold'
+
+const Home = React.lazy(() => import('./Home'))
+const Configurations = React.lazy(() => import('./Configurations'))
+const LangModelProvider = React.lazy(() => import('./LLMProvider'))
+const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
 
 /**
  * Creates and exports the application routes.
@@ -16,25 +19,26 @@ export default createBrowserRouter([
     children: [
       {
         path: '/',
-        element: lazyGuardedRoute('./Home')
+        index: true,
+        element: <Home />
       },
       {
         path: '/configurations',
-        element: lazyGuardedRoute('./WorkInProgress', AppFeatures.Configurations),
+        element: <Configurations />,
         children: [
           {
             path: 'provider',
-            element: lazyGuardedRoute('./LLMProvider', AppFeatures.Configurations)
+            element: <LangModelProvider />
           }
         ]
       },
       {
-        path: '/memory',
-        element: lazyGuardedRoute('./WorkInProgress', AppFeatures.MemoryManagement)
+        path: '/plugins',
+        element: <WorkInProgress />
       },
       {
         path: '/documentation',
-        element: lazyGuardedRoute('./WorkInProgress')
+        element: <WorkInProgress />
       }
     ]
   }

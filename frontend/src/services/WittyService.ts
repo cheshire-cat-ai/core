@@ -22,9 +22,12 @@ const catchPhrases = [
 ]
 
 /**
- * TODO: document this
+ * A service that exposes a series of witty methods
  */
-const CatPersonality = Object.freeze({
+const WittyService = Object.freeze({
+  /**
+   * Returns a random catch-phrase
+   */
   catchPhrase() {
     const randomIndex = Math.floor(Math.random() * catchPhrases.length)
 
@@ -32,4 +35,4 @@ const CatPersonality = Object.freeze({
   }
 })
 
-export default CatPersonality
+export default WittyService

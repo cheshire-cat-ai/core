@@ -24,9 +24,16 @@
     .logoWrapper {
       display: flex;
       align-items: center;
+      gap: var(--app-space-s);
 
       &.clickable {
         cursor: pointer;
+      }
+
+      p {
+        margin: 0;
+        text-transform: uppercase;
+        @include typography-action;
       }
     }
 

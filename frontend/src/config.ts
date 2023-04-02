@@ -11,7 +11,7 @@ const getConfig = () => Object.freeze<Config>({
     AppFeatures.FileUpload,
     AppFeatures.AudioRecording,
     AppFeatures.Configurations,
-    AppFeatures.MemoryManagement
+    AppFeatures.Plugins
   ],
   endpoints: {
     chat: new URL('ws://localhost:1865/ws'),

@@ -4,6 +4,6 @@
 export enum AppFeatures {
   FileUpload,
   AudioRecording,
-  MemoryManagement,
+  Plugins,
   Configurations,
 }

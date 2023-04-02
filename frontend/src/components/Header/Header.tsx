@@ -22,6 +22,7 @@ const Header: FC<HeaderProps> = ({ onLogoClick, className, ...rest }) => {
         <div className={style.content}>
           <div className={clsx(style.logoWrapper, onLogoClick && style.clickable)} onClick={onLogoClick}>
             <Logo />
+            <p>Cheshire Cat</p>
           </div>
           <div className={style.actions}>
             <HamburgerButton active={sideNavActive} onClick={toggleSideNave} className={style.hmgBtn} />
