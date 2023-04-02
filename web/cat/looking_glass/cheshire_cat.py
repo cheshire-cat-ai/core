@@ -2,7 +2,7 @@ import time
 
 import langchain
 from langchain.chains.summarize import load_summarize_chain
-
+from langchain.docstore.document import Document
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.looking_glass.agent_manager import AgentManager
 from cat.mad_hatter.mad_hatter import MadHatter
@@ -162,12 +162,17 @@ class CheshireCat:
 
         return hyde_text, hyde_embedding
 
-    def get_summary_text(self, docs):
-        # TODO: should we summarize group of documents?
-        summaries = [self.summarization_chain.run([doc]) for doc in docs]
+    def get_summary_text(self, docs, group_size=3):
+        flag = False
+        while not flag:
+            # TODO: should we save intermediate results?
+            docs = [self.summarization_chain.run(docs[i:i+group_size]) for i in range(0,len(docs), group_size)]
+            docs = [Document(page_content=doc) for doc in docs]
+            flag = len(docs)==1
+
         if self.verbose:
-            log(summaries)
-        return summaries
+            log(docs[0])
+        return docs[0]
 
     def __call__(self, user_message):
         if self.verbose:

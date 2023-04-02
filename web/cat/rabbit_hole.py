@@ -54,8 +54,7 @@ def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chun
     log(f"Preparing to memorize {len(docs)} vectors")
 
 
-    # TODO: hierarchical summarization
-    # example: pass data to cat to get summary
+    # iterative summarization 
     # summary = ccat.get_summary_text(docs)
 
 
