@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit'
 import messagesReducer from './messages/slice'
 import fileUploaderReducer from './fileUploader/slice'
 import notificationsReducer from './notifications/slice'
+import llmProvidersReducer from './llmProviders/slice'
 
 /**
  * The redux store
  */
 const store = configureStore({
   reducer: {
+    llmProviders: llmProvidersReducer,
     notifications: notificationsReducer,
     messages: messagesReducer,
     fileUploader: fileUploaderReducer

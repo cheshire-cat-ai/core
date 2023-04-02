@@ -4,7 +4,7 @@ import Scaffold from './Scaffold'
 
 const Home = React.lazy(() => import('./Home'))
 const Configurations = React.lazy(() => import('./Configurations'))
-const LangModelProvider = React.lazy(() => import('./LLMProvider'))
+const LangModelProvider = React.lazy(() => import('./LanguageModel'))
 const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
 
 /**

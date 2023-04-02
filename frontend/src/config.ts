@@ -15,7 +15,8 @@ const getConfig = () => Object.freeze<Config>({
   ],
   endpoints: {
     chat: new URL('ws://localhost:1865/ws'),
-    rabbitHole: new URL('http://localhost:1865/rabbithole')
+    rabbitHole: new URL('http://localhost:1865/rabbithole'),
+    settings: new URL('http://localhost:1865/settings')
   }
 })
 
@@ -26,6 +27,7 @@ export interface Config {
   readonly endpoints: {
     readonly chat: URL
     readonly rabbitHole: URL
+    readonly settings: URL
   }
 }
 

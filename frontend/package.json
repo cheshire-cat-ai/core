@@ -12,7 +12,11 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.3",
-    "antd": "^5.3.2",
+    "@rjsf/antd": "^5.5.0",
+    "@rjsf/core": "^5.5.0",
+    "@rjsf/utils": "^5.5.0",
+    "@rjsf/validator-ajv8": "^5.5.0",
+    "antd": "^4.24.8",
     "beautiful-react-hooks": "^4.3.0",
     "clsx": "^1.2.1",
     "framer-motion": "^10.10.0",

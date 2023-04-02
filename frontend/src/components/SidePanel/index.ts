@@ -1,2 +1,2 @@
 export { default } from './SidePanel'
-export { type SlideInPanelProps } from './SidePanel'
+export { type SidePanelProps } from './SidePanel'

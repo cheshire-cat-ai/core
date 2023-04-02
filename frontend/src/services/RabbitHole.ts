@@ -1,6 +1,7 @@
 /**
  * This module defines and exports a service that is used to send files to the backend.
- * A service is a singleton object that provides a simple interface for performing backend-related tasks such as sending or receiving data.
+ * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
+ * sending or receiving data.
  */
 import LogService from '@services/LogService'
 import { toJSON } from '@utils/commons'

@@ -1,4 +1,6 @@
 .slidePanel {
+  display: flex;
+  flex-direction: column;
   background: var(--app-sidebar-background);
   position: fixed;
   backdrop-filter: blur(10px);
@@ -41,6 +43,17 @@
   }
 
   .content {
+    padding: var(--app-space-m) var(--app-side-space);
+    flex: 1;
+  }
+
+  footer {
     padding: var(--app-side-space);
+    height: var(--app-header-height);
+    border-top: 1px solid #0000000D;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: flex-end;
   }
 }

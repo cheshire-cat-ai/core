@@ -7,13 +7,12 @@ import { handleReactElementOrRenderer } from '@utils/commons'
 import CloseButton from '@components/CloseButton'
 
 import styles from './SidePanel.module.scss'
-import Spinner from '@components/Spinner'
 
 /**
  * SidePanel component description
  */
 const SidePanel: FC<SidePanelProps> = (props) => {
-  const { active, onClose, position, title, className, children, ActionRenderer, ...rest } = props
+  const { active, onClose, position, title, className, children, ActionRenderer, FooterRenderer, ...rest } = props
   const animation = position === 'right' ? slideRightInOUt : slideLeftInOut
   const classList = clsx(styles.slidePanel, active && styles.active, {
     [styles.left]: !position || position === 'left',
@@ -29,14 +28,18 @@ const SidePanel: FC<SidePanelProps> = (props) => {
           </div>
           <div className={styles.actions}>
             {ActionRenderer
-              ? handleReactElementOrRenderer(ActionRenderer, { onClose })
+              ? handleReactElementOrRenderer(ActionRenderer)
               : <CloseButton onClick={onClose} />}
           </div>
         </header>
         <div className={styles.content}>
           {children}
-          <Spinner size={20} />
         </div>
+        {FooterRenderer && (
+          <footer>
+            {handleReactElementOrRenderer(FooterRenderer)}
+          </footer>
+        )}
       </motion.aside>
     </AnimatePresence>
   )
@@ -47,7 +50,8 @@ export interface SidePanelProps extends PropsWithChildren<CommonProps> {
   active?: boolean
   onClose?: () => void
   position?: 'left' | 'right'
-  ActionRenderer?: ComponentRenderer
+  ActionRenderer?: ComponentRenderer | React.ReactElement
+  FooterRenderer?: ComponentRenderer | React.ReactElement
 }
 
 export default SidePanel

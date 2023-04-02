@@ -33,12 +33,11 @@ export const uniqueId = () => {
  *  )
  *  }
  */
-export const handleReactElementOrRenderer = <TProps extends Record<string, unknown>>
-  (elementOrRenderer?: ReactElement | ComponentRenderer, props?: TProps) => {
+export const handleReactElementOrRenderer = (elementOrRenderer?: ReactElement | ComponentRenderer) => {
   if (!elementOrRenderer) return null
   if (isValidElement(elementOrRenderer)) return elementOrRenderer as ReactElement
 
-  return createElement(elementOrRenderer, props)
+  return createElement(elementOrRenderer)
 }
 
 /**
@@ -56,13 +55,3 @@ export const EmptyReactElement = () => null
  * Returns a promise that contains the response body as a JSON object.
  */
 export const toJSON = async <TResult>(response: Response) => await (response.json() as Promise<TResult>)
-
-/**
- * Returns the value of a CSS variable from the document root.
- * This function is currently used to make AntDesign match the "_variables.css" file
- * but, it'll be removed once we'll remove AntDesign.
- */
-export const getCSSVariableValue = (variableName: `--app-${string}`) => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(variableName)
-  return value.trim()
-}
