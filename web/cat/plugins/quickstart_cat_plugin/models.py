@@ -20,6 +20,13 @@ def get_language_model(cat):
                 # "model_name": "gpt-3.5-turbo" # TODO: allow optional kwargs
             }
         )
+    elif "HF_TOKEN" in os.environ:
+        llm = llms.LLMHuggingFaceHubConfig.get_llm_from_config(
+            {
+                "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                "repo_id" : os.environ["HF_CHECKPOINT"]
+            }
+        )
     else:
         llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
@@ -37,6 +44,13 @@ def get_language_embedder(cat):
             {
                 "openai_api_key": os.environ["OPENAI_KEY"],
                 # model_name: '....'  # TODO: allow optional kwargs
+            }
+        )
+    elif "HF_TOKEN" in os.environ:
+        embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+            {
+                "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                # repo_id: "..." TODO: at the moment use default
             }
         )
     else:

@@ -36,7 +36,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    # repo_id: str = None
+    # repo_id: str = None TODO use the default sentence-transformers at the moment
     huggingfacehub_api_token: str
     _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
 
