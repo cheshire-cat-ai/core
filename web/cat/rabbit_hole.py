@@ -1,17 +1,21 @@
 import os
-import tempfile
 import time
-from typing import List
+import tempfile
 
-from langchain.document_loaders import PDFMinerLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from fastapi import UploadFile
-
-from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.utils import log
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders import (
+    PDFMinerLoader,
+    UnstructuredFileLoader,
+    UnstructuredMarkdownLoader,
+)
+from cat.looking_glass.cheshire_cat import CheshireCat
 
 
-def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chunk_overlap : int = 100):
+def ingest_file(
+    ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chunk_overlap: int = 100
+):
     # Create temporary file
     temp_file = tempfile.NamedTemporaryFile(dir=".", delete=False)
     temp_name = temp_file.name
@@ -25,12 +29,12 @@ def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chun
     if file.content_type == "text/plain":
         loader = UnstructuredFileLoader(temp_name)
     elif file.content_type == "text/markdown":
-        loader = UnstructuredMarkdownLoader(temp_name)  
+        loader = UnstructuredMarkdownLoader(temp_name)
     elif file.content_type == "application/pdf":
         loader = PDFMinerLoader(temp_name)
     else:
-        raise Exception('MIME type not supported for upload')
-    
+        raise Exception("MIME type not supported for upload")
+
     # extract text from file
     text = loader.load()
 
@@ -40,23 +44,26 @@ def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chun
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
-        separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""]
+        separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
     )
     docs = text_splitter.split_documents(text)
 
     log(f"Preparing to clean {len(docs)} text chunks")
 
-
     # remove short texts (page numbers, isolated words, etc.)
     docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
+    log(f"Doing iterative summarization over {len(docs)} chunks")
+
+    # iterative summarization
+    final_summary, intermediate_summaries = ccat.get_summary_text(docs)
+
+    # we store in memory both original text chunks, intermediate summaries and final summary
+    docs = [final_summary] + intermediate_summaries + docs
+
+    log(docs)
 
     log(f"Preparing to memorize {len(docs)} vectors")
-
-
-    # iterative summarization 
-    # summary = ccat.get_summary_text(docs)
-
 
     # classic embed
     for d, doc in enumerate(docs):
@@ -76,4 +83,3 @@ def ingest_file(ccat: CheshireCat, file: UploadFile, chunk_size: int = 400, chun
     ccat.vector_store.save_vector_store("documents", ccat.memory["documents"])
 
     log("Done uploading")  # TODO: notify client
-
