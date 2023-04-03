@@ -21,12 +21,20 @@ def get_language_model(cat):
             }
         )
     elif "HF_TOKEN" in os.environ:
-        llm = llms.LLMHuggingFaceHubConfig.get_llm_from_config(
-            {
-                "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-                "repo_id" : os.environ["HF_CHECKPOINT"]
-            }
-        )
+        if "HF_CHECKPOINT" in os.environ:
+            llm = llms.LLMHuggingFaceHubConfig.get_llm_from_config(
+                    {
+                        "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                        "repo_id" : os.environ["HF_CHECKPOINT"]
+                    }
+            )
+        else:
+            llm = llms.LLMHuggingFaceHubConfig.get_llm_from_config(
+                    {
+                        "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                        "repo_id" : "openai-gpt"
+                    }
+            )
     else:
         llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
