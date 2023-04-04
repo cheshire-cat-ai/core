@@ -31,8 +31,10 @@ class LLMDefaultConfig(LLMSettings):
     _pyclass: PyObject = LLMDefault
 
     class Config:
-        title = "Default LLM"
-        description = "Configuration for default LLM"
+        schema_extra = {
+            "name_human_readable": "Default Language Model",
+            "description": "A dumb LLM just telling that the Cat is not configured. There will be a nice LLM here once consumer hardware allows it.",
+        }
 
 
 class LLMOpenAIConfig(LLMSettings):
@@ -40,8 +42,10 @@ class LLMOpenAIConfig(LLMSettings):
     _pyclass: PyObject = langchain.llms.OpenAI
 
     class Config:
-        title = "OpenAI GPT-3.5"
-        description = "Configuration for OpenAI completion models"
+        schema_extra = {
+            "name_human_readable": "OpenAI GPT-3",
+            "description": "OpenAI GPT-3. More expensive but also more flexible than ChatGPT.",
+        }
 
 
 class LLMOpenAIChatConfig(LLMSettings):
@@ -49,8 +53,10 @@ class LLMOpenAIChatConfig(LLMSettings):
     _pyclass: PyObject = langchain.llms.OpenAIChat
 
     class Config:
-        title = "OpenAI ChatGPT"
-        description = "Configuration for OpenAI chat models"
+        schema_extra = {
+            "name_human_readable": "OpenAI ChatGPT",
+            "description": "Chat model from OpenAI",
+        }
 
 
 class LLMCohereChatConfig(LLMSettings):
@@ -58,17 +64,10 @@ class LLMCohereChatConfig(LLMSettings):
     _pyclass: PyObject = langchain.llms.Cohere
 
     class Config:
-        title = "Cohere"
-        description = "Configuration for Cohere language models"
-
-
-class LLMHuggingFacePipeline(LLMSettings):
-    model_id: str
-    _pyclass: PyObject = langchain.llms.HuggingFacePipeline
-
-    class Config:
-        title = "HuggingFace (local model)"
-        description = "Configuration for HuggingFace Hub language models"
+        schema_extra = {
+            "name_human_readable": "Cohere",
+            "description": "Configuration for Cohere language model",
+        }
 
 
 class LLMHuggingFaceHubConfig(LLMSettings):
@@ -77,8 +76,10 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     _pyclass: PyObject = langchain.llms.HuggingFaceHub
 
     class Config:
-        title = "HuggingFace Hub"
-        description = "Configuration for HuggingFace Hub language models"
+        schema_extra = {
+            "name_human_readable": "HuggingFace Hub",
+            "description": "Configuration for HuggingFace Hub language models",
+        }
 
 
 class LLMHuggingFaceEndpointConfig(LLMSettings):
@@ -87,8 +88,10 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     _pyclass: PyObject = langchain.llms.HuggingFaceEndpoint
 
     class Config:
-        title = "HuggingFace Endpoint"
-        description = "Configuration for HuggingFace Endpoint language models"
+        schema_extra = {
+            "name_human_readable": "HuggingFace Endpoint",
+            "description": "Configuration for HuggingFace Endpoint language models",
+        }
 
 
 SUPPORTED_LANGUAGE_MODELS = [
@@ -96,7 +99,15 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMOpenAIConfig,
     LLMOpenAIChatConfig,
     LLMCohereChatConfig,
-    LLMHuggingFacePipeline,
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
 ]
+
+# LLM_SCHEMAS contains metadata to let any client know which fields are required to create the language model.
+LLM_SCHEMAS = {}
+for config_class in SUPPORTED_LANGUAGE_MODELS:
+    schema = config_class.schema()
+    schema["languageModelName"] = schema[
+        "title"
+    ]  # useful for clients in order to call the correct config endpoints
+    LLM_SCHEMAS[schema["title"]] = schema

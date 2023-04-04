@@ -18,12 +18,14 @@ class EmbedderSettings(BaseSettings):
 
 
 class EmbedderFakeConfig(EmbedderSettings):
-    size: int = 10
+    size: int = 1536
     _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
 
     class Config:
-        title = "Default Embedder"
-        description = "Configuration for default embedder"
+        schema_extra = {
+            "title_human_readable": "Default Embedder",
+            "description": "Configuration for default embedder. It just outputs random numbers XD",
+        }
 
 
 class EmbedderOpenAIConfig(EmbedderSettings):
@@ -31,11 +33,18 @@ class EmbedderOpenAIConfig(EmbedderSettings):
     _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
-        title = "OpenAI Embedder"
-        description = "Configuration for OpenAI embeddings"
+        schema_extra = {
+            "title_human_readable": "OpenAI Embedder",
+            "description": "Configuration for OpenAI embeddings",
+        }
 
 
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
+]
+
+
+EMBEDDER_SCHEMAS = [
+    config_class.schema() for config_class in SUPPORTED_EMDEDDING_MODELS
 ]

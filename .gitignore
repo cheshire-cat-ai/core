@@ -7,5 +7,7 @@ web/venv
 .DS_Store
 .idea
 
+# file based DBs
 *long_term_memory
 *metadata.db
+*metadata-v2.db
