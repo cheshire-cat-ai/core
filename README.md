@@ -19,7 +19,7 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
 - Long term memory
 - Can use external tools (APIs, custom python code, other models)
-- Can ingest documents (.pdf, .txt)
+- Can ingest documents (.pdf, .txt, .md)
 - Extendible via plugins
 - 100% [dockerized](https://docs.docker.com/get-docker/)
 
