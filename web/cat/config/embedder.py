@@ -23,7 +23,7 @@ class EmbedderFakeConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "title_human_readable": "Default Embedder",
+            "name_human_readable": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers XD",
         }
 
@@ -34,7 +34,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "title_human_readable": "OpenAI Embedder",
+            "name_human_readable": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
 
@@ -45,6 +45,11 @@ SUPPORTED_EMDEDDING_MODELS = [
 ]
 
 
-EMBEDDER_SCHEMAS = [
-    config_class.schema() for config_class in SUPPORTED_EMDEDDING_MODELS
-]
+# EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
+EMBEDDER_SCHEMAS = {}
+for config_class in SUPPORTED_EMDEDDING_MODELS:
+    schema = config_class.schema()
+
+    # useful for clients in order to call the correct config endpoints
+    schema["languageEmbedderName"] = schema["title"]
+    EMBEDDER_SCHEMAS[schema["title"]] = schema

@@ -1,78 +1,70 @@
-"""
+from typing import Dict
+
 from cat.db import crud, models
-from fastapi import Depends, Response, APIRouter, HTTPException, status
+from fastapi import Body, Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
 from cat.db.database import get_db_session
 from cat.config.embedder import EMBEDDER_SCHEMAS
 
 router = APIRouter()
 
+# embedder type and config are saved in settings table under this category
+EMBEDDER_DB_CATEGORY = "embedder_factory"
 
+# list of configurable embedders
+ALLOWED_EMBEDDER_CONGURATIONS = list(EMBEDDER_SCHEMAS.keys())
+
+
+# get configured embedders and configuration schemas
 @router.get("/")
-def get_settings(
+def get_llm_settings(db: Session = Depends(get_db_session)):
+    embedder_settings = crud.get_settings_by_category(db, category=EMBEDDER_DB_CATEGORY)
+
+    return {
+        "status": "success",
+        "results": len(embedder_settings),
+        "settings": embedder_settings,
+        "schemas": EMBEDDER_SCHEMAS,
+        "allowed_llm_configurations": ALLOWED_EMBEDDER_CONGURATIONS,
+    }
+
+
+# example payload to PUT the embedder config (will be shown in Swagger UI)
+example_put_request = {"openai_api_key": "your-key-here"}
+
+ExamplePutBody = Body(example=example_put_request)
+
+
+@router.put("/{languageEmbedderName}")
+def upsert_llm_setting(
+    languageEmbedderName: str,
+    payload: Dict = ExamplePutBody,
     db: Session = Depends(get_db_session),
-    limit: int = 100,
-    page: int = 1,
-    search: str = "",
 ):
-    settings = crud.get_settings(db, limit=limit, page=page, search=search)
-
-    from cat.utils import log
-
-    log(LLM_SCHEMAS)
-
-    return {"status": "success", "results": len(settings), "settings": settings}
-
-
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_setting(payload: models.Setting, db: Session = Depends(get_db_session)):
-    new_setting = crud.create_setting(db, payload)
-    return {"status": "success", "setting": new_setting}
-
-
-@router.patch("/{settingId}")
-def update_setting(
-    settingId: str, payload: models.Setting, db: Session = Depends(get_db_session)
-):
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
-    setting = setting_query.first()
-
-    if not setting:
+    if languageEmbedderName not in ALLOWED_EMBEDDER_CONGURATIONS:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {settingId} found",
+            status_code=400,
+            detail=f"{languageEmbedderName} not supported. Must be one of {ALLOWED_EMBEDDER_CONGURATIONS}",
         )
-    update_data = payload.dict(exclude_unset=True)
-    setting_query.filter(models.Setting.setting_id == settingId).update(
-        update_data, synchronize_session=False
-    )
-    db.commit()
-    db.refresh(setting)
-    return {"status": "success", "setting": setting}
 
+    # is the setting already present in DB?
+    old_setting = crud.get_setting_by_name(db, languageEmbedderName)
 
-@router.get("/{settingId}")
-def get_setting(settingId: str, db: Session = Depends(get_db_session)):
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
-    setting = setting_query.first()
-    if not setting:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {id} found",
-        )
-    return {"status": "success", "setting": setting}
+    if old_setting is None:
+        # prepare setting to be included in DB, adding category
+        embedder_setting = {
+            "name": languageEmbedderName,
+            "value": payload,
+            "category": EMBEDDER_DB_CATEGORY,
+        }
+        embedder_setting = models.Setting(**embedder_setting)
+        final_embedder_setting = crud.create_setting(db, embedder_setting)
 
+    else:
+        old_setting.value = payload
+        db.add(old_setting)
+        db.commit()
+        db.refresh(old_setting)
+        final_embedder_setting = old_setting
 
-@router.delete("/{settingId}")
-def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
-    setting = setting_query.first()
-    if not setting:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {id} found",
-        )
-    setting_query.delete(synchronize_session=False)
-    db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-"""
+    return {"status": "success", "setting": final_embedder_setting}

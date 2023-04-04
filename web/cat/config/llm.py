@@ -107,7 +107,7 @@ SUPPORTED_LANGUAGE_MODELS = [
 LLM_SCHEMAS = {}
 for config_class in SUPPORTED_LANGUAGE_MODELS:
     schema = config_class.schema()
-    schema["languageModelName"] = schema[
-        "title"
-    ]  # useful for clients in order to call the correct config endpoints
+
+    # useful for clients in order to call the correct config endpoints
+    schema["languageModelName"] = schema["title"]
     LLM_SCHEMAS[schema["title"]] = schema
