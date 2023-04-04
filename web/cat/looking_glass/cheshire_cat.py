@@ -1,13 +1,13 @@
 import time
 
 import langchain
-from langchain.chains.summarize import load_summarize_chain
-
-from cat.db.database import get_db_session, create_db_and_tables
-from cat.looking_glass.agent_manager import AgentManager
-from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory import VectorStore, VectorMemoryConfig
 from cat.utils import log
+from cat.memory import VectorStore, VectorMemoryConfig
+from cat.db.database import get_db_session, create_db_and_tables
+from cat.mad_hatter.mad_hatter import MadHatter
+from langchain.chains.summarize import load_summarize_chain
+from langchain.docstore.document import Document
+from cat.looking_glass.agent_manager import AgentManager
 
 
 # main class
@@ -68,8 +68,18 @@ class CheshireCat:
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
+        # TODO: we could import this from plugins
+        self.summarization_prompt = """Write a concise summary of the following:
+{text}
+"""
         # TODO: import chain_type from settings
-        self.summarization_chain = load_summarize_chain(self.llm, chain_type="map_reduce")
+        self.summarization_chain = load_summarize_chain(
+            self.llm,
+            chain_type="stuff",
+            prompt=langchain.PromptTemplate(
+                template=self.summarization_prompt, input_variables=["text"]
+            ),
+        )
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -152,11 +162,39 @@ class CheshireCat:
 
         return hyde_text, hyde_embedding
 
-    def get_summary_text(self, docs):
-        summary = self.summarization_chain.run(docs)
-        if self.verbose:
-            log(summary)
-        return summary
+    # iterative summarization
+    def get_summary_text(self, docs, group_size=3):
+        # service variable to store intermediate results
+        intermediate_summaries = docs
+
+        # we will store iterative summaries all together in a list
+        all_summaries = []
+
+        # loop until there are no groups to summarize
+        root_summary_flag = False
+        while not root_summary_flag:
+            # make summaries of groups of docs
+            intermediate_summaries = [
+                self.summarization_chain.run(intermediate_summaries[i : i + group_size])
+                for i in range(0, len(intermediate_summaries), group_size)
+            ]
+            intermediate_summaries = [
+                Document(page_content=summary) for summary in intermediate_summaries
+            ]
+
+            # update list of all summaries
+            all_summaries = intermediate_summaries + all_summaries
+
+            # did we reach root summary?
+            root_summary_flag = len(intermediate_summaries) == 1
+
+            if self.verbose:
+                log(
+                    f"Building summaries over {len(intermediate_summaries)} chunks. Please wait."
+                )
+
+        # return root summary and all intermediate summaries
+        return all_summaries[0], all_summaries[1:]
 
     def __call__(self, user_message):
         if self.verbose:

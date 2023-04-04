@@ -14,3 +14,4 @@ beautifulsoup4==4.12.0
 pdfminer.six==20221105
 unstructured==0.5.7
 faiss-cpu==1.7.3
+tiktoken==0.3.3
