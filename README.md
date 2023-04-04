@@ -80,6 +80,10 @@ docker-compose down
 - more plugins shipped by default
 - (surprise!!!) PURR
 
+## Naming Convention
+
+This project follows the **PEP8** naming convention for all backend code. Please ensure that your contributions adhere to this standard.
+
 ## Contributing
 
 If you have a suggestion that would make this better, open an issue and we can reason about it.
