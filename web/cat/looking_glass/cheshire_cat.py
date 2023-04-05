@@ -202,21 +202,28 @@ class CheshireCat:
 
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
 
-        # recall relevant memories (episodic)
-        episodic_memory_content = self.recall_memories_from_embedding(
-            embedding=hyde_embedding, collection="episodes"
-        )
-        episodic_memory_formatted_content = self.format_memories_for_prompt(
-            episodic_memory_content
-        )
+        try:
+            # recall relevant memories (episodic)
+            episodic_memory_content = self.recall_memories_from_embedding(
+                embedding=hyde_embedding, collection="episodes"
+            )
+            episodic_memory_formatted_content = self.format_memories_for_prompt(
+                episodic_memory_content
+            )
 
-        # recall relevant memories (declarative)
-        declarative_memory_content = self.recall_memories_from_embedding(
-            embedding=hyde_embedding, collection="documents"
-        )
-        declarative_memory_formatted_content = self.format_memories_for_prompt(
-            declarative_memory_content
-        )
+            # recall relevant memories (declarative)
+            declarative_memory_content = self.recall_memories_from_embedding(
+                embedding=hyde_embedding, collection="documents"
+            )
+            declarative_memory_formatted_content = self.format_memories_for_prompt(
+                declarative_memory_content
+            )
+        except Exception:
+            return {
+                "error": False,  # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
+                "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `web/long_term_memory` folder",
+                "why": {},
+            }
 
         # reply with agent
         try:
