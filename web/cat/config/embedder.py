@@ -45,8 +45,10 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
     _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
 
     class Config:
-        title = "HuggingFace Hub Embedder"
-        description = "Configuration for HuggingFace Hub embeddings"
+        schema_extra = {
+            "name_human_readable": "HuggingFace Hub Embedder",
+            "description": "Configuration for HuggingFace Hub embeddings",
+        }
 
 
 SUPPORTED_EMDEDDING_MODELS = [
