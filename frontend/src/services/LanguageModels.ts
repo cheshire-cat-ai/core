@@ -4,16 +4,16 @@
  * sending or receiving data.
  */
 import { type LLMProviderDescriptor } from '@models/LLMProviderDescriptor'
+import { toJSON } from '@utils/commons'
+import getConfig from '../config'
+
+const config = getConfig()
 
 const LanguageModels = Object.freeze({
   getProviders: async () => {
-    // const endpoint = config.endpoints.settings
-    // return await fetch(endpoint).then<{ settings: LanguageModel[] }>(toJSON).then(({ settings }) => settings)
+    const endpoint = config.endpoints.languageModels
 
-    return await Promise.resolve<LLMProviderDescriptor[]>([
-      { id: 1, name: 'OpenAI', description: 'OpenAI lorem ipsum dolor sit amet' },
-      { id: 2, name: 'Hugging Face', description: 'Hugging Face lorem ipsum dolor sit amet' }
-    ])
+    return await fetch(endpoint).then<LLMProviderDescriptor>(toJSON)
   }
 })
 

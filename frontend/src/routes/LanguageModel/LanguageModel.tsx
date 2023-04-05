@@ -1,59 +1,28 @@
-import React, { type FC, useCallback, useEffect } from 'react'
+import React, { type FC, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { type RJSFSchema } from '@rjsf/utils'
 import clsx from 'clsx'
 import { Button, Form, Select } from 'antd'
 import Alert from '@components/Alert'
 import SidePanel from '@components/SidePanel'
 import Spinner from '@components/Spinner'
 import useLLMProviders from '@hooks/useLLMProviders'
-import { type LLMProviderDescriptor } from '@models/LLMProviderDescriptor'
 import SchemaForm from '@components/SchemaForm'
 
 import style from './LanguageModel.module.scss'
-
-const schema: RJSFSchema = {
-  type: 'object',
-  required: ['key', 'foo'],
-  properties: {
-    key: { type: 'string', title: 'OpenAI key' },
-    something: { type: 'number', title: 'Something else' },
-    foo: {
-      type: 'object',
-      title: 'Nested',
-      oneOf: [
-        {
-          properties: {
-            ipsum: {
-              type: 'string'
-            }
-          },
-          required: ['ipsum']
-        },
-        {
-          properties: {
-            lorem: {
-              type: 'string'
-            }
-          },
-          required: ['lorem']
-        }
-      ]
-    }
-  }
-}
 
 /**
  * Language Model configuration side panel
  */
 const LanguageModel: FC = () => {
-  const { providers, error, isLoading, selectLLMProvider, selected, requireLLMProviders } = useLLMProviders()
+  const { providers, error, isLoading, selectProvider, selected, schema, requireProviders } = useLLMProviders()
+  const [llmSettings, setLLMSettings] = useState<Record<string, unknown>>()
   const navigate = useNavigate()
+  const options = providers.map((p) => ({ label: p.name_human_readable, value: p.languageModelName }))
   const title = 'Configure your language model'
 
   useEffect(() => {
-    void requireLLMProviders()
-  }, [requireLLMProviders])
+    void requireProviders()
+  }, [requireProviders])
 
   const handleOnClose = useCallback(() => {
     navigate('/configurations')
@@ -65,6 +34,8 @@ const LanguageModel: FC = () => {
       <Button type="default">Cancel</Button>
     </>
   )
+
+  console.log('Settings', llmSettings)
 
   return (
     <SidePanel active title={title} onClose={handleOnClose} FooterRenderer={Footer} position="right">
@@ -78,18 +49,18 @@ const LanguageModel: FC = () => {
                 value={selected}
                 defaultValue={selected}
                 placeholder="Please select your language model provider"
-                onChange={(val) => selectLLMProvider(val)}
-                options={providers.map(toSelectOption)}
+                onChange={selectProvider}
+                options={options}
               />
             </Form.Item>
           </Form>
         )}
-        {selected && (<SchemaForm schema={schema} onChange={console.log} />)}
+        {selected && schema && (
+          <SchemaForm schema={schema} />
+        )}
       </div>
     </SidePanel>
   )
 }
-
-const toSelectOption = ({ name, id }: LLMProviderDescriptor) => ({ value: id, label: name })
 
 export default LanguageModel

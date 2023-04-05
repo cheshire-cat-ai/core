@@ -26,3 +26,18 @@ export const selectLLMProvidersResponse = createSelector(selectRootState, (state
  * Selects the selected LLM provider from the llmProviders slice.
  */
 export const selectCurrentLLMProvider = createSelector(selectRootState, (state) => state.selected)
+
+/**
+ * Selects the list of all available language model providers from the llmProviders slice.
+ */
+export const selectAllAvailableProviders = createSelector(selectLLMProvidersResponse, (providers) => {
+  return providers?.schemas ? Object.values(providers.schemas) : []
+})
+
+/**
+ * Selects the schema for the current language model provider
+ */
+export const selectCurrentProviderSchema = createSelector(selectAllAvailableProviders, selectCurrentLLMProvider, (schemas, selected) => {
+  if (!selected) return undefined
+  return schemas.find((schema) => schema.languageModelName === selected)
+})
