@@ -1,20 +1,20 @@
 from cat.db import crud, models
-from cat.db.database import get_db_session
-
 from fastapi import Depends, Response, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
-
+from cat.db.database import get_db_session
 
 router = APIRouter()
+
 
 @router.get("/")
 def get_settings(
     db: Session = Depends(get_db_session),
-    limit: int = 10,
+    limit: int = 100,
     page: int = 1,
     search: str = "",
 ):
     settings = crud.get_settings(db, limit=limit, page=page, search=search)
+
     return {"status": "success", "results": len(settings), "settings": settings}
 
 

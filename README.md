@@ -16,12 +16,12 @@
 
 If you want to build a custom AI on top of a language model, the Cat can help you:
 
-- Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
-- Long term memory
-- Can use external tools (APIs, custom python code, other models)
-- Can ingest documents (.pdf, .txt)
-- Extendible via plugins
-- 100% [dockerized](https://docs.docker.com/get-docker/)
+- 🌍 Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
+- 🐘 Long term memory
+- 🔧 Can use external tools (APIs, custom python code, other models)
+- 🖺 Can ingest documents (.pdf, .txt, .md)
+- 🚀 Extendible via plugins
+- 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
 
 <p align="center">
     <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
@@ -85,6 +85,7 @@ HF_CHECKPOINT=decapoda-research/llama-13b-hf
 
 ## Docs and Resources
 
+- [Discord Server](https://discord.gg/8eNx6qqF)
 - [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
 
 
@@ -96,6 +97,7 @@ HF_CHECKPOINT=decapoda-research/llama-13b-hf
 - voice interface
 - more plugins shipped by default
 - (surprise!!!) PURR
+
 
 ## Contributing
 
@@ -114,5 +116,9 @@ You can start simply by:
 - Sharing on social media
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
+
+## Naming Convention
+
+This project follows the **PEP8** naming convention for all backend code. Please ensure that your contributions adhere to this standard.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

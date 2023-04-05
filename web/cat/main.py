@@ -1,15 +1,14 @@
-from contextlib import asynccontextmanager
 import os
+from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
+from cat.routes import base, memory, upload, websocket
+from fastapi.responses import JSONResponse
+from cat.routes.openapi import get_openapi_configuration_function
+from cat.routes.setting import llm_setting, general_setting, embedder_setting
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-
 from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.routes import base, memory, upload, setting, websocket
-from cat.routes.openapi import get_openapi_configuration_function
 
 
 @asynccontextmanager
@@ -41,8 +40,16 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Base"])
-cheshire_cat_api.include_router(setting.router, tags=["Settings"], prefix="/settings")
+cheshire_cat_api.include_router(base.router, tags=["Status"])
+cheshire_cat_api.include_router(
+    general_setting.router, tags=["Settings - General"], prefix="/settings"
+)
+cheshire_cat_api.include_router(
+    llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm"
+)
+cheshire_cat_api.include_router(
+    embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder"
+)
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
 cheshire_cat_api.include_router(
     upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"

@@ -1,7 +1,6 @@
+from cat.db import models
 from sqlmodel import col
 from sqlalchemy.orm import Session
-
-from cat.db import models
 
 
 def get_settings(db: Session, limit: int = 10, page: int = 1, search: str = ""):
@@ -13,6 +12,10 @@ def get_settings(db: Session, limit: int = 10, page: int = 1, search: str = ""):
         .offset(skip)
         .all()
     )
+
+
+def get_settings_by_category(db: Session, category: str):
+    return db.query(models.Setting).where(models.Setting.category == category).all()
 
 
 def create_setting(db: Session, payload: models.Setting):
