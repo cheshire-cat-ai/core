@@ -39,9 +39,22 @@ class EmbedderOpenAIConfig(EmbedderSettings):
         }
 
 
+class EmbedderHuggingFaceHubConfig(EmbedderSettings):
+    # repo_id: str = None TODO use the default sentence-transformers at the moment
+    huggingfacehub_api_token: str
+    _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "HuggingFace Hub Embedder",
+            "description": "Configuration for HuggingFace Hub embeddings",
+        }
+
+
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
+    EmbedderHuggingFaceHubConfig,
 ]
 
 

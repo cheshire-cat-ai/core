@@ -63,6 +63,23 @@ When you're done, remember to CTRL+c in the terminal and
 docker-compose down
 ```
 
+### Cheshire-Cat Loves HuggingFace
+
+If you want to use HuggingFace Hub instead of OpenAI, create a `.env` file containing:
+
+```
+HF_TOKEN=<your-huggingface-token>
+HF_CHECKPOINT=<selected-checkpoint>
+```
+
+example:
+
+```
+HF_TOKEN=hf_yourtoken
+HF_CHECKPOINT=decapoda-research/llama-13b-hf
+```
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
