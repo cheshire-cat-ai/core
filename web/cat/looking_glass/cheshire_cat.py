@@ -219,14 +219,26 @@ class CheshireCat:
         )
 
         # reply with agent
-        cat_message = self.agent_executor(
-            {
-                "input": user_message,
-                "episodic_memory": episodic_memory_formatted_content,
-                "declarative_memory": declarative_memory_formatted_content,
-                "chat_history": self.history,
-            }
-        )
+        try:
+            cat_message = self.agent_executor(
+                {
+                    "input": user_message,
+                    "episodic_memory": episodic_memory_formatted_content,
+                    "declarative_memory": declarative_memory_formatted_content,
+                    "chat_history": self.history,
+                }
+            )
+        except ValueError as e:
+            # This error happens when the LLM does not respect prompt instructions.
+            # We grab the LLM outptu here anyway, so small and non instruction-fine-tuned models can still be used.
+            error_description = str(e)
+            if not error_description.startswith("Could not parse LLM output: `"):
+                raise e
+
+            unparsable_llm_output = error_description.removeprefix(
+                "Could not parse LLM output: `"
+            ).removesuffix("`")
+            cat_message = {"output": unparsable_llm_output}
 
         if self.verbose:
             log(cat_message)

@@ -71,6 +71,11 @@ class LLMCohereChatConfig(LLMSettings):
 
 
 class LLMHuggingFaceHubConfig(LLMSettings):
+    # model_kwargs = {
+    #    "generation_config": {
+    #        "min_new_tokens": 10000
+    #    }
+    # }
     repo_id: str
     huggingfacehub_api_token: str
     _pyclass: PyObject = langchain.llms.HuggingFaceHub
