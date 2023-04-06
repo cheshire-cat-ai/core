@@ -78,6 +78,12 @@ example:
 HF_TOKEN=hf_yourtoken
 HF_CHECKPOINT=decapoda-research/llama-13b-hf
 ```
+
+If you want to use your HuggingFace Endpoint write in your .env file
+```
+HF_TOKEN=<your-huggingface-token>
+HF_CHECKPOINT=<your-huggingface-endpoint>
+```
 -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
