@@ -25,7 +25,7 @@ const RabbitHoleService = Object.freeze({
 })
 
 export interface RabbitHoleServiceResponse {
-  'content-type': 'text/plain' | 'application/pdf'
+  'content-type': 'text/plain' | 'text/markdown' | 'application/pdf'
   filename: string
   info: string
 }

@@ -202,31 +202,50 @@ class CheshireCat:
 
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
 
-        # recall relevant memories (episodic)
-        episodic_memory_content = self.recall_memories_from_embedding(
-            embedding=hyde_embedding, collection="episodes"
-        )
-        episodic_memory_formatted_content = self.format_memories_for_prompt(
-            episodic_memory_content
-        )
+        try:
+            # recall relevant memories (episodic)
+            episodic_memory_content = self.recall_memories_from_embedding(
+                embedding=hyde_embedding, collection="episodes"
+            )
+            episodic_memory_formatted_content = self.format_memories_for_prompt(
+                episodic_memory_content
+            )
 
-        # recall relevant memories (declarative)
-        declarative_memory_content = self.recall_memories_from_embedding(
-            embedding=hyde_embedding, collection="documents"
-        )
-        declarative_memory_formatted_content = self.format_memories_for_prompt(
-            declarative_memory_content
-        )
+            # recall relevant memories (declarative)
+            declarative_memory_content = self.recall_memories_from_embedding(
+                embedding=hyde_embedding, collection="documents"
+            )
+            declarative_memory_formatted_content = self.format_memories_for_prompt(
+                declarative_memory_content
+            )
+        except Exception:
+            return {
+                "error": False,  # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
+                "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `web/long_term_memory` folder",
+                "why": {},
+            }
 
         # reply with agent
-        cat_message = self.agent_executor(
-            {
-                "input": user_message,
-                "episodic_memory": episodic_memory_formatted_content,
-                "declarative_memory": declarative_memory_formatted_content,
-                "chat_history": self.history,
-            }
-        )
+        try:
+            cat_message = self.agent_executor(
+                {
+                    "input": user_message,
+                    "episodic_memory": episodic_memory_formatted_content,
+                    "declarative_memory": declarative_memory_formatted_content,
+                    "chat_history": self.history,
+                }
+            )
+        except ValueError as e:
+            # This error happens when the LLM does not respect prompt instructions.
+            # We grab the LLM outptu here anyway, so small and non instruction-fine-tuned models can still be used.
+            error_description = str(e)
+            if not error_description.startswith("Could not parse LLM output: `"):
+                raise e
+
+            unparsable_llm_output = error_description.removeprefix(
+                "Could not parse LLM output: `"
+            ).removesuffix("`")
+            cat_message = {"output": unparsable_llm_output}
 
         if self.verbose:
             log(cat_message)
