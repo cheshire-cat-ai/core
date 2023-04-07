@@ -137,6 +137,12 @@ Don't forget to give the project a star!⭐ Thanks again!🙏
 
 This project follows the **PEP8** naming convention for all backend code. Please ensure that your contributions adhere to this standard.
 
+## Credits
+
+Logo image generated with MidJourney, prompted by [Edgars Romanovskis](https://www.linkedin.com/in/edgars-romanovskis-b28826259/)
+
+## Which way to go?
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <p align="center">
