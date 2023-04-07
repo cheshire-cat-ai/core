@@ -22,19 +22,6 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - 🚀 Extendible via plugins
 - 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
 
-<p align="center">
-    <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
-</p>
-
-```
-"Would you tell me, please, which way I ought to go from here?"
-"That depends a good deal on where you want to get to," said the Cat.
-"I don't much care where--" said Alice.
-"Then it doesn't matter which way you go," said the Cat.
-
-(Alice's Adventures in Wonderland - Lewis Carroll)
-
-```
 
 
 ## Quickstart
@@ -151,3 +138,17 @@ Don't forget to give the project a star!⭐ Thanks again!🙏
 This project follows the **PEP8** naming convention for all backend code. Please ensure that your contributions adhere to this standard.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<p align="center">
+    <img align="center" src=cheshire-cat.jpeg width=400px alt="Wikipedia picture of the Cheshire Cat">
+</p>
+
+```
+"Would you tell me, please, which way I ought to go from here?"
+"That depends a good deal on where you want to get to," said the Cat.
+"I don't much care where--" said Alice.
+"Then it doesn't matter which way you go," said the Cat.
+
+(Alice's Adventures in Wonderland - Lewis Carroll)
+
+```
