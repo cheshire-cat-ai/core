@@ -28,11 +28,18 @@ def get_language_model(cat):
                         "repo_id" : os.environ["HF_CHECKPOINT"]
                     }
             )
+        elif "HF_ENDPOINT_URL" in os.environ:
+            llm = llms.LLMHuggingFaceEndpointConfig.get_llm_from_config(
+                    {
+                        "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                        "endpoint_url" : os.environ["HF_ENDPOINT_URL"]
+                    }
+            )
         else:
             llm = llms.LLMHuggingFaceHubConfig.get_llm_from_config(
                     {
                         "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-                        "repo_id" : "openai-gpt"
+                        "repo_id" : "google/flan-t5-xl"
                     }
             )
     else:
