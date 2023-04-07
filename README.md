@@ -77,7 +77,7 @@ HF_CHECKPOINT=decapoda-research/llama-13b-hf
 If you want to use your HuggingFace Endpoint write in your `.env` file
 ```
 HF_TOKEN=<your-huggingface-token>
-HF_CHECKPOINT=<your-huggingface-endpoint>
+HF_ENDPOINT_URL=<your-huggingface-endpoint>
 ```
 </details>
 
