@@ -39,6 +39,17 @@ class EmbedderOpenAIConfig(EmbedderSettings):
         }
 
 
+class EmbedderCohereConfig(EmbedderSettings):
+    cohere_api_key: str
+    _pyclass: PyObject = langchain.embeddings.CohereEmbeddings
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "OpenAI Embedder",
+            "description": "Configuration for OpenAI embeddings",
+        }
+
+
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
     # repo_id: str = None TODO use the default sentence-transformers at the moment
     huggingfacehub_api_token: str
@@ -54,6 +65,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
+    EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
 ]
 

@@ -81,6 +81,17 @@ HF_CHECKPOINT=<your-huggingface-endpoint>
 ```
 </details>
 
+<details><summary>I want to use Cohere</summary>
+
+### Cohere configuration
+
+Put in your `.env` file this line:
+
+```
+COHERE_KEY=<your-cohere-key>
+```
+</details>
+
 <br>
 
 After that you can run:
