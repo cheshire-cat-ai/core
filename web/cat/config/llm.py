@@ -39,6 +39,7 @@ class LLMDefaultConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
+    model_name: str = "text-davinci-003"
     _pyclass: PyObject = langchain.llms.OpenAI
 
     class Config:
@@ -50,6 +51,7 @@ class LLMOpenAIConfig(LLMSettings):
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
+    model_name: str = "gpt-3.5-turbo"
     _pyclass: PyObject = langchain.llms.OpenAIChat
 
     class Config:
@@ -59,8 +61,9 @@ class LLMOpenAIChatConfig(LLMSettings):
         }
 
 
-class LLMCohereChatConfig(LLMSettings):
+class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
+    model: str = "command"
     _pyclass: PyObject = langchain.llms.Cohere
 
     class Config:
@@ -103,7 +106,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
     LLMOpenAIConfig,
     LLMOpenAIChatConfig,
-    LLMCohereChatConfig,
+    LLMCohereConfig,
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
 ]

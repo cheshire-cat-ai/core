@@ -21,10 +21,8 @@ def get_language_model(cat):
             }
         )
     elif "COHERE_KEY" in os.environ:
-        llm = llms.LLMCohereChatConfig.get_llm_from_config(
-            {
-                "cohere_api_key": os.environ["COHERE_KEY"],
-            }
+        llm = llms.LLMCohereConfig.get_llm_from_config(
+            {"cohere_api_key": os.environ["COHERE_KEY"], "model": "command"}
         )
     elif "HF_TOKEN" in os.environ:
         if "HF_CHECKPOINT" in os.environ:
