@@ -23,6 +23,8 @@ services:
       - "0.0.0.0"
       - --port
       - "80"
+      - --log-config
+      - ./logger.yml
       - --reload # take away in prod
     restart: unless-stopped
 

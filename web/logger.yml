@@ -1,0 +1,18 @@
+version: 1
+formatters:
+  simple:
+    format: '[%(asctime)s] %(levelname)-6s %(filename)s %(lineno)s -=> %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+  simpleExample:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+root:
+  level: DEBUG
+  handlers: [console]
