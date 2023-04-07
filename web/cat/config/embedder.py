@@ -45,8 +45,8 @@ class EmbedderCohereConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "OpenAI Embedder",
-            "description": "Configuration for OpenAI embeddings",
+            "name_human_readable": "Cohere Embedder",
+            "description": "Configuration for Cohere embeddings",
         }
 
 
