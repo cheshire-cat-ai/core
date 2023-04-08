@@ -1,7 +1,7 @@
 import os
 
-import cat.config.llm as llms
-import cat.config.embedder as embedders
+import cat.factory.llm as llms
+import cat.factory.embedder as embedders
 
 # from cat.db import crud
 # from cat.utils import log

@@ -4,7 +4,7 @@ from fastapi import Depends, Request, APIRouter
 from sqlalchemy.orm import Session
 from cat.db.database import get_db_session
 from cat.routes.setting import setting_utils
-from cat.config.embedder import EMBEDDER_SCHEMAS
+from cat.factory.embedder import EMBEDDER_SCHEMAS
 
 router = APIRouter()
 
