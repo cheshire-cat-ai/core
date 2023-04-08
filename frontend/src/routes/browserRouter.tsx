@@ -1,9 +1,10 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import Scaffold from './Scaffold'
+import routesDescriptor from '@routes/routesDescriptor'
 
 const Home = React.lazy(() => import('./Home'))
-const Configurations = React.lazy(() => import('./Configurations'))
+const Settings = React.lazy(() => import('./Settings'))
 const LangModelProvider = React.lazy(() => import('./LanguageModel'))
 const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
 
@@ -18,26 +19,26 @@ export default createBrowserRouter([
     errorElement: <Scaffold.ErrorPage />,
     children: [
       {
-        path: '/',
+        path: routesDescriptor.home.path,
         index: true,
         element: <Home />
       },
       {
-        path: '/configurations',
-        element: <Configurations />,
+        path: routesDescriptor.settings.path,
+        element: <Settings />,
         children: [
           {
-            path: 'provider',
+            path: routesDescriptor.llm.path,
             element: <LangModelProvider />
           }
         ]
       },
       {
-        path: '/plugins',
+        path: routesDescriptor.plugins.path,
         element: <WorkInProgress />
       },
       {
-        path: '/documentation',
+        path: routesDescriptor.llm.path,
         element: <WorkInProgress />
       }
     ]

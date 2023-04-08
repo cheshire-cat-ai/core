@@ -10,7 +10,7 @@ const getConfig = () => Object.freeze<Config>({
   features: [
     AppFeatures.FileUpload,
     AppFeatures.AudioRecording,
-    AppFeatures.Configurations,
+    AppFeatures.Settings,
     AppFeatures.Plugins
   ],
   endpoints: {

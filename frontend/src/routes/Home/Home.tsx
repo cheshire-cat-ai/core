@@ -1,6 +1,6 @@
 import React, { type FC, useCallback, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import useSpeechRecognition from 'beautiful-react-hooks/useSpeechRecognition'
-import useToggle from 'beautiful-react-hooks/useToggle'
 import clsx from 'clsx'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
@@ -11,6 +11,7 @@ import Page from '@components/Page'
 import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
+import { slideBottomInOUt } from '@utils/animations'
 
 import style from './Home.module.scss'
 
@@ -22,7 +23,6 @@ const Home: FC = () => {
   const { isRecording, transcript, startRecording, stopRecording, isSupported } = useSpeechRecognition()
   const { sendFile, isUploading } = useRabbitHole()
   const [userMessage, setUserMessage] = useState('')
-  const [animateInput, toggleAnimation] = useToggle(false)
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
 
   /**
@@ -32,19 +32,6 @@ const Home: FC = () => {
     if (transcript === '') return
     dispatchMessage(transcript)
   }, [transcript, dispatchMessage])
-
-  /**
-   * Displays the input with a 1-second delay
-   */
-  useEffect(() => {
-    const timout = setTimeout(() => {
-      toggleAnimation()
-    }, 1000)
-
-    return () => {
-      clearTimeout(timout)
-    }
-  }, [])
 
   /**
    * When the user clicks on a default message, it will be appended to the input value state
@@ -79,7 +66,7 @@ const Home: FC = () => {
             <MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
-      <div className={clsx(style.bottomToolbar, animateInput ? style.inputIn : '')}>
+      <motion.div className={clsx(style.bottomToolbar)} {...slideBottomInOUt}>
         <MessageInput
           value={userMessage}
           onChange={setUserMessage}
@@ -97,7 +84,7 @@ const Home: FC = () => {
             disabled={inputDisabled}
           />
         )}
-      </div>
+      </motion.div>
     </Page>
   )
 }

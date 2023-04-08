@@ -1,4 +1,6 @@
 import React, { type FC, type PropsWithChildren } from 'react'
+import { motion } from 'framer-motion'
+import { fadeInOut } from '@utils/animations'
 import clsx from 'clsx'
 import { type CommonProps } from '@models/commons'
 
@@ -14,9 +16,9 @@ const Page: FC<PageProps> = ({ children, variant, className, ...rest }) => {
   }, className)
 
   return (
-    <section className={classList} {...rest}>
+    <motion.section className={classList} {...fadeInOut} {...rest}>
       {children}
-    </section>
+    </motion.section>
   )
 }
 

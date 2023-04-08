@@ -29,12 +29,22 @@ const useLLMProviders = () => {
     dispatch(setSelectedLLMProvider(providerId))
   }, [dispatch])
 
+  const saveProviderSettings = useCallback((data?: Record<string, unknown>) => {
+    if (data) {
+      console.log({
+        selected,
+        data
+      })
+    }
+  }, [selected])
+
   return {
     isLoading,
     providers,
     schema,
     error,
     selected,
+    saveProviderSettings,
     requireProviders,
     selectProvider
   }

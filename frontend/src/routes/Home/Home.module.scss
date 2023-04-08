@@ -11,9 +11,6 @@
     z-index: 1;
     display: flex;
     gap: var(--app-space-s);
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 500ms var(--app-easing-fn), transform 500ms var(--app-easing-fn);
 
     @include tablet-landscape-view {
       max-width: 960px;
@@ -23,11 +20,6 @@
 
     .input {
       flex: 1;
-    }
-
-    &.inputIn {
-      opacity: 1;
-      transform: translateY(0);
     }
   }
 }

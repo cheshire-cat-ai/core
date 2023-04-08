@@ -29,6 +29,8 @@ const llmProviders = createSlice({
     builder.addCase(fetchLanguageModels.fulfilled, (state, action) => {
       state.loading = false
       state.data = action.payload
+
+      state.selected = Object.values(action.payload.schemas)[0].languageModelName
     })
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
       state.error = action.error.message

@@ -5,10 +5,10 @@ import MessagesService from '@services/MessagesService'
 import { addMessage, setError, setReady } from '@store/messages/slice'
 import {
   selectCurrentMessages,
-  selectDefaultMessages,
   selectError,
   selectIsReady,
-  selectIsSendingMessage
+  selectIsSendingMessage,
+  selectRandomDefaultMessages
 } from '@store/messages/selectors'
 import { now, uniqueId } from '@utils/commons'
 import { getErrorMessage } from '@utils/errors'
@@ -30,7 +30,7 @@ const useMessagesService = () => {
   const isSending = useSelector(selectIsSendingMessage)
   const isReady = useSelector(selectIsReady)
   const error = useSelector(selectError)
-  const defaultMessages = useSelector(selectDefaultMessages)
+  const defaultMessages = useSelector(selectRandomDefaultMessages)
 
   /**
    * Subscribes to the messages service on component mount

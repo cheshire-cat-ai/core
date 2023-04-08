@@ -1,17 +1,17 @@
 import React, { type FC } from 'react'
 import clsx from 'clsx'
 import { NavLink } from 'react-router-dom'
+import routesDescriptor, { type RoutesDescriptor } from '@routes/routesDescriptor'
 import { type CommonProps } from '@models/commons'
-import { AppFeatures } from '@models/AppFeatures'
 import FeatureGuard from '@components/FeatureGuard'
 
 import style from './Navigation.module.scss'
 
-const defaultLinks = [
-  { to: '/', label: 'Chat' },
-  { to: '/plugins', label: 'Plugins', guard: AppFeatures.Plugins },
-  { to: '/configurations', label: 'Configurations', guard: AppFeatures.Plugins },
-  { to: '/documentation', label: 'Documentation' }
+const defaultLinks: RoutesDescriptor[] = [
+  routesDescriptor.home,
+  routesDescriptor.plugins,
+  routesDescriptor.settings,
+  routesDescriptor.documentation
 ]
 
 /**
@@ -28,10 +28,10 @@ const Navigation: FC<NavigationProps> = (props) => {
   return (
     <nav className={classList} {...rest}>
       <ul>
-        {links.map(({ to, label, guard }) => (
-          <FeatureGuard key={to} feature={guard}>
+        {links.map(({ path, label, guard }) => (
+          <FeatureGuard key={path} feature={guard}>
             <li>
-              <NavLink to={to} className={({ isActive }) => isActive ? style.active : ''}>
+              <NavLink to={path} className={({ isActive }) => isActive ? style.active : ''}>
                 {label}
               </NavLink>
             </li>
@@ -43,7 +43,7 @@ const Navigation: FC<NavigationProps> = (props) => {
 }
 
 export interface NavigationProps extends CommonProps {
-  links?: Array<{ to: string, label: string, guard?: AppFeatures }>
+  links?: RoutesDescriptor[]
   variant?: 'vertical' | 'horizontal'
 }
 
