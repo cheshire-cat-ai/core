@@ -107,12 +107,17 @@ docker-compose down
 
 ## Roadmap
 
-- QA / tests
-- docs and tutorials
-- online demo
-- voice interface
-- more plugins shipped by default
-- (surprise!!!) PURR
+* [Forms from JSON schema](./ROADMAP.md#forms-from-json-schema) ✅ 
+* [Configurations](./ROADMAP.md#configurations) ⏳
+	* [Language model provider](./ROADMAP.md#language-model-provider) ⏳
+	* [Embedder](./ROADMAP.md#embedder) ⏳
+* [Plugins list](./ROADMAP.md#plugins-list)
+* [Reasoning](./ROADMAP.md#reasoning)
+* [Documentation](./ROADMAP.md#documentation) ⏳
+	* [About](./ROADMAP.md#about)
+* [Markdown support](./ROADMAP.md#markdown-support)
+* [Separate `admin` app from `public` static index.html](./ROADMAP.md#separate-admin-from-public)
+
 
 
 ## Contributing
