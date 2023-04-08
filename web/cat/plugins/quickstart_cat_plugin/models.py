@@ -1,7 +1,7 @@
 import os
 
-import cat.config.llm as llms
-import cat.config.embedder as embedders
+import cat.factory.llm as llms
+import cat.factory.embedder as embedders
 
 # from cat.db import crud
 # from cat.utils import log
@@ -11,7 +11,7 @@ from cat.mad_hatter.decorators import hook
 
 @hook
 def get_language_model(cat):
-    # TODO: give more example configurations
+    # TODO: load config from DB
 
     if "OPENAI_KEY" in os.environ:
         llm = llms.LLMOpenAIChatConfig.get_llm_from_config(

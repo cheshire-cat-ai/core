@@ -1,70 +1,62 @@
 from typing import Dict
 
-from cat.db import crud, models
-from fastapi import Body, Depends, APIRouter, HTTPException
-from cat.config.llm import LLM_SCHEMAS
+import cat.factory.llm as llm_factory
+from fastapi import Depends, Request, APIRouter
 from sqlalchemy.orm import Session
 from cat.db.database import get_db_session
+from cat.routes.setting import setting_utils
 
 router = APIRouter()
 
-# llm type and config are saved in settings table under this category
-LLM_DB_CATEGORY = "llm_factory"
+# general LLM settings are saved in settigns table under this category
+LLM_DB_GENERAL_CATEGORY = "llm"
 
-# list of configurable models
-ALLOWED_LLM_CONGURATIONS = list(LLM_SCHEMAS.keys())
+# llm type and config are saved in settings table under this category
+LLM_DB_FACTORY_CATEGORY = "llm_factory"
+
+# llm selected configuration is saved under this name
+LLM_SELECTED_CONFIGURATION = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
 @router.get("/")
-def get_llm_settings(db: Session = Depends(get_db_session)):
-    llm_settings = crud.get_settings_by_category(db, category=LLM_DB_CATEGORY)
-
-    return {
-        "status": "success",
-        "results": len(llm_settings),
-        "settings": llm_settings,
-        "schemas": LLM_SCHEMAS,
-        "allowed_llm_configurations": ALLOWED_LLM_CONGURATIONS,
-    }
-
-
-# example payload to PUT the language model config (will be shown in Swagger UI)
-example_put_request = {"openai_api_key": "your-key-here"}
-
-ExamplePutBody = Body(example=example_put_request)
+def get_settings(db: Session = Depends(get_db_session)):
+    return setting_utils.nlp_get_settings(
+        db,
+        setting_factory_category=LLM_DB_FACTORY_CATEGORY,
+        setting_selected_name=LLM_SELECTED_CONFIGURATION,
+        schemas=llm_factory.LLM_SCHEMAS,
+    )
 
 
 @router.put("/{languageModelName}")
 def upsert_llm_setting(
+    request: Request,
     languageModelName: str,
-    payload: Dict = ExamplePutBody,
+    payload: Dict = setting_utils.nlp_get_example_put_payload(),
     db: Session = Depends(get_db_session),
 ):
-    if languageModelName not in ALLOWED_LLM_CONGURATIONS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"{languageModelName} not supported. Must be one of {ALLOWED_LLM_CONGURATIONS}",
-        )
+    db_naming = {
+        "setting_factory_category": LLM_DB_FACTORY_CATEGORY,
+        "setting_selected_category": LLM_DB_GENERAL_CATEGORY,
+        "setting_selected_name": LLM_SELECTED_CONFIGURATION,
+    }
 
-    # is the setting already present in DB?
-    old_setting = crud.get_setting_by_name(db, languageModelName)
+    # update settings DB
+    status = setting_utils.put_nlp_setting(
+        db,
+        modelName=languageModelName,
+        payload=payload,
+        db_naming=db_naming,
+        schemas=llm_factory.LLM_SCHEMAS,
+    )
 
-    if old_setting is None:
-        # prepare setting to be included in DB, adding category
-        llm_setting = {
-            "name": languageModelName,
-            "value": payload,
-            "category": LLM_DB_CATEGORY,
-        }
-        llm_setting = models.Setting(**llm_setting)
-        final_llm_setting = crud.create_setting(db, llm_setting)
+    # reload the cat at runtime
+    # ccat = request.app.state.ccat
+    # ccat.bootstrap()
+    # FactoryClass = getattr(llm_factory, languageModelName)
+    # ccat.llm = FactoryClass.get_llm_from_config(payload)
+    # from cat.utils import log
+    # log(ccat.llm)
 
-    else:
-        old_setting.value = payload
-        db.add(old_setting)
-        db.commit()
-        db.refresh(old_setting)
-        final_llm_setting = old_setting
-
-    return {"status": "success", "setting": final_llm_setting}
+    return status
