@@ -107,12 +107,19 @@ docker-compose down
 
 ## Roadmap
 
-- QA / tests
-- docs and tutorials
-- online demo
-- voice interface
-- more plugins shipped by default
-- (surprise!!!) PURR
+Here's the plan and vision for the development of the ChechireCat v1.
+For the full Roadmap, check out [here](./ROADMAP.md). Whilst for the current progress of development, take a look at the [projects](/projects?query=is%3Aopen) marked as open.
+
+* [Forms from JSON schema](./ROADMAP.md#forms-from-json-schema)
+* [Configurations](./ROADMAP.md#configurations)
+	* [Language model provider](./ROADMAP.md#language-model-provider)
+	* [Embedder](./ROADMAP.md#embedder)
+* [Plugins list](./ROADMAP.md#plugins-list)
+* [Reasoning](./ROADMAP.md#reasoning)
+* [Documentation](./ROADMAP.md#documentation)
+* [Markdown support](./ROADMAP.md#markdown-support)
+* [Separate `admin` app from `public` static index.html](./ROADMAP.md#separate-admin-from-public)
+
 
 
 ## Contributing
@@ -130,6 +137,10 @@ If you want to contribute code, fork the repo and create a pull request.
 You can start simply by:
 - Making tutorials and docs
 - Sharing on social media
+
+
+Before submitting any new pull request, make sure it either fixes an [existing issue](/issues) or is something we have discussed in our [Roadmap](#roadmap). 
+If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/73g9vCsC)
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
 
