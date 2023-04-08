@@ -107,6 +107,9 @@ docker-compose down
 
 ## Roadmap
 
+Here's the plan and vision for the development of the ChechireCat v1.
+For the full Roadmap, check out [here](./ROADMAP.md). Whilst for the current progress of development, take a look at the [projects](/projects?query=is%3Aopen) marked as open.
+
 * [Forms from JSON schema](./ROADMAP.md#forms-from-json-schema) ✅ 
 * [Configurations](./ROADMAP.md#configurations) ⏳
 	* [Language model provider](./ROADMAP.md#language-model-provider) ⏳
@@ -114,7 +117,6 @@ docker-compose down
 * [Plugins list](./ROADMAP.md#plugins-list)
 * [Reasoning](./ROADMAP.md#reasoning)
 * [Documentation](./ROADMAP.md#documentation) ⏳
-	* [About](./ROADMAP.md#about)
 * [Markdown support](./ROADMAP.md#markdown-support)
 * [Separate `admin` app from `public` static index.html](./ROADMAP.md#separate-admin-from-public)
 

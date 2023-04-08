@@ -3,24 +3,17 @@
 This roadmap represents our plan and vision for the development of the ChechireCat v1.
 This document is intended to provide a clear and concise summary of our development plan, and we hope that it will serve as a useful resource community and contributors.
 
-#### Feature status
-<pre>
-⏳ = In progress
-✅ = Done
-</pre>
 
+## Summary
 
-## Features summary
-
-* [Forms from JSON schema](#forms-from-json-schema) ✅ 
-* [Configurations](#configurations) ⏳
-	* [Language model provider](#language-model-provider) ⏳
-	* [Embedder](#embedder) ⏳
+* [Forms from JSON schema](#forms-from-json-schema)
+* [Configurations](#configurations)
+	* [Language model provider](#language-model-provider)
+	* [Embedder](#embedder)
 * [Plugins list](#plugins-list)
 * [Reasoning](#reasoning)
-* [Documentation](#documentation) ⏳
-	* [About](#about)
-* [Markdown support](markdown-support)
+* [Documentation](#documentation)
+* [Markdown support](#markdown-support)
 * [Separate `admin` app from `public` static index.html](#separate-admin-from-public)
 
 ## Forms from JSON schema 
