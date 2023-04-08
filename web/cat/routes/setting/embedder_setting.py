@@ -1,21 +1,21 @@
 from typing import Dict
 
-import cat.config.llm as llm_factory
 from fastapi import Depends, Request, APIRouter
 from sqlalchemy.orm import Session
 from cat.db.database import get_db_session
 from cat.routes.setting import setting_utils
+from cat.config.embedder import EMBEDDER_SCHEMAS
 
 router = APIRouter()
 
 # general LLM settings are saved in settigns table under this category
-LLM_DB_GENERAL_CATEGORY = "llm"
+EMBEDDER_DB_GENERAL_CATEGORY = "embedder"
 
 # llm type and config are saved in settings table under this category
-LLM_DB_FACTORY_CATEGORY = "llm_factory"
+EMBEDDER_DB_FACTORY_CATEGORY = "embedder_factory"
 
 # llm selected configuration is saved under this name
-LLM_SELECTED_CONFIGURATION = "llm_selected"
+EMBEDDER_SELECTED_CONFIGURATION = "embedder_selected"
 
 
 # get configured LLMs and configuration schemas
@@ -23,40 +23,37 @@ LLM_SELECTED_CONFIGURATION = "llm_selected"
 def get_settings(db: Session = Depends(get_db_session)):
     return setting_utils.nlp_get_settings(
         db,
-        setting_factory_category=LLM_DB_FACTORY_CATEGORY,
-        setting_selected_name=LLM_SELECTED_CONFIGURATION,
-        schemas=llm_factory.LLM_SCHEMAS,
+        setting_factory_category=EMBEDDER_DB_FACTORY_CATEGORY,
+        setting_selected_name=EMBEDDER_SELECTED_CONFIGURATION,
+        schemas=EMBEDDER_SCHEMAS,
     )
 
 
-@router.put("/{languageModelName}")
+@router.put("/{languageEmbedderName}")
 def upsert_llm_setting(
     request: Request,
-    languageModelName: str,
+    languageEmbedderName: str,
     payload: Dict = setting_utils.nlp_get_example_put_payload(),
     db: Session = Depends(get_db_session),
 ):
     db_naming = {
-        "setting_factory_category": LLM_DB_FACTORY_CATEGORY,
-        "setting_selected_category": LLM_DB_GENERAL_CATEGORY,
-        "setting_selected_name": LLM_SELECTED_CONFIGURATION,
+        "setting_factory_category": EMBEDDER_DB_FACTORY_CATEGORY,
+        "setting_selected_category": EMBEDDER_DB_GENERAL_CATEGORY,
+        "setting_selected_name": EMBEDDER_SELECTED_CONFIGURATION,
     }
 
     # update settings DB
     status = setting_utils.put_nlp_setting(
         db,
-        modelName=languageModelName,
+        modelName=languageEmbedderName,
         payload=payload,
         db_naming=db_naming,
-        schemas=llm_factory.LLM_SCHEMAS,
+        schemas=EMBEDDER_SCHEMAS,
     )
 
     # reload the cat at runtime
+    # TODO: delete old embedding space
     # ccat = request.app.state.ccat
     # ccat.bootstrap()
-    # FactoryClass = getattr(llm_factory, languageModelName)
-    # ccat.llm = FactoryClass.get_llm_from_config(payload)
-    # from cat.utils import log
-    # log(ccat.llm)
 
     return status

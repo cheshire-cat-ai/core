@@ -11,7 +11,7 @@ from cat.mad_hatter.decorators import hook
 
 @hook
 def get_language_model(cat):
-    # TODO: give more example configurations
+    # TODO: load config from DB
 
     if "OPENAI_KEY" in os.environ:
         llm = llms.LLMOpenAIChatConfig.get_llm_from_config(

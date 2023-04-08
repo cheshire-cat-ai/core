@@ -1,6 +1,9 @@
 import inspect
 import logging
 
+logger = logging.getLogger()
+logging.basicConfig(level=logging.DEBUG)
+
 
 def get_caller_info(skip=2):
     """Get the name of a caller in the format module.class.method.
