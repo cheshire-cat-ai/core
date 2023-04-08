@@ -11,3 +11,6 @@ web/venv
 *long_term_memory
 *metadata.db
 *metadata-v*.db
+
+# thinkering in the plugin folder
+web/cat/plugins/__*
