@@ -108,7 +108,7 @@ docker-compose down
 ## Roadmap
 
 Here's the plan and vision for the development of the ChechireCat v1.
-For the full Roadmap, check out [here](./ROADMAP.md). Whilst for the current progress of development, take a look at the [projects](/projects?query=is%3Aopen) marked as open.
+For the full Roadmap, check out [here](./ROADMAP.md). Whilst for the current progress of development, take a look at the [projects](https://github.com/pieroit/cheshire-cat/projects?query=is%3Aopen) marked as open.
 
 * [Forms from JSON schema](./ROADMAP.md#forms-from-json-schema)
 * [Configurations](./ROADMAP.md#configurations)
@@ -139,7 +139,7 @@ You can start simply by:
 - Sharing on social media
 
 
-Before submitting any new pull request, make sure it either fixes an [existing issue](/issues) or is something we have discussed in our [Roadmap](#roadmap). 
+Before submitting any new pull request, make sure it either fixes an [existing issue](https://github.com/pieroit/cheshire-cat/issues) or is something we have discussed in our [Roadmap](#roadmap). 
 If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/73g9vCsC)
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
