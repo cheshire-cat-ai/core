@@ -80,6 +80,15 @@ class CheshireCat:
                 template=self.summarization_prompt, input_variables=["text"]
             ),
         )
+        
+        # custom summarization chain
+        self.custom_summarization_chain = langchain.chains.LLMChain(
+            llm=self.llm,
+            verbose=False,
+            prompt=langchain.PromptTemplate(
+                template=self.summarization_prompt, input_variables=["text"]
+            ),
+        )
 
         # TODO: can input vars just be deducted from the prompt? What about plugins?
         self.input_variables = [
@@ -163,19 +172,21 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     # iterative summarization
-    def get_summary_text(self, docs, group_size=3):
+    def get_summary_text(self, docs, group_size=3, custom=True):
         # service variable to store intermediate results
         intermediate_summaries = docs
 
         # we will store iterative summaries all together in a list
         all_summaries = []
+        
+        summarization_chain = self.custom_summarization_chain if custom else self.summarization_chain
 
         # loop until there are no groups to summarize
         root_summary_flag = False
         while not root_summary_flag:
             # make summaries of groups of docs
             intermediate_summaries = [
-                self.summarization_chain.run(intermediate_summaries[i : i + group_size])
+                summarization_chain.run(intermediate_summaries[i : i + group_size])
                 for i in range(0, len(intermediate_summaries), group_size)
             ]
             intermediate_summaries = [
