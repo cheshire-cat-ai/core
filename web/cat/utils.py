@@ -1,7 +1,5 @@
-import json
-import logging
-from pprint import pprint
 import inspect
+import logging
 
 
 def get_caller_info(skip=2):
@@ -23,24 +21,24 @@ def get_caller_info(skip=2):
     stack = inspect.stack()
     start = 0 + skip
     if len(stack) < start + 1:
-        return ''
+        return ""
     parentframe = stack[start][0]
 
     # module and packagename.
     module_info = inspect.getmodule(parentframe)
     if module_info:
-        mod = module_info.__name__.split('.')
+        mod = module_info.__name__.split(".")
         package = mod[0]
         module = mod[1]
 
     # class name.
     klass = None
-    if 'self' in parentframe.f_locals:
-        klass = parentframe.f_locals['self'].__class__.__name__
+    if "self" in parentframe.f_locals:
+        klass = parentframe.f_locals["self"].__class__.__name__
 
     # method or function name.
     caller = None
-    if parentframe.f_code.co_name != '<module>':  # top level usually
+    if parentframe.f_code.co_name != "<module>":  # top level usually
         caller = parentframe.f_code.co_name
 
     # call line.
@@ -54,13 +52,14 @@ def get_caller_info(skip=2):
 
 
 def log(msg):
-
     (package, module, klass, caller, line) = get_caller_info()
     color_code = "38;5;200"
 
-    msg_header = '----------------  ^._.^  ----------------'
-    msg_footer = '-----------------------------------------'
+    msg_header = "----------------  ^._.^  ----------------"
+    msg_footer = "-----------------------------------------"
 
-    logging.debug(f"\n\n\u001b[{color_code}m\033[1;3m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line")
+    logging.debug(
+        f"\n\n\u001b[{color_code}m\033[1;3m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line"
+    )
     logging.debug(msg)
     logging.debug(f"\n\u001b[{color_code}m\033[1;3m{msg_footer}\u001b[0m\n")

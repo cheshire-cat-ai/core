@@ -10,4 +10,4 @@ web/venv
 # file based DBs
 *long_term_memory
 *metadata.db
-*metadata-v2.db
+*metadata-v*.db
