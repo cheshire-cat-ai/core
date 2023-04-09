@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchLanguageModels, setSelectedLLMProvider, updateLanguageModelSettings } from '@store/llmProviders/slice'
 import { type AppDispatch } from '@store/index'
-import { type LLMSettings } from '@models/LLMSettings'
 import {
   selectAllAvailableProviders,
   selectCurrentLLMProvider,
@@ -10,6 +9,7 @@ import {
   selectLLMProvidersError,
   selectLLMProvidersIsLoading
 } from '@store/llmProviders/selector'
+import { type LLMSettings } from '@models/LLMSettings'
 
 /**
  * A custom hook that returns the LLM providers state and a function to fetch the LLM providers.
@@ -30,7 +30,7 @@ const useLLMProviders = () => {
     dispatch(setSelectedLLMProvider(providerId))
   }, [dispatch])
 
-  const saveProviderSettings = useCallback((settings?: LLMSettings) => {
+  const updateProviderSettings = useCallback((settings: LLMSettings) => {
     if (settings && selected) {
       return dispatch(updateLanguageModelSettings({ name: selected, settings }))
     }
@@ -42,7 +42,7 @@ const useLLMProviders = () => {
     schema,
     error,
     selected,
-    saveProviderSettings,
+    updateProviderSettings,
     requireProviders,
     selectProvider
   }

@@ -28,7 +28,7 @@ def nlp_get_settings(
         "settings": settings,
         "schemas": schemas,
         "allowed_configurations": allowed_configurations,
-        "selected_configuration": selected,
+        "selected_configuration": selected.value["name"],
     }
 
 

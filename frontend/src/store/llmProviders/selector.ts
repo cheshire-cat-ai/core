@@ -37,7 +37,10 @@ export const selectAllAvailableProviders = createSelector(selectLLMProvidersResp
 /**
  * Selects the schema for the current language model provider
  */
-export const selectCurrentProviderSchema = createSelector(selectAllAvailableProviders, selectCurrentLLMProvider, (schemas, selected) => {
-  if (!selected) return undefined
-  return schemas.find((schema) => schema.languageModelName === selected)
-})
+export const selectCurrentProviderSchema = createSelector(
+  [selectAllAvailableProviders, selectCurrentLLMProvider],
+  (schemas, selected) => {
+    if (!selected) return undefined
+    return schemas.find((schema) => schema.languageModelName === selected)
+  }
+)

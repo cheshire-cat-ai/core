@@ -7,10 +7,18 @@ import { type LLMSettings } from '@models/LLMSettings'
 const initialState: LLMProvidersState = {
   loading: false,
   updating: false,
+  settings: {},
   data: undefined
 }
 
+/**
+ * Async thunk that fetches the available language models from the LanguageModels service.
+ */
 export const fetchLanguageModels = createAsyncThunk('llmProviders/fetchAll', LanguageModels.getProviders)
+
+/**
+ * Async thunk that updates the settings of a language model using the LanguageModels service.
+ */
 export const updateLanguageModelSettings = createAsyncThunk(
   'llmProviders/updateOptions',
   (options: { name: string, settings: LLMSettings }) => {
@@ -40,22 +48,10 @@ const llmProviders = createSlice({
       state.loading = false
       state.data = action.payload
 
-      state.selected = Object.values(action.payload.schemas)[0].languageModelName
+      state.selected = state.data.selected_configuration ?? Object.values(action.payload.schemas)[0].languageModelName
+      state.settings = state.data.settings.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {})
     })
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
-      state.error = action.error.message
-    })
-
-    builder.addCase(updateLanguageModelSettings.pending, (state) => {
-      state.updating = true
-    })
-
-    builder.addCase(updateLanguageModelSettings.fulfilled, (state, action) => {
-      state.updating = false
-    })
-
-    builder.addCase(updateLanguageModelSettings.rejected, (state, action) => {
-      state.updating = false
       state.error = action.error.message
     })
   }

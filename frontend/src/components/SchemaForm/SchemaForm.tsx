@@ -1,6 +1,5 @@
 import React, { type FC, useCallback } from 'react'
 import clsx from 'clsx'
-import { EmptyReactElement } from '@utils/commons'
 import validator from '@rjsf/validator-ajv8'
 import { type IChangeEvent } from '@rjsf/core'
 import Form from '@rjsf/antd'
@@ -10,29 +9,23 @@ import { type LLMSettings } from '@models/LLMSettings'
 
 import style from './SchemaForm.module.scss'
 
-const templates = {
-  ButtonTemplates: { SubmitButton: EmptyReactElement }
-}
-
 /**
  * SchemaForm component description
  */
-const SchemaForm: FC<SchemaFormProps> = ({ data, schema, onChange, className }) => {
+const SchemaForm: FC<SchemaFormProps> = ({ schema, onSubmit, className }) => {
   const classList = clsx(style.form, className)
 
   const handleChange = useCallback((data: IChangeEvent) => {
-    if (onChange) {
-      onChange(data.formData)
+    if (onSubmit) {
+      onSubmit(data.formData)
     }
-  }, [onChange])
+  }, [onSubmit])
 
   return (
     <Form
       schema={schema}
-      formData={data}
       validator={validator}
-      onChange={handleChange}
-      templates={templates}
+      onSubmit={handleChange}
       className={classList}
     />
   )
@@ -41,7 +34,7 @@ const SchemaForm: FC<SchemaFormProps> = ({ data, schema, onChange, className }) 
 export interface SchemaFormProps extends Omit<CommonProps, 'style'> {
   schema: JSONSchema
   data?: LLMSettings
-  onChange?: (data: LLMSettings) => void
+  onSubmit?: (data: LLMSettings) => void
 }
 
 export default SchemaForm

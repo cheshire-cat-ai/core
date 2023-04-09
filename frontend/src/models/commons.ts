@@ -11,8 +11,8 @@ import { type HTMLAttributes, type JSXElementConstructor } from 'react'
  * }
  */
 export interface CommonProps<TElement extends HTMLElement = HTMLElement> {
-  className?: HTMLAttributes<TElement>['className']
-  style?: HTMLAttributes<TElement>['style']
+  readonly className?: HTMLAttributes<TElement>['className']
+  readonly style?: HTMLAttributes<TElement>['style']
 }
 
 /**
@@ -33,20 +33,20 @@ export type ComponentRenderer<TProps = Record<string, unknown>> = JSXElementCons
  * Defines a generic interface for defining the state of an asynchronous operation.
  */
 export interface AsyncStateBase {
-  loading: boolean
-  error?: string
+  readonly loading: boolean
+  readonly error?: string
 }
 
 /**
  * Defines a generic interface for defining the state of an asynchronous operation that returns data.
  */
 export interface AsyncState<TData> extends AsyncStateBase {
-  data?: TData
+  readonly data?: TData
 }
 
 /**
  * TODO: document this
  */
 export interface UpdatableState<TData> extends AsyncState<TData> {
-  updating: boolean
+  readonly updating: boolean
 }

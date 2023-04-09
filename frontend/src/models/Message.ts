@@ -4,25 +4,25 @@
  * The purpose of this type is to be extended by other message types.
  */
 export interface MessageBase {
-  id: number
-  sender: 'user' | 'bot'
-  text: string
-  timestamp: number
+  readonly id: number
+  readonly sender: 'user' | 'bot'
+  readonly text: string
+  readonly timestamp: number
 }
 
 /**
  * BotMessage is the interface for messages sent by the bot.
  */
 export interface BotMessage extends MessageBase {
-  sender: 'bot'
-  why: any
+  readonly sender: 'bot'
+  readonly why: any
 }
 
 /**
  * UserMessage is the interface for messages sent by the user.
  */
 export interface UserMessage extends MessageBase {
-  sender: 'user'
+  readonly sender: 'user'
 }
 
 /**

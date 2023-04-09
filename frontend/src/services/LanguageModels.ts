@@ -18,7 +18,7 @@ const LanguageModels = Object.freeze({
   },
   setProviderOptions: async (languageModelName: string, settings?: LLMSettings) => {
     const llmEndpoint = config.endpoints.languageModels.href
-    const endpoint = new URL(`${llmEndpoint}/${languageModelName}`)
+    const endpoint = new URL(`${llmEndpoint}${languageModelName}`)
 
     return await fetch(endpoint, {
       method: 'PUT',
