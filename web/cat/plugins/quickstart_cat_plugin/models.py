@@ -70,11 +70,19 @@ def get_language_embedder(cat):
             {"cohere_api_key": os.environ["COHERE_KEY"]}
         )
     elif "HF_TOKEN" in os.environ:
-        embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-            {
-                "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-                # repo_id: "..." TODO: at the moment use default
-            }
+        if "HF_EMBEDDER" in os.environ:
+            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+                {
+                    "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                    "repo_id": os.environ["HF_EMBEDDER"]
+                }
+            )
+        else:
+            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+                {
+                    "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+                    # repo_id: "..." TODO: at the moment use default
+                }
         )
     else:
         embedder = embedders.EmbedderFakeConfig.get_embedder_from_config(
