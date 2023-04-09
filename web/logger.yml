@@ -9,10 +9,10 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
-  simpleExample:
+  uvicorn:
     level: DEBUG
     handlers: [console]
-    propagate: no
+    propagate: yes
 root:
   level: DEBUG
   handlers: [console]
