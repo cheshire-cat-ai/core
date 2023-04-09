@@ -2,6 +2,7 @@ import React, { type FC, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 import { Button, Form, Select } from 'antd'
+import { type LLMSettings } from '@models/LLMSettings'
 import Alert from '@components/Alert'
 import SidePanel from '@components/SidePanel'
 import Spinner from '@components/Spinner'
@@ -15,7 +16,7 @@ import style from './LanguageModel.module.scss'
  * Language Model configuration side panel
  */
 const LanguageModel: FC = () => {
-  const [llmSettings, setLLMSettings] = useState<Record<string, unknown>>()
+  const [llmSettings, setLLMSettings] = useState<LLMSettings>()
   const navigate = useNavigate()
   const {
     providers, error, isLoading, selectProvider, selected, schema, requireProviders, saveProviderSettings

@@ -6,6 +6,7 @@ import { type IChangeEvent } from '@rjsf/core'
 import Form from '@rjsf/antd'
 import { type JSONSchema } from '@models/JSONSchema'
 import { type CommonProps } from '@models/commons'
+import { type LLMSettings } from '@models/LLMSettings'
 
 import style from './SchemaForm.module.scss'
 
@@ -39,8 +40,8 @@ const SchemaForm: FC<SchemaFormProps> = ({ data, schema, onChange, className }) 
 
 export interface SchemaFormProps extends Omit<CommonProps, 'style'> {
   schema: JSONSchema
-  data?: Record<string, unknown>
-  onChange?: (data: Record<string, unknown>) => void
+  data?: LLMSettings
+  onChange?: (data: LLMSettings) => void
 }
 
 export default SchemaForm

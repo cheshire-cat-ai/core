@@ -1,10 +1,10 @@
 import { type LLMProviderDescriptor, type LLMProviderMetaData } from '@models/LLMProviderDescriptor'
-import { type AsyncState } from '@models/commons'
+import { type UpdatableState } from '@models/commons'
 
 /**
  * Defines the structure of the redux 'llmProviders' state.
  * This state contains information about the available language models.
  */
-export interface LLMProvidersState extends AsyncState<LLMProviderDescriptor> {
+export interface LLMProvidersState extends UpdatableState<LLMProviderDescriptor> {
   selected?: LLMProviderMetaData['languageModelName']
 }

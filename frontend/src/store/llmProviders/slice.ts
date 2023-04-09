@@ -2,13 +2,23 @@ import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/tool
 import { type LLMProvidersState } from '@store/llmProviders/types'
 import { type LLMProviderMetaData } from '@models/LLMProviderDescriptor'
 import LanguageModels from '@services/LanguageModels'
+import { type LLMSettings } from '@models/LLMSettings'
 
 const initialState: LLMProvidersState = {
   loading: false,
+  updating: false,
   data: undefined
 }
 
 export const fetchLanguageModels = createAsyncThunk('llmProviders/fetchAll', LanguageModels.getProviders)
+export const updateLanguageModelSettings = createAsyncThunk(
+  'llmProviders/updateOptions',
+  (options: { name: string, settings: LLMSettings }) => {
+    const { name, settings } = options
+
+    return LanguageModels.setProviderOptions(name, settings)
+  }
+)
 
 /**
  * The 'llmProviders' slice of the redux store.
@@ -33,6 +43,19 @@ const llmProviders = createSlice({
       state.selected = Object.values(action.payload.schemas)[0].languageModelName
     })
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
+      state.error = action.error.message
+    })
+
+    builder.addCase(updateLanguageModelSettings.pending, (state) => {
+      state.updating = true
+    })
+
+    builder.addCase(updateLanguageModelSettings.fulfilled, (state, action) => {
+      state.updating = false
+    })
+
+    builder.addCase(updateLanguageModelSettings.rejected, (state, action) => {
+      state.updating = false
       state.error = action.error.message
     })
   }

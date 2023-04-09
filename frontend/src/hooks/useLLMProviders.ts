@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchLanguageModels, setSelectedLLMProvider } from '@store/llmProviders/slice'
+import { fetchLanguageModels, setSelectedLLMProvider, updateLanguageModelSettings } from '@store/llmProviders/slice'
 import { type AppDispatch } from '@store/index'
+import { type LLMSettings } from '@models/LLMSettings'
 import {
   selectAllAvailableProviders,
   selectCurrentLLMProvider,
@@ -22,21 +23,18 @@ const useLLMProviders = () => {
   const dispatch = useDispatch<AppDispatch>()
 
   const requireProviders = useCallback(() => {
-    void dispatch(fetchLanguageModels())
+    return dispatch(fetchLanguageModels())
   }, [dispatch])
 
   const selectProvider = useCallback((providerId: string) => {
     dispatch(setSelectedLLMProvider(providerId))
   }, [dispatch])
 
-  const saveProviderSettings = useCallback((data?: Record<string, unknown>) => {
-    if (data) {
-      console.log({
-        selected,
-        data
-      })
+  const saveProviderSettings = useCallback((settings?: LLMSettings) => {
+    if (settings && selected) {
+      return dispatch(updateLanguageModelSettings({ name: selected, settings }))
     }
-  }, [selected])
+  }, [dispatch, selected])
 
   return {
     isLoading,
