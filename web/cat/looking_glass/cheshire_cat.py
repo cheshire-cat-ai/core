@@ -16,6 +16,13 @@ class CheshireCat:
         self.verbose = verbose
 
         # bootstrap the cat!
+        self.bootstrap()
+
+    def bootstrap(self):
+        """This method is called when the cat is instantiated and
+        has to be called whenever LLM, embedder, agent or memory need to be reinstantiated
+        (for example an LLM change at runtime)
+        """
         self.load_db()
         self.load_plugins()
         self.load_agent()
@@ -25,9 +32,6 @@ class CheshireCat:
         create_db_and_tables()
 
         db_session = get_db_session()
-
-        # if there is no chosen LLM / EMBEDDER, set default ones
-        # if there is a chosen non-default LLM / EMBEDDER, instantiate them
 
         # access db from instance
         self.db_session = db_session
@@ -80,7 +84,7 @@ class CheshireCat:
                 template=self.summarization_prompt, input_variables=["text"]
             ),
         )
-        
+
         # custom summarization chain
         self.custom_summarization_chain = langchain.chains.LLMChain(
             llm=self.llm,
@@ -178,8 +182,10 @@ class CheshireCat:
 
         # we will store iterative summaries all together in a list
         all_summaries = []
-        
-        summarization_chain = self.custom_summarization_chain if custom else self.summarization_chain
+
+        summarization_chain = (
+            self.custom_summarization_chain if custom else self.summarization_chain
+        )
 
         # loop until there are no groups to summarize
         root_summary_flag = False
