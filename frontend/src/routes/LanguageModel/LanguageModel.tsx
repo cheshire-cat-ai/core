@@ -7,9 +7,11 @@ import SidePanel from '@components/SidePanel'
 import Spinner from '@components/Spinner'
 import useLLMProviders from '@hooks/useLLMProviders'
 import SchemaForm from '@components/SchemaForm'
+import useNotifications from '@hooks/useNotifications'
 import routesDescriptor from '@routes/routesDescriptor'
 
 import style from './LanguageModel.module.scss'
+import { uniqueId } from '@utils/commons'
 
 /**
  * Language Model configuration side panel
@@ -20,6 +22,7 @@ const LanguageModel: FC = () => {
     setCurrentProviderSettings, settings, updateProviderSettings
   } = useLLMProviders()
   const navigate = useNavigate()
+  const { showNotification } = useNotifications()
   const formWrapperRef = useRef<HTMLDivElement>(null)
   const options = providers.map((p) => ({ label: p.name_human_readable, value: p.languageModelName }))
   const title = 'Configure your language model'
@@ -38,6 +41,16 @@ const LanguageModel: FC = () => {
       button.click()
     }
   }, [])
+
+  const onSubmit = useCallback(() => {
+    void updateProviderSettings()?.then(() => {
+      showNotification({
+        id: uniqueId(),
+        type: 'success',
+        message: 'Language model provider updated'
+      })
+    })
+  }, [showNotification, updateProviderSettings])
 
   const Footer = (
     <div className={style.footer}>
@@ -69,7 +82,7 @@ const LanguageModel: FC = () => {
             <SchemaForm
               data={settings}
               onChange={setCurrentProviderSettings}
-              onSubmit={() => void updateProviderSettings()}
+              onSubmit={onSubmit}
               schema={schema}
               className={style.form}
             />
