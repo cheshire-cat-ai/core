@@ -1,5 +1,6 @@
 import inspect
 import logging
+from pprint import pformat
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.DEBUG)
@@ -59,10 +60,12 @@ def log(msg):
     color_code = "38;5;200"
 
     msg_header = "----------------  ^._.^  ----------------"
+    msg_body   = pformat(msg)
     msg_footer = "-----------------------------------------"
 
     logging.debug(
-        f"\n\n\u001b[{color_code}m\033[1;3m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line"
+        f"\u001b[{color_code}m\033[1;3m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line"
     )
-    logging.debug(msg)
-    logging.debug(f"\n\u001b[{color_code}m\033[1;3m{msg_footer}\u001b[0m\n")
+    for line in msg_body.splitlines():
+        logging.debug(f"\u001b[{color_code}m\033[1;6m{line}\u001b[0m")
+    logging.debug(f"\u001b[{color_code}m\033[1;3m{msg_footer}\u001b[0m")
