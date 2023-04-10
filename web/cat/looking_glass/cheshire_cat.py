@@ -41,11 +41,11 @@ class CheshireCat:
         self.history = ""
 
         # Load plugin system
-        self.mad_hatter = MadHatter()
+        self.mad_hatter = MadHatter(self)
 
         # LLM and embedder
-        self.llm = self.mad_hatter.execute_hook("get_language_model", self)
-        self.embedder = self.mad_hatter.execute_hook("get_language_embedder", self)
+        self.llm = self.mad_hatter.execute_hook("get_language_model")
+        self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
 
         # Prompts
         self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")

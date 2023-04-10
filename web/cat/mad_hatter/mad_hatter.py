@@ -17,7 +17,8 @@ class MadHatter:
     # orders plugged in hooks by name and priority
     # exposes functionality to the cat
 
-    def __init__(self):
+    def __init__(self, ccat):
+        self.ccat = ccat
         self.hooks, self.tools = self.find_plugins()
 
     # find all functions in plugin folder decorated with @hook or @tool
@@ -41,7 +42,10 @@ class MadHatter:
         all_tools_fixed = []
         for t in all_tools:
             t_fix = t[1]  # it was a tuple, the Tool is the second element
+            # fix automatic naming for the Tool (will be used in the prompt)
             t_fix.description = t_fix.description.split(" - ")[1]
+            # access the cat from any Tool instance (see cat.mad_hatter.decorators)
+            t_fix.set_cat_instance(self.ccat)
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed)
 
@@ -63,8 +67,8 @@ class MadHatter:
             if hook_name in plugin.keys():
                 hook = plugin[hook_name]
                 if hook_input is None:
-                    return hook()
+                    return hook(cat=self.ccat)
                 else:
-                    return hook(hook_input)
+                    return hook(hook_input, cat=self.ccat)
 
         raise Exception(f"Hook {hook_name} not present in any plugin")
