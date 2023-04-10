@@ -3,6 +3,13 @@
   &.loading {
     display: flex;
     align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .form button[type="submit"] {
+    display: none;
+    visibility: hidden;
   }
 }
 

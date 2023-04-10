@@ -1,40 +1,41 @@
 import React, { type FC, useCallback } from 'react'
 import clsx from 'clsx'
 import validator from '@rjsf/validator-ajv8'
-import { type IChangeEvent } from '@rjsf/core'
+import { type FormProps, type IChangeEvent } from '@rjsf/core'
 import Form from '@rjsf/antd'
 import { type JSONSchema } from '@models/JSONSchema'
 import { type CommonProps } from '@models/commons'
-import { type LLMSettings } from '@models/LLMSettings'
 
 import style from './SchemaForm.module.scss'
 
 /**
- * SchemaForm component description
+ * TODO: document this
  */
-const SchemaForm: FC<SchemaFormProps> = ({ schema, onSubmit, className }) => {
+const SchemaForm: FC<SchemaFormProps> = ({ data, onChange, schema, className, ...props }) => {
   const classList = clsx(style.form, className)
 
   const handleChange = useCallback((data: IChangeEvent) => {
-    if (onSubmit) {
-      onSubmit(data.formData)
+    if (onChange) {
+      onChange(data.formData)
     }
-  }, [onSubmit])
+  }, [onChange])
 
   return (
     <Form
       schema={schema}
       validator={validator}
-      onSubmit={handleChange}
+      formData={data}
+      onChange={handleChange}
       className={classList}
+      {...props}
     />
   )
 }
 
-export interface SchemaFormProps extends Omit<CommonProps, 'style'> {
+export interface SchemaFormProps<TData = any> extends Omit<FormProps, 'className' | 'formData' | 'onChange' | 'validator'>, CommonProps {
   schema: JSONSchema
-  data?: LLMSettings
-  onSubmit?: (data: LLMSettings) => void
+  data?: TData
+  onChange?: (data: TData) => void
 }
 
 export default SchemaForm

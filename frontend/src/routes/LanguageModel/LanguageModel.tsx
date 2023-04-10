@@ -1,13 +1,12 @@
-import React, { type FC, useCallback, useEffect } from 'react'
+import React, { type FC, useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
-import { Form, Select } from 'antd'
+import { Button, Form, Select } from 'antd'
 import Alert from '@components/Alert'
 import SidePanel from '@components/SidePanel'
 import Spinner from '@components/Spinner'
 import useLLMProviders from '@hooks/useLLMProviders'
 import SchemaForm from '@components/SchemaForm'
-import { type LLMSettings } from '@models/LLMSettings'
 import routesDescriptor from '@routes/routesDescriptor'
 
 import style from './LanguageModel.module.scss'
@@ -16,10 +15,12 @@ import style from './LanguageModel.module.scss'
  * Language Model configuration side panel
  */
 const LanguageModel: FC = () => {
-  const navigate = useNavigate()
   const {
-    providers, error, isLoading, selectProvider, selected, schema, requireProviders, updateProviderSettings
+    providers, error, isLoading, selectProvider, selected, schema, requireProviders,
+    setCurrentProviderSettings, settings, updateProviderSettings
   } = useLLMProviders()
+  const navigate = useNavigate()
+  const formWrapperRef = useRef<HTMLDivElement>(null)
   const options = providers.map((p) => ({ label: p.name_human_readable, value: p.languageModelName }))
   const title = 'Configure your language model'
 
@@ -31,12 +32,22 @@ const LanguageModel: FC = () => {
     navigate(routesDescriptor.settings.path)
   }, [navigate])
 
-  const handleSubmit = useCallback((data: LLMSettings) => {
-    void updateProviderSettings(data)
-  }, [updateProviderSettings])
+  const onUpdate = useCallback(() => {
+    const button = formWrapperRef.current?.querySelector<HTMLButtonElement>('button[type="submit"]')
+    if (button) {
+      button.click()
+    }
+  }, [])
+
+  const Footer = (
+    <div className={style.footer}>
+      <Button type="primary" onClick={onUpdate}>Update</Button>
+      <Button onClick={handleOnClose}>Close</Button>
+    </div>
+  )
 
   return (
-    <SidePanel active title={title} onClose={handleOnClose} position="right">
+    <SidePanel active title={title} onClose={handleOnClose} position="right" FooterRenderer={Footer}>
       <div className={clsx(style.llmProvider, isLoading && style.loading)}>
         {isLoading && <Spinner />}
         {error && <Alert variant="error">{error}</Alert>}
@@ -54,7 +65,15 @@ const LanguageModel: FC = () => {
           </Form>
         )}
         {selected && schema && (
-          <SchemaForm onSubmit={handleSubmit} schema={schema} />
+          <div ref={formWrapperRef}>
+            <SchemaForm
+              data={settings}
+              onChange={setCurrentProviderSettings}
+              onSubmit={() => void updateProviderSettings()}
+              schema={schema}
+              className={style.form}
+            />
+          </div>
         )}
       </div>
     </SidePanel>

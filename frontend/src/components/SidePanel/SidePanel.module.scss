@@ -6,7 +6,11 @@
   backdrop-filter: blur(10px);
   box-shadow: var(--app-shadow-s);
   border-top: 1px solid #0000000D;
-  width: var(--app-sidebar-width);
+  width: 100%;
+
+  @include tablet-landscape-view {
+    width: var(--app-sidebar-width);
+  }
   max-width: 100%;
   top: 0;
   bottom: 0;

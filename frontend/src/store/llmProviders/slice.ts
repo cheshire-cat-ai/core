@@ -38,6 +38,11 @@ const llmProviders = createSlice({
   reducers: {
     setSelectedLLMProvider: (state, action: PayloadAction<LLMProviderMetaData['languageModelName']>) => {
       state.selected = action.payload
+    },
+    setLLMSettings: (state, action: PayloadAction<{ name: string, settings: LLMSettings }>) => {
+      const { name, settings } = action.payload
+
+      state.settings[name] = settings
     }
   },
   extraReducers: (builder) => {
@@ -57,6 +62,6 @@ const llmProviders = createSlice({
   }
 })
 
-export const { setSelectedLLMProvider } = llmProviders.actions
+export const { setSelectedLLMProvider, setLLMSettings } = llmProviders.actions
 
 export default llmProviders.reducer

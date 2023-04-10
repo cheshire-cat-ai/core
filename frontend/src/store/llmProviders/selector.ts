@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { type RootState } from '@store/index'
+import { type LLMSettings } from '@models/LLMSettings'
 
 /**
  * Selects the root state for the llmProviders slice.
@@ -42,5 +43,16 @@ export const selectCurrentProviderSchema = createSelector(
   (schemas, selected) => {
     if (!selected) return undefined
     return schemas.find((schema) => schema.languageModelName === selected)
+  }
+)
+
+export const selectAllLLMSettings = createSelector(selectRootState, (state) => state.settings)
+
+export const selectCurrentProviderSettings = createSelector(
+  [selectAllLLMSettings, selectCurrentLLMProvider],
+  (providers, current) => {
+    if (!current) return {} satisfies LLMSettings
+
+    return providers[current] ?? {} satisfies LLMSettings
   }
 )
