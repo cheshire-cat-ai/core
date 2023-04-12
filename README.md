@@ -8,7 +8,6 @@
   <h4>
     Customizable AI architecture
   </h4>
-  <h2>This project is still a Working-In-Progress, refactoring or code changes happens very often, join the <a href="https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">Issues</a> to help!</h2>
 </div>
 
 ## What is this?
@@ -21,6 +20,8 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - 🖺 Can ingest documents (.pdf, .txt, .md)
 - 🚀 Extendible via plugins
 - 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
+
+This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
 ## Quickstart
 
