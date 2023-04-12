@@ -140,7 +140,7 @@ You can start simply by:
 
 
 Before submitting any new pull request, make sure it either fixes an [existing issue](https://github.com/pieroit/cheshire-cat/issues) or is something we have discussed in our [Roadmap](#roadmap). 
-If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/73g9vCsC)
+If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/rSm9htk9pA)
 
 Don't forget to give the project a star!⭐ Thanks again!🙏
 
