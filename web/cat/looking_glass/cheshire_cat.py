@@ -1,4 +1,5 @@
 import time
+from typing import Union
 
 import langchain
 from cat.utils import log
@@ -8,6 +9,8 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from langchain.chains.summarize import load_summarize_chain
 from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
+from cat.rabbit_hole import RabbitHole
+from fastapi import UploadFile
 
 
 # main class
@@ -17,6 +20,9 @@ class CheshireCat:
 
         # bootstrap the cat!
         self.bootstrap()
+
+        # Rabbit Hole Instance
+        self.rb_hole = RabbitHole()
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -132,7 +138,7 @@ class CheshireCat:
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(
-        self, embedding=None, collection=None, metadata={}, k=5
+            self, embedding=None, collection=None, metadata={}, k=5
     ):
         # recall from memory
         memories = self.memory[collection].similarity_search_with_score_by_vector(
@@ -192,7 +198,7 @@ class CheshireCat:
         while not root_summary_flag:
             # make summaries of groups of docs
             intermediate_summaries = [
-                summarization_chain.run(intermediate_summaries[i : i + group_size])
+                summarization_chain.run(intermediate_summaries[i: i + group_size])
                 for i in range(0, len(intermediate_summaries), group_size)
             ]
             intermediate_summaries = [
@@ -212,6 +218,26 @@ class CheshireCat:
 
         # return root summary and all intermediate summaries
         return all_summaries[0], all_summaries[1:]
+
+    def send_file_in_rabbit_hole(
+            self,
+            file: Union[str, UploadFile],
+            chunk_size: int = 400,
+            chunk_overlap: int = 100
+    ):
+        """
+        Load a given file in the Cat's memory.
+
+        :param file: absolute path of the file or UploadFile if ingested from the GUI
+        :param chunk_size: number of characters the text is split in
+        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        """
+
+        # Load the file in the cat memory
+        self.rb_hole.ingest_file(self,
+                                 file=file,
+                                 chunk_size=chunk_size,
+                                 chunk_overlap=chunk_overlap)
 
     def __call__(self, user_message):
         if self.verbose:
@@ -237,7 +263,8 @@ class CheshireCat:
             )
         except Exception:
             return {
-                "error": False,  # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
+                "error": False,
+                # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
                 "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `web/long_term_memory` folder",
                 "why": {},
             }

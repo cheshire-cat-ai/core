@@ -1,4 +1,3 @@
-from cat.rabbit_hole import ingest_file
 from cat.utils import log
 
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
@@ -15,11 +14,6 @@ async def rabbithole_upload_endpoint(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    chunk_size: int = Body(
-        default=400,
-        description="Maximum length of each chunk after the document is splitted (in characters)",
-    ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
 ):
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -42,9 +36,7 @@ async def rabbithole_upload_endpoint(
         )
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(
-        ingest_file, ccat, file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-    )
+    background_tasks.add_task(ccat.send_file_in_rabbit_hole, file)
 
     # reply to client
     return {
