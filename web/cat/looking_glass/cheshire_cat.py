@@ -22,7 +22,7 @@ class CheshireCat:
         self.bootstrap()
 
         # Rabbit Hole Instance
-        self.rb_hole = RabbitHole()
+        self.rabbit_hole = RabbitHole()
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -234,10 +234,10 @@ class CheshireCat:
         """
 
         # Load the file in the cat memory
-        self.rb_hole.ingest_file(self,
-                                 file=file,
-                                 chunk_size=chunk_size,
-                                 chunk_overlap=chunk_overlap)
+        self.rabbit_hole.ingest_file(self,
+                                     file=file,
+                                     chunk_size=chunk_size,
+                                     chunk_overlap=chunk_overlap)
 
     def __call__(self, user_message):
         if self.verbose:

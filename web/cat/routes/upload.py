@@ -3,7 +3,6 @@ from cat.utils import log
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from fastapi.responses import JSONResponse
 
-
 router = APIRouter()
 
 
@@ -11,9 +10,17 @@ router = APIRouter()
 # TODO: should we receive files also via websocket?
 @router.post("/")
 async def rabbithole_upload_endpoint(
-    request: Request,
-    file: UploadFile,
-    background_tasks: BackgroundTasks,
+        request: Request,
+        file: UploadFile,
+        background_tasks: BackgroundTasks,
+        chunk_size: int = Body(
+            default=400,
+            description="Maximum length of each chunk after the document is split (in characters)"
+        ),
+        chunk_overlap: int = Body(
+            default=100,
+            description="Chunk overlap (in characters)"
+        )
 ):
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -36,7 +43,7 @@ async def rabbithole_upload_endpoint(
         )
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(ccat.send_file_in_rabbit_hole, file)
+    background_tasks.add_task(ccat.send_file_in_rabbit_hole, file, chunk_size, chunk_overlap)
 
     # reply to client
     return {
