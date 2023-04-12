@@ -31,7 +31,8 @@ To run the Cheshire Cat, you need to have `docker` ([instructions](https://docs.
 
 ## Quickstart
 To have a quick setup and make the Cheshire Cat run using the `gpt3.5-turbo` [OpenAI model](https://platform.openai.com/docs/models/gpt-3-5), do the following:
-- Create and API key with `+ Create new secret key` in your OpenAI [person account](https://platform.openai.com/account/api-keys)
+
+- Create and API key with `+ Create new secret key` in your OpenAI [personal account](https://platform.openai.com/account/api-keys)
 - Create an `.env` file in the cloned repository
 - Write your key in the `.env` file (`OPENAI_KEY=past-key-here`)
 - Start the app with `docker-compose up`
@@ -43,7 +44,7 @@ The first time you run the `docker-compose up` command it will take several minu
 Here is a list of commands to achieve the aforementioned steps.
 
 ```bash
-# Move inside the cloned repository
+# Open the cloned repository
 cd cheshire-cat
 
 # Create new .env file and write OpenAI API key to it
@@ -69,35 +70,63 @@ docker-compose build --no-cache
 # Run docker containers
 docker-compose up
 ```
-
-## Roadmap
-
-- QA / tests
-- docs and tutorials
-- online demo
-- voice interface
-- more plugins shipped by default
-- (surprise!!!) PURR
-
-## Contributing
-
-If you have a suggestion that would make this better, open an issue and we can reason about it.
-If you want to contribute code, fork the repo and create a pull request.
-
-1. Try out the Cat
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request ((if it contains lots of code, please discuss it beforehand opening a issue))
-
-You can start simply by:
-- Making tutorials and docs
-- Sharing on social media
-
 Don't forget to give the project a star! ⭐ Thanks again!🙏
 
+[//]: # (## Roadmap)
 
+[//]: # ()
+[//]: # (- QA / tests)
+
+[//]: # (- docs and tutorials)
+
+[//]: # (- online demo)
+
+[//]: # (- voice interface)
+
+[//]: # (- more plugins shipped by default)
+
+[//]: # (- &#40;surprise!!!&#41; PURR)
+
+[//]: # ()
+[//]: # (## Contributing)
+
+[//]: # ()
+[//]: # (If you have a suggestion that would make this better, open an issue and we can reason about it.)
+
+[//]: # (If you want to contribute code, fork the repo and create a pull request.)
+
+[//]: # ()
+[//]: # (1. Try out the Cat)
+
+[//]: # (1. Fork the Project)
+
+[//]: # (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
+
+[//]: # (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
+
+[//]: # (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
+
+[//]: # (5. Open a Pull Request &#40;&#40;if it contains lots of code, please discuss it beforehand opening a issue&#41;&#41;)
+
+[//]: # ()
+[//]: # (You can start simply by:)
+
+[//]: # (- Making tutorials and docs)
+
+[//]: # (- Sharing on social media)
+
+[//]: # ()
+[//]: # (Don't forget to give the project a star! ⭐ Thanks again!🙏)
+
+# Credits
+
+Logo image generated with MidJourney, prompted by [Edgars Romanovskis](https://www.linkedin.com/in/edgars-romanovskis-b28826259/)
+
+# Which way to go from here?
+
+<p align="center">
+    <img align="center" src=assets/img/cheshire-cat-tree-shade.jpg width=400px alt="Wikipedia picture of the Cheshire Cat">
+</p>
 
     "Would you tell me, please, which way I ought to go from here?"
     "That depends a good deal on where you want to get to," said the Cat.
