@@ -34,57 +34,41 @@ To have a quick setup and make the Cheshire Cat run using the `gpt3.5-turbo` [Op
 - Create and API key with `+ Create new secret key` in your OpenAI [person account](https://platform.openai.com/account/api-keys)
 - Create an `.env` file in the cloned repository
 - Write your key in the `.env` file (`OPENAI_KEY=past-key-here`)
-- Start the app with `docker compose up`
+- Start the app with `docker-compose up`
+- Chat with the Cheshire Cat on `localhost:3000`.
+- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
 
-The first time you run the `docker compose up` command it will take several minutes as docker images occupy some GBs.
+The first time you run the `docker-compose up` command it will take several minutes as docker images occupy some GBs.
 
-According to your operating system, here a list of commands to achieve the aforementioned steps.
-### Linux
+Here is a list of commands to achieve the aforementioned steps.
+
 ```bash
 # Move inside the cloned repository
 cd cheshire-cat
 
-# Create the .env file
-touch .env
-
-# Past you OpenAI API key
-echo "OPENAI_KEY=past-key-here" > .env
+# Create new .env file and write OpenAI API key to it
+echo "OPENAI_KEY=paste-key-here" > .env
 
 # Run docker containers
-docker compose up
-```
-### Windows
-```powershell
-
-```
-
-
-## Update
-
-
-You just need `docker` and `docker-compose` installed on your system.
-Clone the repo and cd into it. Create a `.env` file containing:
-
-```
-OPENAI_KEY=<your-openai-key>
-```
-
-After that you can run:
-
-```bash
 docker-compose up
 ```
+When you're done, remember to CTRL+c in the terminal and `docker-compose down`.
 
-The first time (only) it will take several minutes, as the images occupy a few GBs.
+## Update
+As the project is still a work in progress, if you want to update it run the following:
+```bash
+# Open the cloned repository
+cd cheshire-cat
 
-- Chat with the Cheshire Cat on `localhost:3000`.
-- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
+# Pull from the main remote repository
+git pull
 
-When you're done, remember to CTRL+c in the terminal and
+# Build again the docker containers
+docker-compose build --no-cache
+
+# Run docker containers
+docker-compose up
 ```
-docker-compose down
-```
-
 
 ## Roadmap
 
