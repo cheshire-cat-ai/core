@@ -5,13 +5,13 @@
  */
 import LogService from '@services/LogService'
 import { toJSON } from '@utils/commons'
-import getConfig from '../config'
+import config from '../config'
 
-const endpoint = getConfig().endpoints.rabbitHole
+const endpoint = config.endpoints.rabbitHole
 
 /*
- * This is a service that is used to send files down to the rabbit hole.
- * Meaning this service sends files to the backend.
+ * This service is used to send files down to the rabbit hole.
+ * Meaning this service sends files to the backend... lol
  */
 const RabbitHoleService = Object.freeze({
   send: async (file: File) => {

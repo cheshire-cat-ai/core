@@ -1,5 +1,5 @@
 import React, { type FC, type PropsWithChildren } from 'react'
-import getConfig, { type Config } from '../../config'
+import config, { type Config } from '../../config'
 
 /**
  * FeatureGuard is a component that renders its children only if the provided feature is enabled.
@@ -7,7 +7,6 @@ import getConfig, { type Config } from '../../config'
  * If no feature is provided, the component will always render its children.
  */
 const FeatureGuard: FC<FeatureGuardProps> = ({ feature, children }) => {
-  const config = getConfig()
   const hasFeature = feature ? config.features.includes(feature) : true
 
   return hasFeature ? <>{children}</> : null

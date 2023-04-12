@@ -4,31 +4,33 @@ import { AppFeatures } from '@models/AppFeatures'
  * Returns the application configuration.
  * It is wrapped in a function to ensure the configuration is not mutated.
  */
-const getConfig = () => Object.freeze<Config>({
+const config: Config = {
   mode: import.meta.env.MODE,
   socketTimeout: 10000,
   features: [
     AppFeatures.FileUpload,
     AppFeatures.AudioRecording,
-    AppFeatures.Settings,
+    // AppFeatures.Settings,
     AppFeatures.Plugins
   ],
   endpoints: {
-    chat: new URL('ws://localhost:1865/ws'),
-    rabbitHole: new URL('http://localhost:1865/rabbithole'),
-    languageModels: new URL('http://localhost:1865/settings/llm/')
+    chat: 'ws://localhost:1865/ws',
+    rabbitHole: 'http://localhost:1865/rabbithole',
+    allLLM: 'http://localhost:1865/settings/llm/',
+    singleLLM: 'http://localhost:1865/settings/llm/:llm'
   }
-})
+}
 
 export interface Config {
   readonly mode: string
   readonly socketTimeout: number
   readonly features: AppFeatures[]
   readonly endpoints: {
-    readonly chat: URL
-    readonly rabbitHole: URL
-    readonly languageModels: URL
+    readonly chat: string
+    readonly rabbitHole: string
+    readonly allLLM: string
+    readonly singleLLM: string
   }
 }
 
-export default getConfig
+export default config

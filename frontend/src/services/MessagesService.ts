@@ -4,11 +4,9 @@
  * sending or receiving data.
  */
 
-import getConfig from '../config'
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
 import LogService from '@services/LogService'
-
-const config = getConfig()
+import config from '../config'
 
 /**
  * The WebSocket instance

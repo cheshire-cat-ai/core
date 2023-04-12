@@ -28,10 +28,14 @@ const Navigation: FC<NavigationProps> = (props) => {
   return (
     <nav className={classList} {...rest}>
       <ul>
-        {links.map(({ path, label, guard }) => (
+        {links.map(({ path, label, guard, external }) => (
           <FeatureGuard key={path} feature={guard}>
             <li>
-              <NavLink to={path} className={({ isActive }) => isActive ? style.active : ''}>
+              <NavLink
+                to={path}
+                className={({ isActive }) => isActive ? style.active : ''}
+                target={external ? '_blank' : undefined}
+              >
                 {label}
               </NavLink>
             </li>

@@ -8,11 +8,30 @@ export interface RoutesDescriptor {
 }
 
 const routesDescriptor = {
-  home: { path: '/', label: 'Home' },
-  settings: { path: '/settings', label: 'Settings', guard: AppFeatures.Settings },
-  llm: { path: '/settings/llm', label: 'Language model provider', guard: AppFeatures.Settings },
-  plugins: { path: '/plugins', label: 'Plugins', guard: AppFeatures.Plugins },
-  documentation: { path: 'https://www.google.com', label: 'Documentation' }
+  home: {
+    path: '/',
+    label: 'Home'
+  },
+  settings: {
+    path: '/settings',
+    label: 'Settings',
+    guard: AppFeatures.Settings
+  },
+  llm: {
+    path: '/settings/llm',
+    label: 'Language model provider',
+    guard: AppFeatures.Settings
+  },
+  plugins: {
+    path: '/plugins',
+    label: 'Plugins',
+    guard: AppFeatures.Plugins
+  },
+  documentation: {
+    external: true,
+    path: 'https://pieroit.github.io/cheshire-cat/',
+    label: 'Documentation'
+  }
 } satisfies Record<string, RoutesDescriptor>
 
 export default routesDescriptor

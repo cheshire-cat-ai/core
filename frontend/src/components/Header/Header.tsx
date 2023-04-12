@@ -1,10 +1,10 @@
 import React, { type FC } from 'react'
 import clsx from 'clsx'
 import useToggle from 'beautiful-react-hooks/useToggle'
-import { type CommonProps } from '@models/commons'
 import Logo from '@components/Logo'
 import HamburgerButton from '@components/HamburgerButton'
 import Navigation from '@components/Navigation'
+import { type CommonProps } from '@models/commons'
 
 import style from './Header.module.scss'
 

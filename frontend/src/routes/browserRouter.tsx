@@ -2,6 +2,8 @@ import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import Scaffold from './Scaffold'
 import routesDescriptor from '@routes/routesDescriptor'
+import ProtectedRoute from '@routes/ProtectedRoute'
+import { AppFeatures } from '@models/AppFeatures'
 
 const Home = React.lazy(() => import('./Home'))
 const Settings = React.lazy(() => import('./Settings'))
@@ -25,7 +27,11 @@ export default createBrowserRouter([
       },
       {
         path: routesDescriptor.settings.path,
-        element: <Settings />,
+        element: (
+          <ProtectedRoute feature={AppFeatures.Settings}>
+            <Settings />
+          </ProtectedRoute>
+        ),
         children: [
           {
             path: routesDescriptor.llm.path,
@@ -35,11 +41,11 @@ export default createBrowserRouter([
       },
       {
         path: routesDescriptor.plugins.path,
-        element: <WorkInProgress />
-      },
-      {
-        path: routesDescriptor.llm.path,
-        element: <WorkInProgress />
+        element: (
+          <ProtectedRoute feature={AppFeatures.Plugins}>
+            <WorkInProgress />
+          </ProtectedRoute>
+        )
       }
     ]
   }
