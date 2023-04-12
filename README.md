@@ -101,7 +101,7 @@ docker-compose down
 
 ## Docs and Resources
 
-- [Discord Server](https://discord.gg/8eNx6qqF)
+- [Discord Server](https://discord.gg/rSm9htk9pA)
 - [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
 
 
