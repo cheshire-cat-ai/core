@@ -1,13 +1,14 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from cat.routes import base, memory, upload, websocket
 from fastapi.responses import JSONResponse
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.routes.setting import llm_setting, general_setting, embedder_setting
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from cat.api_auth import check_api_key
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
 
 
 # REST API
-cheshire_cat_api = FastAPI(lifespan=lifespan)
+cheshire_cat_api = FastAPI(lifespan=lifespan, dependencies=[Depends(check_api_key)])
 
 
 # Configures the CORS middleware for the FastAPI app
