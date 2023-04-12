@@ -15,13 +15,19 @@ Now let's start `mypluginfile.py` with a little import:
 
 You are now ready to change the Cat's behavior using Tools and Hooks.
 
+
+![plugins](../assets/img/diagrams/plugin.png)
+
+
 ## Hooks
 
-Hooks are ....
+Hooks let you influence how the Cat runs its internal functionality.  
 More details on hooks [here](hooks.md)
 
 ## Tools
 
-Tools are ....
+Tools let you define custom code that the Cat can use.  
 More details on tools [here](tools.md)
 
+
+TODO: the difference is not clear, find better working and simple examples

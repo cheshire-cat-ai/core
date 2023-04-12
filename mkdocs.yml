@@ -25,9 +25,21 @@ theme:
     - navigation.indexes
     - navigation.footer
     - navigation.top
+    - content.code.copy
+    - content.code.annotate
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/pieroit/cheshire-cat
       name: The Cheshire Cat repo on GitHub
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
