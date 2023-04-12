@@ -107,7 +107,7 @@ docker-compose up
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Docs and Resources
-
+- [Official Documentation](https://pieroit.github.io/cheshire-cat/)
 - [Discord Server](https://discord.gg/rSm9htk9pA)
 - [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
 
