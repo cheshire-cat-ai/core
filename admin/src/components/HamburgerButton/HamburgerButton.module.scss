@@ -1,0 +1,63 @@
+.hamBtn {
+  --button-size: 42px;
+
+  appearance: none;
+  background: transparent;
+  outline: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  width: var(--button-size);
+  height: var(--button-size);
+
+  svg {
+    transition: transform 400ms;
+    user-select: none;
+    max-width: 100%;
+
+    path {
+      fill: none;
+      transition: stroke-dasharray 400ms, stroke-dashoffset 400ms, stroke-color 250ms;
+      stroke: var(--app-palette-black);
+      stroke-width: 5.5;
+      stroke-linecap: round;
+
+      &.top {
+        stroke-dasharray: 40 160;
+      }
+
+      &.middle {
+        stroke-dasharray: 40 142;
+        transform-origin: 50%;
+        transition: transform 400ms;
+      }
+
+      &.bottom {
+        stroke-dasharray: 40 85;
+        transform-origin: 50%;
+        transition: transform 400ms, stroke-dashoffset 400ms;
+      }
+    }
+  }
+
+  &.active svg {
+    transform: rotate(45deg);
+
+    path {
+      transition-delay: 0s, 0s, 250ms;
+
+      &.top {
+        stroke-dashoffset: -64px;
+      }
+
+      &.middle {
+        transform: rotate(90deg);
+      }
+
+      &.bottom {
+        stroke-dashoffset: -64px;
+      }
+    }
+  }
+}
