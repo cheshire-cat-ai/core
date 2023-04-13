@@ -28,7 +28,7 @@ services:
       - --reload # take away in prod
     restart: unless-stopped
 
-  frontend:
+  admin:
     build:
       context: ./admin
     container_name: admin
