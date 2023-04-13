@@ -17,17 +17,15 @@ const Settings: FC = ({ ...rest }) => {
   return (
     <Page className={style.settings} variant="narrow" {...rest}>
       <div className={style.title}>
-        Set up your cat instance
+        Set up your Cat
       </div>
 
       <div className={style.grid}>
-        <Card title="Language model provider" actions={[LLMActions]}>
-          Discover and tailor your language model to suit your specific requirements by choosing from a list of
-          providers.
+        <Card title="Language model" actions={[LLMActions]}>
+          Choose and configure your favourite Large Language Model
         </Card>
         <Card title="Embedder" actions={[EmbedderActions]}>
-          Discover and tailor your language model to suit your specific requirements by choosing from a list of
-          providers.
+          Choose a language embedder to help the Cat remember conversations and documents
         </Card>
       </div>
       <Outlet />

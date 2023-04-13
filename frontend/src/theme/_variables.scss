@@ -7,10 +7,10 @@
   --app-palette-white: #FFF;
   --app-palette-black: #0A090C;
   --app-palette-brack-light: #3A3546;
-  --app-palette-neutral: #DBD8E9;
-  --app-palette-neutral-light: #F2F1F7;
-  --app-palette-accent: #5C1EAE;
-  --app-palette-accent-light: #8F51E1;
+  --app-palette-neutral: #FDFDFD;
+  --app-palette-neutral-light: #f6f6f6;
+  --app-palette-accent: #333333;
+  --app-palette-accent-light: #333333;
   --app-palette-danger: #EF476F;
   --app-palette-success: #40F99B;
   --app-palette-info: #247BA0;
@@ -32,11 +32,11 @@
   --app-text-size-5: clamp(2.07rem, calc(1.65rem + 1.81vw), 3.05rem);
   --app-text-size-6: clamp(2.49rem, calc(1.91rem + 2.45vw), 3.82rem);
 
-  --app-title-font-family: 'Open Sans', sans-serif;
+  --app-title-font-family: 'Ubuntu', sans-serif;
   --app-title-font-weight: 600;
   --app-title-font-spacing: 0;
 
-  --app-text-font-family: 'Open Sans', sans-serif;
+  --app-text-font-family: 'Ubuntu', sans-serif;
   --app-text-font-weight: 400;
   --app-text-font-size: var(--app-typography-size-1);
   --app-text-letter-spacing: 0;
