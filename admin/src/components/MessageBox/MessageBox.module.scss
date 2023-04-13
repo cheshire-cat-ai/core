@@ -1,0 +1,50 @@
+.message {
+  position: relative;
+  @include typography-text;
+  animation: AFadeIn 240ms var(--app-easing-fn);
+  animation-iteration-count: 1;
+
+  display: flex;
+
+  @include tablet-landscape-view {
+    max-width: 80%;
+  }
+
+  &.user {
+    align-self: flex-end;
+    border-radius: 15px 0px 15px 15px;
+    background: linear-gradient(180deg, #1E1E1E 0%, #555 100%);
+    color: var(--app-palette-white);
+    padding: var(--app-space-s);
+    text-align: right;
+  }
+
+  &.bot {
+
+    align-self: flex-start;
+
+    .label {
+      @include typography-action;
+      padding-right: var(--app-space-xs);
+    }
+
+    .content {
+      border-radius: 0px 15px 15px 15px;
+      background: var(--app-palette-white);
+      padding: var(--app-space-s);
+    }
+  }
+
+  + .message {
+    margin-top: var(--app-space-m);
+  }
+}
+
+@keyframes AFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

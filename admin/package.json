@@ -1,0 +1,50 @@
+{
+  "name": "cheshire-ui",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "author": "Antonio Rù <antonio.ru000@gmail.com>",
+  "scripts": {
+    "start": "npx http-server ./dist -p 3000",
+    "dev": "vite --no-open",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.3",
+    "@rjsf/antd": "^5.5.0",
+    "@rjsf/core": "^5.5.0",
+    "@rjsf/utils": "^5.5.0",
+    "@rjsf/validator-ajv8": "^5.5.0",
+    "antd": "^4.24.8",
+    "beautiful-react-hooks": "^4.3.0",
+    "clsx": "^1.2.1",
+    "framer-motion": "^10.10.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.14.0",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "autoprefixer": "^10.4.13",
+    "eslint": "^8.34.0",
+    "eslint-config-standard-with-typescript": "^34.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "postcss": "^8.4.21",
+    "postcss-preset-env": "^8.0.1",
+    "postcss-pxtorem": "^6.0.0",
+    "sass": "^1.58.3",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.0",
+    "vite-plugin-svgr": "^2.4.0"
+  }
+}

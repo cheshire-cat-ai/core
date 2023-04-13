@@ -2,7 +2,7 @@ __pycache__
 .env
 
 # python local dev
-web/venv
+core/venv
 
 .DS_Store
 .idea
@@ -13,4 +13,4 @@ web/venv
 *metadata-v*.db
 
 # thinkering in the plugin folder
-web/cat/plugins/__*
+core/cat/plugins/__*

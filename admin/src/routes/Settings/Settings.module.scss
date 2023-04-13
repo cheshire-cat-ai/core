@@ -1,0 +1,19 @@
+.settings {
+  position: relative;
+
+  .title {
+    margin-bottom: var(--app-space-m);
+    padding: var(--app-space-l);
+    text-align: center;
+    font-size: var(--app-text-size-2);
+    background: var(--app-palette-neutral-light);
+    border-radius: var(--app-border-radius);
+    box-shadow: var(--app-shadow-s);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--app-space-m);
+  }
+}

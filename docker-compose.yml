@@ -2,10 +2,10 @@ version: '3.7'
 
 services:
 
-  web:
+  core:
     build:
-      context: ./web
-    container_name: web
+      context: ./core
+    container_name: core
     env_file:
       - .env
     environment:
@@ -15,7 +15,7 @@ services:
     ports:
       - 1865:80
     volumes:
-      - ./web:/app
+      - ./core:/app
     command:
       - uvicorn
       - cat.main:cheshire_cat_api
@@ -28,15 +28,14 @@ services:
       - --reload # take away in prod
     restart: unless-stopped
 
-  frontend:
+  admin:
     build:
-      context: ./frontend
-    container_name: frontend
+      context: ./admin
+    container_name: admin
     depends_on:
-      - web
+      - core
     ports:
       - 3000:3000
     volumes:
-      - ./frontend:/app
-    command: bash -c "npm install && npm run build && npm run dev"
+      - ./admin:/app
     restart: unless-stopped

@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap');
+
+@import 'libs/normalize.css';
+@import 'variables';
+@import 'mixins';
+
+// https://themeforest.net/item/koho-bootstrap-5-dashboard-template/42668894
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  @include typography-text;
+  color: var(--app-palette-text);
+  background: var(--app-palette-black);
+  -webkit-user-drag: none;
+}
+
+
+p {
+  @include typography-text;
+  margin-bottom: var(--app-space-xs);
+}
+
+a, button {
+  @include typography-action;
+}
+
+a {
+  color: var(--app-palette-primary);
+}
+
+/**
+ * Generates h1, h2, h3, h4, h5, h6
+ */
+@for $i from 1 through 6 {
+  h#{7 - $i} {
+    @include typography-title(var(--app-text-size-#{$i}));
+    margin: 0 0 var(--app-text-size-2);
+  }
+}

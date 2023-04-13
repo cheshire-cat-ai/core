@@ -1,0 +1,90 @@
+:root {
+  /**
+   * --------------------------------------
+   * COLOURS
+   * --------------------------------------
+   */
+  --app-palette-white: #FFF;
+  --app-palette-black: #0A090C;
+  --app-palette-brack-light: #3A3546;
+  --app-palette-neutral: #FDFDFD;
+  --app-palette-neutral-light: #f6f6f6;
+  --app-palette-accent: #333333;
+  --app-palette-accent-light: #333333;
+  --app-palette-danger: #EF476F;
+  --app-palette-success: #40F99B;
+  --app-palette-info: #247BA0;
+
+  /**
+   * --------------------------------------
+   * TYPOGRAPHY
+   * --------------------------------------
+   */
+
+  /**
+   * Sizes
+   * @link https://utopia.fyi/type/calculator?c=375,16,1.2,1240,20,1.25,8,0,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12
+  */
+  --app-text-size-1: clamp(1.00rem, calc(0.89rem + 0.46vw), 1.25rem);
+  --app-text-size-2: clamp(1.20rem, calc(1.04rem + 0.67vw), 1.56rem);
+  --app-text-size-3: clamp(1.44rem, calc(1.22rem + 0.95vw), 1.95rem);
+  --app-text-size-4: clamp(1.73rem, calc(1.42rem + 1.32vw), 2.44rem);
+  --app-text-size-5: clamp(2.07rem, calc(1.65rem + 1.81vw), 3.05rem);
+  --app-text-size-6: clamp(2.49rem, calc(1.91rem + 2.45vw), 3.82rem);
+
+  --app-title-font-family: 'Ubuntu', sans-serif;
+  --app-title-font-weight: 600;
+  --app-title-font-spacing: 0;
+
+  --app-text-font-family: 'Ubuntu', sans-serif;
+  --app-text-font-weight: 400;
+  --app-text-font-size: var(--app-typography-size-1);
+  --app-text-letter-spacing: 0;
+  --app-text-line-height: 1.3;
+
+  --app-action-font-family: var(--app-text-font-family);
+  --app-action-font-weight: 500;
+  --app-action-font-size: var(--app-typography-size-1);
+  --app-action-letter-spacing: 0;
+  --app-action-line-height: 1.3;
+
+  /**
+   * --------------------------------------
+   * SPACES
+   * @link https://utopia.fyi/space/calculator?c=375,16,1.2,1240,20,1.25,8,0,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12
+   * --------------------------------------
+   */
+  --app-space-3xs: clamp(0.25rem, calc(0.22rem + 0.12vw), 0.31rem);
+  --app-space-2xs: clamp(0.50rem, calc(0.45rem + 0.23vw), 0.63rem);
+  --app-space-xs: clamp(0.75rem, calc(0.67rem + 0.35vw), 0.94rem);
+  --app-space-s: clamp(1.00rem, calc(0.89rem + 0.46vw), 1.25rem);
+  --app-space-m: clamp(1.50rem, calc(1.34rem + 0.69vw), 1.88rem);
+  --app-space-l: clamp(2.00rem, calc(1.78rem + 0.92vw), 2.50rem);
+  --app-space-xl: clamp(3.00rem, calc(2.67rem + 1.39vw), 3.75rem);
+  --app-space-2xl: clamp(4.00rem, calc(3.57rem + 1.85vw), 5.00rem);
+  --app-space-3xl: clamp(6.00rem, calc(5.35rem + 2.77vw), 7.50rem);
+
+  /**
+   * --------------------------------------
+   * LAYOUT ELEMENTS
+   * --------------------------------------
+   */
+  --app-header-height: clamp(3.75rem, calc(3.48rem + 1.16vw), 4.38rem);
+  --app-header-background: rgba(255, 255, 255, 0.6);
+
+  --app-sidebar-width: 620px;
+  --app-sidebar-background: var(--app-palette-white);
+
+  /**
+   * --------------------------------------
+   * MISC
+   * --------------------------------------
+   */
+  --app-side-space: var(--app-space-s);
+  --app-max-content-width: 1400px;
+  --app-border-radius: 5px;
+
+  --app-easing-fn: ease-in-out;
+  --app-animation-duration: 500ms;
+  --app-shadow-s: 0px 4px 6px 0px #0000000D;
+}
