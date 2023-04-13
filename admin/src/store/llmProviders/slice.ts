@@ -3,6 +3,8 @@ import { type LLMProvidersState } from '@store/llmProviders/types'
 import { type LLMProviderMetaData } from '@models/LLMProviderDescriptor'
 import LanguageModels from '@services/LanguageModels'
 import { type LLMSettings } from '@models/LLMSettings'
+import { toJSON } from '@utils/commons'
+
 
 const initialState: LLMProvidersState = {
   loading: false,
@@ -24,7 +26,7 @@ export const updateLanguageModelSettings = createAsyncThunk(
   (options: { name: string, settings: LLMSettings }) => {
     const { name, settings } = options
 
-    return LanguageModels.setProviderOptions(name, settings)
+    return LanguageModels.setProviderOptions(name, settings).then(toJSON)
   }
 )
 
