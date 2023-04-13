@@ -4,25 +4,34 @@
   animation: AFadeIn 240ms var(--app-easing-fn);
   animation-iteration-count: 1;
 
+  display: flex;
+
   @include tablet-landscape-view {
     max-width: 80%;
   }
 
   &.user {
     align-self: flex-end;
-    border-radius: 20px 5px 20px 20px;
-    background: linear-gradient(180deg, #1E1E1E 0%, rgba(30, 30, 30, 0.55) 100%);
+    border-radius: 15px 0px 15px 15px;
+    background: linear-gradient(180deg, #1E1E1E 0%, #555 100%);
     color: var(--app-palette-white);
     padding: var(--app-space-s);
     text-align: right;
   }
 
   &.bot {
+
     align-self: flex-start;
 
     .label {
       @include typography-action;
-      margin-bottom: var(--app-space-xs);
+      padding-right: var(--app-space-xs);
+    }
+
+    .content {
+      border-radius: 0px 15px 15px 15px;
+      background: var(--app-palette-white);
+      padding: var(--app-space-s);
     }
   }
 
