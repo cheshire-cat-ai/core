@@ -2,7 +2,11 @@
   position: fixed;
   top: 0;
   right: 0;
-  padding: var(--app-space-s);
+
+  &.hasNotifications {
+    padding: var(--app-space-s);
+    z-index: 10;
+  }
 
   .notification {
     padding: var(--app-space-s);

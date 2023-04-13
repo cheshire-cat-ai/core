@@ -15,7 +15,7 @@ const DefaultMessagesList: FC<DefaultMessagesListProps> = (props) => {
   return (
     <div className={classList} {...rest}>
       {messages.map((message) => (
-        <button role="button" key={message} className={style.message} onClick={() => onMessageClick(message)}>
+        <button key={message} role="button" onClick={() => onMessageClick(message)}>
           {message}
         </button>
       ))}

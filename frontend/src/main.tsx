@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router-dom'
 import router from '@routes/browserRouter'
 import store from '@store/index'
 
+import 'antd/dist/antd.css'
 import './theme/index.scss'
 
 /**

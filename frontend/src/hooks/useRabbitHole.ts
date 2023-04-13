@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
-import RabbitHoleService from '@services/rabbitHole'
+import RabbitHoleService from '@services/RabbitHole'
 import { useDispatch, useSelector } from 'react-redux'
 import { setError, setResponse, startSending } from '@store/fileUploader/slice'
-import { selectFileUploadError, selectFileUploadIsLoading, selectFileUploadResponse } from '@store/fileUploader/selectors'
+import {
+  selectFileUploadError,
+  selectFileUploadIsLoading,
+  selectFileUploadResponse
+} from '@store/fileUploader/selectors'
 import useNotifications from '@hooks/useNotifications'
 import { uniqueId } from '@utils/commons'
 

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { type FileUploaderState } from '@store/fileUploader/types'
-import { type RabbitHoleServiceResponse } from '@services/rabbitHole'
+import { type RabbitHoleServiceResponse } from '@services/RabbitHole'
 import { getErrorMessage } from '@utils/errors'
 
 const initialState: FileUploaderState = {

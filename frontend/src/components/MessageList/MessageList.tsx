@@ -49,7 +49,7 @@ const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, classNa
         ))}
       </div>
       {error && (<Alert variant="error" className={style.alert}>{error}</Alert>)}
-      {isLoading && !error && (<LoadingLabel className={style.thinking}>Cheshire cat is thinking</LoadingLabel>)}
+      {isLoading && !error && (<LoadingLabel className={style.thinking}>😺 Cheshire cat is thinking</LoadingLabel>)}
     </div>
   )
 }

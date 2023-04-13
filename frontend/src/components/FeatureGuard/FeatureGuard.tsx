@@ -1,20 +1,19 @@
-import React, { type FC } from 'react'
-import getConfig, { type Config } from '../../config'
-import { type CommonProps } from '@models/commons'
+import React, { type FC, type PropsWithChildren } from 'react'
+import config, { type Config } from '../../config'
 
 /**
  * FeatureGuard is a component that renders its children only if the provided feature is enabled.
  * It is used to display content conditionally based on the features enabled in the app's config.
+ * If no feature is provided, the component will always render its children.
  */
 const FeatureGuard: FC<FeatureGuardProps> = ({ feature, children }) => {
-  const config = getConfig()
-  const hasFeature = config.features.includes(feature)
+  const hasFeature = feature ? config.features.includes(feature) : true
 
   return hasFeature ? <>{children}</> : null
 }
 
-export interface FeatureGuardProps extends Pick<CommonProps, 'children'> {
-  feature: Config['features'][number]
+export interface FeatureGuardProps extends PropsWithChildren {
+  feature?: Config['features'][number]
 }
 
 export default React.memo(FeatureGuard)

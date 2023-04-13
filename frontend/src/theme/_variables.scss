@@ -6,10 +6,11 @@
    */
   --app-palette-white: #FFF;
   --app-palette-black: #0A090C;
-  --app-palette-neutral: #DBD8E9;
-  --app-palette-neutral-light: #F2F1F7;
-  --app-palette-accent: #5C1EAE;
-  --app-palette-accent-light: #8F51E1;
+  --app-palette-brack-light: #3A3546;
+  --app-palette-neutral: #FDFDFD;
+  --app-palette-neutral-light: #f6f6f6;
+  --app-palette-accent: #333333;
+  --app-palette-accent-light: #333333;
   --app-palette-danger: #EF476F;
   --app-palette-success: #40F99B;
   --app-palette-info: #247BA0;
@@ -31,21 +32,21 @@
   --app-text-size-5: clamp(2.07rem, calc(1.65rem + 1.81vw), 3.05rem);
   --app-text-size-6: clamp(2.49rem, calc(1.91rem + 2.45vw), 3.82rem);
 
-  --app-title-font-family: 'Open Sans', sans-serif;
+  --app-title-font-family: 'Ubuntu', sans-serif;
   --app-title-font-weight: 600;
   --app-title-font-spacing: 0;
 
-  --app-text-font-family: 'Open Sans', sans-serif;
+  --app-text-font-family: 'Ubuntu', sans-serif;
   --app-text-font-weight: 400;
   --app-text-font-size: var(--app-typography-size-1);
   --app-text-letter-spacing: 0;
-  --app-text-line-height: 1.2;
+  --app-text-line-height: 1.3;
 
   --app-action-font-family: var(--app-text-font-family);
   --app-action-font-weight: 500;
   --app-action-font-size: var(--app-typography-size-1);
   --app-action-letter-spacing: 0;
-  --app-action-line-height: 1.2;
+  --app-action-line-height: 1.3;
 
   /**
    * --------------------------------------
@@ -68,7 +69,11 @@
    * LAYOUT ELEMENTS
    * --------------------------------------
    */
+  --app-header-height: clamp(3.75rem, calc(3.48rem + 1.16vw), 4.38rem);
+  --app-header-background: rgba(255, 255, 255, 0.6);
 
+  --app-sidebar-width: 620px;
+  --app-sidebar-background: var(--app-palette-white);
 
   /**
    * --------------------------------------
@@ -77,9 +82,9 @@
    */
   --app-side-space: var(--app-space-s);
   --app-max-content-width: 1400px;
-  --app-border-radius: 8px;
+  --app-border-radius: 5px;
 
   --app-easing-fn: ease-in-out;
   --app-animation-duration: 500ms;
-  --app-shadow-s: 0px 4px 6px 0px #0000000D;;
+  --app-shadow-s: 0px 4px 6px 0px #0000000D;
 }

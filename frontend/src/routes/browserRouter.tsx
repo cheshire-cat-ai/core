@@ -1,7 +1,14 @@
 import React from 'react'
 import { createBrowserRouter } from 'react-router-dom'
-import lazyRoute from '@routes/lazyRoute'
 import Scaffold from './Scaffold'
+import routesDescriptor from '@routes/routesDescriptor'
+import ProtectedRoute from '@routes/ProtectedRoute'
+import { AppFeatures } from '@models/AppFeatures'
+
+const Home = React.lazy(() => import('./Home'))
+const Settings = React.lazy(() => import('./Settings'))
+const LangModelProvider = React.lazy(() => import('./LanguageModel'))
+const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
 
 /**
  * Creates and exports the application routes.
@@ -14,12 +21,31 @@ export default createBrowserRouter([
     errorElement: <Scaffold.ErrorPage />,
     children: [
       {
-        path: '/',
-        element: lazyRoute('./Home')
+        path: routesDescriptor.home.path,
+        index: true,
+        element: <Home />
       },
       {
-        path: '/configuration',
-        element: lazyRoute('./Configuration')
+        path: routesDescriptor.settings.path,
+        element: (
+          <ProtectedRoute feature={AppFeatures.Settings}>
+            <Settings />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: routesDescriptor.llm.path,
+            element: <LangModelProvider />
+          }
+        ]
+      },
+      {
+        path: routesDescriptor.plugins.path,
+        element: (
+          <ProtectedRoute feature={AppFeatures.Plugins}>
+            <WorkInProgress />
+          </ProtectedRoute>
+        )
       }
     ]
   }

@@ -8,7 +8,7 @@ import style from './NotificationStack.module.scss'
  * A stateless component used to display  a stack of notifications on the screen.
  */
 const NotificationStack: FC<NotificationStackProps> = ({ notifications, className, ...rest }) => {
-  const classList = clsx(style.notificationStack, className)
+  const classList = clsx(style.notificationStack, notifications.length > 0 && style.hasNotifications, className)
 
   return (
     <div className={classList} {...rest}>

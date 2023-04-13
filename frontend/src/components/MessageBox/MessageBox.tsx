@@ -15,8 +15,10 @@ const MessageBox: FC<MessageBoxProps> = ({ text, sender, className, ...rest }) =
 
   return (
     <article className={classList} {...rest}>
-      {isBot && (<p className={style.label}>Cheshire cat says:</p>)}
-      {text.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
+      {isBot && (<span className={style.label}>😺</span>)}
+      <span className={style.content}>
+        {text.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
+      </span>
     </article>
   )
 }
