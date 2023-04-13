@@ -45,7 +45,8 @@ class RabbitHole:
         if isinstance(file, UploadFile):
 
             # Get mime type of UploadFile
-            content_type = file.content_type
+            # content_type = file.content_type
+            content_type = mimetypes.guess_type(file.filename)[0]
 
             # Get filename
             filename = file.filename
