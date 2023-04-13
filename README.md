@@ -28,57 +28,17 @@ This project is growing fast, refactorings and code changes happens very often, 
 ### Install
 
 You just need `docker` and `docker-compose` installed on your system.
-Clone the repo and cd into it. Now set up your language model.
+Clone the repo:
 
-Create an empty `.env` file. Its content depends on what language model you want to use.
-
-<details><summary>I want to use OpenAI</summary>
-
-### OpenAI configuration
-
-Put in your `.env` file this line:
-
-```
-OPENAI_KEY=<your-openai-key>
-```
-</details>
-
-<details><summary>I want to use HuggingFace</summary>
-
-Cheshire-Cat Loves HuggingFace!
-Put in your `.env` file:
-
-```
-HF_TOKEN=<your-huggingface-token>
-HF_CHECKPOINT=<selected-checkpoint>
+```bash
+git clone https://github.com/pieroit/cheshire-cat.git
 ```
 
-example:
+Enter the created folder:
 
+```bash
+cd cheshire-cat
 ```
-HF_TOKEN=hf_yourtoken
-HF_CHECKPOINT=decapoda-research/llama-13b-hf
-```
-
-If you want to use your HuggingFace Endpoint write in your `.env` file
-```
-HF_TOKEN=<your-huggingface-token>
-HF_ENDPOINT_URL=<your-huggingface-endpoint>
-```
-</details>
-
-<details><summary>I want to use Cohere</summary>
-
-### Cohere configuration
-
-Put in your `.env` file this line:
-
-```
-COHERE_KEY=<your-cohere-key>
-```
-</details>
-
-<br>
 
 After that you can run:
 
@@ -91,12 +51,19 @@ The first time (only) it will take several minutes, as the images occupy a few G
 - Chat with the Cheshire Cat on [localhost:3000](http://localhost:3000).
 - You can also interact via REST API and try out the endpoints on [localhost:1865/docs](http://localhost:1865/docs)
 
+As a first thing, the Cat will ask you to configure your favourite language model.
+It can be done directly via the interface in the [Settings page](http://localhost:3000/settings).
+
+Enjoy the Cat!
+
 When you're done, remember to CTRL+c in the terminal and
 ```
 docker-compose down
 ```
 
 ### Update
+
+From time to time it is a good idea to update the Cat:
 
 ```
 docker-compose down
