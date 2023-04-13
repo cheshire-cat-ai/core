@@ -19,7 +19,7 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 # Getting started
 
 ## Download
-To download the Cheshire Cat just clone the repository on your machine:
+Clone the repository on your machine:
 
 ```bash
 # Clone the repository
@@ -30,18 +30,18 @@ git clone https://github.com/pieroit/cheshire-cat.git
 To run the Cheshire Cat, you need to have `docker` ([instructions](https://docs.docker.com/engine/install/)) and `docker-compose` ([instructions](https://docs.docker.com/compose/install/)) installed on your system.
 
 ## Quickstart
-To have a quick setup and make the Cheshire Cat run using the `gpt3.5-turbo` [OpenAI model](https://platform.openai.com/docs/models/gpt-3-5), do the following:
+For quick setup and make the Cat run using the `gpt3.5-turbo` [OpenAI model](https://platform.openai.com/docs/models/gpt-3-5), do the following:
 
 - Create and API key with `+ Create new secret key` in your OpenAI [personal account](https://platform.openai.com/account/api-keys)
 - Create an `.env` file in the cloned repository
-- Write your key in the `.env` file (`OPENAI_KEY=past-key-here`)
+- Write your API key in the `.env` file (`OPENAI_KEY=past-key-here`)
 - Start the app with `docker-compose up`
 - Chat with the Cheshire Cat on `localhost:3000`.
 - You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
 
 The first time you run the `docker-compose up` command it will take several minutes as docker images occupy some GBs.
 
-Here is a list of commands to achieve the aforementioned steps.
+Here is a list of commands to achieve the aforementioned steps:
 
 ```bash
 # Open the cloned repository
@@ -53,7 +53,7 @@ echo "OPENAI_KEY=paste-key-here" > .env
 # Run docker containers
 docker-compose up
 ```
-When you're done, remember to CTRL+c in the terminal and `docker-compose down`.
+When you're done using the Cat, remember to CTRL+c in the terminal and `docker-compose down`.
 
 ## Update
 As the project is still a work in progress, if you want to update it run the following:
