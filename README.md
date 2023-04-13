@@ -40,6 +40,12 @@ Enter the created folder:
 cd cheshire-cat
 ```
 
+Create an empty `.env` file:
+
+```bash
+touch .env
+```
+
 After that you can run:
 
 ```bash
