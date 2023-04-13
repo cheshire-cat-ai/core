@@ -10,7 +10,7 @@ const config: Config = {
   features: [
     AppFeatures.FileUpload,
     AppFeatures.AudioRecording,
-    //AppFeatures.Settings,
+    AppFeatures.Settings,
     AppFeatures.Plugins
   ],
   endpoints: {

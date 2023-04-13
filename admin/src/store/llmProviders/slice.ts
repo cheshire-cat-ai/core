@@ -50,6 +50,7 @@ const llmProviders = createSlice({
       state.loading = true
     })
     builder.addCase(fetchLanguageModels.fulfilled, (state, action) => {
+
       state.loading = false
       state.data = action.payload
 

@@ -13,14 +13,18 @@ def nlp_get_settings(
     setting_selected_name: str,
     schemas: Dict,
 ):
+    # list of configurable models
+    allowed_configurations = list(schemas.keys())
+
     # retrieve all saved configurations (including currently selected one)
     settings = crud.get_settings_by_category(db, category=setting_factory_category)
 
     # retrieve current selected model (has to be one)
     selected = crud.get_setting_by_name(db, name=setting_selected_name)
-
-    # list of configurable models
-    allowed_configurations = list(schemas.keys())
+    if selected is None:
+        selected_configuration = None
+    else:
+        selected_configuration = selected.value["name"]
 
     return {
         "status": "success",
@@ -28,7 +32,7 @@ def nlp_get_settings(
         "settings": settings,
         "schemas": schemas,
         "allowed_configurations": allowed_configurations,
-        "selected_configuration": selected.value["name"],
+        "selected_configuration": selected_configuration,
     }
 
 

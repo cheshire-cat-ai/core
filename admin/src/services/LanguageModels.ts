@@ -20,7 +20,6 @@ const LanguageModels = Object.freeze({
   },
   setProviderOptions: async (languageModelName: string, settings?: LLMSettings) => {
     const endpoint = config.endpoints.singleLLM.replace(':llm', languageModelName)
-
     return await fetch(endpoint, {
       method: 'PUT',
       headers: {
