@@ -1,6 +1,7 @@
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.utils import log
 from fastapi.responses import JSONResponse
+import mimetypes
 
 router = APIRouter()
 
@@ -24,13 +25,14 @@ async def rabbithole_upload_endpoint(
 
     ccat = request.app.state.ccat
 
-    log(f"Uploaded {file.content_type} down the rabbit hole")
-
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log(f"Uploaded {content_type} down the rabbit hole")
     # list of admitted MIME types
+
     admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
 
     # check if MIME type of uploaded file is supported
-    if file.content_type not in admitted_mime_types:
+    if content_type not in admitted_mime_types:
         return JSONResponse(
             status_code=422,
             content={

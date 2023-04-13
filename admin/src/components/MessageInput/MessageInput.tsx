@@ -112,7 +112,7 @@ const MessageInput: FC<ChatInputProps> = (props) => {
         ref={textAreaRef}
         {...rest}
       />
-      <input type="file" ref={inputRef} accept="text/plain, text/markdown, application/pdf" onChange={onFileUploadChange} />
+      <input type="file" ref={inputRef} accept="text/plain, text/markdown, application/pdf, .md" onChange={onFileUploadChange} />
       <button type="submit" disabled={!value || value.length === 0}>
         <SendIcon />
       </button>
