@@ -5,7 +5,7 @@ import { type LLMSettings } from '@models/LLMSettings'
  * A type that represents a language model provider descriptor
  */
 export interface LLMProviderDescriptor {
-  readonly allowed_llm_configurations: string[]
+  readonly allowed_configurations: string[]
   readonly schemas: Record<string, LLMProviderMetaData>
   readonly selected_configuration: null | string
   readonly settings: Array<{ name: string, value: LLMSettings }>
