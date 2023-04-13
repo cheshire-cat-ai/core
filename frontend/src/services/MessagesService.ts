@@ -1,13 +1,12 @@
 /**
  * This module defines and exports a service that is used to send and receive messages to and from the backend.
- * A service is a singleton object that provides a simple interface for performing backend-related tasks such as sending or receiving data.
+ * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
+ * sending or receiving data.
  */
 
-import getConfig from '../config'
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
-import LogService from '@services/logService'
-
-const config = getConfig()
+import LogService from '@services/LogService'
+import config from '../config'
 
 /**
  * The WebSocket instance

@@ -1,15 +1,35 @@
 .scaffold {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   gap: var(--app-space-s);
-  overflow: hidden;
-  padding: var(--app-side-space);
   background: linear-gradient(180deg, var(--app-palette-neutral) 0%, var(--app-palette-neutral-light) 100%);
 
   .content {
     position: relative;
-    flex: 1;
-    overflow-y: scroll;
+    padding: var(--app-side-space);
+    max-width: var(--app-max-content-width);
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .error {
+    text-align: center;
+
+    header {
+      display: flex;
+      gap: var(--app-space-m);
+      margin-bottom: var(--app-space-m);
+      justify-content: center;
+    }
+
+    h1 {
+      @include typography-title(var(--app-text-size-3));
+    }
+
+    h2 {
+      @include typography-title;
+      color: var(--app-palette-accent);
+    }
   }
 }

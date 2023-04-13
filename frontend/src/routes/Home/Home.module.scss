@@ -1,7 +1,5 @@
 .home {
   position: relative;
-  max-width: 960px;
-  margin: 0 auto;
 
   .messages {
     padding-bottom: calc(var(--app-space-s) + 70px);
@@ -17,7 +15,7 @@
     @include tablet-landscape-view {
       max-width: 960px;
       width: 100%;
-      inset: auto auto var(--app-space-s) auto;
+      left: calc(50% - 480px);
     }
 
     .input {

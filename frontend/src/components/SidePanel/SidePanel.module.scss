@@ -1,0 +1,63 @@
+.slidePanel {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-sidebar-background);
+  position: fixed;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--app-shadow-s);
+  border-top: 1px solid #0000000D;
+  width: 100%;
+
+  @include tablet-landscape-view {
+    width: var(--app-sidebar-width);
+  }
+  max-width: 100%;
+  top: 0;
+  bottom: 0;
+  z-index: 4;
+
+  &.left {
+    left: 0;
+  }
+
+  &.right {
+    right: 0;
+  }
+
+  header {
+    padding: var(--app-side-space);
+    box-shadow: var(--app-shadow-s);
+    height: var(--app-header-height);
+    border-bottom: 1px solid #0000000D;
+    display: flex;
+    align-items: center;
+
+    .headerContent {
+      flex: 1;
+
+      h2 {
+        @include typography-title;
+        margin: 0;
+      }
+    }
+
+    .actions {
+      align-self: flex-end;
+    }
+  }
+
+  .content {
+    padding: var(--app-space-m) var(--app-side-space);
+    flex: 1;
+  }
+
+  footer {
+    padding: var(--app-side-space);
+    height: var(--app-header-height);
+    border-top: 1px solid #0000000D;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: flex-end;
+  }
+}

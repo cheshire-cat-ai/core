@@ -1,0 +1,20 @@
+.wip {
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--app-space-m);
+    align-items: center;
+
+    h1 {
+      @include typography-title(var(--app-text-size-4));
+    }
+  }
+
+  .content {
+    text-align: center;
+
+    p {
+      @include typography-text
+    }
+  }
+}

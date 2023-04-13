@@ -4,8 +4,8 @@
  * It can be an error message, a success message, or a warning message.
  */
 export interface Notification {
-  id: number
-  message: string
-  type?: 'info' | 'success' | 'error'
-  hidden?: boolean
+  readonly id: number
+  readonly message: string
+  readonly type?: 'info' | 'success' | 'error'
+  readonly hidden?: boolean
 }

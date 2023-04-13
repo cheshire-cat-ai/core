@@ -1,5 +1,12 @@
 # Cheshire cat UI 🎨
 
+<!-- PROJECT LOGO -->
+<div align="center">
+  <a href="">
+    <img src="https://cdn-icons-png.flaticon.com/512/3394/3394293.png" alt="Logo" width="80" height="80">
+  </a>
+</div>
+
 > 🐱: Well, well, well, what do we have here?\
 > It appears that you've stumbled upon my UI repository, my dear.\
 > This codebase is none other than the Cheshire cat UI, crafted with the finest React technology. So, come on in and

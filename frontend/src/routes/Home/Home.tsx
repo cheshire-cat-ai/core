@@ -1,13 +1,17 @@
 import React, { type FC, useCallback, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import useSpeechRecognition from 'beautiful-react-hooks/useSpeechRecognition'
+import clsx from 'clsx'
 import DefaultMessagesList from '@components/DefaultMessagesList'
 import MessageList from '@components/MessageList'
 import MessageInput from '@components/MessageInput'
 import LoadingLabel from '@components/LoadingLabel'
 import Alert from '@components/Alert'
+import Page from '@components/Page'
 import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
+import { slideBottomInOUt } from '@utils/animations'
 
 import style from './Home.module.scss'
 
@@ -16,8 +20,8 @@ import style from './Home.module.scss'
  */
 const Home: FC = () => {
   const { messages, dispatchMessage, isSending, error, defaultMessages, isReady } = useMessagesService()
-  const { sendFile, isUploading } = useRabbitHole()
   const { isRecording, transcript, startRecording, stopRecording, isSupported } = useSpeechRecognition()
+  const { sendFile, isUploading } = useRabbitHole()
   const [userMessage, setUserMessage] = useState('')
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
 
@@ -46,7 +50,7 @@ const Home: FC = () => {
   }, [dispatchMessage])
 
   return (
-    <div className={style.home}>
+    <Page variant="narrow" className={style.home}>
       {/* The chat interface is only displayed when the service is ready */}
       {!isReady && (
         <>
@@ -56,11 +60,13 @@ const Home: FC = () => {
       )}
       {isReady && (
         <>
-          {messages.length === 0 && (<DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
-          {messages.length > 0 && (<MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
+          {messages.length === 0 && (
+            <DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
+          {messages.length > 0 && (
+            <MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
         </>
       )}
-      <div className={style.bottomToolbar}>
+      <motion.div className={clsx(style.bottomToolbar)} {...slideBottomInOUt}>
         <MessageInput
           value={userMessage}
           onChange={setUserMessage}
@@ -68,25 +74,30 @@ const Home: FC = () => {
           onSubmit={sendMessage}
           disabled={inputDisabled}
           isUploading={isUploading}
-          placeholder={generatePlaceholder(isSending, isRecording)}
+          placeholder={generatePlaceholder(isSending, isRecording, error)}
           className={style.input}
         />
         {isSupported && (
-          <RecordingButton onRecordingStart={startRecording} onRecordingComplete={stopRecording} disabled={inputDisabled} />
+          <RecordingButton
+            onRecordingStart={startRecording}
+            onRecordingComplete={stopRecording}
+            disabled={inputDisabled}
+          />
         )}
-      </div>
-    </div>
+      </motion.div>
+    </Page>
   )
 }
 
 /**
  * Generates a placeholder for the input based on the current state.
  */
-const generatePlaceholder = (isLoading: boolean, isRecording: boolean) => {
-  if (isLoading) return 'Cheshire cat is thinking...'
-  if (isRecording) return 'Cheshire cat is listening...'
+const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: string) => {
+  if (error) return 'Well, well, well, looks like something has gone amiss'
+  if (isLoading) return 'The enigmatic Cheshire cat is pondering...'
+  if (isRecording) return 'The curious Cheshire cat is all ear...'
 
-  return 'Ask the Cheshire cat...'
+  return 'Ask the Cheshire Cat...'
 }
 
 export default React.memo(Home)

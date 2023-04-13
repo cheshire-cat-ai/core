@@ -1,0 +1,25 @@
+.llmProvider {
+
+  &.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .form button[type="submit"] {
+    display: none;
+    visibility: hidden;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--app-space-s);
+  width: 100%;
+
+  button {
+    flex: 1;
+  }
+}

@@ -12,7 +12,21 @@ const initialState: MessagesState = {
     'Where is the white rabbit?',
     'What is Python?',
     'How do I write my own AI app?',
-    'Does pineapple belong on pizza?'
+    'Does pineapple belong on pizza?',
+    'What is the meaning of life?',
+    'What is the best programming language?',
+    'What is the best pizza topping?',
+    'What is a language model?',
+    'What is a neural network?',
+    'What is a chatbot?',
+    'Is AI capable of creating art?',
+    'What is the best way to learn AI?',
+    'Is it worth learning AI?',
+    'Who is the Cheshire Cat?',
+    'Is Alice in Wonderland a true story?',
+    'Who is the Mad Hatter?',
+    'How do I find my way to Wonderland?',
+    'Is Wonderland a real place?'
   ]
 }
 

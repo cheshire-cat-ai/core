@@ -18,8 +18,8 @@ export const uniqueId = () => {
 
 /**
  * Accepts a value that may be either a ReactElement or a ComponentRenderer and ensures that the corresponding
- * React Element instance is returned. This function is commonly employed by components that accept both ReactElements and
- * ComponentRenderers as props to guarantee that they are handled appropriately.
+ * React Element instance is returned. This function is commonly employed by components that accept both ReactElements
+ * and ComponentRenderers as props to guarantee that they are handled appropriately.
  *
  * Basic Usage:
  *
