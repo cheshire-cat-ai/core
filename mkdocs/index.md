@@ -70,6 +70,13 @@ docker-compose build --no-cache
 # Run docker containers
 docker-compose up
 ```
+
+### Custom code
+
+!!! note
+
+    If you plan to write [custom tools](plugins/plugins.md), remember to start your folders with two underscores to avoid conflict between the git repository and the local one.
+
 Don't forget to give the project a star! ⭐ Thanks again!🙏
 
 [//]: # (## Roadmap)
@@ -88,33 +95,45 @@ Don't forget to give the project a star! ⭐ Thanks again!🙏
 [//]: # (- &#40;surprise!!!&#41; PURR)
 
 [//]: # ()
+
 [//]: # (## Contributing)
 
 [//]: # ()
 [//]: # (If you have a suggestion that would make this better, open an issue and we can reason about it.)
 
+[//]: # ()
 [//]: # (If you want to contribute code, fork the repo and create a pull request.)
 
 [//]: # ()
+[//]: # ()
 [//]: # (1. Try out the Cat)
 
+[//]: # ()
 [//]: # (1. Fork the Project)
 
+[//]: # ()
 [//]: # (2. Create your Feature Branch &#40;`git checkout -b feature/AmazingFeature`&#41;)
 
+[//]: # ()
 [//]: # (3. Commit your Changes &#40;`git commit -m 'Add some AmazingFeature'`&#41;)
 
+[//]: # ()
 [//]: # (4. Push to the Branch &#40;`git push origin feature/AmazingFeature`&#41;)
 
+[//]: # ()
 [//]: # (5. Open a Pull Request &#40;&#40;if it contains lots of code, please discuss it beforehand opening a issue&#41;&#41;)
 
 [//]: # ()
+[//]: # ()
 [//]: # (You can start simply by:)
 
+[//]: # ()
 [//]: # (- Making tutorials and docs)
 
+[//]: # ()
 [//]: # (- Sharing on social media)
 
+[//]: # ()
 [//]: # ()
 [//]: # (Don't forget to give the project a star! ⭐ Thanks again!🙏)
 
