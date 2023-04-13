@@ -24,7 +24,7 @@ class LLMDefault(langchain.llms.base.LLM):
 
     def _call(self, prompt, stop=None):
         # TODO: if AI prefix in the agent changes, this will break
-        return "AI: You did not configure a Language Model. Send a POST request to ... [TODO: instructions here]"
+        return "AI: You did not configure a Language Model. Do it in the settings!"
 
 
 class LLMDefaultConfig(LLMSettings):

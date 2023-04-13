@@ -42,7 +42,8 @@ class MadHatter:
         for t in all_tools:
             t_fix = t[1]  # it was a tuple, the Tool is the second element
             # fix automatic naming for the Tool (will be used in the prompt)
-            t_fix.description = t_fix.description.split(" - ")[1]
+            # if " - " in t_fix.description:
+            #    t_fix.description = t_fix.description.split(" - ")[1] # TODO: show function name and arguments in prompt without repetition and without the cat argument
             # access the cat from any Tool instance (see cat.mad_hatter.decorators)
             t_fix.set_cat_instance(self.ccat)
             all_tools_fixed.append(t_fix)

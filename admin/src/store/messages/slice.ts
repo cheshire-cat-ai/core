@@ -19,6 +19,7 @@ const initialState: MessagesState = {
     'What is a language model?',
     'What is a neural network?',
     'What is a chatbot?',
+    'What time is it?',
     'Is AI capable of creating art?',
     'What is the best way to learn AI?',
     'Is it worth learning AI?',

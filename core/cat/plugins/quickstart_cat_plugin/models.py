@@ -2,17 +2,33 @@ import os
 
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
-
-# from cat.db import crud
-# from cat.utils import log
-# from cat.db.database import get_db_session
+from cat.db import crud
 from cat.mad_hatter.decorators import hook
 
 
 @hook
 def get_language_model(cat):
-    # TODO: load config from DB
+    selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
 
+    if selected_llm is None:
+        # return default LLM
+        llm = llms.LLMDefaultConfig.get_llm_from_config({})
+
+    else:
+        # get LLM factory class
+        selected_llm_class = selected_llm.value["name"]
+        FactoryClass = getattr(llms, selected_llm_class)
+
+        # obtain configuration and instantiate LLM
+        selected_llm_config = crud.get_setting_by_name(
+            next(cat.db()), name=selected_llm_class
+        )
+        llm = FactoryClass.get_llm_from_config(selected_llm_config.value)
+
+    return llm
+
+
+"""
     if "OPENAI_KEY" in os.environ:
         llm = llms.LLMOpenAIChatConfig.get_llm_from_config(
             {
@@ -50,6 +66,7 @@ def get_language_model(cat):
         llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
     return llm
+"""
 
 
 @hook

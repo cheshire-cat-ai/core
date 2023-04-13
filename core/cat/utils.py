@@ -57,15 +57,15 @@ def get_caller_info(skip=2):
 
 def log(msg):
     (package, module, klass, caller, line) = get_caller_info()
-    color_code = "38;5;200"
+    color_code = "38;5;219"
 
     msg_header = "----------------  ^._.^  ----------------"
     msg_body = pformat(msg)
     msg_footer = "-----------------------------------------"
 
     logging.debug(
-        f"\u001b[{color_code}m\033[1;3m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line"
+        f"\u001b[{color_code}m\033[0.1m{msg_header}\u001b[0m => {package}.{module}.py ({klass}.{caller}(...)) @ {line} line"
     )
     for line in msg_body.splitlines():
-        logging.debug(f"\u001b[{color_code}m\033[1;6m{line}\u001b[0m")
-    logging.debug(f"\u001b[{color_code}m\033[1;3m{msg_footer}\u001b[0m")
+        logging.debug(f"\u001b[{color_code}m\033[0.1m{line}")
+    logging.debug(f"\u001b[{color_code}m\033[0.1m{msg_footer}")

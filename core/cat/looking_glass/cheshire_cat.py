@@ -18,29 +18,30 @@ class CheshireCat:
     def __init__(self, verbose=True):
         self.verbose = verbose
 
+        # access to DB
+        self.load_db()
+
         # bootstrap the cat!
         self.bootstrap()
-
-        # Rabbit Hole Instance
-        self.rabbit_hole = RabbitHole()
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
         has to be called whenever LLM, embedder, agent or memory need to be reinstantiated
         (for example an LLM change at runtime)
         """
-        self.load_db()
+
         self.load_plugins()
         self.load_agent()
+
+        # Rabbit Hole Instance
+        self.rabbit_hole = RabbitHole()
 
     def load_db(self):
         # if there is no db, create it
         create_db_and_tables()
 
-        db_session = get_db_session()
-
         # access db from instance
-        self.db_session = db_session
+        self.db = get_db_session
 
     def load_plugins(self):
         # recent conversation # TODO: load from episodic memory latest conversation messages

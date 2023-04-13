@@ -52,11 +52,7 @@ def upsert_llm_setting(
     )
 
     # reload the cat at runtime
-    # ccat = request.app.state.ccat
-    # ccat.bootstrap()
-    # FactoryClass = getattr(llm_factory, languageModelName)
-    # ccat.llm = FactoryClass.get_llm_from_config(payload)
-    # from cat.utils import log
-    # log(ccat.llm)
+    ccat = request.app.state.ccat
+    ccat.bootstrap()
 
     return status
