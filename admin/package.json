@@ -9,7 +9,7 @@
     "dev": "vite --no-open",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx src"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.3",
