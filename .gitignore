@@ -8,7 +8,7 @@ core/venv
 .idea
 
 # file based DBs
-*long_term_memory
+long_term_memory
 *metadata.db
 *metadata-v*.db
 

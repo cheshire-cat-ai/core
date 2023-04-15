@@ -6,12 +6,12 @@ services:
     build:
       context: ./core
     container_name: core
+    depends_on:
+      - vector-memory
     env_file:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
-    expose:
-      - 1865
     ports:
       - 1865:80
     volumes:
@@ -38,4 +38,14 @@ services:
       - 3000:3000
     volumes:
       - ./admin:/app
+    restart: unless-stopped
+
+  vector-memory:
+    image: qdrant/qdrant:v1.1.1
+    container_name: vector-memory
+    expose: 6333
+    #ports:
+    #  - 6333:6333
+    volumes:
+      - ./long_term_memory/vector:/qdrant/storage
     restart: unless-stopped

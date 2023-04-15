@@ -239,10 +239,16 @@ class CheshireCat:
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # get summary and store in memory
+        # get summaries
         summary, intermediate_summaries = self.get_summary_text(docs)
         docs = [summary] + intermediate_summaries + docs
-        RabbitHole.store_documents(ccat=self, docs=docs, source=file.filename)
+
+        # store in memory
+        if isinstance(file, UploadFile):
+            filename = file.filename
+        elif isinstance(file, str):
+            filename = file
+        RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
 
     def __call__(self, user_message):
         if self.verbose:
@@ -315,7 +321,6 @@ class CheshireCat:
                 }
             ],
         )
-        self.vector_store.save_vector_store("episodes", self.memory["episodes"])
 
         # build data structure for output (response and why with memories)
         final_output = {

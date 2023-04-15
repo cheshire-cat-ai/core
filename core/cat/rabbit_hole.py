@@ -2,17 +2,17 @@ import os
 import time
 import tempfile
 import mimetypes
-from typing import Union, List
+from typing import List, Union
 
 from cat.utils import log
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
     UnstructuredFileLoader,
     UnstructuredMarkdownLoader,
 )
+from langchain.docstore.document import Document
 
 
 class RabbitHole:
@@ -44,18 +44,12 @@ class RabbitHole:
             # content_type = file.content_type
             content_type = mimetypes.guess_type(file.filename)[0]
 
-            # Get filename
-            filename = file.filename
-
             # Get file bytes
             file_bytes = file.file.read()
 
         elif isinstance(file, str):
             # Get mime type from file extension
             content_type = mimetypes.guess_type(file)[0]
-
-            # Get filename
-            filename = os.path.basename(file)
 
             # Get file bytes
             with open(file, "rb") as f:
@@ -97,8 +91,7 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
         return docs
 
-
-    @staticmethod # should this method be inside of ccat?
+    @staticmethod  # should this method be inside of ccat?
     def store_documents(ccat, docs: List[Document], source: str) -> None:
         """
         Load a list of Documents in the Cat's declarative memory.
@@ -123,5 +116,4 @@ class RabbitHole:
             log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
             time.sleep(0.1)
 
-        ccat.vector_store.save_vector_store("documents", ccat.memory["documents"])
         log("Done uploading")  # TODO: notify client
