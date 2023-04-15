@@ -103,7 +103,7 @@ class RabbitHole:
 
         # classic embed
         for d, doc in enumerate(docs):
-            _ = ccat.memory["documents"].add_texts(
+            _ = ccat.memory.vectors.declarative.add_texts(
                 [doc.page_content],
                 [
                     {

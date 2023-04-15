@@ -21,15 +21,15 @@ async def recall_memories_from_text(
 
     ccat = request.app.state.ccat
 
-    memories = ccat.recall_memories_from_text(text=text, collection="episodes", k=k)
+    episodes = ccat.recall_memories_from_text(text=text, collection="episodes", k=k)
     documents = ccat.recall_memories_from_text(text=text, collection="documents", k=k)
 
-    memories = [dict(m[0]) | {"score": float(m[1])} for m in memories]
+    episodes = [dict(m[0]) | {"score": float(m[1])} for m in episodes]
     documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
 
     return (
         {
-            "memories": memories,
+            "episodes": episodes,
             "documents": documents,
         },
     )

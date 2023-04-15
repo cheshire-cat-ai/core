@@ -1,14 +1,15 @@
 import time
+import traceback
 from typing import Union
 
 import langchain
 from fastapi import UploadFile
 from cat.utils import log
-from cat.memory import VectorStore, VectorMemoryConfig
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain.chains.summarize import load_summarize_chain
+from cat.memory.long_term_memory import LongTermMemory
 from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
 
@@ -31,6 +32,8 @@ class CheshireCat:
         """
 
         self.load_plugins()
+        self.load_natural_language()
+        self.load_memory()
         self.load_agent()
 
         # Rabbit Hole Instance
@@ -43,13 +46,7 @@ class CheshireCat:
         # access db from instance
         self.db = get_db_session
 
-    def load_plugins(self):
-        # recent conversation # TODO: load from episodic memory latest conversation messages
-        self.history = ""
-
-        # Load plugin system
-        self.mad_hatter = MadHatter(self)
-
+    def load_natural_language(self):
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
@@ -57,17 +54,6 @@ class CheshireCat:
         # Prompts
         self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")
         self.suffix_prompt = self.mad_hatter.execute_hook("get_main_prompt_suffix")
-
-        # Memory
-        self.vector_store = VectorStore(VectorMemoryConfig(verbose=self.verbose))
-        episodic_memory = self.vector_store.get_vector_store(
-            "episodes", embedder=self.embedder
-        )
-        declarative_memory = self.vector_store.get_vector_store(
-            "documents", embedder=self.embedder
-        )
-        self.memory = {"episodes": episodic_memory, "documents": declarative_memory}
-        # TODO: don't know if it is better to use different collections or just different metadata
 
         # HyDE chain
         hypothesis_prompt = langchain.PromptTemplate(
@@ -110,6 +96,18 @@ class CheshireCat:
             "agent_scratchpad",
         ]
 
+    def load_memory(self):
+        # Memory
+        vector_memory_config = {"embedder": self.embedder, "verbose": True}
+        self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
+
+    def load_plugins(self):
+        # recent conversation # TODO: load from episodic memory latest conversation messages
+        self.history = ""
+
+        # Load plugin system
+        self.mad_hatter = MadHatter(self)
+
     def load_agent(self):
         self.agent_manager = AgentManager(
             llm=self.llm,
@@ -125,32 +123,6 @@ class CheshireCat:
             input_variables=self.input_variables,
             return_intermediate_steps=True,
         )
-
-    # retrieve similar memories from text
-    def recall_memories_from_text(self, text=None, collection=None, metadata={}, k=5):
-        # retrieve memories
-        memories = self.memory[collection].similarity_search_with_score(query=text, k=k)
-
-        # TODO: filter by metadata
-        # With FAISS we need to first recall a lot of vectors from memory and filter afterwards.
-        # With Qdrant we can use filters directly in the query
-
-        return memories
-
-    # retrieve similar memories from embedding
-    def recall_memories_from_embedding(
-        self, embedding=None, collection=None, metadata={}, k=5
-    ):
-        # recall from memory
-        memories = self.memory[collection].similarity_search_with_score_by_vector(
-            embedding=embedding, k=k
-        )
-
-        # TODO: filter by metadata
-        # With FAISS we need to first recall a lot of vectors from memory and filter afterwards.
-        # With Qdrant we can use filters directly in the query
-
-        return memories
 
     # TODO: this should be a hook
     def format_memories_for_prompt(self, memory_docs, return_format=str):
@@ -258,21 +230,28 @@ class CheshireCat:
 
         try:
             # recall relevant memories (episodic)
-            episodic_memory_content = self.recall_memories_from_embedding(
-                embedding=hyde_embedding, collection="episodes"
+            episodic_memory_content = (
+                self.memory.vectors.episodic.recall_memories_from_embedding(
+                    embedding=hyde_embedding
+                )
             )
+            log(episodic_memory_content)
             episodic_memory_formatted_content = self.format_memories_for_prompt(
                 episodic_memory_content
             )
 
             # recall relevant memories (declarative)
-            declarative_memory_content = self.recall_memories_from_embedding(
-                embedding=hyde_embedding, collection="documents"
+            declarative_memory_content = (
+                self.memory.vectors.declarative.recall_memories_from_embedding(
+                    embedding=hyde_embedding
+                )
             )
             declarative_memory_formatted_content = self.format_memories_for_prompt(
                 declarative_memory_content
             )
-        except Exception:
+        except Exception as e:
+            log(e)
+            traceback.print_exc(e)
             return {
                 "error": False,
                 # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
@@ -311,7 +290,7 @@ class CheshireCat:
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks (not raw dialog, but summarization)
-        _ = self.memory["episodes"].add_texts(
+        _ = self.memory.vectors.episodic.add_texts(
             [user_message],
             [
                 {
