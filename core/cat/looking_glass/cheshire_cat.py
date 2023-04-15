@@ -3,10 +3,10 @@ import traceback
 from typing import Union
 
 import langchain
-from fastapi import UploadFile
 from cat.utils import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
+from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain.chains.summarize import load_summarize_chain
 from cat.memory.long_term_memory import LongTermMemory
@@ -216,10 +216,10 @@ class CheshireCat:
         docs = [summary] + intermediate_summaries + docs
 
         # store in memory
-        if isinstance(file, UploadFile):
-            filename = file.filename
-        elif isinstance(file, str):
+        if isinstance(file, str):
             filename = file
+        else:
+            filename = file.filename
         RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
 
     def __call__(self, user_message):
@@ -307,13 +307,18 @@ class CheshireCat:
             "content": cat_message["output"],
             "why": {
                 **cat_message,
-                "episodic_memory": [
-                    dict(d[0]) | {"score": float(d[1])} for d in episodic_memory_content
-                ],
-                "declarative_memory": [
-                    dict(d[0]) | {"score": float(d[1])}
-                    for d in declarative_memory_content
-                ],
+                "memory": {
+                    "vectors": {
+                        "episodic": [
+                            dict(d[0]) | {"score": float(d[1])}
+                            for d in episodic_memory_content
+                        ],
+                        "declarative": [
+                            dict(d[0]) | {"score": float(d[1])}
+                            for d in declarative_memory_content
+                        ],
+                    }
+                },
             },
         }
 

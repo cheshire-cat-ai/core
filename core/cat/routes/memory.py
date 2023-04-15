@@ -20,9 +20,10 @@ async def recall_memories_from_text(
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
 
-    episodes = ccat.recall_memories_from_text(text=text, collection="episodes", k=k)
-    documents = ccat.recall_memories_from_text(text=text, collection="documents", k=k)
+    episodes = vector_memory.episodic.recall_memories_from_text(text=text, k=k)
+    documents = vector_memory.declarative.recall_memories_from_text(text=text, k=k)
 
     episodes = [dict(m[0]) | {"score": float(m[1])} for m in episodes]
     documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]

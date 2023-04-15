@@ -1,7 +1,8 @@
+import mimetypes
+
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.utils import log
 from fastapi.responses import JSONResponse
-import mimetypes
 
 router = APIRouter()
 
