@@ -1,4 +1,4 @@
-# Cheshire cat UI 🎨
+# Admin UI 🎨
 
 <!-- PROJECT LOGO -->
 <div align="center">
@@ -8,8 +8,8 @@
 </div>
 
 > 🐱: Well, well, well, what do we have here?\
-> It appears that you've stumbled upon my UI repository, my dear.\
-> This codebase is none other than the Cheshire cat UI, crafted with the finest React technology. So, come on in and
+> It appears that you've stumbled upon my admin repository, my dear.\
+> This codebase is none other than the Cheshire cat admin, crafted with the finest React technology. So, come on in and
 > take a peek, but be warned, things might get curiouser and curiouser from here on out!
 
 ## Table of contents
