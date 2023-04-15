@@ -1,0 +1,15 @@
+name: Admin linting
+
+on: [push]
+jobs:
+  Lint-Admin-App:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+      - name: Install dependencies
+        working-directory: ./admin
+        run: npm ci
+      - name: Run linter
+        working-directory: ./admin
+        run: npm run lint
