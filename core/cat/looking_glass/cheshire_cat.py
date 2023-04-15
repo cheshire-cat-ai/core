@@ -234,10 +234,15 @@ class CheshireCat:
         :param chunk_overlap: number of overlapping characters between consecutive chunks
         """
 
-        # Load the file in the cat memory
-        self.rabbit_hole.ingest_file(
-            self, file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        # split file into a list of docs
+        docs = RabbitHole.file_to_docs(
+            file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
+
+        # get summary and store in memory
+        summary, intermediate_summaries = self.get_summary_text(docs)
+        docs = [summary] + intermediate_summaries + docs
+        RabbitHole.store_documents(ccat=self, docs=docs, source=file.filename)
 
     def __call__(self, user_message):
         if self.verbose:

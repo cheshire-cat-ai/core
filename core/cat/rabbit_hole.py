@@ -2,10 +2,11 @@ import os
 import time
 import tempfile
 import mimetypes
-from typing import Union
+from typing import Union, List
 
 from cat.utils import log
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.docstore.document import Document
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
@@ -18,18 +19,15 @@ class RabbitHole:
     def __init__(self):
         pass
 
-    # This is not actually a class method, better to make a function or should it be decorated with @staticmethod?
-    def ingest_file(
-        self,
-        ccat,  # Type declaration removed as it raise a circular import error
+    @staticmethod
+    def file_to_docs(
         file: Union[str, UploadFile],
         chunk_size: int = 400,
         chunk_overlap: int = 100,
-    ):
+    ) -> List[Document]:
         """
-        Send a file down to the RabbitHole and load the file in the Cat's declarative memory.
+        Parse a file and chunk it to a list of Documents.
         The file can either be ingested from the web GUI or using the Cat *send_file_in_rabbit_hole* method.
-        :param ccat: instance of the CheshireCat object
         :param file: absolute path of the file or UploadFile if ingested from the GUI
         :param chunk_size: number of characters the text is split in
         :param chunk_overlap: number of overlapping characters between consecutive chunks
@@ -97,17 +95,17 @@ class RabbitHole:
 
         # remove short texts (page numbers, isolated words, etc.)
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
+        return docs
 
-        log(f"Doing iterative summarization over {len(docs)} chunks")
 
-        # iterative summarization
-        final_summary, intermediate_summaries = ccat.get_summary_text(docs)
-
-        # we store in memory both original text chunks, intermediate summaries and final summary
-        docs = [final_summary] + intermediate_summaries + docs
-
-        log(docs)
-
+    @staticmethod # should this method be inside of ccat?
+    def store_documents(ccat, docs: List[Document], source: str) -> None:
+        """
+        Load a list of Documents in the Cat's declarative memory.
+        :param ccat: reference to the cat instance
+        :param docs: a list of documents to store in memory
+        :param source: a string representing the source, either the file name or the website URL
+        """
         log(f"Preparing to memorize {len(docs)} vectors")
 
         # classic embed
@@ -116,7 +114,7 @@ class RabbitHole:
                 [doc.page_content],
                 [
                     {
-                        "source": filename,
+                        "source": source,
                         "when": time.time(),
                         "text": doc.page_content,
                     }
@@ -126,5 +124,4 @@ class RabbitHole:
             time.sleep(0.1)
 
         ccat.vector_store.save_vector_store("documents", ccat.memory["documents"])
-
         log("Done uploading")  # TODO: notify client
