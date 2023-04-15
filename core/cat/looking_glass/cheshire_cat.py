@@ -192,7 +192,7 @@ class CheshireCat:
         # return root summary and all intermediate summaries
         return all_summaries[0], all_summaries[1:]
 
-    def send_file_in_rabbit_hole(
+    async def send_file_in_rabbit_hole(
         self,
         file: Union[str, UploadFile],
         chunk_size: int = 400,
@@ -220,7 +220,7 @@ class CheshireCat:
             filename = file
         else:
             filename = file.filename
-        RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
+        await RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
 
     def __call__(self, user_message):
         if self.verbose:

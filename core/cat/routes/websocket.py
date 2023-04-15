@@ -12,6 +12,7 @@ async def websocket_endpoint(websocket: WebSocket):
     ccat = websocket.app.state.ccat
 
     await websocket.accept()
+    ccat.websocket = websocket
 
     try:
         while True:
