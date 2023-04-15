@@ -1,4 +1,5 @@
 from os import path
+import json
 import glob
 import importlib
 from inspect import getmembers, isfunction  # , signature
@@ -33,17 +34,19 @@ class MadHatter:
             py_files_path = path.join(folder, "*.py")
             py_files = glob.glob(py_files_path, recursive=True) 
             
-            all_plugins.append(self.get_plugin_metadata(folder))
+            # in order to consider it a plugin makes sure there are py files inside the plugin directory
+            if (len(py_files) > 0):
+                all_plugins.append(self.get_plugin_metadata(folder))
 
-            for py_file in py_files:
-                plugin_name = py_file.replace("/", ".").replace(
-                    ".py", ""
-                )  # this is UGLY I know. I'm sorry
-                
-                plugin_module = importlib.import_module(plugin_name)
-                all_hooks[plugin_name] = dict(getmembers(plugin_module, self.is_cat_hook))
-                all_tools += getmembers(plugin_module, self.is_cat_tool)
-        
+                for py_file in py_files:
+                    plugin_name = py_file.replace("/", ".").replace(
+                        ".py", ""
+                    )  # this is UGLY I know. I'm sorry
+                    
+                    plugin_module = importlib.import_module(plugin_name)
+                    all_hooks[plugin_name] = dict(getmembers(plugin_module, self.is_cat_hook))
+                    all_tools += getmembers(plugin_module, self.is_cat_tool)
+            
         
         log("Loaded plugins:")
         log(all_plugins)
@@ -68,12 +71,25 @@ class MadHatter:
     # Tries to load the plugin metadata from the provided plugin folder
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
-        plugin_json_metadata_file = path.join(plugin_folder, "plugin.json")
+        plugin_json_metadata_file_path = path.join(plugin_folder, "plugin.json")
         meta = { "id": plugin_id }
+        
+        if(path.isfile(plugin_json_metadata_file_path)):
+            try:
+                json_file = open(plugin_json_metadata_file_path)
+                json_file_data = json.load(json_file)
+                
+                meta["name"] = json_file_data["name"]
+                meta["description"] = json_file_data["description"]
+                
+                json_file.close()
 
-        if(not path.isfile(plugin_json_metadata_file)):
-            meta["name"] = to_camel_case(plugin_id)
-            meta["description"] = None
+                return meta
+            except:
+                log(f'Error loading plugin {plugin_folder} metadata, defaulting to generated values')
+        
+        meta["name"] = to_camel_case(plugin_id)
+        meta["description"] = None
 
         return meta
 
