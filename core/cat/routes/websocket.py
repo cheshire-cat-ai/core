@@ -12,7 +12,6 @@ async def websocket_endpoint(websocket: WebSocket):
     ccat = websocket.app.state.ccat
 
     await websocket.accept()
-    ccat.websocket = websocket
 
     try:
         while True:
@@ -26,6 +25,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
             # send output to user
             await websocket.send_json(cat_message)
+
+            # chat notifications (i.e. finished uploading)
+            if len(ccat.web_socket_notifications) > 0:
+                notification = ccat.web_socket_notifications[-1]
+                ccat.web_socket_notifications = ccat.web_socket_notifications[:-1]
+                await websocket.send_json(notification)
 
     except Exception as e:  # WebSocketDisconnect as e:
         log(e)

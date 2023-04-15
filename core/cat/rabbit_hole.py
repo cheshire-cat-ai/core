@@ -92,7 +92,7 @@ class RabbitHole:
         return docs
 
     @staticmethod  # should this method be inside of ccat?
-    async def store_documents(ccat, docs: List[Document], source: str) -> None:
+    def store_documents(ccat, docs: List[Document], source: str) -> None:
         """
         Load a list of Documents in the Cat's declarative memory.
         :param ccat: reference to the cat instance
@@ -117,7 +117,7 @@ class RabbitHole:
             time.sleep(0.1)
 
         # notify client
-        await ccat.websocket.send_json(
+        ccat.web_socket_notifications.append(
             {
                 "error": False,
                 "content": f"Finished reading {source}, I made {len(docs)} thoughts on it.",

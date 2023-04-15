@@ -25,6 +25,10 @@ class CheshireCat:
         # bootstrap the cat!
         self.bootstrap()
 
+        # queue of cat messages not directly related to last user input
+        # i.e. finished uploading a file
+        self.web_socket_notifications = []
+
     def bootstrap(self):
         """This method is called when the cat is instantiated and
         has to be called whenever LLM, embedder, agent or memory need to be reinstantiated
@@ -192,7 +196,7 @@ class CheshireCat:
         # return root summary and all intermediate summaries
         return all_summaries[0], all_summaries[1:]
 
-    async def send_file_in_rabbit_hole(
+    def send_file_in_rabbit_hole(
         self,
         file: Union[str, UploadFile],
         chunk_size: int = 400,
@@ -220,7 +224,7 @@ class CheshireCat:
             filename = file
         else:
             filename = file.filename
-        await RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
+        RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
 
     def __call__(self, user_message):
         if self.verbose:
