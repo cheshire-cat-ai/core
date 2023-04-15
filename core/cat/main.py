@@ -2,7 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
-from cat.routes import base, memory, upload, websocket
+from cat.routes import base, memory, plugin, upload, websocket
 from cat.api_auth import check_api_key
 from fastapi.responses import JSONResponse
 from cat.routes.openapi import get_openapi_configuration_function
@@ -51,6 +51,7 @@ cheshire_cat_api.include_router(
 cheshire_cat_api.include_router(
     embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder"
 )
+cheshire_cat_api.include_router(plugin.router, tags=["Plugins"], prefix="/plugin")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
 cheshire_cat_api.include_router(
     upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"
