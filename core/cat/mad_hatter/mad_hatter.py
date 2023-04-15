@@ -1,9 +1,11 @@
 import glob
+import json
 import importlib
+from os import path
 from inspect import getmembers, isfunction  # , signature
 
 import langchain
-from cat.utils import log
+from cat.utils import log, to_camel_case
 
 
 # This class is responsible for plugins functionality:
@@ -18,21 +20,37 @@ class MadHatter:
 
     def __init__(self, ccat):
         self.ccat = ccat
-        self.hooks, self.tools = self.find_plugins()
+        self.hooks, self.tools, self.plugins = self.find_plugins()
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
-        py_files = glob.glob("cat/plugins/**/*.py", recursive=True)
+        plugin_folders = glob.glob("cat/plugins/*")
 
+        all_plugins = []
         all_hooks = {}
         all_tools = []
-        for py_file in py_files:
-            plugin_name = py_file.replace("/", ".").replace(
-                ".py", ""
-            )  # this is UGLY I know. I'm sorry
-            plugin_module = importlib.import_module(plugin_name)
-            all_hooks[plugin_name] = dict(getmembers(plugin_module, self.is_cat_hook))
-            all_tools += getmembers(plugin_module, self.is_cat_tool)
+
+        for folder in plugin_folders:
+            py_files_path = path.join(folder, "*.py")
+            py_files = glob.glob(py_files_path, recursive=True)
+
+            # in order to consider it a plugin makes sure there are py files inside the plugin directory
+            if len(py_files) > 0:
+                all_plugins.append(self.get_plugin_metadata(folder))
+
+                for py_file in py_files:
+                    plugin_name = py_file.replace("/", ".").replace(
+                        ".py", ""
+                    )  # this is UGLY I know. I'm sorry
+
+                    plugin_module = importlib.import_module(plugin_name)
+                    all_hooks[plugin_name] = dict(
+                        getmembers(plugin_module, self.is_cat_hook)
+                    )
+                    all_tools += getmembers(plugin_module, self.is_cat_tool)
+
+        log("Loaded plugins:")
+        log(all_plugins)
 
         log("Loaded hooks:")
         log(all_hooks)
@@ -49,8 +67,39 @@ class MadHatter:
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed)
 
-        # TODO: sort plugins by priority
-        return all_hooks, all_tools_fixed
+        return all_hooks, all_tools_fixed, all_plugins
+
+    # Tries to load the plugin metadata from the provided plugin folder
+    def get_plugin_metadata(self, plugin_folder: str):
+        plugin_id = path.basename(plugin_folder)
+        plugin_json_metadata_file_name = "plugin.json"
+        plugin_json_metadata_file_path = path.join(
+            plugin_folder, plugin_json_metadata_file_name
+        )
+        meta = {"id": plugin_id}
+
+        if path.isfile(plugin_json_metadata_file_path):
+            try:
+                json_file = open(plugin_json_metadata_file_path)
+                json_file_data = json.load(json_file)
+
+                meta["name"] = json_file_data["name"]
+                meta["description"] = json_file_data["description"]
+
+                json_file.close()
+
+                return meta
+            except:
+                log(
+                    f"Error loading plugin {plugin_folder} metadata, defaulting to generated values"
+                )
+
+        meta["name"] = to_camel_case(plugin_id)
+        meta[
+            "description"
+        ] = f"Description not found for this plugin. Please create a `{plugin_json_metadata_file_name}` in the plugin folder."
+
+        return meta
 
     # a plugin function has to be decorated with @hook (which returns a function named "cat_function_wrapper")
     def is_cat_hook(self, obj):

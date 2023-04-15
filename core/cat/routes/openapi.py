@@ -24,6 +24,15 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
         }
         if not API_KEY:
             openapi_schema["components"]["securitySchemes"] = None
+
+            # from cat.utils import log
+            # paths = openapi_schema["paths"]
+            # for _, path in paths.items():
+            #    for __, verb in path.items():
+            #        log(verb)
+            #        verb["security"] = None #[{'APIKeyHeader': []}]
+            #        log(verb )'''
+
             openapi_schema["paths"]["/"]["get"]["security"] = None
             openapi_schema["paths"]["/settings/"]["get"]["security"] = None
             openapi_schema["paths"]["/settings/"]["post"]["security"] = None
@@ -43,11 +52,7 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
             openapi_schema["paths"]["/memory/recall/"]["get"]["security"] = None
             openapi_schema["paths"]["/memory/{memory_id}/"]["delete"]["security"] = None
             openapi_schema["paths"]["/rabbithole/"]["post"]["security"] = None
-        # Defines preconfigured examples for swagger
-        # This example set parameter of /settings/ get: 'limit' to 3, page to 2 and search to "XYZ"
-        # openapi_schema["paths"]["/settings/"]["get"]["parameters"][0]["example"] = 3
-        # openapi_schema["paths"]["/settings/"]["get"]["parameters"][1]["example"] = 2
-        # openapi_schema["paths"]["/settings/"]["get"]["parameters"][2]["example"] = "XYZ"
+
         cheshire_cat_api.openapi_schema = openapi_schema
         return cheshire_cat_api.openapi_schema
 
