@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import RabbitHoleService from '@services/RabbitHole'
+import RabbitHoleService from '@services/RabbitHoleService'
 import { useDispatch, useSelector } from 'react-redux'
 import { setError, setResponse, startSending } from '@store/fileUploader/slice'
 import {

@@ -3,22 +3,21 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { type LLMProviderDescriptor } from '@models/LLMProviderDescriptor'
+import { type SettingsRecord } from '@models/JSONSchemaBasedSettings'
 import { toJSON } from '@utils/commons'
-import { type LLMSettings } from '@models/LLMSettings'
 import config from '../config'
+import { type LanguageModelDescriptor } from '@models/LanguageModelDescriptor'
 
 /*
- * This is a service that is used to send files down to the rabbit hole.
- * Meaning this service sends files to the backend.
+ * TODO: document this
  */
-const LanguageModels = Object.freeze({
+const LanguageModelsService = Object.freeze({
   getProviders: async () => {
     const endpoint = config.endpoints.allLLM
 
-    return await fetch(endpoint).then<LLMProviderDescriptor>(toJSON)
+    return await fetch(endpoint).then<LanguageModelDescriptor>(toJSON)
   },
-  setProviderOptions: async (languageModelName: string, settings?: LLMSettings) => {
+  setProviderOptions: async (languageModelName: string, settings?: SettingsRecord) => {
     const endpoint = config.endpoints.singleLLM.replace(':llm', languageModelName)
     return await fetch(endpoint, {
       method: 'PUT',
@@ -31,4 +30,4 @@ const LanguageModels = Object.freeze({
   }
 })
 
-export default LanguageModels
+export default LanguageModelsService

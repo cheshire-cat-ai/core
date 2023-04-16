@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import { type LLMProvidersState } from '@store/llmProviders/types'
-import { type LLMProviderMetaData } from '@models/LLMProviderDescriptor'
-import LanguageModels from '@services/LanguageModels'
-import { type LLMSettings } from '@models/LLMSettings'
+import { type LanguageModelsState } from '@store/languageModels/types'
+import LanguageModelsService from '@services/LanguageModelsService'
 import { toJSON } from '@utils/commons'
+import { type SettingsRecord } from '@models/JSONSchemaBasedSettings'
+import { type LanguageModelMetadata } from '@models/LanguageModelDescriptor'
 
-const initialState: LLMProvidersState = {
+const initialState: LanguageModelsState = {
   loading: false,
   updating: false,
   settings: {},
@@ -15,32 +15,32 @@ const initialState: LLMProvidersState = {
 /**
  * Async thunk that fetches the available language models from the LanguageModels service.
  */
-export const fetchLanguageModels = createAsyncThunk('llmProviders/fetchAll', LanguageModels.getProviders)
+export const fetchLanguageModels = createAsyncThunk('languageModels/fetchAll', LanguageModelsService.getProviders)
 
 /**
  * Async thunk that updates the settings of a language model using the LanguageModels service.
  */
 export const updateLanguageModelSettings = createAsyncThunk(
-  'llmProviders/updateOptions',
-  (options: { name: string, settings: LLMSettings }) => {
+  'languageModels/updateOptions',
+  (options: { name: string, settings: SettingsRecord }) => {
     const { name, settings } = options
 
-    return LanguageModels.setProviderOptions(name, settings).then(toJSON)
+    return LanguageModelsService.setProviderOptions(name, settings).then(toJSON)
   }
 )
 
 /**
- * The 'llmProviders' slice of the redux store.
+ * The 'languageModels' slice of the redux store.
  * It contains the state of all the available language models.
  */
-const llmProviders = createSlice({
-  name: 'llmProviders',
+const languageModels = createSlice({
+  name: 'languageModels',
   initialState,
   reducers: {
-    setSelectedLLMProvider: (state, action: PayloadAction<LLMProviderMetaData['languageModelName']>) => {
+    setSelectedLLMProvider: (state, action: PayloadAction<LanguageModelMetadata['languageModelName']>) => {
       state.selected = action.payload
     },
-    setLLMSettings: (state, action: PayloadAction<{ name: string, settings: LLMSettings }>) => {
+    setLLMSettings: (state, action: PayloadAction<{ name: string, settings: SettingsRecord }>) => {
       const { name, settings } = action.payload
 
       state.settings[name] = settings
@@ -50,7 +50,6 @@ const llmProviders = createSlice({
     builder.addCase(fetchLanguageModels.pending, (state) => {
       state.loading = true
     })
-
     builder.addCase(fetchLanguageModels.fulfilled, (state, action) => {
       state.loading = false
       state.data = action.payload
@@ -58,13 +57,12 @@ const llmProviders = createSlice({
       state.selected = state.data.selected_configuration ?? Object.values(action.payload.schemas)[0].languageModelName
       state.settings = state.data.settings.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {})
     })
-
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
       state.error = action.error.message
     })
   }
 })
 
-export const { setSelectedLLMProvider, setLLMSettings } = llmProviders.actions
+export const { setSelectedLLMProvider, setLLMSettings } = languageModels.actions
 
-export default llmProviders.reducer
+export default languageModels.reducer

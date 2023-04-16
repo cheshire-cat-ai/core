@@ -5,28 +5,28 @@ import {
   setLLMSettings,
   setSelectedLLMProvider,
   updateLanguageModelSettings
-} from '@store/llmProviders/slice'
+} from '@store/languageModels/slice'
 import { type AppDispatch } from '@store/index'
 import {
   selectAllAvailableProviders,
-  selectCurrentLLMProvider,
+  selectCurrentLanguageModel,
   selectCurrentProviderSchema,
-  selectCurrentProviderSettings,
-  selectLLMProvidersError,
-  selectLLMProvidersIsLoading
-} from '@store/llmProviders/selector'
-import { type LLMSettings } from '@models/LLMSettings'
+  selectCurrentLanguageModelSettings,
+  selectLanguageModelsError,
+  selectLanguageModelsLoading
+} from '@store/languageModels/selector'
+import { type SettingsRecord } from '@models/JSONSchemaBasedSettings'
 
 /**
  * A custom hook that returns the LLM providers state and a function to fetch the LLM providers.
  */
 const useLLMProviders = () => {
-  const selected = useSelector(selectCurrentLLMProvider)
-  const isLoading = useSelector(selectLLMProvidersIsLoading)
+  const selected = useSelector(selectCurrentLanguageModel)
+  const isLoading = useSelector(selectLanguageModelsLoading)
   const providers = useSelector(selectAllAvailableProviders)
   const schema = useSelector(selectCurrentProviderSchema)
-  const settings = useSelector(selectCurrentProviderSettings)
-  const error = useSelector(selectLLMProvidersError)
+  const settings = useSelector(selectCurrentLanguageModelSettings)
+  const error = useSelector(selectLanguageModelsError)
   const dispatch = useDispatch<AppDispatch>()
 
   const requireProviders = useCallback(() => {
@@ -43,7 +43,7 @@ const useLLMProviders = () => {
     }
   }, [dispatch, selected, settings])
 
-  const setCurrentProviderSettings = useCallback((nextSettings: LLMSettings) => {
+  const setCurrentProviderSettings = useCallback((nextSettings: SettingsRecord) => {
     if (nextSettings && selected) {
       return dispatch(setLLMSettings({ name: selected, settings: nextSettings }))
     }

@@ -22,6 +22,7 @@ const config: Config = {
     rabbitHole: `http://${CORE_HOST}:${CORE_PORT}/rabbithole`,
     allLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
     singleLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/:llm`,
+    allEmbedders: `http://${CORE_HOST}:${CORE_PORT}/settings/embedder/`,
     plugins: `http://${CORE_HOST}:${CORE_PORT}/plugins/`
   }
 }
@@ -34,6 +35,7 @@ export interface Config {
     readonly chat: string
     readonly rabbitHole: string
     readonly allLLM: string
+    readonly allEmbedders: string
     readonly singleLLM: string
     readonly plugins: string
   }

@@ -9,14 +9,14 @@ import useLLMProviders from '@hooks/useLLMProviders'
 import SchemaForm from '@components/SchemaForm'
 import useNotifications from '@hooks/useNotifications'
 import routesDescriptor from '@routes/routesDescriptor'
-
-import style from './LanguageModel.module.scss'
 import { uniqueId } from '@utils/commons'
+
+import style from './LanguageModels.module.scss'
 
 /**
  * Language Model configuration side panel
  */
-const LanguageModel: FC = () => {
+const LanguageModels: FC = () => {
   const {
     providers, error, isLoading, selectProvider, selected, schema, requireProviders,
     setCurrentProviderSettings, settings, updateProviderSettings
@@ -61,7 +61,7 @@ const LanguageModel: FC = () => {
 
   return (
     <SidePanel active title={title} onClose={handleOnClose} position="right" FooterRenderer={Footer}>
-      <div className={clsx(style.llmProvider, isLoading && style.loading)}>
+      <div className={clsx(style.llm, isLoading && style.loading)}>
         {isLoading && <Spinner />}
         {error && <Alert variant="error">{error}</Alert>}
         {!isLoading && !error && providers && (
@@ -93,4 +93,4 @@ const LanguageModel: FC = () => {
   )
 }
 
-export default LanguageModel
+export default LanguageModels

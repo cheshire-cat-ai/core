@@ -1,5 +1,5 @@
 import { type AsyncState } from '@models/commons'
-import { type RabbitHoleServiceResponse } from '@services/RabbitHole'
+import { type RabbitHoleServiceResponse } from '@services/RabbitHoleService'
 
 /**
  * Defines the structure of the redux 'fileUploader' state.

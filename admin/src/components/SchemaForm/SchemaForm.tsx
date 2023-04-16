@@ -3,8 +3,8 @@ import clsx from 'clsx'
 import validator from '@rjsf/validator-ajv8'
 import { type FormProps, type IChangeEvent } from '@rjsf/core'
 import Form from '@rjsf/antd'
-import { type JSONSchema } from '@models/JSONSchema'
 import { type CommonProps } from '@models/commons'
+import { type JSONSchema } from '@models/JSONSchemaBasedSettings'
 
 import style from './SchemaForm.module.scss'
 
