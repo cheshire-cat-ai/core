@@ -2,7 +2,6 @@
 
 
 ## What is this?
-
 If you want to build a custom AI on top of a language model, the Cat can help you:
 
 - Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
@@ -30,14 +29,14 @@ git clone https://github.com/pieroit/cheshire-cat.git
 To run the Cheshire Cat, you need to have `docker` ([instructions](https://docs.docker.com/engine/install/)) and `docker-compose` ([instructions](https://docs.docker.com/compose/install/)) installed on your system.
 
 ## Quickstart
-For quick setup and make the Cat run using the `gpt3.5-turbo` [OpenAI model](https://platform.openai.com/docs/models/gpt-3-5), do the following:
+For a quick setup and make the Cat run using the `gpt3.5-turbo` [OpenAI model](https://platform.openai.com/docs/models/gpt-3-5), do the following:
 
 - Create and API key with `+ Create new secret key` in your OpenAI [personal account](https://platform.openai.com/account/api-keys)
 - Create an `.env` file in the cloned repository
 - Write your API key in the `.env` file (`OPENAI_KEY=past-key-here`)
 - Start the app with `docker-compose up`
-- Chat with the Cheshire Cat on `localhost:3000`.
-- You can also interact via REST API and try out the endpoints on `localhost:1865/docs`
+- Chat with the Cheshire Cat on `localhost:3000`
+- You can also interact via REST API and try out the endpoints on localhost:1865/docs
 
 The first time you run the `docker-compose up` command it will take several minutes as docker images occupy some GBs.
 
