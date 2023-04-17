@@ -18,6 +18,6 @@ export const selectPluginsIsLoading = createSelector(selectRootState, (state) =>
 export const selectPluginsError = createSelector(selectRootState, (state) => state.error)
 
 /**
- * Selects the response from the plugins slice.
+ * Selects all plugins from the plugins slice.
  */
 export const selectAllPlugins = createSelector(selectRootState, (state) => state.plugins)

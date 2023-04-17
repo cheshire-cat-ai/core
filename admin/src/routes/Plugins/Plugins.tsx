@@ -7,6 +7,9 @@ import usePlugins from '@hooks/usePlugins'
 import Spinner from '@components/Spinner/Spinner'
 import Alert from '@components/Alert/Alert'
 
+/**
+ * Plugins list component
+ */
 const Plugins: FC = () => {
   const { isLoading, plugins, error, requirePlugins } = usePlugins()
 

@@ -5,7 +5,6 @@ import LanguageModels from '@services/LanguageModels'
 import { type LLMSettings } from '@models/LLMSettings'
 import { toJSON } from '@utils/commons'
 
-
 const initialState: LLMProvidersState = {
   loading: false,
   updating: false,
@@ -52,7 +51,6 @@ const llmProviders = createSlice({
       state.loading = true
     })
     builder.addCase(fetchLanguageModels.fulfilled, (state, action) => {
-
       state.loading = false
       state.data = action.payload
 
