@@ -5,7 +5,7 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
 
 ![components](assets/img/diagrams/components.png)
 
-:material-chat-outline: `Chat`
+:speech_balloon: `Chat`
 :   This is the Graphical User Interface (GUI) component that allows you to interact directly with the Cat. 
     From the GUI, you can also set the language model you want the Cat to run.
 
@@ -19,7 +19,7 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
     The model takes a text string as input (e.g. the user's prompt) and provides a meaningful answer. 
     The answer consistency and adequacy is enriched with the context of previous conversations and documents uploaded in the Cat's memory.
 
-:octicons-file-code-16: `Embedder`
+:dna: `Embedder`
 :   The embedder is another Deep Learning model similar to the LLM. Differently, it doesn't perform language tasks.
     The model takes a text string as input and encodes it in a numerical representation. 
     This operation allows to represent textual data as vectors and perform geometrical operation on them.
@@ -37,7 +37,7 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
     This component allows the Cat to decide which action to take according to the input the user provides. 
     Possible actions range from holding the conversation to executing complex tasks, chaining predefined or custom [tools](plugins/plugins.md#tools).
 
-:material-puzzle-plus: `Plugins`
+:jigsaw: `Plugins`
 :   These are functions to extend the Cat's capabilities. 
     [Plugins](plugins/plugins.md) are a set of [tools](plugins/plugins.md#tools) and [hooks](plugins/plugins.md#hooks) 
     that allow the Agent to achieve complex goals. This component let the Cat assists you with tailored needs.
