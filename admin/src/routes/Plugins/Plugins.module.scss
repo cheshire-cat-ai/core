@@ -10,4 +10,30 @@
     border-radius: var(--app-border-radius);
     box-shadow: var(--app-shadow-s);
   }
+
+  .desc {
+    margin-bottom: var(--app-space-m);
+    text-align: justify;
+  }
+
+  .itemBox {
+    background-color: var(--app-palette-white);
+    border: 1px solid var(--app-palette-border);
+    border-radius: var(--app-border-radius);
+    padding: 1rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 0.25rem 0.375rem 0 #0000000d;
+  }
+
+  .itemTitle {
+    font-weight: 900;
+  }
+
+  .itemDesc {
+    color: var(--app-palette-grey);
+    margin-top: 8px;
+  }
 }

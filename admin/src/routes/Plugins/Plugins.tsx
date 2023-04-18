@@ -1,6 +1,5 @@
 import React, { type FC, useEffect } from 'react'
 import Page from '@components/Page/Page'
-import { List } from 'antd'
 
 import style from './Plugins.module.scss'
 import usePlugins from '@hooks/usePlugins'
@@ -20,19 +19,23 @@ const Plugins: FC = () => {
   return (
     <Page className={style.plugins} variant="narrow">
       <div className={style.title}>Plugins</div>
+      <div className={style.desc}>
+        This page displays the list of active plugins on the Cheshire Cat. In the next version of the project, users will be able to activate or
+        disable individual plugins according to their needs, allowing for greater customization of the user experience.
+      </div>
       {isLoading && <Spinner />}
       {error && <Alert variant="error">{error}</Alert>}
-      {!isLoading && !error && plugins && (
-        <List
-          itemLayout="horizontal"
-          dataSource={plugins}
-          renderItem={(item, index) => (
-            <List.Item>
-              <List.Item.Meta title={item.name} description="Ant Design, a design language for background applications, is refined by Ant UED Team" />
-            </List.Item>
-          )}
-        />
-      )}
+      {!isLoading &&
+        !error &&
+        plugins &&
+        plugins.map((item) => (
+          <div key={item.id} className={style.itemBox}>
+            <div>
+              <div className={style.itemTitle}>{item.name}</div>
+              <div className={style.itemDesc}>{item.description}</div>
+            </div>
+          </div>
+        ))}
     </Page>
   )
 }

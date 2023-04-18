@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import PluginModels from '@services/PluginsModels'
+import PluginsService from '@services/PluginsService'
 import { PluginsState } from './types'
 
 const initialState: PluginsState = {
@@ -9,9 +9,9 @@ const initialState: PluginsState = {
 }
 
 /**
- * Async thunk that fetches the available plugins from the PluginsModels service.
+ * Async thunk that fetches the available plugins from the Plugins service.
  */
-export const fetchPluginsModels = createAsyncThunk('plugins/fetchAll', PluginModels.getPlugins)
+export const fetchPluginsModels = createAsyncThunk('plugins/fetchAll', PluginsService.getPlugins)
 
 const pluginsSlice = createSlice({
   name: 'plugins',

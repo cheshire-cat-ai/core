@@ -8,10 +8,9 @@ import config from '../config'
 import { toJSON } from '@utils/commons'
 
 /*
- * This is a service that is used to send files down to the rabbit hole.
- * Meaning this service sends files to the backend.
+ * This is a service that is used to get the list of plugins active on the Cheshire Cat.
  */
-const PluginModels = Object.freeze({
+const PluginsService = Object.freeze({
   getPlugins: async () => {
     const endpoint = config.endpoints.plugins
 
@@ -19,4 +18,4 @@ const PluginModels = Object.freeze({
   }
 })
 
-export default PluginModels
+export default PluginsService
