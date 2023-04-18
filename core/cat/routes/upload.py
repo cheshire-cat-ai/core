@@ -52,3 +52,29 @@ async def rabbithole_upload_endpoint(
         "content-type": file.content_type,
         "info": "File is being ingested asynchronously.",
     }
+
+@router.post("/web/")
+async def rabbithole_url_endpoint(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    url: str = Body(description="URL of the website to which you want to save the content"),
+    chunk_size: int = Body(
+        default=400,
+        description="Maximum length of each chunk after the document is split (in characters)",
+    ),
+    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
+):
+    
+    #TODO do we need to check that URL is valid?
+    
+    ccat = request.app.state.ccat
+    
+    # upload file to long term memory, in the background
+    background_tasks.add_task(
+        ccat.send_url_in_rabbit_hole, url, chunk_size, chunk_overlap
+    )
+
+    return {
+        "url": url,
+        "info": "Website is being ingested asynchronously"
+    }
