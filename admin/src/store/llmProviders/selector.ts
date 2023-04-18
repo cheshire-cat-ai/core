@@ -8,13 +8,13 @@ import { type LLMSettings } from '@models/LLMSettings'
 const selectRootState = (state: RootState) => state.llmProviders
 
 /**
- * Selects the 'loading' flag from the llmProviders state reporting whether a file is currently being uploaded.
+ * Selects the 'loading' flag from the llmProviders state.
  */
 export const selectLLMProvidersIsLoading = createSelector(selectRootState, (state) => state.loading)
 
 /**
  * Selects the error state from the llmProviders slice.
- * It contains the error message if an error occurred while sending a file.
+ * It contains the error message if an error occurred while selecting LLM providers.
  */
 export const selectLLMProvidersError = createSelector(selectRootState, (state) => state.error)
 
@@ -46,8 +46,14 @@ export const selectCurrentProviderSchema = createSelector(
   }
 )
 
+/**
+ * Selects all language model providers
+ */
 export const selectAllLLMSettings = createSelector(selectRootState, (state) => state.settings)
 
+/**
+ * Selects the current language model provider settings form the `llmProviders` slice
+ */
 export const selectCurrentProviderSettings = createSelector(
   [selectAllLLMSettings, selectCurrentLLMProvider],
   (providers, current) => {

@@ -1,0 +1,21 @@
+/**
+ * This module defines and exports a service that is used to retrieve the list of plugins from the backend.
+ * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
+ * sending or receiving data.
+ */
+import { type Plugins } from '@models/Plugins'
+import config from '../config'
+import { toJSON } from '@utils/commons'
+
+/*
+ * This is a service that is used to get the list of plugins active on the Cheshire Cat.
+ */
+const PluginsService = Object.freeze({
+  getPlugins: async () => {
+    const endpoint = config.endpoints.plugins
+
+    return await fetch(endpoint).then<Plugins>(toJSON)
+  }
+})
+
+export default PluginsService

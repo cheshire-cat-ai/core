@@ -17,7 +17,8 @@ const config: Config = {
     chat: 'ws://localhost:1865/ws',
     rabbitHole: 'http://localhost:1865/rabbithole',
     allLLM: 'http://localhost:1865/settings/llm/',
-    singleLLM: 'http://localhost:1865/settings/llm/:llm'
+    singleLLM: 'http://localhost:1865/settings/llm/:llm',
+    plugins: 'http://localhost:1865/plugins/'
   }
 }
 
@@ -30,6 +31,7 @@ export interface Config {
     readonly rabbitHole: string
     readonly allLLM: string
     readonly singleLLM: string
+    readonly plugins: string
   }
 }
 
