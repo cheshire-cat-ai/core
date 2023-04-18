@@ -50,6 +50,7 @@ const llmProviders = createSlice({
     builder.addCase(fetchLanguageModels.pending, (state) => {
       state.loading = true
     })
+
     builder.addCase(fetchLanguageModels.fulfilled, (state, action) => {
       state.loading = false
       state.data = action.payload
@@ -57,6 +58,7 @@ const llmProviders = createSlice({
       state.selected = state.data.selected_configuration ?? Object.values(action.payload.schemas)[0].languageModelName
       state.settings = state.data.settings.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {})
     })
+
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
       state.error = action.error.message
     })

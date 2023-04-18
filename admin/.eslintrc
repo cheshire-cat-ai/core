@@ -7,6 +7,11 @@
     "plugin:react/recommended",
     "standard-with-typescript"
   ],
+  "settings": {
+    "react": {
+      "version": "18"
+    }
+  },
   "overrides": [
   ],
   "parserOptions": {
