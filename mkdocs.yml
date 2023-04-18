@@ -6,6 +6,8 @@ site_dir: docs
 
 plugins:
   - mkdocs-video
+  - search
+
 
 nav:
   - Hello, dear: index.md
@@ -36,6 +38,8 @@ theme:
     - navigation.top
     - content.code.copy
     - content.code.annotate
+    - search.suggest
+    - search.highlight
 
 extra:
   social:
