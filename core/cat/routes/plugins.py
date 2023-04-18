@@ -1,11 +1,12 @@
 from fastapi import Request, APIRouter, HTTPException
+from typing import Dict
 
 router = APIRouter()
 
 
 # GET plugins
 @router.get("/", status_code=200)
-async def list_available_plugins(request: Request):
+async def list_available_plugins(request: Request) -> Dict:
     """List available plugins."""
 
     # access cat instance
@@ -18,7 +19,7 @@ async def list_available_plugins(request: Request):
 
 
 @router.get("/{plugin_id}", status_code=200)
-async def plugin_detail(plugin_id: str, request: Request):
+async def plugin_detail(plugin_id: str, request: Request) -> Dict:
     """Returns information on a single plugin"""
 
     # access cat instance

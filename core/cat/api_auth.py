@@ -7,7 +7,7 @@ API_KEY = [key.strip() for key in os.getenv("API_KEY", "").split("|") if key.str
 api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 
-def check_api_key(api_key: str = Security(api_key_header)):
+def check_api_key(api_key: str = Security(api_key_header)) -> None | str:
     if not API_KEY:
         return None
     if api_key in API_KEY:

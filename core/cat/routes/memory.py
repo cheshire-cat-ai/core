@@ -1,11 +1,12 @@
 from fastapi import Query, Request, APIRouter
+from typing import Dict
 
 router = APIRouter()
 
 
 # DELETE delete_memories
 @router.delete("/{memory_id}/")
-async def delete_memories(memory_id: str):
+async def delete_memories(memory_id: str) -> Dict:
     """Delete specific memory."""
     return {"error": "to be implemented"}
 
@@ -16,7 +17,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-):
+) -> Dict:
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat

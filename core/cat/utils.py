@@ -70,10 +70,11 @@ def log(msg):
         logging.debug(f"\u001b[{color_code}m\033[0.1m{line}")
     logging.debug(f"\u001b[{color_code}m\033[0.1m{msg_footer}")
 
+
 # Takes in a string of words separated by either hyphens or underscores and returns a string of words in camel case
 def to_camel_case(text):
     s = text.replace("-", " ").replace("_", " ").capitalize()
     s = s.split()
     if len(text) == 0:
         return text
-    return s[0] + ''.join(i.capitalize() for i in s[1:])
+    return s[0] + "".join(i.capitalize() for i in s[1:])
