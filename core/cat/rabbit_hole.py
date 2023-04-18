@@ -11,6 +11,7 @@ from langchain.document_loaders import (
     PDFMinerLoader,
     UnstructuredFileLoader,
     UnstructuredMarkdownLoader,
+    UnstructuredURLLoader,
 )
 from langchain.docstore.document import Document
 
@@ -18,6 +19,32 @@ from langchain.docstore.document import Document
 class RabbitHole:
     def __init__(self):
         pass
+    
+    @staticmethod
+    def url_to_docs(
+        url: str,
+        chunk_size: int = 400,
+        chunk_overlap: int = 100,
+    ) -> List[Document]:
+        """
+        Scrape website content and chunk it to a list of Documents.
+        :param url: URL of the website to which you want to save the content
+        :param chunk_size: number of characters the text is split in
+        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        """
+
+        # load text content of the website
+        loader = UnstructuredURLLoader(urls=[url])
+        text = loader.load()
+
+        # split in documets using chunk_size and chunk_overlap
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+        )
+        docs = text_splitter.split_documents(text)
+        return docs
 
     @staticmethod
     def file_to_docs(
