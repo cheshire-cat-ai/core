@@ -3,7 +3,7 @@ import os
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
-from langchain.llms import OpenAI, OpenAIChat
+from langchain.llms import OpenAI, OpenAIChat, AzureOpenAI
 from cat.mad_hatter.decorators import hook
 
 
@@ -72,20 +72,27 @@ def get_language_model(cat):
 
 @hook(priority=0)
 def get_language_embedder(cat):
-    # TODO: give more example ocnfigurations
+    # TODO: give more example configurations
 
     # Embedding LLM
-    using_openai_llm = type(cat.llm) in [OpenAI, OpenAIChat]
+    using_openai_llm = type(cat.llm) in [OpenAI, OpenAIChat, AzureOpenAI]
     if ("OPENAI_KEY" in os.environ) or using_openai_llm:
         openai_key = os.getenv("OPENAI_KEY")
         if openai_key is None:
             openai_key = cat.llm.openai_api_key
-        embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
-            {
-                "openai_api_key": openai_key,
-                # model_name: '....'  # TODO: allow optional kwargs
-            }
-        )
+        if using_openai_llm in [OpenAI, OpenAIChat]:
+            embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
+                {
+                   "openai_api_key": openai_key,
+                   # model_name: '....'  # TODO: allow optional kwargs
+                }
+            )
+        else:
+            print(cat.llm)
+            embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
+                {"size": 1536}  # mock openai embedding size
+
+            )
     elif "COHERE_KEY" in os.environ:
         embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
             {"cohere_api_key": os.environ["COHERE_KEY"]}

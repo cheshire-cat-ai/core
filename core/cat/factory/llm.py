@@ -101,6 +101,23 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
             "description": "Configuration for HuggingFace Endpoint language models",
         }
 
+# https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
+class LLMAzureOpenAIConfig(LLMSettings):
+    openai_api_key: str
+    api_base: str
+    api_type: str = "azure"
+    api_version: str = "2022-12-01"
+    deployment_name: str = "text-davinci-003"
+    model_name: str = "text-davinci-003"
+
+    _pyclass: PyObject = langchain.llms.AzureOpenAI
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Azure OpenAI",
+            "description": "Configuration for Cognitive Services Azure OpenAI",
+        }
+
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
@@ -109,6 +126,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMCohereConfig,
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
+    LLMAzureOpenAIConfig,
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know which fields are required to create the language model.
