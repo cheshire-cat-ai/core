@@ -4,13 +4,22 @@ repo_url: https://github.com/pieroit/cheshire-cat
 docs_dir: mkdocs
 site_dir: docs
 
+plugins:
+  - mkdocs-video
+
 nav:
   - Hello, dear: index.md
+  - Getting Started: getting-started.md
   - How the Cat works: how-the-cat-works.md
+  - Basics: basics.md
   - Plugins:
     - How to write a plugin: plugins/plugins.md
     - Tools: plugins/tools.md
     - Hooks: plugins/hooks.md
+  - Tutorials:
+      - Overview: tutorials/overview.md
+      - Installation and customization: tutorials/installation-customization.md
+
 
 theme:
   name: material
@@ -45,6 +54,7 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - attr_list
+  - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
