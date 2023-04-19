@@ -14,6 +14,7 @@ nav:
   - Getting Started: getting-started.md
   - How the Cat works: how-the-cat-works.md
   - Basics: basics.md
+  - Advanced: advanced.md
   - Plugins:
     - How to write a plugin: plugins/plugins.md
     - Tools: plugins/tools.md
