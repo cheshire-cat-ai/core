@@ -13,14 +13,19 @@ nav:
   - Hello, dear: index.md
   - Getting Started: getting-started.md
   - How the Cat works: how-the-cat-works.md
-  - Basics: basics.md
+  - Basics:
+    - Folders & APIs: basics/basics.md
+    - The Cat Core: basics/cat-core.md
+    - Admin Interface: basics/admin-interface.md
   - Plugins:
     - How to write a plugin: plugins/plugins.md
     - Tools: plugins/tools.md
     - Hooks: plugins/hooks.md
+  - Advanced: advanced.md
   - Tutorials:
       - Overview: tutorials/overview.md
       - Installation and customization: tutorials/installation-customization.md
+  - FAQ: faq.md
 
 
 theme:
