@@ -1,5 +1,6 @@
 import { AppFeatures } from '@models/AppFeatures'
-
+const SERVER_IP = import.meta.env.VITE_SERVER_IP
+const PORT = import.meta.env.VITE_PORT
 /**
  * Returns the application configuration.
  * It is wrapped in a function to ensure the configuration is not mutated.
@@ -14,16 +15,16 @@ const config: Config = {
     AppFeatures.Plugins
   ],
   endpoints: {
-    chat: 'ws://localhost:1865/ws',
-    rabbitHole: 'http://localhost:1865/rabbithole',
-    allLLM: 'http://localhost:1865/settings/llm/',
-    singleLLM: 'http://localhost:1865/settings/llm/:llm',
-    plugins: 'http://localhost:1865/plugins/'
+    chat: `ws://${SERVER_IP}:${PORT}/ws`,
+    rabbitHole: `http://${SERVER_IP}:${PORT}/rabbithole`,
+    allLLM: `http://${SERVER_IP}:${PORT}/settings/llm/`,
+    singleLLM: `http://${SERVER_IP}:${PORT}/settings/llm/:llm`,
+    plugins: `http://${SERVER_IP}:${PORT}/plugins/`
   }
 }
 
 export interface Config {
-  readonly mode: string
+   readonly mode: string
   readonly socketTimeout: number
   readonly features: AppFeatures[]
   readonly endpoints: {
