@@ -2,7 +2,6 @@ import os
 
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.orm import sessionmaker
-from typing import Generator
 
 SQLITE_DATABASE_URL = os.getenv("SQLITE_DATABASE_URL", "sqlite:///./metadata-v3.db")
 
@@ -16,7 +15,7 @@ def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-def get_db_session() -> Generator(Session):
+def get_db_session():
     """
     Create a new database session and close the session after the operation has ended.
     """
