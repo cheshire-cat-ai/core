@@ -4,6 +4,7 @@
 
 ### Enhancements
 
+* Markdown support in admin
 * Bump python version to 3.10 (remember to `docker-compose build --no-cache` after pull)
 * Add host and port configuration via `.env`, please see `.env.example` as it is now necessary to declare default hosts and ports
 * Update license to GPLv3
