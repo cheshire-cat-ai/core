@@ -3,10 +3,11 @@ import json
 import importlib
 from os import path
 from inspect import getmembers, isfunction  # , signature
+import logging
 
 import langchain
 from cat.utils import log, to_camel_case
-
+from cat.mad_hatter.decorators import CatHooks
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -27,7 +28,7 @@ class MadHatter:
         plugin_folders = glob.glob("cat/plugins/*")
 
         all_plugins = []
-        all_hooks = {}
+        CatHooks.reset_hook_list()
         all_tools = []
 
         for folder in plugin_folders:
@@ -44,15 +45,16 @@ class MadHatter:
                     )  # this is UGLY I know. I'm sorry
 
                     plugin_module = importlib.import_module(plugin_name)
-                    all_hooks[plugin_name] = dict(
-                        getmembers(plugin_module, self.is_cat_hook)
-                    )
+                    # all_hooks[plugin_name] = dict(
+                    #     getmembers(plugin_module, self.is_cat_hook)
+                    # )
                     all_tools += getmembers(plugin_module, self.is_cat_tool)
 
         log("Loaded plugins:")
         log(all_plugins)
 
         log("Loaded hooks:")
+        all_hooks = CatHooks.sort_hooks()
         log(all_hooks)
 
         log("Loaded tools:")
@@ -112,11 +114,16 @@ class MadHatter:
     # execute requested hook
     def execute_hook(self, hook_name, hook_input=None):
         # TODO: deal with priority and pipelining
-        for plugin_name, plugin in self.hooks.items():
-            if hook_name in plugin.keys():
-                hook = plugin[hook_name]
+        for plugin in self.hooks:
+            logging.debug(plugin)
+            logging.debug(f"hook_input: {hook_input}")
+            if hook_name == plugin['hook_name']:
+                hook = plugin['hook_function']
                 if hook_input is None:
-                    return hook(cat=self.ccat)
+                    logging.debug(self.ccat)
+                    ret =  hook(cat=self.ccat)
+                    logging.debug(ret)
+                    return ret
                 else:
                     return hook(hook_input, cat=self.ccat)
 

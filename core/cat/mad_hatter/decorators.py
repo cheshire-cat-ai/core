@@ -5,13 +5,53 @@ from langchain.tools import BaseTool
 from langchain.agents import Tool
 
 
-# @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
-def hook(func) -> Any:
-    def cat_hook_wrapper(*args, **kwargs):
-        # log(func)
-        return func(*args, **kwargs)
+# Cat hooks manager
+class CatHooks():
+    __hooks = []
+    
+    @classmethod
+    def reset_hook_list(cls):
+        CatHooks.__cat = []
+    
+    @classmethod
+    def sort_hooks(cls):
+        # CatHooks.__hooks.sort(key=lambda x: x.count, reverse=True)
+        CatHooks.__hooks.sort(key=lambda x: f"{x['priority']:>20}-{x['count']:>20}", reverse=True)
+        return CatHooks.__hooks
+    
+    # append a hook
+    @classmethod
+    def add_hook(cls, hook):
+        CatHooks.__hooks.append(hook)
 
-    return cat_hook_wrapper
+    # get hook list
+    @classmethod
+    def get_hook_list(cls):
+        return CatHooks.__hooks
+
+
+# @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
+def hook(_func=None, priority=1) -> Any:
+    def decorator(func):
+        def cat_hook_wrapper(*args, **kargs):
+            return func(*args, **kargs)
+
+        doc_string = func.__doc__
+        if doc_string == None:
+            doc_string = ''
+        CatHooks.add_hook({
+            'hook_function': cat_hook_wrapper,
+            'hook_name': func.__name__,
+            'docstring': func.__doc__,
+            'priority': priority,
+            'count': len(CatHooks.get_hook_list()),
+            'priority': priority,
+        })
+        
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
 
 
 # All @tool decorated functions in plugins become a CatTool.
