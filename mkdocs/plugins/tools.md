@@ -1,4 +1,4 @@
-# Tools
+# :toolbox: Tools
 
 A Tool allows the Cat to execute custom code during conversation, for example:
 

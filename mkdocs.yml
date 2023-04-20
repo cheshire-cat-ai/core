@@ -33,7 +33,20 @@ theme:
   favicon: assets/img/favicon.ico
   logo: assets/img/cheshire-cat-logo.svg
   palette:
-    primary: grey
+    # Palette toggle for light mode
+    - scheme: default
+      primary: grey
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: white
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   font:
     text: Old Standard TT
   features:

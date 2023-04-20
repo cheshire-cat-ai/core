@@ -1,3 +1,4 @@
+# :cat2: Advanced
 ## :closed_lock_with_key: API Authentication
 
 In order to authenticate endpoints, it is necessary to include the `API_KEY=your-key-here` variable in the `.env` file. Multiple keys can be accepted by separating them with a pipe (`|`) as follows: `API_KEY=your-key-here|secondary_client_key`.

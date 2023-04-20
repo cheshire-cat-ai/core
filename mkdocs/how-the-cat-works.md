@@ -1,9 +1,11 @@
-# How the Cat works
+# :smirk_cat: How the Cat works
+
+![components](assets/img/diagrams/components.png)   
+   
+
+## Components   
+
 The Cheshire Cat is made of many pluggable components that make it fully customizable.
-
-## Components
-
-![components](assets/img/diagrams/components.png)
 
 :speech_balloon: `Chat`
 :   This is the Graphical User Interface (GUI) component that allows you to interact directly with the Cat. 
