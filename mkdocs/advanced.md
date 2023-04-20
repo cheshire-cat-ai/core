@@ -14,7 +14,7 @@ After configuration, all endpoints will require an `access_token` header for aut
         ```python
         import requests
         
-        server_url = 'http://localhost:1864/'
+        server_url = 'http://localhost:1865/'
         api_key = 'your-key-here'
         access_token = {'access_token': api_key}
         
@@ -29,7 +29,7 @@ After configuration, all endpoints will require an `access_token` header for aut
         ```javascript
         const request = require('request');
         
-        const serverUrl = 'http://localhost:1864/';
+        const serverUrl = 'http://localhost:1865/';
         const apiKey = 'your-key-here';
         const access_token = {'access_token': apiKey};
         
@@ -46,5 +46,5 @@ After configuration, all endpoints will require an `access_token` header for aut
         });
         ```   
    
-By adding the variable to the `.env` file, all Swagger endpoints (`localhost:1864/docs`) will require authentication and can be accessed on the top right-hand corner of the page through the green **Authorize** button.   
+By adding the variable to the `.env` file, all Swagger endpoints (`localhost:1865/docs`) will require authentication and can be accessed on the top right-hand corner of the page through the green **Authorize** button.   
   
