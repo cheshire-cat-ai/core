@@ -17,20 +17,19 @@ to execute custom functions or call external services (e.g. APIs and other model
    
 If you want to build your custom AI architecture, the Cat can help you!
 
-- :earth_africa: Language model agnostic
-- :elephant: Long term memory
-- :tools: Can use external tools
-- :scroll: Can ingest documents (.txt, .pdf, .md)
-- :rocket: Extendible via [plugins](plugins/plugins.md) in Python
-- :whale2: 100% [dockerized](https://docs.docker.com/get-docker/)
+| Cheshire Cat Features                                           |                                                                 |
+|-----------------------------------------------------------------|-----------------------------------------------------------------|
+| :tools: Can use external tools                                  | :scroll: Can ingest documents (.txt, .pdf, .md)                 |
+| :earth_africa: Language model agnostic                          | :elephant: Long term memory                                     |
+| :rocket: Extendible via [plugins](plugins/plugins.md) in Python | :whale2: 100% [dockerized](https://docs.docker.com/get-docker/) |
 
 ## Currently Supported LLMs
 
 GPT3, ChatGPT, Cohere, HuggingFace Hub, HuggingFace endpoints   
 
-| Get in touch with us                                                                                         |                                                                                                                                |
-|--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| [Join discord :fontawesome-brands-discord:](https://discord.gg/rSm9htk9pA){ .md-button .md-button--primary } | :point_left: **Join our Discord server and** :point_down: <br/> **don't forget to give the project a star! ⭐ Thanks again!🙏** |
+| Get in touch with us!                                                                                   |                                                                                                                                |
+|---------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| [:fontawesome-brands-discord: Discord](https://discord.gg/rSm9htk9pA){ .md-button .md-button--primary } | :point_left: **Join our Discord server and** :point_down: <br/> **don't forget to give the project a star! ⭐ Thanks again!🙏** |
    
    
 
