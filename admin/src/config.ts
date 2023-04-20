@@ -1,4 +1,7 @@
 import { AppFeatures } from '@models/AppFeatures'
+const CORE_HOST = import.meta.env.CORE_HOST
+const CORE_PORT = import.meta.env.CORE_PORT
+const API_KEY = import.meta.env.API_KEY
 
 /**
  * Returns the application configuration.
@@ -14,16 +17,16 @@ const config: Config = {
     AppFeatures.Plugins
   ],
   endpoints: {
-    chat: 'ws://localhost:1865/ws',
-    rabbitHole: 'http://localhost:1865/rabbithole',
-    allLLM: 'http://localhost:1865/settings/llm/',
-    singleLLM: 'http://localhost:1865/settings/llm/:llm',
-    plugins: 'http://localhost:1865/plugins/'
+    chat: `ws://${CORE_HOST}:${CORE_PORT}/ws`,
+    rabbitHole: `http://${CORE_HOST}:${CORE_PORT}/rabbithole`,
+    allLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
+    singleLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/:llm`,
+    plugins: `http://${CORE_HOST}:${CORE_PORT}/plugins/`
   }
 }
 
 export interface Config {
-  readonly mode: string
+   readonly mode: string
   readonly socketTimeout: number
   readonly features: AppFeatures[]
   readonly endpoints: {

@@ -1,5 +1,6 @@
 __pycache__
 .env
+*mypy_cache
 
 # python local dev
 core/venv

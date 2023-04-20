@@ -40,10 +40,16 @@ Enter the created folder:
 cd cheshire-cat
 ```
 
-Create an empty `.env` file:
+Create your `.env` file by copying and renaming `.env_example`:
 
+On linux/mac
 ```bash
-touch .env
+cp .env.example .env
+```
+
+On Windows
+```bash
+copy .env.example .env
 ```
 
 After that you can run:
