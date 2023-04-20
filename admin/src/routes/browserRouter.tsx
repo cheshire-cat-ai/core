@@ -8,7 +8,8 @@ import { AppFeatures } from '@models/AppFeatures'
 const Home = React.lazy(() => import('./Home'))
 const Settings = React.lazy(() => import('./Settings'))
 const LangModelProvider = React.lazy(() => import('./LanguageModel'))
-const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
+// const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
+const Plugins = React.lazy(() => import('./Plugins'))
 
 /**
  * Creates and exports the application routes.
@@ -43,7 +44,7 @@ export default createBrowserRouter([
         path: routesDescriptor.plugins.path,
         element: (
           <ProtectedRoute feature={AppFeatures.Plugins}>
-            <WorkInProgress />
+            <Plugins />
           </ProtectedRoute>
         )
       }

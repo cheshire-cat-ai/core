@@ -1,3 +1,4 @@
+from datetime import timedelta
 import inspect
 import logging
 from pprint import pformat
@@ -78,3 +79,24 @@ def to_camel_case(text):
     if len(text) == 0:
         return text
     return s[0] + "".join(i.capitalize() for i in s[1:])
+
+
+
+def verbal_timedelta(td):
+    if td.days != 0:
+        abs_days = abs(td.days)
+        if abs_days > 7:
+            abs_delta = '{} weeks'.format(td.days // 7)
+        else:
+            abs_delta = '{} days'.format(td.days)
+    else:
+        abs_minutes = abs(td.seconds) // 60
+        if abs_minutes > 60:
+            abs_delta = '{} hours'.format(abs_minutes // 60)
+        else:
+            abs_delta = '{} minutes'.format(abs_minutes)
+    if td < timedelta(0):
+        return '{} ago'.format(abs_delta)
+    else:
+        return '{} ago'.format(abs_delta)
+

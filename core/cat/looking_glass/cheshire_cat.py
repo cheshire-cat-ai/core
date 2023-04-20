@@ -1,9 +1,11 @@
 import time
 import traceback
 from typing import Union
+from datetime import timedelta
 
 import langchain
 from cat.utils import log
+from cat.utils import verbal_timedelta
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from starlette.datastructures import UploadFile
@@ -133,7 +135,13 @@ class CheshireCat:
         memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
 
         # TODO: take away duplicates
-        # TODO: insert time information (e.g "two days ago") in episodic memories
+        memory_timestamps = []
+        for m in memory_docs:
+            timestamp = m[0].metadata["when"]
+            delta = timedelta(seconds=(time.time() - timestamp))
+            memory_timestamps.append(" ("+verbal_timedelta(delta)+")")
+
+        memory_texts = [a+b for a,b in zip(memory_texts,memory_timestamps)]
         # TODO: insert sources in document memories
 
         if return_format == str:
@@ -225,6 +233,29 @@ class CheshireCat:
         else:
             filename = file.filename
         RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
+
+    def send_url_in_rabbit_hole(
+        self,
+        url: str,
+        chunk_size: int = 400,
+        chunk_overlap: int = 100,
+    ):
+        """
+        Load a given website in the Cat's memory.
+        :param url: URL of the website to which you want to save the content
+        :param chunk_size: number of characters the text is split in
+        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        """
+        
+        # get website content and split into a list of docs
+        docs = RabbitHole.url_to_docs(
+            url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+        
+        #get summaries and store
+        summary, intermediate_summaries = self.get_summary_text(docs)
+        docs = [summary] + intermediate_summaries + docs
+        RabbitHole.store_documents(ccat=self, docs=docs, source=url)
 
     def __call__(self, user_message):
         if self.verbose:
