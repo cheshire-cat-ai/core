@@ -1,3 +1,5 @@
+# :anatomical_heart: The Cat Core
+
 The core exposes all of its APIs via the address `localhost:1865/`.   
 
 A full documentation with Swagger is inside the Cat itself and can be reached at `localhost:1865/docs`.   

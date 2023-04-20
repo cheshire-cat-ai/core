@@ -1,4 +1,4 @@
-# How to write a plugin
+# :electric_plug: How to write a plugin
 
 To write a plugin just create a new folder in `web/cat/plugins/`. 
 
@@ -25,12 +25,12 @@ You are now ready to change the Cat's behavior using Tools and Hooks.
 ![plugins](../assets/img/diagrams/plugin.png)
 
 
-## Hooks
+## :hook: Hooks
 
 Hooks let you influence how the Cat runs its internal functionality.  
 More details on hooks [here](hooks.md)
 
-## Tools
+## :toolbox: Tools
 
 Tools let you define custom code that the Cat can use.  
 More details on tools [here](tools.md)

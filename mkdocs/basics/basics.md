@@ -1,3 +1,5 @@
+# :card_file_box: Folders & API
+
 The Cheshire Cat is composed of two main parts: the core functionality resides in the `/core` folder, and the frontend interface is located in the `/admin` folder. This document will provide an overview of The Cheshire Cat, including its basic functions and how to access them.
 
 ## :anatomical_heart: The Cat Core

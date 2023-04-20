@@ -1,4 +1,4 @@
-# Getting started
+# :rocket: Getting started
 
 ## Download
 Clone the repository on your machine:

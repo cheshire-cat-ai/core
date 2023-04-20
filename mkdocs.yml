@@ -33,7 +33,19 @@ theme:
   favicon: assets/img/favicon.ico
   logo: assets/img/cheshire-cat-logo.svg
   palette:
-    primary: grey
+    # Palette toggle for light mode
+    - scheme: default
+      primary: grey
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: white
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   font:
     text: Old Standard TT
   features:
@@ -51,6 +63,9 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/pieroit/cheshire-cat
       name: The Cheshire Cat repo on GitHub
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/rSm9htk9pA
+      name: The Cheshire Cat Discord Server
 
 markdown_extensions:
   - pymdownx.highlight:
