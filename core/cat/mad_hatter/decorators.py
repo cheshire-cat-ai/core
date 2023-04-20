@@ -11,7 +11,7 @@ class CatHooks():
     
     @classmethod
     def reset_hook_list(cls):
-        CatHooks.__cat = []
+        CatHooks.__hooks = []
     
     @classmethod
     def sort_hooks(cls):
