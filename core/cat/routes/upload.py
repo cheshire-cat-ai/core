@@ -3,6 +3,7 @@ import mimetypes
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.utils import log
 from fastapi.responses import JSONResponse
+from typing import Dict
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ async def rabbithole_upload_endpoint(
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-):
+) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
     """

@@ -34,7 +34,7 @@ def get_setting_by_id(db: Session, settingId: str):
     return db.query(models.Setting).filter(models.Setting.setting_id == settingId)
 
 
-def delete_setting_by_name(db: Session, name: str):
+def delete_setting_by_name(db: Session, name: str) -> None:
     query = db.query(models.Setting).where(models.Setting.name == name)
     query.delete(synchronize_session=False)
     db.commit()

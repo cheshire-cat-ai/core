@@ -1,4 +1,4 @@
-from typing import Union, Callable
+from typing import Union, Callable, Any
 from inspect import signature
 
 from langchain.tools import BaseTool
@@ -6,7 +6,7 @@ from langchain.agents import Tool
 
 
 # @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
-def hook(func):
+def hook(func) -> Any:
     def cat_hook_wrapper(*args, **kwargs):
         # log(func)
         return func(*args, **kwargs)
