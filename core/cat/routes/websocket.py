@@ -16,12 +16,10 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # message received from user
-            user_message = (
-                await websocket.receive_text()
-            )  # TODO: should receive a JSON with metadata
+            user_message = await websocket.receive_json()
 
             # get response from the cat
-            cat_message = ccat(user_message)
+            cat_message = ccat(user_message["text"])
 
             # send output to user
             await websocket.send_json(cat_message)
