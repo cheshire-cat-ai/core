@@ -50,7 +50,8 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
                 "security"
             ] = None
             openapi_schema["paths"]["/memory/recall/"]["get"]["security"] = None
-            openapi_schema["paths"]["/memory/{memory_id}/"]["delete"]["security"] = None
+            openapi_schema["paths"]["/memory/empty_memories/"]["delete"]["security"] = None
+            openapi_schema["paths"]["/memory/delete/{memory_id}/"]["delete"]["security"] = None
             openapi_schema["paths"]["/rabbithole/"]["post"]["security"] = None
 
         cheshire_cat_api.openapi_schema = openapi_schema

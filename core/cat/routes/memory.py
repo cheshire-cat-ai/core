@@ -1,11 +1,12 @@
 from fastapi import Query, Request, APIRouter
 from typing import Dict
+import logging
 
 router = APIRouter()
 
 
 # DELETE delete_memories
-@router.delete("/{memory_id}/")
+@router.delete("/delete/{memory_id}/")
 async def delete_memories(memory_id: str) -> Dict:
     """Delete specific memory."""
     return {"error": "to be implemented"}
@@ -29,9 +30,34 @@ async def recall_memories_from_text(
     episodes = [dict(m[0]) | {"score": float(m[1])} for m in episodes]
     documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
 
+    logging.debug(episodes)
+    logging.debug(documents)
+
     return (
         {
             "episodes": episodes,
             "documents": documents,
         },
+    )
+
+
+# DELETE recall_memories
+@router.delete("/empty_memories/")
+async def empty_memories(
+    request: Request,
+) -> Dict:
+    """Empty"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+    ret1 = vector_memory.vector_db.delete_collection(collection_name="episodic")
+    logging.debug(ret1)
+    ret2 = vector_memory.vector_db.delete_collection(collection_name="declarative")
+    logging.debug(ret2)
+
+    return (
+        {
+            'episodic': ret1,
+            'declarative': ret2,
+        }
     )
