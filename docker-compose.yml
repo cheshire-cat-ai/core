@@ -38,8 +38,6 @@ services:
       - .env
     ports:
       - ${ADMIN_PORT}:3000
-    volumes:
-      - ./admin:/app
     restart: unless-stopped
 
   vector-memory:
