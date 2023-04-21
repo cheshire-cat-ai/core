@@ -1,7 +1,7 @@
 .message {
   position: relative;
   @include typography-text;
-  animation: AFadeIn 240ms var(--app-easing-fn);
+  animation: AFadeIn 350ms var(--app-easing-fn);
   animation-iteration-count: 1;
 
   display: flex;
@@ -10,101 +10,32 @@
     max-width: 80%;
   }
 
+  .content p:only-child {
+    margin: 0;
+  }
+
   &.user {
     align-self: flex-end;
-    border-radius: 15px 0px 15px 15px;
+    border-radius: var(--app-border-radius-lg) 0 var(--app-border-radius-lg) var(--app-border-radius-lg);
     background: linear-gradient(180deg, #1E1E1E 0%, #555 100%);
     color: var(--app-palette-white);
     padding: var(--app-space-s);
-
-    // definitions for markdown
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--app-palette-white);
-    }
-
-    table {
-      background: var(--app-palette-white);
-      color: var(--app-palette-black);
-      padding: 0 var(--app-space-2xs);
-      border-radius: var(--app-border-radius);
-    }
-
-    a {
-      color: var(--app-palette-info);
-    }
-
-    img {
-      width: 50%
-    }
-
-    pre {
-      background: var(--app-palette-white);
-      color: var(--app-palette-black);
-      padding: 0 var(--app-space-2xs);
-      border-radius: var(--app-border-radius);
-    }
-    p {
-      code {
-        background: var(--app-palette-white);
-        color: var(--app-palette-black);
-        padding: 0 var(--app-space-2xs);
-        border-radius: var(--app-border-radius);
-      }
-      // ------------------------------
-    }
-
   }
 
   &.bot {
-
     align-self: flex-start;
+    gap: var(--app-space-s);
 
-    .label {
+    .avatar {
       @include typography-action;
-      padding-right: var(--app-space-xs);
+      font-size: var(--app-text-size-2);
     }
 
     .content {
-      border-radius: 0px 15px 15px 15px;
+      border-radius: 0 var(--app-border-radius-lg) var(--app-border-radius-lg) var(--app-border-radius-lg);
       background: var(--app-palette-white);
       padding: var(--app-space-s);
-    }
-
-    // definitions for markdown
-    h1, h2, h3, h4, h5, h6 {
-      color: var(--app-palette-black);
-    }
-
-    table {
-      background: var(--app-palette-neutral);
-      color: var(--app-palette-black);
-      padding: 0 var(--app-space-2xs);
-      border-radius: var(--app-border-radius);
-    }
-
-    a {
-      color: var(--app-palette-info);
-    }
-
-    img {
-      width: 50%
-    }
-
-    pre {
-      background: var(--app-palette-accent-light);
-      color: var(--app-palette-black);
-      padding: 0 var(--app-space-2xs);
-      border-radius: var(--app-border-radius);
-    }
-    p {
-      code {
-        background: var(--app-palette-accent-light);
-        color: var(--app-palette-black);
-        padding: 0 var(--app-space-2xs);
-        border-radius: var(--app-border-radius);
-      }
-
-      // ------------------------------
+      box-shadow: var(--app-shadow);
     }
   }
 
@@ -116,8 +47,49 @@
 @keyframes AFadeIn {
   0% {
     opacity: 0;
+    transform: translateY(-3px);
   }
   100% {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+// definitions for markdown
+.message {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--app-palette-white);
+  }
+
+  table {
+    background: var(--app-palette-white);
+    color: var(--app-palette-black);
+    padding: 0 var(--app-space-2xs);
+    border-radius: var(--app-border-radius-lg);
+  }
+
+  a {
+    color: var(--app-palette-info);
+  }
+
+  img {
+    width: 50%
+  }
+
+  pre {
+    background: var(--app-palette-white);
+    color: var(--app-palette-black);
+    padding: 0 var(--app-space-2xs);
+    border-radius: var(--app-border-radius-lg);
+  }
+
+  p {
+    code {
+      background: var(--app-palette-white);
+      color: var(--app-palette-black);
+      padding: 0 var(--app-space-2xs);
+      border-radius: var(--app-border-radius-lg);
+    }
   }
 }

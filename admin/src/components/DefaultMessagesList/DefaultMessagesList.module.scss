@@ -6,9 +6,9 @@
   button {
     cursor: pointer;
     @include typography-text;
-    padding: var(--app-space-s);
+    padding: var(--app-space-xs) var(--app-space-s) ;
     background: white;
-    box-shadow: var(--app-shadow-s);
+    box-shadow: var(--app-shadow);
     border: 0;
     outline: 0;
     border-radius: 99px;

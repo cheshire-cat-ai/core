@@ -22,10 +22,8 @@ const MessageBox: FC<MessageBoxProps> = ({ text, sender, className, ...rest }) =
 
   return (
     <article className={classList} {...rest}>
-      {isBot && (<span className={style.label}>😺</span>)}
-      <span className={style.content}>
-        <span dangerouslySetInnerHTML={{ __html: markdown.render(text) }} />
-      </span>
+      {isBot && (<div className={style.avatar}>😺</div>)}
+      <span className={style.content} dangerouslySetInnerHTML={{ __html: markdown.render(text) }} />
     </article>
   )
 }

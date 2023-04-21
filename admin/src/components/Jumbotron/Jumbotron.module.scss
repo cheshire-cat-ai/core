@@ -1,0 +1,13 @@
+.jumbo {
+  padding: var(--app-space-l);
+  @include typography-text;
+  background: var(--gradient-2);
+  color: var(--app-palette-white);
+  border-radius: var(--app-border-radius-lg);
+  box-shadow: var(--app-shadow);
+
+  h1 {
+    @include typography-title(var(--app-text-size-3));
+    color: var(--app-palette-white);
+  }
+}
