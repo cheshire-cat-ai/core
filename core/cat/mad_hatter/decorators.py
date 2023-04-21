@@ -1,4 +1,4 @@
-from typing import Union, Callable, Any
+from typing import Any, List, Union, Callable
 from inspect import signature
 
 from langchain.tools import BaseTool
@@ -6,19 +6,19 @@ from langchain.agents import Tool
 
 
 # Cat hooks manager
-class CatHooks():
-    __hooks = []
-    
+class CatHooks:
+    __hooks: List = []
+
     @classmethod
     def reset_hook_list(cls):
         CatHooks.__hooks = []
-    
+
     @classmethod
     def sort_hooks(cls):
         # CatHooks.__hooks.sort(key=lambda x: x.count, reverse=True)
-        CatHooks.__hooks.sort(key=lambda x: f"{x['priority']:>20}-{x['count']:>20}", reverse=True)
+        CatHooks.__hooks.sort(key=lambda x: x["priority"], reverse=True)
         return CatHooks.__hooks
-    
+
     # append a hook
     @classmethod
     def add_hook(cls, hook):
@@ -37,17 +37,18 @@ def hook(_func=None, priority=1) -> Any:
             return func(*args, **kargs)
 
         doc_string = func.__doc__
-        if doc_string == None:
-            doc_string = ''
-        CatHooks.add_hook({
-            'hook_function': cat_hook_wrapper,
-            'hook_name': func.__name__,
-            'docstring': func.__doc__,
-            'priority': priority,
-            'count': len(CatHooks.get_hook_list()),
-            'priority': priority,
-        })
-        
+        if doc_string is None:
+            doc_string = ""
+        CatHooks.add_hook(
+            {
+                "hook_function": cat_hook_wrapper,
+                "hook_name": func.__name__,
+                "docstring": func.__doc__,
+                "priority": float(priority),
+                "count": len(CatHooks.get_hook_list()),
+            }
+        )
+
     if _func is None:
         return decorator
     else:

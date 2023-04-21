@@ -1,6 +1,5 @@
 import glob
 import json
-import logging
 import importlib
 from os import path
 from inspect import getmembers, isfunction  # , signature
@@ -115,18 +114,14 @@ class MadHatter:
 
     # execute requested hook
     def execute_hook(self, hook_name, hook_input=None):
-        # TODO: deal with priority and pipelining
-        for plugin in self.hooks:
-            logging.debug(plugin)
-            logging.debug(f"hook_input: {hook_input}")
-            if hook_name == plugin["hook_name"]:
-                hook = plugin["hook_function"]
+        for h in self.hooks:
+            if hook_name == h["hook_name"]:
+                hook = h["hook_function"]
                 if hook_input is None:
-                    logging.debug(self.ccat)
                     ret = hook(cat=self.ccat)
-                    logging.debug(ret)
                     return ret
                 else:
                     return hook(hook_input, cat=self.ccat)
 
+        # every hook must have a default in core_plugin
         raise Exception(f"Hook {hook_name} not present in any plugin")
