@@ -1,7 +1,6 @@
-import { Plugins } from '@models/Plugins'
-import { AsyncStateBase } from '@models/commons'
+import { type Plugin } from '@models/Plugin'
+import { type AsyncStateBase } from '@models/commons'
 
 export interface PluginsState extends AsyncStateBase {
-  plugins: Array<{ id: string, name: string, description: string }>
-  data: Plugins
+  data: Plugin[]
 }

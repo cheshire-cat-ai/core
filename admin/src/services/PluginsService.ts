@@ -3,7 +3,7 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { type Plugins } from '@models/Plugins'
+import { type Plugin } from '@models/Plugin'
 import config from '../config'
 import { toJSON } from '@utils/commons'
 
@@ -14,7 +14,7 @@ const PluginsService = Object.freeze({
   getPlugins: async () => {
     const endpoint = config.endpoints.plugins
 
-    return await fetch(endpoint).then<Plugins>(toJSON)
+    return await fetch(endpoint).then<{ plugins: Plugin[] }>(toJSON).then(({ plugins }) => plugins)
   }
 })
 
