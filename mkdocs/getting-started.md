@@ -78,9 +78,3 @@ docker rmi -f $(docker images -f "dangling=true" -q)
 # Run docker containers
 docker-compose up
 ```
-
-## Custom code
-
-!!! warning
-
-    If you plan to write [custom tools](plugins/plugins.md), remember to start your folders with two underscores to avoid conflict between the git repository and the local one. Eg. `__my_awesome_plugin`

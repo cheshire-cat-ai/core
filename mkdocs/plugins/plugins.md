@@ -2,11 +2,6 @@
 
 To write a plugin just create a new folder in `web/cat/plugins/`. 
 
-!!! warning
-    
-    To avoid conflict between the Cat git and your local folder put two 
-    underscores to make the folder invisible to GitHub. I.e. `__myplugin`.
-
 Add a python file to your plugin folder:
 
     ├── web
