@@ -13,5 +13,7 @@ long_term_memory
 *metadata.db
 *metadata-v*.db
 
-# thinkering in the plugin folder
-core/cat/plugins/__*
+# plugins are not tracked by git
+core/cat/plugins/*
+# plugins readme can stay
+!core/cat/plugins/how-to-write-a-plugin.md
