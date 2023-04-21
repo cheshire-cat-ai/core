@@ -113,7 +113,10 @@ const MessagesService = Object.freeze({
       return this
     }
 
-    socket.send(message)
+    const jsonMessage = JSON.stringify({
+      text: message
+    })
+    socket.send(jsonMessage)
 
     return this
   },

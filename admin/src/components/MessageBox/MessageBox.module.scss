@@ -16,7 +16,43 @@
     background: linear-gradient(180deg, #1E1E1E 0%, #555 100%);
     color: var(--app-palette-white);
     padding: var(--app-space-s);
-    text-align: right;
+
+    // definitions for markdown
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--app-palette-white);
+    }
+
+    table {
+      background: var(--app-palette-white);
+      color: var(--app-palette-black);
+      padding: 0 var(--app-space-2xs);
+      border-radius: var(--app-border-radius);
+    }
+
+    a {
+      color: var(--app-palette-info);
+    }
+
+    img {
+      width: 50%
+    }
+
+    pre {
+      background: var(--app-palette-white);
+      color: var(--app-palette-black);
+      padding: 0 var(--app-space-2xs);
+      border-radius: var(--app-border-radius);
+    }
+    p {
+      code {
+        background: var(--app-palette-white);
+        color: var(--app-palette-black);
+        padding: 0 var(--app-space-2xs);
+        border-radius: var(--app-border-radius);
+      }
+      // ------------------------------
+    }
+
   }
 
   &.bot {
@@ -32,6 +68,43 @@
       border-radius: 0px 15px 15px 15px;
       background: var(--app-palette-white);
       padding: var(--app-space-s);
+    }
+
+    // definitions for markdown
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--app-palette-black);
+    }
+
+    table {
+      background: var(--app-palette-neutral);
+      color: var(--app-palette-black);
+      padding: 0 var(--app-space-2xs);
+      border-radius: var(--app-border-radius);
+    }
+
+    a {
+      color: var(--app-palette-info);
+    }
+
+    img {
+      width: 50%
+    }
+
+    pre {
+      background: var(--app-palette-accent-light);
+      color: var(--app-palette-black);
+      padding: 0 var(--app-space-2xs);
+      border-radius: var(--app-border-radius);
+    }
+    p {
+      code {
+        background: var(--app-palette-accent-light);
+        color: var(--app-palette-black);
+        padding: 0 var(--app-space-2xs);
+        border-radius: var(--app-border-radius);
+      }
+
+      // ------------------------------
     }
   }
 
