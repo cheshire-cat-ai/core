@@ -5,28 +5,30 @@ docs_dir: mkdocs
 site_dir: docs
 
 plugins:
-  - mkdocs-video
+  - mkdocs-video:
+      is_video: True
+      video_muted: True
+      video_autoplay: False
+      video_type: mp4
   - search
-
 
 nav:
   - Hello, dear: index.md
   - Getting Started: getting-started.md
   - How the Cat works: how-the-cat-works.md
   - Basics:
-    - Folders & APIs: basics/basics.md
-    - The Cat Core: basics/cat-core.md
-    - Admin Interface: basics/admin-interface.md
+      - Folders & APIs: basics/basics.md
+      - The Cat Core: basics/cat-core.md
+      - Admin Interface: basics/admin-interface.md
   - Plugins:
-    - How to write a plugin: plugins/plugins.md
-    - Tools: plugins/tools.md
-    - Hooks: plugins/hooks.md
+      - How to write a plugin: plugins/plugins.md
+      - Tools: plugins/tools.md
+      - Hooks: plugins/hooks.md
   - Advanced: advanced.md
   - Tutorials:
       - Overview: tutorials/overview.md
       - Installation and customization: tutorials/installation-customization.md
   - FAQ: faq.md
-
 
 theme:
   name: material
@@ -93,6 +95,3 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-
-
-
