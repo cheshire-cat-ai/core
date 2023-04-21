@@ -1,13 +1,13 @@
 import glob
 import json
+import logging
 import importlib
 from os import path
 from inspect import getmembers, isfunction  # , signature
-import logging
 
-import langchain
 from cat.utils import log, to_camel_case
-from cat.mad_hatter.decorators import CatHooks
+from cat.mad_hatter.decorators import CatTool, CatHooks
+
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -109,7 +109,7 @@ class MadHatter:
 
     # a plugin tool function has to be decorated with @tool (which returns an instance of langchain.agents.Tool)
     def is_cat_tool(self, obj):
-        return isinstance(obj, langchain.agents.Tool)
+        return isinstance(obj, CatTool)
 
     # execute requested hook
     def execute_hook(self, hook_name, hook_input=None):
@@ -117,11 +117,11 @@ class MadHatter:
         for plugin in self.hooks:
             logging.debug(plugin)
             logging.debug(f"hook_input: {hook_input}")
-            if hook_name == plugin['hook_name']:
-                hook = plugin['hook_function']
+            if hook_name == plugin["hook_name"]:
+                hook = plugin["hook_function"]
                 if hook_input is None:
                     logging.debug(self.ccat)
-                    ret =  hook(cat=self.ccat)
+                    ret = hook(cat=self.ccat)
                     logging.debug(ret)
                     return ret
                 else:
