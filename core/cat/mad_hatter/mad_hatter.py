@@ -25,14 +25,16 @@ class MadHatter:
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
-        plugin_folders = glob.glob("cat/plugins/*")
+        # plugins are found in the plugins folder, plus the default core plugin (where default hooks and tools are defined)
+        plugin_folders = ["cat/mad_hatter/core_plugin"] + glob.glob("cat/plugins/*")
 
         all_plugins = []
         CatHooks.reset_hook_list()
         all_tools = []
 
         for folder in plugin_folders:
-            py_files_path = path.join(folder, "*.py")
+            py_files_path = path.join(folder, "**/*.py")
+            log(py_files_path)
             py_files = glob.glob(py_files_path, recursive=True)
 
             # in order to consider it a plugin makes sure there are py files inside the plugin directory

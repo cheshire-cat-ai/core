@@ -7,7 +7,7 @@ from langchain.llms import OpenAI, OpenAIChat
 from cat.mad_hatter.decorators import hook
 
 
-@hook
+@hook(priority=0)
 def get_language_model(cat):
     selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
 
@@ -70,7 +70,7 @@ def get_language_model(cat):
 """
 
 
-@hook
+@hook(priority=0)
 def get_language_embedder(cat):
     # TODO: give more example ocnfigurations
 

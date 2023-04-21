@@ -1,0 +1,4 @@
+{
+    "name": "Core CCat plugin",
+    "description": "The core Cat plugin used to define default hooks and tools. You don't see this plugin in the plugins folder, because it is an hidden plugin. It will be used to try out hooks and tools before they become available to other plugins. Written and delivered just for you, my furry friend."
+}
