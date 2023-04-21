@@ -12,10 +12,11 @@ services:
       - .env
     environment:
       - PYTHONUNBUFFERED=1
+      - SQLITE_DATABASE_URL=sqlite:///database/metadata-v3.db
     ports:
       - ${CORE_PORT}:80
     volumes:
-      - ./core:/app
+      - ./database:/app/database
     command:
       - uvicorn
       - cat.main:cheshire_cat_api
