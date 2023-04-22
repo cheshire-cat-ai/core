@@ -68,6 +68,7 @@ const Home: FC = () => {
       )}
       <motion.div className={clsx(style.bottomToolbar)} {...slideBottomInOUt}>
         <MessageInput
+          messages={messages}
           value={userMessage}
           onChange={setUserMessage}
           onUpload={sendFile}
