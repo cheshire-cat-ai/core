@@ -10,10 +10,10 @@
 
   .notification {
     padding: var(--app-space-s);
-    border-radius: var(--app-border-radius);
+    border-radius: var(--app-border-radius-lg);
     background: var(--app-palette-info);
     color: var(--app-palette-white);
-    box-shadow: var(--app-shadow-s);
+    box-shadow: var(--app-shadow);
     animation: ANotificationIn 0.3s ease-in-out;
 
     &.info {

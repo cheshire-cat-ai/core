@@ -12,13 +12,12 @@
   justify-content: center;
   border-radius: $radius;
   width: 46px;
-  background: var(--app-palette-accent-light);
+  background: var(--app-palette-accent);
   @include transition(all, 250ms);
 
 
   &.active {
     transform: scale(1.45);
-    background: var(--app-palette-accent);
 
     &:before {
       content: '';
