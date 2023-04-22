@@ -20,6 +20,7 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 - 📄 Can ingest documents (.pdf, .txt, .md)
 - 🚀 Extendible via plugins
 - 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
+- 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU)
 
 This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
@@ -88,7 +89,7 @@ docker-compose up
 
 ## Docs and Resources
 - [Official Documentation](https://pieroit.github.io/cheshire-cat/)
-- [Discord Server](https://discord.gg/rSm9htk9pA)
+- [Discord Server](https://discord.gg/bHX5sNFCYU)
 - [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
 
 ## Roadmap
@@ -117,7 +118,7 @@ You can start by:
 - Making tutorials and docs
 - Sharing on social media
 
-If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/rSm9htk9pA)
+If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/bHX5sNFCYU)
 
 ### Code contribution
 

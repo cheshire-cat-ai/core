@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.2 ( 2023-04-22 )
+
+### Enhancements
+
+* introduction of `core_plugin` to have hooks and their defaults in beta before they are documented for plugin devs
+* plugin system `MadHatter` sorts hooks by priority
+* more hooks to control summarization prompt and reelaborate final reply to user
+* chat autofocus and easier home navigation in admin
+
 ## 0.0.1 ( 2023-04-20 )
 
 ### Enhancements

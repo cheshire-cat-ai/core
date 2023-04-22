@@ -43,3 +43,11 @@ Examples:
 """
 
     return hyde_prompt
+    
+@hook(priority=0)
+def get_summarization_prompt(cat):
+    summarization_prompt="""Write a concise summary of the following:
+{text}
+"""
+    return summarization_prompt
+    
