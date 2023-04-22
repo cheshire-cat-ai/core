@@ -29,7 +29,7 @@ GPT3, ChatGPT, Cohere, HuggingFace Hub, HuggingFace endpoints
 
 | Get in touch with us!                                                                                   |                                                                                                                                |
 |---------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| [:fontawesome-brands-discord: Discord](https://discord.gg/rSm9htk9pA){ .md-button .md-button--primary } | :point_left: **Join our Discord server and** :point_down: <br/> **don't forget to give the project a star! ⭐ Thanks again!🙏** |
+| [:fontawesome-brands-discord: Discord](https://discord.gg/bHX5sNFCYU){ .md-button .md-button--primary } | :point_left: **Join our Discord server and** :point_down: <br/> **don't forget to give the project a star! ⭐ Thanks again!🙏** |
    
    
 
