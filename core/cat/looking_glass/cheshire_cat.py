@@ -357,4 +357,6 @@ class CheshireCat:
             },
         }
 
+        final_output = self.mad_hatter.execute_hook("before_returning_response_to_user", final_output)
+
         return final_output
