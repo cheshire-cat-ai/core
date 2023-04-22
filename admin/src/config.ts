@@ -1,7 +1,8 @@
 import { AppFeatures } from '@models/AppFeatures'
-const CORE_HOST = import.meta.env.CORE_HOST
-const CORE_PORT = import.meta.env.CORE_PORT
-const API_KEY = import.meta.env.API_KEY
+
+const CORE_HOST = import.meta.env.CORE_HOST as string || 'localhost'
+const CORE_PORT = import.meta.env.CORE_PORT as string || '1865'
+// const API_KEY = import.meta.env.API_KEY as string || ''
 
 /**
  * Returns the application configuration.
@@ -26,7 +27,7 @@ const config: Config = {
 }
 
 export interface Config {
-   readonly mode: string
+  readonly mode: string
   readonly socketTimeout: number
   readonly features: AppFeatures[]
   readonly endpoints: {

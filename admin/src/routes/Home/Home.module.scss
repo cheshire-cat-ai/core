@@ -1,6 +1,12 @@
 .home {
   position: relative;
 
+  &:after {
+    position: absolute;
+    content: '';
+    bottom: 0;
+  }
+
   .messages {
     padding-bottom: calc(var(--app-space-s) + 70px);
   }

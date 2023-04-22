@@ -20,4 +20,4 @@ export const selectPluginsError = createSelector(selectRootState, (state) => sta
 /**
  * Selects all plugins from the plugins slice.
  */
-export const selectAllPlugins = createSelector(selectRootState, (state) => state.plugins)
+export const selectAllPlugins = createSelector(selectRootState, (state) => state.data)

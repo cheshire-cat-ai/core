@@ -1,9 +1,9 @@
 .messageInput {
-  box-shadow: 0 4px 2px 0 #0000000D, 0 4px 10px 0 #00000010;
+  box-shadow: var(--app-shadow);
   display: flex;
   align-items: center;
   background: var(--app-palette-white);
-  border-radius: var(--app-border-radius);
+  border-radius: var(--app-border-radius-lg);
   padding: var(--app-space-xs) var(--app-space-s);
   position: relative;
   gap: var(--app-space-xs);

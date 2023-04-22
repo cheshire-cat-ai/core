@@ -1,21 +1,29 @@
 :root {
   /**
    * --------------------------------------
-   * COLOURS
+   * Palette
    * --------------------------------------
    */
   --app-palette-white: #FFF;
-  --app-palette-black: #0A090C;
+  --app-palette-black: #000;
   --app-palette-brack-light: #3A3546;
-  --app-palette-neutral: #FDFDFD;
-  --app-palette-neutral-light: #f6f6f6;
-  --app-palette-accent: #333333;
-  --app-palette-accent-light: #333333;
+  --app-palette-neutral: rgba(0, 0, 0, 0.05);
+  --app-palette-accent: #000;
   --app-palette-danger: #EF476F;
   --app-palette-success: #40F99B;
   --app-palette-info: #247BA0;
   --app-palette-border: #d0d7de;
   --app-palette-grey: #656d76;
+
+  /**
+   * --------------------------------------
+   * Semantic colours
+   * --------------------------------------
+   */
+  --app-palette-background: var(--app-palette-neutral);
+  --gradient-1: linear-gradient(180deg, #1E1E1E 0%, #555 100%);
+  --gradient-2: linear-gradient(to bottom, #2C5364, #203A43, #0F2027);
+  --gradient-3: linear-gradient(to bottom, #4286f4, #373b44);
 
   /**
    * --------------------------------------
@@ -84,9 +92,10 @@
    */
   --app-side-space: var(--app-space-s);
   --app-max-content-width: 1400px;
-  --app-border-radius: 5px;
+  --app-border-radius-m: 6px;
+  --app-border-radius-lg: 12px;
 
   --app-easing-fn: ease-in-out;
   --app-animation-duration: 500ms;
-  --app-shadow-s: 0px 4px 6px 0px #0000000D;
+  --app-shadow: 0px 0px 2px rgba(0, 0, 0, 0.15), 0px 2px 5px rgba(0, 0, 0, 0.05), 0px 8px 40px rgba(0, 0, 0, 0.04);
 }

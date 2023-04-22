@@ -8,7 +8,7 @@
   height: var(--app-header-height);
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
-  box-shadow: var(--app-shadow-s);
+  box-shadow: var(--app-shadow);
   z-index: 3;
 
   .content {

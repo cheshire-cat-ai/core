@@ -4,7 +4,7 @@
   background: var(--app-sidebar-background);
   position: fixed;
   backdrop-filter: blur(10px);
-  box-shadow: var(--app-shadow-s);
+  box-shadow: var(--app-shadow);
   border-top: 1px solid #0000000D;
   width: 100%;
 
@@ -26,7 +26,7 @@
 
   header {
     padding: var(--app-side-space);
-    box-shadow: var(--app-shadow-s);
+    box-shadow: var(--app-shadow);
     height: var(--app-header-height);
     border-bottom: 1px solid #0000000D;
     display: flex;

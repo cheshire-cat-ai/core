@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import Page from '@components/Page'
 import { Button, Card } from 'antd'
 import routesDescriptor from '@routes/routesDescriptor'
+import Jumbotron from '@components/Jumbotron'
 
 import style from './Settings.module.scss'
 
@@ -16,9 +17,9 @@ const Settings: FC = ({ ...rest }) => {
 
   return (
     <Page className={style.settings} variant="narrow" {...rest}>
-      <div className={style.title}>
-        Set up your Cat
-      </div>
+      <Jumbotron title="Set up your cat" className={style.desc}>
+        Configure your Cheshire Cat to suit your needs
+      </Jumbotron>
 
       <div className={style.grid}>
         <Card title="Language model" actions={[LLMActions]}>

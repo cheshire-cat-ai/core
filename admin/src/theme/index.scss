@@ -16,7 +16,7 @@ html {
 body {
   @include typography-text;
   color: var(--app-palette-text);
-  background: var(--app-palette-black);
+  background: var(--app-palette-background);
   -webkit-user-drag: none;
 }
 
