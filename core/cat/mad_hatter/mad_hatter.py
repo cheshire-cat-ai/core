@@ -28,8 +28,7 @@ class MadHatter:
         plugin_folders = ["cat/mad_hatter/core_plugin"] + glob.glob("cat/plugins/*")
 
         all_plugins = []
-        CatHooks.reset_hook_list()
-        all_tools = []
+        all_tools = [] 
 
         for folder in plugin_folders:
             py_files_path = path.join(folder, "**/*.py")
@@ -118,8 +117,7 @@ class MadHatter:
             if hook_name == h["hook_name"]:
                 hook = h["hook_function"]
                 if hook_input is None:
-                    ret = hook(cat=self.ccat)
-                    return ret
+                    return hook(cat=self.ccat)
                 else:
                     return hook(hook_input, cat=self.ccat)
 
