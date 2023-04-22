@@ -71,21 +71,10 @@ class CheshireCat:
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
-        # TODO: we could import this from plugins
-        self.summarization_prompt = """Write a concise summary of the following:
-{text}
-"""
-        # TODO: import chain_type from settings
-        self.summarization_chain = load_summarize_chain(
-            self.llm,
-            chain_type="stuff",
-            prompt=langchain.PromptTemplate(
-                template=self.summarization_prompt, input_variables=["text"]
-            ),
-        )
+        self.summarization_prompt = self.mad_hatter.execute_hook("get_summarization_prompt")  
 
         # custom summarization chain
-        self.custom_summarization_chain = langchain.chains.LLMChain(
+        self.summarization_chain = langchain.chains.LLMChain(
             llm=self.llm,
             verbose=False,
             prompt=langchain.PromptTemplate(
@@ -167,23 +156,19 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     # iterative summarization
-    def get_summary_text(self, docs, group_size=3, custom=True):
+    def get_summary_text(self, docs, group_size=3):
         # service variable to store intermediate results
         intermediate_summaries = docs
 
         # we will store iterative summaries all together in a list
         all_summaries = []
 
-        summarization_chain = (
-            self.custom_summarization_chain if custom else self.summarization_chain
-        )
-
         # loop until there are no groups to summarize
         root_summary_flag = False
         while not root_summary_flag:
             # make summaries of groups of docs
             intermediate_summaries = [
-                summarization_chain.run(intermediate_summaries[i : i + group_size])
+                self.summarization_chain.run(intermediate_summaries[i : i + group_size])
                 for i in range(0, len(intermediate_summaries), group_size)
             ]
             intermediate_summaries = [
