@@ -1,6 +1,6 @@
 .notificationStack {
   position: fixed;
-  top: 0;
+  top: var(--app-space-xl); /* otherwise the notification stays on top of nav links */
   right: 0;
 
   &.hasNotifications {
