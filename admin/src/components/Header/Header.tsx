@@ -7,6 +7,7 @@ import Navigation from '@components/Navigation'
 import { type CommonProps } from '@models/commons'
 
 import style from './Header.module.scss'
+import SoundButton from '@components/SoundButton/SoundButton'
 
 /**
  * The application's header.
@@ -24,6 +25,7 @@ const Header: FC<HeaderProps> = ({ onLogoClick, className, ...rest }) => {
             <Logo />
             <p>Cheshire Cat</p>
           </div>
+          <SoundButton />
           <div className={style.actions}>
             <HamburgerButton active={sideNavActive} onClick={toggleSideNave} className={style.hmgBtn} />
             <Navigation className={style.desktopNav} />

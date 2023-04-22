@@ -4,7 +4,7 @@ import fileUploaderReducer from './fileUploader/slice'
 import notificationsReducer from './notifications/slice'
 import llmProvidersReducer from './llmProviders/slice'
 import pluginsReducer from './plugins/slice'
-
+import soundsReducer from './soundControls/slice'
 /**
  * The redux store
  */
@@ -14,7 +14,8 @@ const store = configureStore({
     notifications: notificationsReducer,
     messages: messagesReducer,
     fileUploader: fileUploaderReducer,
-    plugins: pluginsReducer
+    plugins: pluginsReducer,
+    sounds: soundsReducer
   }
 })
 

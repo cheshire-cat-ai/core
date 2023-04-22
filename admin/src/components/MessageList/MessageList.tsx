@@ -8,6 +8,8 @@ import { type CommonProps } from '@models/commons'
 import clsx from 'clsx'
 
 import style from './MessageList.module.scss'
+import { selectSoundState } from '@store/soundControls/selectors'
+import { useSelector } from 'react-redux'
 
 /**
  * Displays a list of chat messages.
@@ -15,6 +17,7 @@ import style from './MessageList.module.scss'
  */
 const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, className, ...rest }) => {
   const classList = clsx(style.messages, className)
+  const playSound =  useSelector(selectSoundState)
   const [, { play: playPop }] = useAudio('pop.mp3')
   const elRef = useRef<HTMLDivElement>(null)
 
@@ -36,7 +39,7 @@ const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, classNa
   }, [messages.length])
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (messages.length > 0 && playSound) {
       playPop()
     }
   }, [playPop, messages.length])
