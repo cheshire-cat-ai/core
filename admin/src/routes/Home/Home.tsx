@@ -12,8 +12,8 @@ import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
 import { slideBottomInOUt } from '@utils/animations'
-
 import style from './Home.module.scss'
+import useSounds from '@hooks/useSounds'
 
 /**
  * Displays the chat interface and handles the user's input.
@@ -24,6 +24,7 @@ const Home: FC = () => {
   const { sendFile, isUploading } = useRabbitHole()
   const [userMessage, setUserMessage] = useState('')
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
+  const { volumeEnabled } = useSounds()
 
   /**
    * When the user stops recording, the transcript will be sent to the messages service
@@ -82,6 +83,7 @@ const Home: FC = () => {
             onRecordingStart={startRecording}
             onRecordingComplete={stopRecording}
             disabled={inputDisabled}
+            playAudio={volumeEnabled}
           />
         )}
       </motion.div>

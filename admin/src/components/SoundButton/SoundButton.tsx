@@ -1,31 +1,35 @@
-import { Button } from "antd";
-import { FC } from "react";
+import { ButtonHTMLAttributes, FC } from "react";
 import VolumeEnabled from './volume-high-solid.svg'
 import VolumeDisabled from './volume-xmark-solid.svg'
-import useToggle from "beautiful-react-hooks/useToggle";
-import clsx from "clsx";
 import style from './SoundButton.module.scss'
-import { useDispatch, useSelector } from "react-redux";
-import { toggleSounds } from '@store/soundControls/slice'
-import { selectSoundState } from "@store/soundControls/selectors";
+import clsx from "clsx";
+
 
 /**
- * this is a button to mute or unmute the sound
+ * button to mute or unmute the whole app
  *  
  */
 
-const SoundButton: FC = () => {
-    const volumeEnabled = useSelector(selectSoundState)
-    const dispatch = useDispatch()
-    
-    const volumeController = () => {
-        dispatch(toggleSounds())
-    }
+const SoundButton: FC<SoundButtonProps> = (props) => {
+    const { active, onClick, className } = props
+    const classList = clsx(style.soundBtn, className)
 
     return (
-        <div>
-            <Button onClick={volumeController} icon={volumeEnabled ? <VolumeEnabled /> : <VolumeDisabled />} className={clsx(style.soundBtn)} />
-        </div>
+        <button role="button" onClick={onClick} className={classList}>
+            {active ? <VolumeEnabled /> : <VolumeDisabled />}
+        </button>
     )
+}
+
+export interface SoundButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    /**
+     * Indicates whether the button is currently active (clicked).
+     */
+    active?: boolean
+    /**
+     * A callback that will be fired when the button is clicked.
+     * This callback is generally used to toggle the state of the component.
+     */
+    onClick?: React.MouseEventHandler<HTMLButtonElement>
 }
 export default SoundButton
