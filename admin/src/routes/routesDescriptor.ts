@@ -10,11 +10,11 @@ export interface RoutesDescriptor {
 const routesDescriptor = {
   home: {
     path: '/',
-    label: 'Home'
+    label: '🏠️ Home'
   },
   settings: {
     path: '/settings',
-    label: 'Settings',
+    label: '⚙️ Settings',
     guard: AppFeatures.Settings
   },
   llm: {
@@ -24,13 +24,13 @@ const routesDescriptor = {
   },
   plugins: {
     path: '/plugins',
-    label: 'Plugins',
+    label: '🔌 Plugins',
     guard: AppFeatures.Plugins
   },
   documentation: {
     external: true,
     path: 'https://pieroit.github.io/cheshire-cat/',
-    label: 'Documentation'
+    label: '📖 Documentation'
   }
 } satisfies Record<string, RoutesDescriptor>
 
