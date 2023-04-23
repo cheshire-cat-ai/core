@@ -22,6 +22,7 @@
         }
 
         &.active {
+          padding-bottom: calc(var(--app-space-xs) / 2);
           border-bottom: 2px solid var(--app-palette-accent);
         }
       }

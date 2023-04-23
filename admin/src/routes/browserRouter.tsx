@@ -7,9 +7,9 @@ import { AppFeatures } from '@models/AppFeatures'
 
 const Home = React.lazy(() => import('./Home'))
 const Settings = React.lazy(() => import('./Settings'))
-const LangModelProvider = React.lazy(() => import('./LanguageModel'))
-// const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
+const LanguageModels = React.lazy(() => import('./LanguageModels'))
 const Plugins = React.lazy(() => import('./Plugins'))
+// const WorkInProgress = React.lazy(() => import('./WorkInProgress'))
 
 /**
  * Creates and exports the application routes.
@@ -36,7 +36,7 @@ export default createBrowserRouter([
         children: [
           {
             path: routesDescriptor.llm.path,
-            element: <LangModelProvider />
+            element: <LanguageModels />
           }
         ]
       },

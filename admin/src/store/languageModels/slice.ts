@@ -32,6 +32,10 @@ export const updateLanguageModelSettings = createAsyncThunk(
 /**
  * The 'languageModels' slice of the redux store.
  * It contains the state of all the available language models.
+ * As well as information about:
+ * - the currently selected language model.
+ * - the settings of each language model.
+ * - the loading state of the language models when fetching them and updating them.
  */
 const languageModels = createSlice({
   name: 'languageModels',
@@ -58,6 +62,18 @@ const languageModels = createSlice({
       state.settings = state.data.settings.reduce((acc, { name, value }) => ({ ...acc, [name]: value }), {})
     })
     builder.addCase(fetchLanguageModels.rejected, (state, action) => {
+      state.loading = false
+      state.error = action.error.message
+    })
+
+    builder.addCase(updateLanguageModelSettings.pending, (state) => {
+      state.updating = true
+    })
+    builder.addCase(updateLanguageModelSettings.fulfilled, (state) => {
+      state.updating = false
+    })
+    builder.addCase(updateLanguageModelSettings.rejected, (state, action) => {
+      state.updating = false
       state.error = action.error.message
     })
   }

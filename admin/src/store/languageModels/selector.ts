@@ -8,13 +8,13 @@ import { type SettingsRecord } from '@models/JSONSchemaBasedSettings'
 const selectRootState = (state: RootState) => state.languageModels
 
 /**
- * Selects the 'loading' flag from the languageModels state reporting whether a file is currently being uploaded.
+ * Selects the 'loading' flag from the languageModels state reporting whether the language models are being loaded.
  */
 export const selectLanguageModelsLoading = createSelector(selectRootState, (state) => state.loading)
 
 /**
  * Selects the error state from the languageModels slice.
- * It contains the error message if an error occurred while sending a file.
+ * It contains the error message if an error occurred while loading the language models.
  */
 export const selectLanguageModelsError = createSelector(selectRootState, (state) => state.error)
 
@@ -34,6 +34,11 @@ export const selectCurrentLanguageModel = createSelector(selectRootState, (state
 export const selectAllAvailableProviders = createSelector(selectLanguageModelData, (providers) => {
   return providers?.schemas ? Object.values(providers.schemas) : []
 })
+
+/**
+ * Selects the 'updating' flag from the languageModels state reporting whether the current language model is being updated.
+ */
+export const selectLanguageModelsUpdating = createSelector(selectRootState, (state) => state.updating)
 
 /**
  * Selects the schema for the current language model provider

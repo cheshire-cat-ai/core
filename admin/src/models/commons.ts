@@ -30,7 +30,8 @@ export interface CommonProps<TElement extends HTMLElement = HTMLElement> {
 export type ComponentRenderer<TProps = Record<string, unknown>> = JSXElementConstructor<TProps> | string
 
 /**
- * Defines a generic interface for defining the state of an asynchronous operation.
+ * A base interface for defining the state of asynchronous operations.
+ * This is intended as a base for other interfaces, should not be used directly
  */
 export interface AsyncStateBase {
   readonly loading: boolean
@@ -38,14 +39,14 @@ export interface AsyncStateBase {
 }
 
 /**
- * Defines a generic interface for defining the state of an asynchronous operation that returns data.
+ * A generic interface for defining the state of an asynchronous operation that returns data (like fetch)
  */
 export interface AsyncState<TData> extends AsyncStateBase {
   readonly data?: TData
 }
 
 /**
- * TODO: document this
+ * Defines a generic interface for defining the state of an asynchronous operation that returns data and can be updated.
  */
 export interface UpdatableState<TData> extends AsyncState<TData> {
   readonly updating: boolean

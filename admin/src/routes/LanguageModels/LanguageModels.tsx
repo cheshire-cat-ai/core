@@ -5,11 +5,11 @@ import { Button, Form, Select } from 'antd'
 import Alert from '@components/Alert'
 import SidePanel from '@components/SidePanel'
 import Spinner from '@components/Spinner'
-import useLLMProviders from '@hooks/useLLMProviders'
+import useLanguageModels from '@hooks/useLanguageModels'
 import SchemaForm from '@components/SchemaForm'
 import useNotifications from '@hooks/useNotifications'
+import useCurrentLanguageModel from '@hooks/useCurrentLanguageModel'
 import routesDescriptor from '@routes/routesDescriptor'
-import { uniqueId } from '@utils/commons'
 
 import style from './LanguageModels.module.scss'
 
@@ -17,15 +17,12 @@ import style from './LanguageModels.module.scss'
  * Language Model configuration side panel
  */
 const LanguageModels: FC = () => {
-  const {
-    providers, error, isLoading, selectProvider, selected, schema, requireProviders,
-    setCurrentProviderSettings, settings, updateProviderSettings
-  } = useLLMProviders()
-  const navigate = useNavigate()
+  const { providers, error, isLoading, selectProvider, schema, requireProviders } = useLanguageModels()
+  const { selected, updating, setCurrentProviderSettings, settings, updateProviderSettings } = useCurrentLanguageModel()
   const { showNotification } = useNotifications()
+  const navigate = useNavigate()
   const formWrapperRef = useRef<HTMLDivElement>(null)
   const options = providers.map((p) => ({ label: p.name_human_readable, value: p.languageModelName }))
-  const title = 'Configure your language model'
 
   useEffect(() => {
     void requireProviders()
@@ -43,24 +40,28 @@ const LanguageModels: FC = () => {
   }, [])
 
   const onSubmit = useCallback(() => {
-    void updateProviderSettings()?.then(() => {
-      showNotification({
-        id: uniqueId(),
-        type: 'success',
-        message: 'Language model provider updated'
-      })
-    })
+    const promise = updateProviderSettings()
+
+    if (promise) {
+      void promise
+        .then(() => {
+          showNotification({
+            type: 'success',
+            message: 'Language model provider updated'
+          })
+        })
+    }
   }, [showNotification, updateProviderSettings])
 
   const Footer = (
     <div className={style.footer}>
-      <Button type="primary" onClick={onUpdate}>Update</Button>
+      <Button type="primary" disabled={updating} onClick={onUpdate}>{updating ? 'Updating...' : 'Update'}</Button>
       <Button onClick={handleOnClose}>Close</Button>
     </div>
   )
 
   return (
-    <SidePanel active title={title} onClose={handleOnClose} position="right" FooterRenderer={Footer}>
+    <SidePanel active title="Configure your language model" onClose={handleOnClose} position="right" FooterRenderer={Footer}>
       <div className={clsx(style.llm, isLoading && style.loading)}>
         {isLoading && <Spinner />}
         {error && <Alert variant="error">{error}</Alert>}

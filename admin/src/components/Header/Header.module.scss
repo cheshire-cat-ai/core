@@ -21,14 +21,10 @@
     margin: 0 auto;
     padding: 0 var(--app-side-space);
 
-    .logoWrapper {
+    .logoWrapper a {
       display: flex;
       align-items: center;
       gap: var(--app-space-s);
-
-      &.clickable {
-        cursor: pointer;
-      }
 
       p {
         margin: 0;

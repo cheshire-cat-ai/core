@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
-import { Outlet, useRouteError, useNavigate } from 'react-router-dom'
-import { uniqueId } from '@utils/commons'
+import { Outlet, useRouteError } from 'react-router-dom'
 import clsx from 'clsx'
 import Page from '@components/Page'
 import Header from '@components/Header'
@@ -21,20 +20,13 @@ import style from './Scaffold.module.scss'
  */
 const Scaffold = () => {
   const { notifications, showNotification } = useNotifications()
-  const navigate = useNavigate();
 
   const purrNotification = useCallback(() => {
-
     // show notification
     showNotification({
-      id: uniqueId(),
       message: WittyService.catchPhrase(),
       type: 'info'
     })
-
-    // go to home page
-    navigate('/')
-
   }, [showNotification])
 
   return (

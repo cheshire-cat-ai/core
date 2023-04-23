@@ -2,13 +2,8 @@ import { useCallback } from 'react'
 import RabbitHoleService from '@services/RabbitHoleService'
 import { useDispatch, useSelector } from 'react-redux'
 import { setError, setResponse, startSending } from '@store/fileUploader/slice'
-import {
-  selectFileUploadError,
-  selectFileUploadIsLoading,
-  selectFileUploadResponse
-} from '@store/fileUploader/selectors'
+import { selectFileUploadError, selectFileUploadIsLoading, selectFileUploadResponse } from '@store/fileUploader/selectors'
 import useNotifications from '@hooks/useNotifications'
-import { uniqueId } from '@utils/commons'
 
 /**
  * A custom hook that is used to send files to the rabbit hole (file-uploader service).
@@ -30,7 +25,6 @@ const useRabbitHole = () => {
       .send(file)
       .then((data) => dispatch(setResponse({ data })))
       .then(() => showNotification({
-        id: uniqueId(),
         message: `File ${file.name} successfully send down the rabbit hole!`,
         type: 'success'
       }))
