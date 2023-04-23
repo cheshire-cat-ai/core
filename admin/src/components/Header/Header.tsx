@@ -27,7 +27,7 @@ const Header: FC<HeaderProps> = ({ onLogoClick, className, ...rest }) => {
             <Logo />
             <p>Cheshire Cat</p>
           </div>
-          <SoundButton className={style.soundBtn} onClick={volumeController} active={volumeEnabled} />
+          <SoundButton active={volumeEnabled} onClick={volumeController} className={style.soundBtn} />
           <div className={style.actions}>
             <HamburgerButton active={sideNavActive} onClick={toggleSideNave} className={style.hmgBtn} />
             <Navigation className={style.desktopNav} />
