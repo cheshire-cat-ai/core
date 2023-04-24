@@ -8,16 +8,13 @@ import { type CommonProps } from '@models/commons'
 import clsx from 'clsx'
 
 import style from './MessageList.module.scss'
-import { selectSoundState } from '@store/soundControls/selectors'
-import { useSelector } from 'react-redux'
 
 /**
  * Displays a list of chat messages.
  * Automatically scrolls to the bottom when new messages are added.
  */
-const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, className, ...rest }) => {
+const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, className, playSound, ...rest }) => {
   const classList = clsx(style.messages, className)
-  const playSound =  useSelector(selectSoundState)
   const [, { play: playPop }] = useAudio('pop.mp3')
   const elRef = useRef<HTMLDivElement>(null)
 
@@ -70,6 +67,11 @@ export interface MessageListProps extends CommonProps {
    * The error message to display
    */
   error?: string
+
+  /**
+   * Whether to play a sound when a new message is added
+   */
+  playSound?: boolean
 }
 
 export default React.memo(MessageList)
