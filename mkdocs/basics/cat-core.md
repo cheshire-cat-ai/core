@@ -26,14 +26,14 @@ Example of how to implement a simple chat system using the websocket endpoint at
         
             try:
                 # Creating a websocket connection
-                async with websockets.connect('ws://localhost:1865/ws/') as websocket:
+                async with websockets.connect('ws://localhost:1865/ws') as websocket:
         
                     # Running a continuous loop until broken
                     while True:
         
                         # Taking user input and sending it through the websocket
                         user_input = input("Human: ")
-                        await websocket.send(user_input)
+                        await websocket.send(json.dumps({"text": user_input}))
         
                         # Receiving and printing the cat's response
                         cat_response = await websocket.recv()
