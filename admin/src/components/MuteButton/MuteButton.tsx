@@ -2,7 +2,7 @@ import React from 'react'
 import { type ButtonHTMLAttributes, type FC } from 'react'
 import VolumeEnabled from './volume-high-solid.svg'
 import VolumeDisabled from './volume-xmark-solid.svg'
-import style from './SoundButton.module.scss'
+import style from './MuteButton.module.scss'
 import clsx from 'clsx'
 
 /**
