@@ -1,0 +1,30 @@
+.soundBtn {
+    $radius: 99px;
+    position: relative;
+    appearance: none;
+    cursor: pointer;
+    border: 0;
+    outline: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius;
+    width: 46px;
+    background-color: transparent;
+    @include transition(all, 250ms);
+
+    svg {
+        width: 27px;
+        fill: black;
+
+        path,
+        line {
+            stroke: var(--app-palette-black);
+        }
+    }
+
+    @include tablet-landscape-view {
+        width: 50px;
+    }
+}

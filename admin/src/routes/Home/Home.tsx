@@ -12,8 +12,9 @@ import RecordingButton from '@components/RecordingButton'
 import useMessagesService from '@hooks/useMessagesService'
 import useRabbitHole from '@hooks/useRabbitHole'
 import { slideBottomInOUt } from '@utils/animations'
-
 import style from './Home.module.scss'
+import useToggle from 'beautiful-react-hooks/useToggle'
+import MuteButton from '@components/MuteButton/MuteButton'
 
 /**
  * Displays the chat interface and handles the user's input.
@@ -24,8 +25,8 @@ const Home: FC = () => {
   const { sendFile, isUploading } = useRabbitHole()
   const [userMessage, setUserMessage] = useState('')
   const inputDisabled = isSending || isRecording || !isReady || Boolean(error)
-
-  /**
+  const [volumeEnabled, toggleVolume] = useToggle(true)
+  /*
    * When the user stops recording, the transcript will be sent to the messages service
    */
   useEffect(() => {
@@ -63,10 +64,11 @@ const Home: FC = () => {
           {messages.length === 0 && (
             <DefaultMessagesList messages={defaultMessages} onMessageClick={onQuestionClick} />)}
           {messages.length > 0 && (
-            <MessageList messages={messages} isLoading={isSending} error={error} className={style.messages} />)}
+            <MessageList messages={messages} isLoading={isSending} error={error} playSound={volumeEnabled} className={style.messages} />)}
         </>
       )}
       <motion.div className={clsx(style.bottomToolbar)} {...slideBottomInOUt}>
+        <MuteButton active={volumeEnabled} onClick={toggleVolume} className={style.soundBtn} />
         <MessageInput
           messages={messages}
           value={userMessage}
@@ -83,6 +85,7 @@ const Home: FC = () => {
             onRecordingStart={startRecording}
             onRecordingComplete={stopRecording}
             disabled={inputDisabled}
+            playAudio={volumeEnabled}
           />
         )}
       </motion.div>
