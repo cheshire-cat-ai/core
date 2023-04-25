@@ -4,6 +4,7 @@ import fileUploaderReducer from './fileUploader/slice'
 import notificationsReducer from './notifications/slice'
 import llmProvidersReducer from './llmProviders/slice'
 import pluginsReducer from './plugins/slice'
+
 /**
  * The redux store
  */
