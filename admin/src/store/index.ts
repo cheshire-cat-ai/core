@@ -13,7 +13,7 @@ const store = configureStore({
     notifications: notificationsReducer,
     messages: messagesReducer,
     fileUploader: fileUploaderReducer,
-    plugins: pluginsReducer,
+    plugins: pluginsReducer
   }
 })
 

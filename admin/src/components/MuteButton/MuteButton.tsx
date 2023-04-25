@@ -10,7 +10,7 @@ import clsx from "clsx";
  *  
  */
 
-const SoundButton: FC<SoundButtonProps> = (props) => {
+const MuteButton: FC<MuteButtonProps> = (props) => {
     const { active, onClick, className } = props
     const classList = clsx(style.soundBtn, className)
 
@@ -21,7 +21,7 @@ const SoundButton: FC<SoundButtonProps> = (props) => {
     )
 }
 
-export interface SoundButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface MuteButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     /**
      * Indicates whether the button is currently active (clicked).
      */
@@ -32,4 +32,4 @@ export interface SoundButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
      */
     onClick?: React.MouseEventHandler<HTMLButtonElement>
 }
-export default SoundButton
+export default MuteButton
