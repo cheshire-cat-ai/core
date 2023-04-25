@@ -90,7 +90,7 @@ docker-compose up
 ## Docs and Resources
 - [Official Documentation](https://pieroit.github.io/cheshire-cat/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
-- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://youtu.be/srsaYy0xmkc)
+- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://www.youtube.com/watch?v=vyHg6op6FF8)
 
 ## Roadmap
 
