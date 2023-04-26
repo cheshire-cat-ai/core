@@ -8,20 +8,23 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def get_caller_info(skip=2):
-    """Get the name of a caller in the format module.class.method.
+    """
+    Get the name of a caller in the format module.class.method. \
     Copied from: https://gist.github.com/techtonik/2151727
-    :arguments:
-        - skip (integer): Specifies how many levels of stack
-                          to skip while getting caller name.
-                          skip=1 means "who calls me",
-                          skip=2 "who calls my caller" etc.
-    :returns:
-        - package (string): caller package.
-        - module (string): caller module.
-        - klass (string): caller classname if one otherwise None.
-        - caller (string): caller function or method (if a class exist).
-        - line (int): the line of the call.
-        - An empty string is returned if skipped levels exceed stack height.
+
+    :param skip: Specifies how many levels of stack \
+            to skip while getting caller name. \
+            skip=1 means "Who calls me", \
+            skip=2 means "Who calls my caller" etc. 
+            defaults to 2
+    :type skip: int, optional
+    :return: package (str) : caller package. \
+            module (str) : caller module. \
+            klass (string): caller classname if one otherwise None. \
+            caller (string): caller function or method (if a class exist). \
+            line (int): the line of the call. \
+            An empty string is returned if skipped levels exceed stack height. \
+    :rtype: package, module, klass, caller, line
     """
     stack = inspect.stack()
     start = 0 + skip
@@ -56,7 +59,13 @@ def get_caller_info(skip=2):
     return package, module, klass, caller, line
 
 
-def log(msg):
+def log(msg: str) -> None:
+    """
+    Log the message.
+
+    :param msg: Message
+    :type msg: str
+    """
     (package, module, klass, caller, line) = get_caller_info()
     color_code = "38;5;219"
 
@@ -72,8 +81,15 @@ def log(msg):
     logging.debug(f"\u001b[{color_code}m\033[0.1m{msg_footer}")
 
 
-# Takes in a string of words separated by either hyphens or underscores and returns a string of words in camel case
-def to_camel_case(text):
+def to_camel_case(text: str):
+    """
+    Takes in a string of words separated by either hyphens or underscores and returns a string of words in camel case
+
+    :param text: Text
+    :type text: str
+    :return: Text in Camel Case.
+    :rtype: _type_
+    """
     s = text.replace("-", " ").replace("_", " ").capitalize()
     s = s.split()
     if len(text) == 0:
@@ -81,22 +97,20 @@ def to_camel_case(text):
     return s[0] + "".join(i.capitalize() for i in s[1:])
 
 
-
 def verbal_timedelta(td):
     if td.days != 0:
         abs_days = abs(td.days)
         if abs_days > 7:
-            abs_delta = '{} weeks'.format(td.days // 7)
+            abs_delta = "{} weeks".format(td.days // 7)
         else:
-            abs_delta = '{} days'.format(td.days)
+            abs_delta = "{} days".format(td.days)
     else:
         abs_minutes = abs(td.seconds) // 60
         if abs_minutes > 60:
-            abs_delta = '{} hours'.format(abs_minutes // 60)
+            abs_delta = "{} hours".format(abs_minutes // 60)
         else:
-            abs_delta = '{} minutes'.format(abs_minutes)
+            abs_delta = "{} minutes".format(abs_minutes)
     if td < timedelta(0):
-        return '{} ago'.format(abs_delta)
+        return "{} ago".format(abs_delta)
     else:
-        return '{} ago'.format(abs_delta)
-
+        return "{} ago".format(abs_delta)

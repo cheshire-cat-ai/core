@@ -7,8 +7,14 @@ router = APIRouter()
 # GET plugins
 @router.get("/", status_code=200)
 async def list_available_plugins(request: Request) -> Dict:
-    """List available plugins."""
+    """
+    List of available plugins.
 
+    :param request: Request
+    :type request: Request
+    :return: {"status": "success", "results": len(plugins), "plugins": plugins}
+    :rtype: Dict
+    """
     # access cat instance
     ccat = request.app.state.ccat
 
@@ -20,8 +26,13 @@ async def list_available_plugins(request: Request) -> Dict:
 
 @router.get("/{plugin_id}", status_code=200)
 async def plugin_detail(plugin_id: str, request: Request) -> Dict:
-    """Returns information on a single plugin"""
+    """
+    Returns information on a single plugin.
 
+    :raises HTTPException: Item not found.
+    :return: {"status": "success", "data": found}
+    :rtype: _type_
+    """
     # access cat instance
     ccat = request.app.state.ccat
 

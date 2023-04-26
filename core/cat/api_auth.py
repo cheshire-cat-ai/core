@@ -8,6 +8,15 @@ api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 
 def check_api_key(api_key: str = Security(api_key_header)) -> None | str:
+    """
+    Checks for API key.
+
+    :param api_key: API Key, defaults to Security(api_key_header)
+    :type api_key: str, optional
+    :raises HTTPException: Invalid API Key.
+    :return: API Key
+    :rtype: None | str
+    """
     if not API_KEY:
         return None
     if api_key in API_KEY:

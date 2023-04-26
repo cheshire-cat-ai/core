@@ -19,7 +19,7 @@ from langchain.docstore.document import Document
 class RabbitHole:
     def __init__(self):
         pass
-    
+
     @staticmethod
     def url_to_docs(
         url: str,
@@ -29,10 +29,14 @@ class RabbitHole:
         """
         Scrape website content and chunk it to a list of Documents.
         :param url: URL of the website to which you want to save the content
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        :type url: str
+        :param chunk_size: Number of characters the text is split in, defaults to 400
+        :type chunk_size: int, optional
+        :param chunk_overlap: Number of overlapping characters between consecutive chunk, defaults to 100
+        :type chunk_overlap: int, optional
+        :return: List of documents
+        :rtype: List[Document]
         """
-
         # load text content of the website
         loader = UnstructuredURLLoader(urls=[url])
         text = loader.load()
@@ -53,13 +57,21 @@ class RabbitHole:
         chunk_overlap: int = 100,
     ) -> List[Document]:
         """
-        Parse a file and chunk it to a list of Documents.
-        The file can either be ingested from the web GUI or using the Cat *send_file_in_rabbit_hole* method.
-        :param file: absolute path of the file or UploadFile if ingested from the GUI
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
-        """
+        Parse a file and chunk it to a list of Documents. \
+        The file can either be ingested from the web GUI or using the Cat \
+        *send_file_in_rabbit_hole* method.
 
+        :param file: Absolute path of the file or UploadFile if ingested from the GUI
+        :type file: Union[str, UploadFile]
+        :param chunk_size: Number of characters the text is split in, defaults to 400
+        :type chunk_size: int, optional
+        :param chunk_overlap: Number of overlapping characters between consecutive chunks, defaults to 100
+        :type chunk_overlap: int, optional
+        :raises ValueError: File is not a valid type.
+        :raises Exception: _description_
+        :return: MIME type not supported for upload
+        :rtype: List[Document]
+        """
         # Create temporary file
         temp_file = tempfile.NamedTemporaryFile(dir=".", delete=False)
         temp_name = temp_file.name
@@ -122,9 +134,13 @@ class RabbitHole:
     def store_documents(ccat, docs: List[Document], source: str) -> None:
         """
         Load a list of Documents in the Cat's declarative memory.
-        :param ccat: reference to the cat instance
-        :param docs: a list of documents to store in memory
-        :param source: a string representing the source, either the file name or the website URL
+
+        :param ccat: Reference to the cat instance
+        :type ccat: CheshireCat
+        :param docs: A list of documents to store in memory
+        :type docs: List[Document]
+        :param source: A string representing the source, either the file name or the website URL
+        :type source: str
         """
         log(f"Preparing to memorize {len(docs)} vectors")
 
@@ -151,5 +167,4 @@ class RabbitHole:
                 "why": {},
             }
         )
-
         log("Done uploading")
