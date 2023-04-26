@@ -31,7 +31,7 @@ Of course you can: just change the prompts in the Plugin folder accordingly, and
 Just open the console in your browser to check the logs there. At some point soon, this information will end up in the user interface, but at the moment is behind the scenes.
 
 #### I sent to the Cat some text and documents I won't to get rid of, How can I do?
-You can delete the web/long_term_memory folder and restart the Cat!
+You can delete the `long_term_memory` folder and restart the Cat!
 
 ## Errors
 
