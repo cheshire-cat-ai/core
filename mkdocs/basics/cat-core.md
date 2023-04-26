@@ -14,7 +14,9 @@ A full documentation with Swagger is inside the Cat itself and can be reached at
 ## :speech_balloon: Interacting with the Cat
 
 Example of how to implement a simple chat system using the websocket endpoint at `localhost:1865/ws/`.
-   
+!!! info "Request JSON schema"
+    Sending input will request you to do it in the following specific JSON format `{"text": "input message here"}`
+
 !!! example
 
     === "Python"
