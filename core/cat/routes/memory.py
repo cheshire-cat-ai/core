@@ -7,7 +7,14 @@ router = APIRouter()
 # DELETE delete_memories
 @router.delete("/{memory_id}/")
 async def delete_memories(memory_id: str) -> Dict:
-    """Delete specific memory."""
+    """
+    Delete specific memory.
+
+    :param memory_id: ID of the memory
+    :type memory_id: str
+    :return: {"error": "to be implemented"}
+    :rtype: Dict
+    """
     return {"error": "to be implemented"}
 
 
@@ -18,7 +25,18 @@ async def recall_memories_from_text(
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
 ) -> Dict:
-    """Search k memories similar to given text."""
+    """
+    Search k memories similar to given text
+
+    :param request: Request
+    :type request: Request
+    :param text: Text, defaults to Query(description="Find memories similar to this text.")
+    :type text: str, optional
+    :param k: Number of memories to return, defaults to Query(default=100, description="How many memories to return.")
+    :type k: int, optional
+    :return: {"episodes": episodes, "documents": documents},
+    :rtype: Dict
+    """
 
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors

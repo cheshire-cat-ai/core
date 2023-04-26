@@ -12,12 +12,18 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def create_db_and_tables() -> None:
+    """
+    Create database and tables.
+    """
     SQLModel.metadata.create_all(engine)
 
 
 def get_db_session():
     """
     Create a new database session and close the session after the operation has ended.
+
+    :yield: Iterator for session
+    :rtype: Session
     """
     with Session(engine) as session:
         yield session

@@ -53,7 +53,7 @@ class VectorMemoryCollection(Qdrant):
             self.client.get_collection(self.collection_name)
             tabula_rasa = False
             log(f'Collection "{self.collection_name}" already present in vector store')
-        except:
+        except Exception:
             log(f"Creating collection {self.collection_name} ...")
             self.client.recreate_collection(
                 collection_name=self.collection_name,

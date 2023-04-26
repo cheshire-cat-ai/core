@@ -21,12 +21,26 @@ async def rabbithole_upload_endpoint(
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
 ) -> Dict:
-    """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
+    """
+    Upload a file containing text (.txt, .md, .pdf, etc.). \
+    File content will be extracted and segmented into chunks. \
     Chunks will be then vectorized and stored into documents memory.
+
+    :param request: Request
+    :type request: Request
+    :param file: File with text (.txt, .md, .pdf etc.)
+    :type file: UploadFile
+    :param background_tasks: Background tasks
+    :type background_tasks: BackgroundTasks
+    :param chunk_size: Maximum length of each chunk after the document is split (in characters), defaults to Body( default=400, description="Maximum length of each chunk after the document is split (in characters)", )
+    :type chunk_size: int, optional
+    :param chunk_overlap: Chunk overlap (in characters), defaults to Body(default=100, description="Chunk overlap (in characters)")
+    :type chunk_overlap: int, optional
+    :return: {"filename": file.filename, "content-type": file.content_type, "info": "File is being ingested asynchronously.",}
+    :rtype: Dict
     """
 
     ccat = request.app.state.ccat
-
     content_type = mimetypes.guess_type(file.filename)[0]
     log(f"Uploaded {content_type} down the rabbit hole")
     # list of admitted MIME types
@@ -54,28 +68,40 @@ async def rabbithole_upload_endpoint(
         "info": "File is being ingested asynchronously.",
     }
 
+
 @router.post("/web/")
 async def rabbithole_url_endpoint(
     request: Request,
     background_tasks: BackgroundTasks,
-    url: str = Body(description="URL of the website to which you want to save the content"),
+    url: str = Body(
+        description="URL of the website to which you want to save the content"
+    ),
     chunk_size: int = Body(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-):
-    
-    #TODO do we need to check that URL is valid?
-    
+) -> Dict:
+    """
+    Get Rabbit Hole URL endopoint.
+
+    :param request: Request
+    :type request: Request
+    :param background_tasks: Background tasks
+    :type background_tasks: BackgroundTasks
+    :param url: URL of the website to which you want to save the content, defaults to Body( description="URL of the website to which you want to save the content" )
+    :type url: str, optional
+    :param chunk_size: Maximum length of each chunk after the document is split (in characters), defaults to Body( default=400, description="Maximum length of each chunk after the document is split (in characters)", )
+    :type chunk_size: int, optional
+    :param chunk_overlap: Chunk overlap (in characters), defaults to Body(default=100, description="Chunk overlap (in characters)")
+    :type chunk_overlap: int, optional
+    :return: {"url": url, "info": "Website is being ingested asynchronously"}
+    :rtype: Dict
+    """
+    # TODO do we need to check that URL is valid?
     ccat = request.app.state.ccat
-    
     # upload file to long term memory, in the background
     background_tasks.add_task(
         ccat.send_url_in_rabbit_hole, url, chunk_size, chunk_overlap
     )
-
-    return {
-        "url": url,
-        "info": "Website is being ingested asynchronously"
-    }
+    return {"url": url, "info": "Website is being ingested asynchronously"}
