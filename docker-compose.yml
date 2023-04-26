@@ -2,12 +2,12 @@ version: '3.7'
 
 services:
 
-  core:
+  cheshire-cat-core:
     build:
       context: ./core
-    container_name: core
+    container_name: cheshire_cat_core
     depends_on:
-      - vector-memory
+      - cheshire-cat-vector-memory
     env_file:
       - .env
     environment:
@@ -28,12 +28,12 @@ services:
       - --reload # take away in prod
     restart: unless-stopped
 
-  admin:
+  cheshire-cat-admin:
     build:
       context: ./admin
-    container_name: admin
+    container_name: cheshire_cat_admin
     depends_on:
-      - core
+      - cheshire-cat-core
     env_file:
       - .env
     ports:
@@ -42,9 +42,9 @@ services:
       - ./admin:/app
     restart: unless-stopped
 
-  vector-memory:
+  cheshire-cat-vector-memory:
     image: qdrant/qdrant:v1.1.1
-    container_name: vector-memory
+    container_name: cheshire_cat_vector_memory
     expose:
       - 6333
     volumes:
