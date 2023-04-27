@@ -18,7 +18,7 @@ class VectorMemory:
 
         # Qdrant vector DB client
         self.vector_db = QdrantClient(
-            host=os.getenv("VECTOR_MEMORY_HOST", "vector-memory"),
+            host=os.getenv("VECTOR_MEMORY_HOST", "cheshire_cat_vector_memory"),
             port=int(os.getenv("VECTOR_MEMORY_PORT", 6333)),
         )
 
