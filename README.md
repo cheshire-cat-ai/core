@@ -96,6 +96,9 @@ docker-compose up
 
 * [Version 1](./ROADMAP.md)
 * Version 2
+  * Tutorials
+    * how to guides
+    * use cases examples
   * QA / Test
     * End2End tests
     * Unit tests
