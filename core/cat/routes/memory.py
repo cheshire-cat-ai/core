@@ -54,7 +54,7 @@ async def collection(request: Request, collection_id: str = "") -> Dict:
         to_return[collection_id] = ret
             
         ccat.load_memory() # recreate the long term memories
-        ccat.reset_history() # reset history conversation of the cat
+        # ccat.reset_history() # reset history conversation of the cat
 
     return (to_return)
 
@@ -78,6 +78,6 @@ async def wipe_collections(
         to_return[c] = ret
         
     ccat.load_memory() # recreate the long term memories
-    ccat.reset_history() # reset history conversation of the cat
+    # ccat.reset_history() # reset history conversation of the cat
 
     return (to_return)
