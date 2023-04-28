@@ -24,6 +24,7 @@ export default defineConfig(options => {
       'import.meta.env.CORE_HOST': JSON.stringify(process.env.CORE_HOST),
       'import.meta.env.CORE_PORT': JSON.stringify(process.env.CORE_PORT),
       'import.meta.env.API_KEY': JSON.stringify(process.env.API_KEY),
+      'import.meta.env.CORE_USE_SECURE_PROTOCOLS' : JSON.stringify(process.env.CORE_USE_SECURE_PROTOCOLS),
     },
     server: {
       port: 3000,
