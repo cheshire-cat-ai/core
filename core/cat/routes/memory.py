@@ -1,15 +1,14 @@
-import logging
+from typing import Dict
 
 from fastapi import Query, Request, APIRouter
-from typing import Dict
 
 router = APIRouter()
 
 
 # DELETE delete_memories
-@router.delete("/delete/{memory_id}/")
+@router.delete("/point/{memory_id}/")
 async def delete_memories(memory_id: str) -> Dict:
-    """Delete specific memory."""
+    """Delete specific element in memory."""
     return {"error": "to be implemented"}
 
 
@@ -31,32 +30,28 @@ async def recall_memories_from_text(
     episodes = [dict(m[0]) | {"score": float(m[1])} for m in episodes]
     documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
 
-    return (
-        {
-            "episodes": episodes,
-            "documents": documents,
-        },
-    )
+    return {
+        "episodic": episodes,
+        "declarative": documents,
+    }
 
 
 # DELETE one collection
 @router.delete("/collection/{collection_id}")
 async def collection(request: Request, collection_id: str = "") -> Dict:
-    """Delete and create a collection """
+    """Delete and recreate a collection"""
 
     to_return = {}
     if collection_id != "":
         ccat = request.app.state.ccat
         vector_memory = ccat.memory.vectors
-        
-        ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
-        logging.debug(ret)
-        to_return[collection_id] = ret
-            
-        ccat.load_memory() # recreate the long term memories
-        # ccat.reset_history() # reset history conversation of the cat
 
-    return (to_return)
+        ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
+        to_return[collection_id] = ret
+
+        ccat.load_memory()  # recreate the long term memories
+
+    return to_return
 
 
 # DELETE all collections
@@ -64,20 +59,17 @@ async def collection(request: Request, collection_id: str = "") -> Dict:
 async def wipe_collections(
     request: Request,
 ) -> Dict:
-    """Delete and create all collection and reset the history of the cat """
-
+    """Delete and create all collections"""
 
     ccat = request.app.state.ccat
     collections = list(ccat.memory.vectors.collections.keys())
     vector_memory = ccat.memory.vectors
-    
+
     to_return = {}
     for c in collections:
         ret = vector_memory.vector_db.delete_collection(collection_name=c)
-        logging.debug(ret)
         to_return[c] = ret
-        
-    ccat.load_memory() # recreate the long term memories
-    # ccat.reset_history() # reset history conversation of the cat
 
-    return (to_return)
+    ccat.load_memory()  # recreate the long term memories
+
+    return to_return

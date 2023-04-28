@@ -4,13 +4,11 @@ from typing import Union
 from datetime import timedelta
 
 import langchain
-from cat.utils import log
-from cat.utils import verbal_timedelta
+from cat.utils import log, verbal_timedelta
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
-from langchain.chains.summarize import load_summarize_chain
 from cat.memory.long_term_memory import LongTermMemory
 from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
@@ -71,7 +69,9 @@ class CheshireCat:
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
-        self.summarization_prompt = self.mad_hatter.execute_hook("get_summarization_prompt")  
+        self.summarization_prompt = self.mad_hatter.execute_hook(
+            "get_summarization_prompt"
+        )
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
@@ -101,7 +101,8 @@ class CheshireCat:
         self.history = ""
 
     def load_plugins(self):
-        # recent conversation # TODO: load from episodic memory latest conversation messages
+        # recent conversation
+        # TODO: use working memory to manage convo history
         self.reset_history()
 
         # Load plugin system
@@ -132,9 +133,9 @@ class CheshireCat:
         for m in memory_docs:
             timestamp = m[0].metadata["when"]
             delta = timedelta(seconds=(time.time() - timestamp))
-            memory_timestamps.append(" ("+verbal_timedelta(delta)+")")
+            memory_timestamps.append(" (" + verbal_timedelta(delta) + ")")
 
-        memory_texts = [a+b for a,b in zip(memory_texts,memory_timestamps)]
+        memory_texts = [a + b for a, b in zip(memory_texts, memory_timestamps)]
         # TODO: insert sources in document memories
 
         if return_format == str:
@@ -235,13 +236,13 @@ class CheshireCat:
         :param chunk_size: number of characters the text is split in
         :param chunk_overlap: number of overlapping characters between consecutive chunks
         """
-        
+
         # get website content and split into a list of docs
         docs = RabbitHole.url_to_docs(
             url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
-        
-        #get summaries and store
+
+        # get summaries and store
         summary, intermediate_summaries = self.get_summary_text(docs)
         docs = [summary] + intermediate_summaries + docs
         RabbitHole.store_documents(ccat=self, docs=docs, source=url)
@@ -259,7 +260,6 @@ class CheshireCat:
                     embedding=hyde_embedding
                 )
             )
-            log(episodic_memory_content)
             episodic_memory_formatted_content = self.format_memories_for_prompt(
                 episodic_memory_content
             )
@@ -346,6 +346,8 @@ class CheshireCat:
             },
         }
 
-        final_output = self.mad_hatter.execute_hook("before_returning_response_to_user", final_output)
+        final_output = self.mad_hatter.execute_hook(
+            "before_returning_response_to_user", final_output
+        )
 
         return final_output
