@@ -78,15 +78,15 @@
   }
 
   pre {
-    background: var(--app-palette-white);
+    background: var(--app-palette-light-grey);
     color: var(--app-palette-black);
-    padding: 0 var(--app-space-2xs);
+    padding: var(--app-space-2xs);
     border-radius: var(--app-border-radius-lg);
   }
 
   p {
     code {
-      background: var(--app-palette-white);
+      background: var(--app-palette-light-grey);
       color: var(--app-palette-black);
       padding: 0 var(--app-space-2xs);
       border-radius: var(--app-border-radius-lg);
