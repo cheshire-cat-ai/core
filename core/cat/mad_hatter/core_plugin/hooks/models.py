@@ -88,10 +88,20 @@ def get_language_embedder(cat):
                 }
             )
         else:
-            print(cat.llm)
             embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
-                {"size": 1536}  # mock openai embedding size
-
+                {
+                   "openai_api_key": openai_key,
+                   "openai_api_type": "azure",
+                   "model": "text-embedding-ada-002",
+                   # Now the only model for embeddings is text-embedding-ada-002
+                   # It is also possible to use the Azure "deployment" name that is user defined
+                   # when the model is deployed to Azure.
+                   # "deployment": "my-text-embedding-ada-002",
+                   "openai_api_base": cat.llm.openai_api_base,
+                   # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
+                   # current supported versions 2022-12-01 or 2023-03-15-preview
+                   "openai_api_version": "2022-12-01",
+                }
             )
     elif "COHERE_KEY" in os.environ:
         embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(

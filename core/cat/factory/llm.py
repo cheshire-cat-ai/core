@@ -104,8 +104,10 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
 class LLMAzureOpenAIConfig(LLMSettings):
     openai_api_key: str
-    api_base: str
+    openai_api_base: str
     api_type: str = "azure"
+    # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
+    # Current supported versions 2022-12-01 or 2023-03-15-preview
     api_version: str = "2022-12-01"
     deployment_name: str = "text-davinci-003"
     model_name: str = "text-davinci-003"
