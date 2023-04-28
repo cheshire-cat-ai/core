@@ -96,9 +96,13 @@ class CheshireCat:
         vector_memory_config = {"embedder": self.embedder, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
+    def reset_history(self):
+        # clear recent conversation
+        self.history = ""
+
     def load_plugins(self):
         # recent conversation # TODO: load from episodic memory latest conversation messages
-        self.history = ""
+        self.reset_history()
 
         # Load plugin system
         self.mad_hatter = MadHatter(self)
