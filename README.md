@@ -94,18 +94,25 @@ docker-compose up
 
 ## Roadmap
 
-Here's the plan and vision for the development of the ChechireCat v1.
-For the full Roadmap, check out [here](./ROADMAP.md). Whilst for the current progress of development, take a look at the [projects](https://github.com/pieroit/cheshire-cat/projects?query=is%3Aopen) marked as open.
+* [Version 1](./ROADMAP.md)
+* Version 2
+  * QA / Test
+    * End2End tests
+    * Unit tests
+  * Local LLM / embedder
+    * CustomLLMConfig / CustomEmbedderConfig adapters
+    * LLM / embedder example docker container
+  * Minimal user management
+    * User specific conversation and memory
+  * Working memory
+    * Temporary storage of arbitrary data in cat instance
+  * Hook surface (20 hooks)
+    * more hooks where customization is needed
+  * Plugin management
+    * Activate / deactivate plugins
+    * External plugin directory and customization
 
-* [Forms from JSON schema](./ROADMAP.md#forms-from-json-schema) ✅
-* [Configurations](./ROADMAP.md#configurations)
-	* [Language model provider](./ROADMAP.md#language-model-provider)  ✅
-	* [Embedder](./ROADMAP.md#embedder)
-* [Plugins list](./ROADMAP.md#plugins-list)  ✅
-* [Reasoning](./ROADMAP.md#reasoning)
-* [Documentation](./ROADMAP.md#documentation)
-* [Markdown support](./ROADMAP.md#markdown-support)  ✅
-* [Separate `admin` app from `public` static index.html](./ROADMAP.md#separate-admin-from-public)
+Whilst for the current progress of development, take a look at the [projects](https://github.com/pieroit/cheshire-cat/projects?query=is%3Aopen) marked as open.
 
 ## Contributing
 
@@ -122,7 +129,6 @@ If you have any ideas on how to improve the project or if you'd like to suggest 
 
 ### Code contribution
 
-1. Try out the Cat
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
