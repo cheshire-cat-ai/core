@@ -4,10 +4,30 @@ import { linkify } from 'remarkable/linkify'
 import clsx from 'clsx'
 import { type CommonProps } from '@models/commons'
 import { type Message } from '@models/Message'
+import hljs from 'highlight.js'
 
 import style from './MessageBox.module.scss'
+import 'highlight.js/styles/github.css'
 
-const markdown = new Remarkable({ linkify: true, breaks: true, typographer: true }).use(linkify)
+const markdown = new Remarkable({
+  breaks: true,
+  typographer: true,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(str, { language: lang }).value
+      } catch (_) {
+      }
+    }
+
+    try {
+      return hljs.highlightAuto(str).value
+    } catch (_) {
+    }
+
+    return '' // use external default escaping
+  }
+}).use(linkify)
 markdown.inline.ruler.enable(['sup', 'sub'])
 markdown.core.ruler.enable(['abbr'])
 markdown.block.ruler.enable(['footnote', 'deflist'])
