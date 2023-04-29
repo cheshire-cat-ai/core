@@ -44,6 +44,8 @@ class RabbitHole:
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
         docs = text_splitter.split_documents(text)
+        for doc in docs:
+            doc.metadata["is_summary"] = False
         return docs
 
     @staticmethod
@@ -116,6 +118,8 @@ class RabbitHole:
 
         # remove short texts (page numbers, isolated words, etc.)
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
+        for doc in docs:
+            doc.metadata["is_summary"] = False
         return docs
 
     @staticmethod  # should this method be inside of ccat?
@@ -137,7 +141,7 @@ class RabbitHole:
             doc = ccat.mad_hatter.execute_hook(
                 "before_insertion_in_vector_memory", doc
             )
-
+            
             _ = ccat.memory.vectors.declarative.add_texts(
                 [doc.page_content],
                 [doc.metadata],

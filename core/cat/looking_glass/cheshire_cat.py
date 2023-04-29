@@ -177,7 +177,8 @@ class CheshireCat:
                 for i in range(0, len(intermediate_summaries), group_size)
             ]
             intermediate_summaries = [
-                Document(page_content=summary) for summary in intermediate_summaries
+                Document(page_content=summary, metadata={"is_summary":True})
+                for summary in intermediate_summaries
             ]
 
             # update list of all summaries

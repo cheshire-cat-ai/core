@@ -1,5 +1,4 @@
 from cat.mad_hatter.decorators import hook
-from cat.utils import log
 
 # Hook called just before sending response to a client.
 @hook(priority=0)
