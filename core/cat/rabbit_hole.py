@@ -130,15 +130,17 @@ class RabbitHole:
 
         # classic embed
         for d, doc in enumerate(docs):
+            
+            doc.metadata["source"] = source
+            doc.metadata["when"] = time.time()
+            doc.metadata["text"] = doc.page_content
+            doc = ccat.mad_hatter.execute_hook(
+                "before_insertion_in_vector_memory", doc
+            )
+
             _ = ccat.memory.vectors.declarative.add_texts(
                 [doc.page_content],
-                [
-                    {
-                        "source": source,
-                        "when": time.time(),
-                        "text": doc.page_content,
-                    }
-                ],
+                [doc.metadata],
             )
             log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
             time.sleep(0.1)
