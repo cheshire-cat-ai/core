@@ -5,12 +5,10 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
     formatter: simple
     stream: ext://sys.stdout
 loggers:
   uvicorn:
-    level: DEBUG
     handlers: [console]
     propagate: yes
 root:

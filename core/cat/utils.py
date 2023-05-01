@@ -1,10 +1,36 @@
 from datetime import timedelta
 import inspect
 import logging
+import sys
 from pprint import pformat
 
-logger = logging.getLogger()
-logging.basicConfig(level=logging.DEBUG)
+from loguru import logger
+
+# logger = logging.getLogger()
+# logging.basicConfig(level=logging.DEBUG)
+logger.remove()
+logger.add(sys.stdout, colorize=True, format="<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> -=> <level>{message}</level>", backtrace=True, diagnose=True)
+
+# logger.add(backtrace=True, diagnose=True)
+# logger.add(sys.stdout, colorize=True, backtrace=True, format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        # Get corresponding Loguru level if it exists.
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message.
+        frame, depth = sys._getframe(6), 6
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
 
 def get_caller_info(skip=2):
