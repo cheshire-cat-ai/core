@@ -38,6 +38,23 @@ class EmbedderOpenAIConfig(EmbedderSettings):
             "description": "Configuration for OpenAI embeddings",
         }
 
+# https://python.langchain.com/en/latest/_modules/langchain/embeddings/openai.html#OpenAIEmbeddings
+class EmbedderAzureOpenAIConfig(EmbedderSettings):
+    openai_api_key: str
+    model: str
+    openai_api_base: str
+    api_type: str
+    api_version: str
+    deployment: str
+
+    _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Azure OpenAI Embedder",
+            "description": "Configuration for Azure OpenAI embeddings",
+        }
+
 
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
