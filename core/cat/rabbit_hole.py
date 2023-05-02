@@ -19,7 +19,7 @@ from langchain.docstore.document import Document
 class RabbitHole:
     def __init__(self):
         pass
-    
+
     @staticmethod
     def url_to_docs(
         url: str,
@@ -61,7 +61,7 @@ class RabbitHole:
         """
 
         # Create temporary file
-        temp_file = tempfile.NamedTemporaryFile(dir=".", delete=False)
+        temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
         temp_name = temp_file.name
 
         # Check type of incoming file.
