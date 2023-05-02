@@ -80,14 +80,14 @@ def get_language_embedder(cat):
         openai_key = os.getenv("OPENAI_KEY")
         if openai_key is None:
             openai_key = cat.llm.openai_api_key
-        if using_openai_llm in [OpenAI, OpenAIChat]:
+        if type(cat.llm) in [OpenAI, OpenAIChat]:
             embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
                 {
                    "openai_api_key": openai_key,
                    # model_name: '....'  # TODO: allow optional kwargs
                 }
             )
-        else:
+        elif type(cat.llm) in [AzureOpenAI]:
             embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
                 {
                    "openai_api_key": openai_key,
@@ -103,6 +103,9 @@ def get_language_embedder(cat):
                    "openai_api_version": "2022-12-01",
                 }
             )
+        else:
+            # This should never happen
+            raise Exception("Unknown LLM type")
     elif "COHERE_KEY" in os.environ:
         embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
             {"cohere_api_key": os.environ["COHERE_KEY"]}
