@@ -38,6 +38,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
             "description": "Configuration for OpenAI embeddings",
         }
 
+
 # https://python.langchain.com/en/latest/_modules/langchain/embeddings/openai.html#OpenAIEmbeddings
 class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_key: str
@@ -82,6 +83,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
+    EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
 ]
