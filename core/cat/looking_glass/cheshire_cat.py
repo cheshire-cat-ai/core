@@ -10,6 +10,7 @@ from cat.rabbit_hole import RabbitHole
 from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory
+from cat.memory.working_memory import WorkingMemory
 from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
 
@@ -95,16 +96,9 @@ class CheshireCat:
         # Memory
         vector_memory_config = {"embedder": self.embedder, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
-
-    def reset_history(self):
-        # clear recent conversation
-        self.history = ""
+        self.working_memory = WorkingMemory()
 
     def load_plugins(self):
-        # recent conversation
-        # TODO: use working memory to manage convo history
-        self.reset_history()
-
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
@@ -290,7 +284,7 @@ class CheshireCat:
                     "input": user_message,
                     "episodic_memory": episodic_memory_formatted_content,
                     "declarative_memory": declarative_memory_formatted_content,
-                    "chat_history": self.history,
+                    "chat_history": self.working_memory["history"],
                 }
             )
         except ValueError as e:
@@ -309,8 +303,8 @@ class CheshireCat:
             log(cat_message)
 
         # update conversation history
-        self.history += f"Human: {user_message}\n"
-        self.history += f'AI: {cat_message["output"]}\n'
+        self.working_memory["history"] += f"Human: {user_message}\n"
+        self.working_memory["history"] += f'AI: {cat_message["output"]}\n'
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks (not raw dialog, but summarization)
