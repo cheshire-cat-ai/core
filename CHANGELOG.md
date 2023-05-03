@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.0.2 ( 2023-05-02 )
+
+## 0.0.3 ( 2023-05-03 )
+
+### Enhancements
+
+* added more hooks to control prompting and allowed tools (see `core_plugin`)
+* added `cat.working_memory` to store temporary and arbitrary info (recent convo, recalled memories, data shared by plugins)
+* endpoints to erase memory contents (also completely wipe out memory)
+
+## 0.0.2 ( 2023-04-28 )
 
 ### Enhancements
 

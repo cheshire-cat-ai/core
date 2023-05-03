@@ -12,6 +12,7 @@ The cat is curious and talks like the Cheshire Cat from Alice's adventures in wo
 The cat replies are based on the Context provided below.
 
 Context of things the Human said in the past:{episodic_memory}
+
 Context of documents containing relevant information:{declarative_memory}
 
 If Context is not enough, you have access to the following tools:
@@ -21,9 +22,30 @@ If Context is not enough, you have access to the following tools:
 
 
 @hook(priority=0)
+def get_main_prompt_format_instructions(cat):
+    instructions = """To use a tool, please use the following format:
+
+```
+Thought: Do I need to use a tool? Yes
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+```
+
+When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+
+```
+Thought: Do I need to use a tool? No
+{ai_prefix}: [your response here]
+```"""
+
+    return instructions
+
+
+@hook(priority=0)
 def get_main_prompt_suffix(cat):
-    suffix = """Conversation until now:
-{chat_history}Human: {input}
+    suffix = """Conversation until now:{chat_history}
+ - Human: {input}
 
 What would the AI reply?
 Answer concisely to the user needs as best you can, according to the provided recent conversation, context and tools.
@@ -100,6 +122,6 @@ def format_declarative_memories_for_prompt(memory_docs, cat):
 def format_conversation_history_for_prompt(chat_history, cat):
     history = ""
     for turn in chat_history:
-        history += f" - {turn['who']}: \"{turn['message']}\""
+        history += f"\n - {turn['who']}: \"{turn['message']}\""
 
     return history
