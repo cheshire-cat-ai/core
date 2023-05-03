@@ -138,18 +138,23 @@ class CheshireCat:
 
         # loop until there are no groups to summarize
         root_summary_flag = False
+        separator = "\n --> "
         while not root_summary_flag:
             # make summaries of groups of docs
-            intermediate_summaries = [
-                self.summarization_chain.run(intermediate_summaries[i : i + group_size])
-                for i in range(0, len(intermediate_summaries), group_size)
-            ]
-            intermediate_summaries = [
-                Document(page_content=summary) for summary in intermediate_summaries
-            ]
+            new_summaries = []
+            for i in range(0, len(intermediate_summaries), group_size):
+                group = intermediate_summaries[i : i + group_size]
+                group = list(map(lambda d: d.page_content, group))
+
+                summary = self.summarization_chain.run(
+                    separator + separator.join(group)
+                )
+                summary = Document(page_content=summary)
+                new_summaries.append(summary)
 
             # update list of all summaries
-            all_summaries = intermediate_summaries + all_summaries
+            all_summaries = new_summaries.copy() + all_summaries
+            intermediate_summaries = new_summaries
 
             # did we reach root summary?
             root_summary_flag = len(intermediate_summaries) == 1
@@ -158,6 +163,8 @@ class CheshireCat:
                 log(
                     f"Building summaries over {len(intermediate_summaries)} chunks. Please wait."
                 )
+
+        log(all_summaries)
 
         # return root summary and all intermediate summaries
         return all_summaries[0], all_summaries[1:]
