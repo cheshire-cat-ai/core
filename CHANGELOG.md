@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.0.2 ( 2023-04-22 )
+## 0.0.2 ( 2023-05-02 )
 
 ### Enhancements
 
@@ -8,6 +8,7 @@
 * plugin system `MadHatter` sorts hooks by priority
 * more hooks to control summarization prompt and reelaborate final reply to user
 * chat autofocus and easier home navigation in admin
+* support for Azure LLMs
 
 ## 0.0.1 ( 2023-04-20 )
 
