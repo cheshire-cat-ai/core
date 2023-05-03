@@ -1,16 +1,15 @@
 import time
 import traceback
 from typing import Union
-from datetime import timedelta
 
 import langchain
-from cat.utils import log, verbal_timedelta
+from cat.utils import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.long_term_memory import LongTermMemory
 from cat.memory.working_memory import WorkingMemory
+from cat.memory.long_term_memory import LongTermMemory
 from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
 
@@ -118,31 +117,6 @@ class CheshireCat:
             return_intermediate_steps=True,
         )
 
-    # TODO: this should be a hook
-    def format_memories_for_prompt(self, memory_docs, return_format=str):
-        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
-
-        # TODO: take away duplicates
-        memory_timestamps = []
-        for m in memory_docs:
-            timestamp = m[0].metadata["when"]
-            delta = timedelta(seconds=(time.time() - timestamp))
-            memory_timestamps.append(" (" + verbal_timedelta(delta) + ")")
-
-        memory_texts = [a + b for a, b in zip(memory_texts, memory_timestamps)]
-        # TODO: insert sources in document memories
-
-        if return_format == str:
-            memories_separator = "\n  - "
-            memory_content = memories_separator + memories_separator.join(memory_texts)
-        else:
-            memory_content = memory_texts
-
-        if self.verbose:
-            log(memory_content)
-
-        return memory_content
-
     def get_hyde_text_and_embedding(self, text):
         # HyDE text
         hyde_text = self.hypothetis_chain.run(text)
@@ -241,32 +215,33 @@ class CheshireCat:
         docs = [summary] + intermediate_summaries + docs
         RabbitHole.store_documents(ccat=self, docs=docs, source=url)
 
+    def recall_relevant_memories_to_working_memory(self, user_message):
+        # TODO: should we compress convo history for better retrieval?
+
+        # HyDE
+        hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
+
+        # recall relevant memories (episodic)
+        episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
+            embedding=hyde_embedding
+        )
+        self.working_memory["episodic_memories"] = episodic_memories
+
+        # recall relevant memories (declarative)
+        declarative_memories = (
+            self.memory.vectors.declarative.recall_memories_from_embedding(
+                embedding=hyde_embedding
+            )
+        )
+        self.working_memory["declarative_memories"] = declarative_memories
+
     def __call__(self, user_message):
         if self.verbose:
             log(user_message)
 
-        hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
-
+        # recall episodic and declarative memories from vector collections and store them in working_memory
         try:
-            # recall relevant memories (episodic)
-            episodic_memory_content = (
-                self.memory.vectors.episodic.recall_memories_from_embedding(
-                    embedding=hyde_embedding
-                )
-            )
-            episodic_memory_formatted_content = self.format_memories_for_prompt(
-                episodic_memory_content
-            )
-
-            # recall relevant memories (declarative)
-            declarative_memory_content = (
-                self.memory.vectors.declarative.recall_memories_from_embedding(
-                    embedding=hyde_embedding
-                )
-            )
-            declarative_memory_formatted_content = self.format_memories_for_prompt(
-                declarative_memory_content
-            )
+            self.recall_relevant_memories_to_working_memory(user_message)
         except Exception as e:
             log(e)
             traceback.print_exc(e)
@@ -277,6 +252,21 @@ class CheshireCat:
                 "why": {},
             }
 
+        # format memories to be inserted in the prompt
+        episodic_memory_formatted_content = self.mad_hatter.execute_hook(
+            "format_episodic_memories_for_prompt",
+            self.working_memory["episodic_memories"],
+        )
+        declarative_memory_formatted_content = self.mad_hatter.execute_hook(
+            "format_declarative_memories_for_prompt",
+            self.working_memory["declarative_memories"],
+        )
+
+        # format conversation history to be inserted in the prompt
+        conversation_history_formatted_content = self.mad_hatter.execute_hook(
+            "format_conversation_history_for_prompt", self.working_memory["history"]
+        )
+
         # reply with agent
         try:
             cat_message = self.agent_executor(
@@ -284,7 +274,7 @@ class CheshireCat:
                     "input": user_message,
                     "episodic_memory": episodic_memory_formatted_content,
                     "declarative_memory": declarative_memory_formatted_content,
-                    "chat_history": self.working_memory["history"],
+                    "chat_history": conversation_history_formatted_content,
                 }
             )
         except ValueError as e:
@@ -303,20 +293,18 @@ class CheshireCat:
             log(cat_message)
 
         # update conversation history
-        self.working_memory["history"] += f"Human: {user_message}\n"
-        self.working_memory["history"] += f'AI: {cat_message["output"]}\n'
+        self.working_memory.update_conversation_history(
+            who="Human", message=user_message
+        )
+        self.working_memory.update_conversation_history(
+            who="AI", message=cat_message["output"]
+        )
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks (not raw dialog, but summarization)
         _ = self.memory.vectors.episodic.add_texts(
             [user_message],
-            [
-                {
-                    "source": "user",
-                    "when": time.time(),
-                    "text": user_message,
-                }
-            ],
+            [{"source": "user", "when": time.time()}],
         )
 
         # build data structure for output (response and why with memories)
@@ -324,16 +312,18 @@ class CheshireCat:
             "error": False,
             "content": cat_message["output"],
             "why": {
-                **cat_message,
+                "input": cat_message["input"],
+                "output": cat_message["output"],
+                "intermediate_steps": cat_message["intermediate_steps"],
                 "memory": {
                     "vectors": {
                         "episodic": [
                             dict(d[0]) | {"score": float(d[1])}
-                            for d in episodic_memory_content
+                            for d in self.working_memory["episodic_memories"]
                         ],
                         "declarative": [
                             dict(d[0]) | {"score": float(d[1])}
-                            for d in declarative_memory_content
+                            for d in self.working_memory["declarative_memories"]
                         ],
                     }
                 },
