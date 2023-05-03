@@ -67,13 +67,7 @@ class VectorMemoryCollection(Qdrant):
             # insert first point in the collection
             self.add_texts(
                 ["I am the Cheshire Cat"],
-                [
-                    {
-                        "source": "cheshire-cat",
-                        "when": time.time(),
-                        "text": "I am the Cheshire Cat",
-                    }
-                ],
+                [{"source": "cheshire-cat", "when": time.time()}],
             )
 
         log(dict(self.client.get_collection(self.collection_name)))

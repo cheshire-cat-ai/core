@@ -9,9 +9,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
+    UnstructuredURLLoader,
     UnstructuredFileLoader,
     UnstructuredMarkdownLoader,
-    UnstructuredURLLoader,
 )
 from langchain.docstore.document import Document
 
@@ -132,13 +132,7 @@ class RabbitHole:
         for d, doc in enumerate(docs):
             _ = ccat.memory.vectors.declarative.add_texts(
                 [doc.page_content],
-                [
-                    {
-                        "source": source,
-                        "when": time.time(),
-                        "text": doc.page_content,
-                    }
-                ],
+                [{"source": source, "when": time.time()}],
             )
             log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
             time.sleep(0.1)

@@ -1,3 +1,7 @@
+import time
+from datetime import timedelta
+
+from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook
 
 
@@ -43,11 +47,59 @@ Examples:
 """
 
     return hyde_prompt
-    
+
+
 @hook(priority=0)
 def get_summarization_prompt(cat):
-    summarization_prompt="""Write a concise summary of the following:
+    summarization_prompt = """Write a concise summary of the following:
 {text}
 """
     return summarization_prompt
-    
+
+
+@hook(priority=0)
+def format_episodic_memories_for_prompt(memory_docs, cat):
+    # convert docs to simple text
+    memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
+
+    # add time information (e.g. "2 days ago")
+    memory_timestamps = []
+    for m in memory_docs:
+        timestamp = m[0].metadata["when"]
+        delta = timedelta(seconds=(time.time() - timestamp))
+        memory_timestamps.append(f" ({verbal_timedelta(delta)})")
+
+    memory_texts = [a + b for a, b in zip(memory_texts, memory_timestamps)]
+
+    memories_separator = "\n  - "
+    memory_content = memories_separator + memories_separator.join(memory_texts)
+
+    return memory_content
+
+
+@hook(priority=0)
+def format_declarative_memories_for_prompt(memory_docs, cat):
+    # convert docs to simple text
+    memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
+
+    # add source information (e.g. "extracted from file.txt")
+    memory_sources = []
+    for m in memory_docs:
+        source = m[0].metadata["source"]
+        memory_sources.append(f" (extracted from {source})")
+
+    memory_texts = [a + b for a, b in zip(memory_texts, memory_sources)]
+
+    memories_separator = "\n  - "
+    memory_content = memories_separator + memories_separator.join(memory_texts)
+
+    return memory_content
+
+
+@hook(priority=0)
+def format_conversation_history_for_prompt(chat_history, cat):
+    history = ""
+    for turn in chat_history:
+        history += f" - {turn['who']}: \"{turn['message']}\""
+
+    return history
