@@ -38,7 +38,9 @@ class CheshireCat:
         self.load_plugins()
         self.load_natural_language()
         self.load_memory()
-        self.load_agent()
+
+        # Agent manager instance (for reasoning)
+        self.agent_manager = AgentManager(self)
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole()
@@ -54,10 +56,6 @@ class CheshireCat:
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
-
-        # Prompts
-        self.prefix_prompt = self.mad_hatter.execute_hook("get_main_prompt_prefix")
-        self.suffix_prompt = self.mad_hatter.execute_hook("get_main_prompt_suffix")
 
         # HyDE chain
         hypothesis_prompt = langchain.PromptTemplate(
@@ -100,22 +98,6 @@ class CheshireCat:
     def load_plugins(self):
         # Load plugin system
         self.mad_hatter = MadHatter(self)
-
-    def load_agent(self):
-        self.agent_manager = AgentManager(
-            llm=self.llm,
-            tools=self.mad_hatter.tools,
-            verbose=self.verbose,
-        )  # TODO: load agent from plugins? It's gonna be a MESS
-
-        self.agent_executor = self.agent_manager.get_agent_executor(
-            prefix_prompt=self.prefix_prompt,
-            suffix_prompt=self.suffix_prompt,
-            # ai_prefix="AI",
-            # human_prefix="Human",
-            input_variables=self.input_variables,
-            return_intermediate_steps=True,
-        )
 
     def get_hyde_text_and_embedding(self, text):
         # HyDE text
@@ -274,14 +256,18 @@ class CheshireCat:
             "format_conversation_history_for_prompt", self.working_memory["history"]
         )
 
+        # load agent (will rebuild both agent and agent_executor based on context and plugins)
+        agent_executor = self.agent_manager.get_agent_executor()
+
         # reply with agent
         try:
-            cat_message = self.agent_executor(
+            cat_message = agent_executor(
                 {
                     "input": user_message,
                     "episodic_memory": episodic_memory_formatted_content,
                     "declarative_memory": declarative_memory_formatted_content,
                     "chat_history": conversation_history_formatted_content,
+                    "ai_prefix": "AI",
                 }
             )
         except ValueError as e:
