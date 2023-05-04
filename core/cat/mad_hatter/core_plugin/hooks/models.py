@@ -4,6 +4,7 @@ import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI
+from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
 
 
@@ -40,7 +41,7 @@ def get_language_embedder(cat):
         )
 
     # Azure
-    elif type(cat.llm) in [AzureOpenAI]:
+    elif type(cat.llm) in [AzureOpenAI, AzureChatOpenAI]:
         embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
             {
                 "openai_api_key": cat.llm.openai_api_key,
