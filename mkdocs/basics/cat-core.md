@@ -23,6 +23,7 @@ Example of how to implement a simple chat system using the websocket endpoint at
         ```python
         import asyncio
         import websockets
+        import json
 
         async def cat_chat():
 
