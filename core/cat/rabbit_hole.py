@@ -8,10 +8,10 @@ from cat.utils import log
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
-    PDFMinerLoader,
     UnstructuredURLLoader,
     UnstructuredFileLoader,
     UnstructuredMarkdownLoader,
+    PyPDFLoader,
 )
 from langchain.docstore.document import Document
 
@@ -95,27 +95,16 @@ class RabbitHole:
         elif content_type == "text/markdown":
             loader = UnstructuredMarkdownLoader(temp_name)
         elif content_type == "application/pdf":
-            loader = PDFMinerLoader(temp_name)
+            loader = PyPDFLoader(temp_name)
         else:
             raise Exception("MIME type not supported for upload")
 
         # extract text from file
-        text = loader.load()
+        docs = loader.load_and_split()
 
         # delete tmp file
         os.remove(temp_name)
 
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        )
-        docs = text_splitter.split_documents(text)
-
-        log(f"Preparing to clean {len(docs)} text chunks")
-
-        # remove short texts (page numbers, isolated words, etc.)
-        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
         return docs
 
     @staticmethod  # should this method be inside of ccat?
@@ -135,7 +124,6 @@ class RabbitHole:
                 [{"source": source, "when": time.time()}],
             )
             log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
-            time.sleep(0.1)
 
         # notify client
         ccat.web_socket_notifications.append(

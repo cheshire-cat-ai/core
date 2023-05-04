@@ -171,8 +171,8 @@ class CheshireCat:
         )
 
         # get summaries
-        summary, intermediate_summaries = self.get_summary_text(docs)
-        docs = [summary] + intermediate_summaries + docs
+        #summary, intermediate_summaries = self.get_summary_text(docs)
+        #docs = [summary] + intermediate_summaries + docs
 
         # store in memory
         if isinstance(file, str):
