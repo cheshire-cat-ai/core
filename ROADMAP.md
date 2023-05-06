@@ -1,3 +1,4 @@
+
 # Roadmap to V1
 
 This roadmap represents our plan and vision for the development of the ChechireCat v1.
@@ -6,23 +7,23 @@ This document is intended to provide a clear and concise summary of our developm
 
 ## Summary
 
-* [Forms from JSON schema](#forms-from-json-schema)
+* [Forms from JSON schema](#forms-from-json-schema) ✅
 * [Configurations](#configurations)
-	* [Language model provider](#language-model-provider)
+	* [Language model provider](#language-model-provider) ✅
 	* [Embedder](#embedder)
-* [Plugins list](#plugins-list)
+* [Plugins list](#plugins-list) ✅
 * [Reasoning](#reasoning)
-* [Documentation](#documentation)
-* [Markdown support](#markdown-support)
+* [Documentation](#documentation) ✅
+* [Markdown support](#markdown-support) ✅
 * [Separate `admin` app from `public` static index.html](#separate-admin-from-public)
 
-## Forms from JSON schema 
+## Forms from JSON schema
 
-[Front-end only] 
+[Front-end only]
 This feature is a key component of the CheshireCat admin app's roadmap as it enables the app to quickly abstract the "Configuration" pages. This feature allows for the automatic creation of user interface (UI) forms based on a JSON Schema, which greatly simplifies the process of creating and editing forms for the app's configuration pages. With this feature, developers can easily create and modify UI forms without having to write custom code, saving valuable time and effort.
 
 Use the following library for the FE [https://www.npmjs.com/package/@rjsf/core](https://www.npmjs.com/package/@rjsf/core)
-And stick to the JSON schema for the BE. 
+And stick to the JSON schema for the BE.
 
 ## Configurations
 
@@ -30,19 +31,19 @@ We want to allow users to select and configure the language model and the embedd
 
 ### Language model provider
 
-the BE should expose the available language model providers from the `/settings/llm` endpoint. 
+the BE should expose the available language model providers from the `/settings/llm` endpoint.
 The FE will fetch the relevant information and allow the user to select and customise the language model using a JSON form.
 Once the user saves the information should be sent to the BE
 
 ### Embedder
 
-the BE should expose the available language model providers from the `/settings/embedder` endpoint. 
+the BE should expose the available language model providers from the `/settings/embedder` endpoint.
 The FE will fetch the relevant information and allow the user to select and customise the language model using a JSON form.
 
 
 ## Plugins list
 
-The backend should provide a list of available plugins through the `/plugins` endpoint. This list will include the plugin's `name`, `description`, and a `unique id`. 
+The backend should provide a list of available plugins through the `/plugins` endpoint. This list will include the plugin's `name`, `description`, and a `unique id`.
 The `unique id` may simply be the name of the folder that the plugin is stored in.
 To allow end users to define plugin metadata, the suggested approach is to have a non-mandatory `plugin.json` file stored in each plugin's directory where the user can define both name and description (as well as future metadata such as the JSON schema of the configuration).
 
@@ -50,34 +51,34 @@ To allow end users to define plugin metadata, the suggested approach is to have 
 // plugin.json
 {
   "name": "MyCustomPlugin",
-  "description": "Makes the cat cool af" 
+  "description": "Makes the cat cool af"
 }
 ```
 
-if the `plugin.json` file is not defined then the backend should default to the values from the folder name. 
+if the `plugin.json` file is not defined then the backend should default to the values from the folder name.
 
-A possible response from the `/plugins` endpoint will then be: 
+A possible response from the `/plugins` endpoint will then be:
 
 ```javascript
 [
- { 
-	 id: "cool-plugin", 
-	 name: "MyCustomPlugin", 
-	 description: "Makes the cat cool af" 
+ {
+	 id: "cool-plugin",
+	 name: "MyCustomPlugin",
+	 description: "Makes the cat cool af"
   },
 ]
 ```
 
-The front end should fetch the list of available plugins and display them under the `/plugins` route as a read-only list. 
-Create a new `pluginsSlice` using redux and follow the defined best practice on how to handle async states. 
-At the moment, no interaction is scheduled. 
+The front end should fetch the list of available plugins and display them under the `/plugins` route as a read-only list.
+Create a new `pluginsSlice` using redux and follow the defined best practice on how to handle async states.
+At the moment, no interaction is scheduled.
 
 ## Reasoning
 
 
-[Front-end only] 
+[Front-end only]
 
-We want to display the reasoning behind a response from the CheshireCat, to provide users with greater transparency and insight into the decision-making process. To do this, we will leverage the Sidebar component to present the content of the reasoning object, which is already sent from the backend. 
+We want to display the reasoning behind a response from the CheshireCat, to provide users with greater transparency and insight into the decision-making process. To do this, we will leverage the Sidebar component to present the content of the reasoning object, which is already sent from the backend.
 The reasoning object is defined as follows:
 
 
@@ -162,8 +163,8 @@ The reasoning object is defined as follows:
 
 ## Documentation
 
-[Front-end only] 
-Link the available documentation link as well as the GitHub profile 
+[Front-end only]
+Link the available documentation link as well as the GitHub profile
 
 ## Markdown support
 
@@ -171,4 +172,4 @@ We want to enable Markdown support in our CheshireCat project. By design, most l
 
 ## Separate admin from public
 
-Leave this to core contributors 
+Leave this to core contributors

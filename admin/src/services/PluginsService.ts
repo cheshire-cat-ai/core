@@ -3,7 +3,7 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { type Plugin } from '@models/Plugin'
+import type { Plugin } from '@models/Plugin'
 import config from '../config'
 import { toJSON } from '@utils/commons'
 

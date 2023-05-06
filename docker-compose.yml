@@ -5,7 +5,7 @@ services:
   cheshire-cat-core:
     build:
       context: ./core
-    container_name: cheshire_cat_core
+    container_name: vue_cheshire_cat_core
     depends_on:
       - cheshire-cat-vector-memory
     env_file:
@@ -31,7 +31,7 @@ services:
   cheshire-cat-admin:
     build:
       context: ./admin
-    container_name: cheshire_cat_admin
+    container_name: vue_cheshire_cat_admin
     depends_on:
       - cheshire-cat-core
     env_file:
@@ -44,7 +44,7 @@ services:
 
   cheshire-cat-vector-memory:
     image: qdrant/qdrant:v1.1.1
-    container_name: cheshire_cat_vector_memory
+    container_name: vue_cheshire_cat_vector_memory
     expose:
       - 6333
     volumes:

@@ -3,9 +3,8 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { type LLMProviderDescriptor } from '@models/LLMProviderDescriptor'
+import type { LLMProviderDescriptor, LLMSettings } from '@models/LLMProvider'
 import { toJSON } from '@utils/commons'
-import { type LLMSettings } from '@models/LLMSettings'
 import config from '../config'
 
 /*
