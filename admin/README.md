@@ -2,7 +2,7 @@
 
 > 🐱: Well, well, well, what do we have here?\
 > It appears that you've stumbled upon my admin repository, my dear.\
-> This codebase is none other than the Cheshire cat admin, crafted with the finest React technology. So, come on in and
+> This codebase is none other than the Cheshire cat admin, crafted with the finest Vue technology. So, come on in and
 > take a peek, but be warned, things might get curiouser and curiouser from here on out!
 
 ## Table of contents
