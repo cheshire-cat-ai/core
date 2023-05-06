@@ -30,7 +30,7 @@ const { currentState: pluginsState } = storeToRefs(store)
     </div>
     <div v-else v-for="item in pluginsState.data" :key="item.id" class="flex items-center gap-4 p-4 bg-base-200 rounded-xl">
       <div class="avatar placeholder">
-        <div class="w-20 h-20 rounded-xl bg-gradient-to-b from-blue-500 to-primary text-primary">
+        <div class="w-20 h-20 rounded-xl bg-gradient-to-b from-blue-500 to-primary text-base-100">
           <span class="text-5xl font-bold leading-3">{{ firstLetter(item.name) }}</span>
         </div>
       </div>

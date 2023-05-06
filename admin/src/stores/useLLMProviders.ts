@@ -4,7 +4,8 @@ import type { LLMProvidersState } from '@stores/types'
 import type { LLMProviderMetaData, LLMSettings } from '@models/LLMProvider'
 import { useAsyncState } from '@vueuse/core'
 import LanguageModels from '@services/LanguageModels'
-import { toJSON } from '@utils/commons'
+import { toJSON, uniqueId } from '@utils/commons'
+import { useNotifications } from '@stores/useNotifications'
 
 export const useLLMProviders = defineStore('llmProviders', () => {
   const currentState = reactive<LLMProvidersState>({
@@ -12,6 +13,8 @@ export const useLLMProviders = defineStore('llmProviders', () => {
     updating: false,
     settings: {}
   })
+
+  const { showNotification } = useNotifications()
 
   const { state: providers, isLoading, error } = useAsyncState(LanguageModels.getProviders(), undefined)
 
@@ -46,6 +49,11 @@ export const useLLMProviders = defineStore('llmProviders', () => {
   const setLLMSettings = async (name: LLMProviderMetaData['languageModelName'], settings: LLMSettings) => {
     currentState.settings[name] = settings
     const response = await LanguageModels.setProviderOptions(name, settings)
+    showNotification({
+      id: uniqueId(),
+      type: 'success',
+      message: 'Language model provider updated'
+    })
     return toJSON(response)
   }
 

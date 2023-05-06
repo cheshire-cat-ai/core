@@ -26,7 +26,6 @@ watchEffect(() => {
 const saveProvider = () => {
   const llmName = selectProvider.value?.selectedElement
   if (!llmName?.value) return
-  console.log(llmName, currentSettings.value)
   setSelectedLLMProvider(llmName.value)
   setLLMSettings(llmName.value, currentSettings.value)
   sidePanel.value?.togglePanel()
@@ -89,7 +88,7 @@ const openSidePanel = (content: number, title: string) => {
               :placeholder="prop.title" class="w-full input-primary input input-sm input-bordered" />
           </template>
         </div>
-        <button class="mt-auto normal-case btn btn-sm btn-success text-primary" @click="saveProvider">Save</button>
+        <button class="mt-auto normal-case btn btn-sm btn-success" @click="saveProvider">Save</button>
       </div>
       <div v-else-if="sidePanelContent === 2">
         Work In Progress - Embedder

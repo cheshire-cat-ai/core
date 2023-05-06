@@ -26,16 +26,16 @@ defineExpose({
             </TransitionChild>
             <div class="fixed inset-0 overflow-hidden">
                 <div class="absolute inset-0 overflow-hidden">
-                    <div class="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none">
+                    <div class="fixed inset-y-0 right-0 flex max-w-full pointer-events-none">
                         <TransitionChild as="template" enter="transform transition ease-in-out duration-500"
                             enter-from="translate-x-full" enter-to="translate-x-0"
                             leave="transform transition ease-in-out duration-500" leave-from="translate-x-0"
                             leave-to="translate-x-full">
-                            <DialogPanel class="relative w-screen max-w-xl pointer-events-auto">
+                            <DialogPanel class="relative w-screen pointer-events-auto md:max-w-xl">
                                 <div class="flex flex-col h-full overflow-y-auto shadow-xl bg-base-300">
                                     <div class="flex items-center justify-between gap-2 p-2.5 shadow-xl">
                                         <DialogTitle class="text-lg font-semibold">{{ title }}</DialogTitle>
-                                        <button class="btn btn-sm btn-error btn-square text-primary"
+                                        <button class="btn btn-sm btn-error btn-square"
                                             @click="open = false">
                                             <span class="sr-only">Close panel</span>
                                             <Icon :icon="markIcon" class="w-6 h-6" aria-hidden="true" />

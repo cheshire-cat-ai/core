@@ -44,7 +44,6 @@ export const useMessages = defineStore('messages', () => {
      * It also dispatches the error to the store if an error occurs.
      */
     MessagesService.connect(() => setReady()).onMessage((message: string, why: any) => {
-      console.log("bot message", why)
       addMessage({
         id: uniqueId(),
         text: message,

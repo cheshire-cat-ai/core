@@ -1,13 +1,3 @@
-<template>
-	<button class="btn md:btn-sm btn-ghost btn-square" title="Change theme" data-toggle-theme="dark,light" @click="setTheme(isDark = !isDark)">
-		<div class="indicator mt-0.5">
-			<span class="sr-only">Change theme mode</span>
-			<Icon v-if="!isDark" :icon="moonIcon" class="w-6 h-6" aria-hidden="true" />
-			<Icon v-else :icon="sunIcon" class="w-6 h-6" aria-hidden="true" />
-		</div>
-	</button>
-</template>
-
 <script setup lang="ts">
 import { Icon } from '@iconify/vue/dist/offline'
 import sunIcon from '@iconify-icons/heroicons/sun-solid'
@@ -33,3 +23,13 @@ onMounted(() => {
 	setTheme(isDark.value)
 })
 </script>
+
+<template>
+	<button class="btn md:btn-sm btn-ghost btn-square" title="Change theme" data-toggle-theme="dark,light" @click="setTheme(isDark = !isDark)">
+		<div class="indicator mt-0.5">
+			<span class="sr-only">Change theme mode</span>
+			<Icon v-if="!isDark" :icon="moonIcon" class="w-6 h-6" aria-hidden="true" />
+			<Icon v-else :icon="sunIcon" class="w-6 h-6" aria-hidden="true" />
+		</div>
+	</button>
+</template>

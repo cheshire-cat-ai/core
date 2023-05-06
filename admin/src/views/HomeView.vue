@@ -106,7 +106,7 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
 </script>
 
 <template>
-  <div class="flex flex-col self-center justify-center w-full max-w-screen-lg grow">
+  <div class="flex flex-col self-center justify-center w-full max-w-screen-lg gap-4 grow">
     <div v-if="!messagesState.ready" class="self-center">
       <p v-if="messagesState.error" class="p-4 font-semibold bg-error w-fit rounded-xl">{{ messagesState.error }}</p>
       <p v-else>Getting ready...</p>
@@ -114,9 +114,9 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
     <div v-else class="flex flex-col w-full grow">
       <div v-if="messagesState.messages.length" class="flex flex-col grow">
         <div v-for="msg in messagesState.messages" :key="msg.id" 
-          class="chat" :class="[ msg.sender === 'bot' ? 'chat-start' : 'chat-end' ]">
-          <div class="px-4 chat-header">
-            {{ msg.sender === 'bot' ? 'Cheshire Cat' : 'You' }}
+          class="chat gap-y-1" :class="[ msg.sender === 'bot' ? 'chat-start' : 'chat-end' ]">
+          <div class="px-2 font-semibold chat-header">
+            {{ msg.sender === 'bot' ? '😺 Cheshire Cat' : 'You 👤' }}
           </div>
           <div class="chat-bubble">{{ msg.text }}</div>
         </div>
@@ -131,7 +131,7 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
       </div>
     </div>
     <div class="flex items-end justify-center gap-4 mt-auto">
-      <label class="bg-transparent border-none btn text-primary hover:text-base-100 swap btn-circle">
+      <label class="bg-transparent border-none btn text-primary hover:bg-base-300 swap btn-circle">
         <input type="checkbox" class="modal-toggle" v-model="isAudioEnabled" />
         <Icon class="w-6 h-6 swap-off" :icon="soundOffIcon" />
         <Icon class="w-6 h-6 swap-on" :icon="soundOnIcon" />

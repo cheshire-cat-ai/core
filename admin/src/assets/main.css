@@ -2,27 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-.animate__animated.animate__fastest {
-  -webkit-animation-duration: calc(1s / 4);
-  animation-duration: calc(1s / 4);
-  -webkit-animation-duration: calc(var(--animate-duration) / 4);
-  animation-duration: calc(var(--animate-duration) / 4);
-}
-
 @font-face {
   font-family: "Alegreya";
   font-style: normal;
   font-weight: normal;
   font-display: optional;
-  src: url("/Alegreya.ttf") format("ttf");
+  src: local('Alegreya') url("./Alegreya.ttf") format("ttf");
 }
 
-@font-face {
-  font-family: "Alegreya";
-  font-style: italic;
-  font-weight: normal;
-  font-display: optional;
-  src: url("/Alegreya-Italic.ttf") format("ttf");
+.animate__animated.animate__fastest {
+  -webkit-animation-duration: calc(1s / 4);
+  animation-duration: calc(1s / 4);
+  -webkit-animation-duration: calc(var(--animate-duration) / 4);
+  animation-duration: calc(var(--animate-duration) / 4);
 }
 
 @layer base {
