@@ -6,6 +6,8 @@ from langchain.agents import AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
 
 
+
+#class thta control the input pipeline
 class AgentManager:
     def __init__(self, cat):
         self.verbose = cat.verbose

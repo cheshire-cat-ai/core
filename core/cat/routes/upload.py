@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 # receive files via http endpoint
-# TODO: should we receive files also via websocket?
+# TODO: should we receive files also via wpylanceebsocket?
 @router.post("/")
 async def rabbithole_upload_endpoint(
     request: Request,

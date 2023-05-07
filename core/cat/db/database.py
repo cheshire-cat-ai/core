@@ -12,6 +12,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def create_db_and_tables() -> None:
+    """
+    Create the tables from models
+    """
     SQLModel.metadata.create_all(engine)
 
 
