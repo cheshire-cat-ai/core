@@ -134,14 +134,14 @@ class RabbitHole:
 
         # classic embed
         for d, doc in enumerate(docs):
-            
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
-            doc.metadata["text"] = doc.page_content
+            if "is_summary" not in doc.metadata.keys():
+                doc.metadata["is_summary"] = True
             doc = ccat.mad_hatter.execute_hook(
-                "before_insertion_in_vector_memory", doc
+                "rabbit_hole_before_inserting_doc_in_vector_memory", doc
             )
-            
+
             _ = ccat.memory.vectors.declarative.add_texts(
                 [doc.page_content],
                 [doc.metadata],
