@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import App from '@/App.vue'
 import router from '@/router'
 
+import 'unfonts.css'
 import 'animate.css'
 import '@assets/main.css'
 

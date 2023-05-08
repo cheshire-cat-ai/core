@@ -1,12 +1,4 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue/dist/offline'
-import microphoneIcon from '@iconify-icons/heroicons/microphone-solid'
-import clipIcon from '@iconify-icons/heroicons/paper-clip-solid'
-import airplaneIcon from '@iconify-icons/heroicons/paper-airplane'
-import airplaneIconSolid from '@iconify-icons/heroicons/paper-airplane-solid'
-import soundOnIcon from '@iconify-icons/akar-icons/sound-on'
-import soundOffIcon from '@iconify-icons/akar-icons/sound-off'
-
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
 import { useSpeechRecognition, watchDeep, useFileDialog } from '@vueuse/core'
@@ -15,12 +7,13 @@ import { computed, watchEffect, ref } from 'vue'
 import { useSound } from '@vueuse/sound'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import { useSettings } from '@stores/useSettings'
+import MessageBox from '@components/MessageBox.vue'
 
 const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
 
-const recordButton = ref<HTMLElement | null>(null), textArea = ref<HTMLElement | null>(null)
+const textArea = ref<HTMLElement | null>(null)
 const userMessage = ref(''), isTwoLines = ref(false)
 const { isListening, isSupported, start: startRecording, stop: stopRecording, result: transcript } = useSpeechRecognition()
 const { files, open: openFile } = useFileDialog()
@@ -40,19 +33,10 @@ const inputDisabled = computed(() => {
 const randomDefaultMessages = selectRandomDefaultMessages()
 
 /**
- * When the user starts recording and sound is enabled, an audio is played
- */
-const longPressRecording = () => {
-  if (isAudioEnabled.value) {
-    playRec()
-  }
-  startRecording()
-}
-
-/**
  * When the user stops recording, the transcript will be sent to the messages service
  */
 watchEffect(() => {
+  if (isListening.value && isAudioEnabled.value) playRec()
   if (transcript.value === '') return
   dispatchMessage(transcript.value)
 })
@@ -97,29 +81,32 @@ const sendMessage = (message: string) => {
   dispatchMessage(message)
 }
 
+const preventSend = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) { 
+    e.preventDefault()
+    sendMessage(userMessage.value)
+  }
+}
+
 const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: string) => {
   if (error) return 'Well, well, well, looks like something has gone amiss'
   if (isLoading) return 'The enigmatic Cheshire cat is pondering...'
   if (isRecording) return 'The curious Cheshire cat is all ear...'
   return 'Ask the Cheshire Cat...'
 }
+
+const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top: document.body.scrollHeight })
 </script>
 
 <template>
-  <div class="flex flex-col self-center justify-center w-full max-w-screen-lg gap-4 grow">
+  <div class="flex flex-col self-center justify-center w-full max-w-screen-lg gap-4 text-sm md:text-base">
     <div v-if="!messagesState.ready" class="self-center">
-      <p v-if="messagesState.error" class="p-4 font-semibold bg-error w-fit rounded-xl">{{ messagesState.error }}</p>
+      <p v-if="messagesState.error" class="p-4 font-semibold bg-error text-base-100 w-fit rounded-xl">{{ messagesState.error }}</p>
       <p v-else>Getting ready...</p>
     </div>
     <div v-else class="flex flex-col w-full grow">
       <div v-if="messagesState.messages.length" class="flex flex-col grow">
-        <div v-for="msg in messagesState.messages" :key="msg.id" 
-          class="chat gap-y-1" :class="[ msg.sender === 'bot' ? 'chat-start' : 'chat-end' ]">
-          <div class="px-2 font-semibold chat-header">
-            {{ msg.sender === 'bot' ? '😺 Cheshire Cat' : 'You 👤' }}
-          </div>
-          <div class="chat-bubble">{{ msg.text }}</div>
-        </div>
+        <MessageBox v-for="msg in messagesState.messages" :key="msg.id" :sender="msg.sender" :text="msg.text" />
         <p v-if="messagesState.error" class="p-4 font-semibold bg-error w-fit rounded-xl">{{ messagesState.error }}</p>
         <p v-else-if="!messagesState.error && messagesState.loading">😺 Cheshire cat is thinking...</p>
       </div>
@@ -130,24 +117,31 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
         </div>
       </div>
     </div>
-    <div class="flex items-end justify-center gap-4 mt-auto">
+    <div class="fixed bottom-0 left-0 flex items-center justify-end w-full h-20 p-2 md:p-4 bg-gradient-to-t from-base-100" />
+    <button class="fixed bottom-24 right-2 md:right-4 btn-outline btn-primary btn-sm btn-circle btn" 
+      aria-label="Go at the top" @click="scrollToBottom">
+      <heroicons-arrow-down-20-solid class="w-5 h-5" />
+    </button>
+    <div class="sticky flex items-end justify-center w-full max-w-screen-lg gap-2 md:gap-2 bottom-2 md:bottom-4">
       <label class="bg-transparent border-none btn text-primary hover:bg-base-300 swap btn-circle">
         <input type="checkbox" class="modal-toggle" v-model="isAudioEnabled" />
-        <Icon class="w-6 h-6 swap-off" :icon="soundOffIcon" />
-        <Icon class="w-6 h-6 swap-on" :icon="soundOnIcon" />
+        <akar-icons-sound-on class="w-6 h-6 swap-on" />
+        <akar-icons-sound-off class="w-6 h-6 swap-off" />
       </label>
       <div class="relative w-full">
-        <textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
+        <textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" 
+          :disabled="inputDisabled" @keydown="preventSend"
           class="block w-full pr-24 overflow-hidden !outline-none !ring-0 focus:border-2 resize-none textarea textarea-bordered focus:border-primary"
           :placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)">
         </textarea>
         <div class="absolute inset-y-0 right-0 flex gap-4 pr-4">
-          <button :class="{ '!cursor-default': inputDisabled }" :disabled="inputDisabled" @click="sendMessage(userMessage)">
-            <Icon class="w-6 h-6" :icon="userMessage.length ? airplaneIconSolid : airplaneIcon" />
+          <button :disabled="inputDisabled" @click="sendMessage(userMessage)">
+            <heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="w-6 h-6" />
+            <heroicons-paper-airplane v-else class="w-6 h-6" />
           </button>
           <button v-if="!rabbitHoleState.loading" :disabled="inputDisabled" :class="{ 'cursor-default': inputDisabled }"
             @click="openFile({ multiple: false, accept: AcceptedContentTypes.join(', ') })">
-            <Icon class="w-6 h-6 text-primary" :icon="clipIcon" />
+            <heroicons-paper-clip-20-solid class="w-6 h-6 text-primary" />
           </button>
           <div v-else class="flex items-center justify-center grow">
             <div role="status"
@@ -157,9 +151,9 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
           </div>
         </div>
       </div>
-      <button ref="recordButton" v-if="isSupported" @mousedown="longPressRecording" @mouseup="stopRecording"
-        class="btn btn-circle" :class="[ isListening ? 'btn-ghost' : 'btn-primary' ]">
-        <Icon :icon="microphoneIcon" class="w-6 h-6" aria-hidden="true" />
+      <button v-if="isSupported" @pointerdown="startRecording" @pointerup="stopRecording"
+        class="btn btn-circle" :class="[ isListening ? 'btn-ghost' : 'btn-primary' ]" :disabled="inputDisabled">
+        <heroicons-microphone-solid class="w-6 h-6" />
       </button>
     </div>
   </div>

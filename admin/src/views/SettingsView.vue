@@ -7,7 +7,7 @@ import { storeToRefs } from 'pinia'
 import type { LLMProviderMetaData, LLMSettings } from '@models/LLMProvider'
 
 const store = useLLMProviders()
-const { getAvailableProviders, getProviderSchema, setSelectedLLMProvider, setLLMSettings, getProviderSettings } = store
+const { getAvailableProviders, getProviderSchema, setLLMSettings, getProviderSettings } = store
 const { currentState: llmState } = storeToRefs(store)
 
 const sidePanel = ref<InstanceType<typeof SidePanel>>()
@@ -17,23 +17,26 @@ const currentSchema = ref<LLMProviderMetaData>()
 const currentSettings = ref<LLMSettings>({})
 
 watchEffect(() => {
-  if (!llmState.value.loading) {
+  if (!llmState.value.loading && sidePanel.value?.open) {
     currentSchema.value = getProviderSchema() ?? getAvailableProviders()[0]
-    currentSettings.value = getProviderSettings() ?? {}
+    currentSettings.value = getProviderSettings()
   }
 })
 
-const saveProvider = () => {
+const saveProvider = async () => {
   const llmName = selectProvider.value?.selectedElement
   if (!llmName?.value) return
-  setSelectedLLMProvider(llmName.value)
-  setLLMSettings(llmName.value, currentSettings.value)
-  sidePanel.value?.togglePanel()
+  const res = await setLLMSettings(llmName.value, currentSettings.value)
+  if (res) sidePanel.value?.togglePanel()
 }
 
 const updateSelect = (element: any) => {
   currentSchema.value = getProviderSchema(element.value)
-  Object.values(currentSchema.value?.properties ?? {}).forEach(p => currentSettings.value[p.env_names![0]] = p.default)
+  currentSettings.value = getProviderSettings(element.value)
+  Object.values(currentSchema.value?.properties ?? {}).forEach(p => {
+    if (!p.env_names) return
+    if (!currentSettings.value[p.env_names[0]]) currentSettings.value[p.env_names[0]] = p.default
+  })
 }
 
 const openSidePanel = (content: number, title: string) => {
@@ -58,6 +61,13 @@ const openSidePanel = (content: number, title: string) => {
       <p class="text-xl font-medium text-primary">Embedder</p>
       <p class="text-center">Choose a language embedder to help the Cat remember conversations and documents</p>
       <button class="btn btn-sm btn-primary" disabled @click="openSidePanel(2, 'Configure the Embedder')">Configure</button>
+    </div>
+    <div class="flex items-center justify-center md:col-span-2">
+      <p class="font-semibold">
+        Admin UI made by 
+        <a class="cursor-pointer text-primary" target="_blank" 
+          href="https://github.com/zAlweNy26/vue-cheshire-cat">zAlweNy26</a>
+      </p>
     </div>
     <SidePanel ref="sidePanel" :title="sidePanelTitle">
       <div v-if="llmState.loading" class="flex items-center justify-center grow">

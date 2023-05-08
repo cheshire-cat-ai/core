@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
-import { Icon } from '@iconify/vue/dist/offline'
-import chevronUpDownIcon from '@iconify-icons/heroicons/chevron-up-down-solid'
 
 const props = defineProps<{
     list: {
@@ -30,7 +28,7 @@ defineExpose({
                 class="relative w-full p-3 text-sm text-left rounded-lg shadow-lg cursor-default bg-base-100 focus:outline-none">
                 <span class="block font-semibold truncate">{{ selectedElement.label }}</span>
                 <span class="absolute inset-y-0 flex items-center pointer-events-none right-2">
-                    <Icon :icon="chevronUpDownIcon" class="w-6 h-6" aria-hidden="true" />
+                    <heroicons-chevron-up-down-20-solid class="w-6 h-6" />
                 </span>
             </ListboxButton>
             <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100"
