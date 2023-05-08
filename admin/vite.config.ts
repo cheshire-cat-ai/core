@@ -2,6 +2,10 @@ import { join } from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from "unplugin-icons/resolver"
+import Components from "unplugin-vue-components/vite"
+import Unfonts from 'unplugin-fonts/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,11 +13,29 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, join(process.cwd(), '../'), '')
 
   return {
-    plugins: [vue(), tsconfigPaths()],
+    plugins: [
+      vue(),
+      Components({
+        resolvers: [ IconsResolver({ prefix: "" }) ]
+      }),
+      Icons({ autoInstall: true }),
+      Unfonts({
+        custom: {
+          families: [{
+            name: 'Poppins',
+            local: 'Poppins',
+            src: './src/assets/fonts/*.ttf'
+          }],
+          display: 'auto',
+          preload: true,
+          prefetch: false,
+        }
+      }),
+      tsconfigPaths()
+    ],
     define: {
       'import.meta.env.CORE_HOST': JSON.stringify(env.CORE_HOST),
       'import.meta.env.CORE_PORT': JSON.stringify(env.CORE_PORT),
-      'import.meta.env.API_KEY': JSON.stringify(env.API_KEY),
       'import.meta.env.CORE_USE_SECURE_PROTOCOLS' : JSON.stringify(env.CORE_USE_SECURE_PROTOCOLS)
     },
     server: {

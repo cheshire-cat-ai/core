@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { Icon } from '@iconify/vue/dist/offline'
-import markIcon from '@iconify-icons/heroicons/x-mark-solid'
 
 defineProps<{
     title: string
@@ -38,7 +36,7 @@ defineExpose({
                                         <button class="btn btn-sm btn-error btn-square"
                                             @click="open = false">
                                             <span class="sr-only">Close panel</span>
-                                            <Icon :icon="markIcon" class="w-6 h-6" aria-hidden="true" />
+                                            <heroicons-x-mark-20-solid class="w-6 h-6" />
                                         </button>
                                     </div>
                                     <div class="relative flex flex-col flex-1 p-4">

@@ -19,14 +19,18 @@ const LanguageModels = Object.freeze({
   },
   setProviderOptions: async (languageModelName: string, settings?: LLMSettings) => {
     const endpoint = config.endpoints.singleLLM.replace(':llm', languageModelName)
-    return await fetch(endpoint, {
-      method: 'PUT',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(settings ?? {})
-    })
+    try {
+      return await fetch(endpoint, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings ?? {})
+      })
+    } catch (error) {
+      return new Error("Language model provider couldn't be updated")
+    }
   }
 })
 

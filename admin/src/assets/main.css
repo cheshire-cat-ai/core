@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: "Alegreya";
-  font-style: normal;
-  font-weight: normal;
-  font-display: optional;
-  src: local('Alegreya') url("./Alegreya.ttf") format("ttf");
-}
-
 .animate__animated.animate__fastest {
   -webkit-animation-duration: calc(1s / 4);
   animation-duration: calc(1s / 4);
@@ -19,7 +11,7 @@
 
 @layer base {
   html {
-    font-family: "Alegreya", system-ui, sans-serif;
+    font-family: "Poppins", system-ui, sans-serif;
   }
 }
 
@@ -46,9 +38,6 @@
   .btn-warning:hover:not(.btn-outline), .btn-warning.btn-active:not(.btn-outline) {
     @apply brightness-[0.85];
   }
-  .btn-outline {
-    @apply border-2;
-  }
   .checkbox {
     @apply border-2;
   }
@@ -64,11 +53,11 @@
 }
 
 body {
-  scrollbar-color: #27272a #f4f4f5;
+  scrollbar-color: #383938 #F4F4F5;
 }
 
 [data-theme="dark"] body {
-  scrollbar-color: #f4f4f5 #27272a;
+  scrollbar-color: #F4F4F5 #383938;
 }
 
 ::-webkit-scrollbar {
@@ -77,18 +66,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #383938;
   border-radius: 10px;
 }
 
 [data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: #f4f4f5;
+  background: #F4F4F5;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f4f4f5;
+  background: #F4F4F5;
 }
 
 [data-theme="dark"] ::-webkit-scrollbar-track {
-  background: #27272a;
+  background: #383938;
 }

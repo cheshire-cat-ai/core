@@ -28,16 +28,18 @@ const { currentState: pluginsState } = storeToRefs(store)
         Failed to fetch
       </div>
     </div>
-    <div v-else v-for="item in pluginsState.data" :key="item.id" class="flex items-center gap-4 p-4 bg-base-200 rounded-xl">
-      <div class="avatar placeholder">
-        <div class="w-20 h-20 rounded-xl bg-gradient-to-b from-blue-500 to-primary text-base-100">
-          <span class="text-5xl font-bold leading-3">{{ firstLetter(item.name) }}</span>
+    <template v-else>
+      <div v-for="item in pluginsState.data" :key="item.id" class="flex items-center gap-4 p-4 bg-base-200 rounded-xl">
+        <div class="avatar placeholder">
+          <div class="w-20 h-20 rounded-xl bg-gradient-to-b from-blue-500 to-primary text-base-100">
+            <span class="text-5xl font-bold leading-3">{{ firstLetter(item.name) }}</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-xl font-bold">{{ item.name }}</p>
+          <p>{{ item.description }}</p>
         </div>
       </div>
-      <div class="flex flex-col gap-2">
-        <p class="text-xl font-bold">{{ item.name }}</p>
-        <p>{{ item.description }}</p>
-      </div>
-    </div>
+    </template>
   </div>
 </template>

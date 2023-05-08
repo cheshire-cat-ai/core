@@ -3,7 +3,6 @@ import { AppFeatures } from '@models/AppFeatures'
 const CORE_HOST = import.meta.env.CORE_HOST || 'localhost'
 const CORE_PORT = import.meta.env.CORE_PORT || '1865'
 const CORE_USE_SECURE_PROTOCOLS = import.meta.env.CORE_USE_SECURE_PROTOCOLS || false
-// const API_KEY = import.meta.env.API_KEY || ''
 
 const endpointsList = {
   secure : {

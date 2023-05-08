@@ -2,9 +2,6 @@
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import ThemeButton from '@components/ThemeButton.vue'
 import { RouterLink } from 'vue-router'
-import { Icon } from '@iconify/vue/dist/offline'
-import menuIcon from '@iconify-icons/heroicons/bars-3-20-solid'
-import markIcon from '@iconify-icons/heroicons/x-mark-solid'
 import { useNotifications } from '@stores/useNotifications'
 import { uniqueId } from '@utils/commons'
 import WittyService from '@services/WittyService'
@@ -21,13 +18,13 @@ const onLogoClick = () => {
 </script>
 
 <template>
-	<div class="navbar md:px-[10%] bg-base-100 min-h-fit shadow-xl">
+	<div class="navbar md:px-[10%] bg-base-100 min-h-fit shadow-xl sticky top-0 z-40">
 		<div class="navbar-start">
 			<img src="@assets/logo.svg" class="hidden w-8 h-8 cursor-pointer md:block" @click="onLogoClick" />
 			<Menu v-slot="{ open }" as="div" class="relative inline-block rounded-lg md:hidden">
 				<MenuButton class="btn-ghost btn-square btn" title="Menu">
-					<Icon v-if="!open" :icon="menuIcon" class="w-6 h-6" aria-hidden="true" />
-					<Icon v-else :icon="markIcon" class="w-6 h-6" aria-hidden="true" />
+					<heroicons-x-mark-20-solid v-if="open" class="w-6 h-6 swap-on" />
+					<heroicons-bars-3-solid v-else class="w-6 h-6 swap-off" />
 				</MenuButton>
 				<Transition enter-active-class="transition duration-200 ease-out"
 					enter-from-class="transform scale-90 opacity-0" enter-to-class="transform scale-100 opacity-100"
