@@ -50,21 +50,27 @@ cheshire_cat_api.add_middleware(
 #     general_setting.router, tags=["Settings - General"], prefix="/settings"
 # )
 
+# cheshire_cat_api.include_router(
+#     embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder"
+# )
+
 cheshire_cat_api.include_router(
     llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm"
 )
-cheshire_cat_api.include_router(
-    embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder"
-)
+
 cheshire_cat_api.include_router(
     plugins.router, tags=["Plugins"], prefix="/plugins"
 )
-cheshire_cat_api.include_router(
-    memory.router, tags=["Memory"], prefix="/memory"
-)
+
+# maybe need in the future to delete at runtime the memory?
+# cheshire_cat_api.include_router(
+#     memory.router, tags=["Memory"], prefix="/memory"
+# )
+
 cheshire_cat_api.include_router(
     upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"
 )
+
 cheshire_cat_api.include_router(
     websocket.router, tags=["Websocket"]
 )
