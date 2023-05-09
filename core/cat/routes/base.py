@@ -9,4 +9,4 @@ router = APIRouter()
 async def home() -> Dict:
     """Server status"""
     #TODO: ping to swagger UI
-    return {"status": "If you see this, the core is up!"}
+    return {"status": "We're all mad here, dear!"}

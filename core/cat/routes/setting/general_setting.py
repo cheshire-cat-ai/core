@@ -13,7 +13,6 @@ def get_settings(
     page: int = 1,
     search: str = "",
 ):
-    print(f"Pippobaudo:{search}")
     settings = crud.get_settings(db, limit=limit, page=page, search=search)
 
     return {"status": "success", "results": len(settings), "settings": settings}
