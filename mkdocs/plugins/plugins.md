@@ -1,34 +1,57 @@
 # :electric_plug: How to write a plugin
 
-To write a plugin just create a new folder in `web/cat/plugins/`. 
+To write a plugin just create a new folder in `core/cat/plugins/`. 
 
 Add a python file to your plugin folder:
 
-    ├── web
+    ├── core
     │   ├── cat
     │   │   ├── plugins
-    |   |   |   ├── __myplugin
+    |   |   |   ├── myplugin
     |   |   |   |   ├ mypluginfile.py
 
 Now let's start `mypluginfile.py` with a little import:
 
-    from cat.mad_hatter.decorators import tool, hook
+```python
+from cat.mad_hatter.decorators import tool, hook
+```
 
 You are now ready to change the Cat's behavior using Tools and Hooks.
 
 
-![plugins](../assets/img/diagrams/plugin.png)
+## :toolbox: Tools
+
+Tools are python functions that can be selected from the language model (LLM). Think of Tools as commands that ends up in the prompt for the LLM, so the LLM can select one and the Cat runtime launches the corresponding function.  
+Here is an example of Tool to let the Cat tell you what time it is:
+
+```python
+@tool
+def get_the_time(tool_input, cat):
+    """Retrieves current time and clock. Input is always None."""
+
+    return str(datetime.now())
+```
+
+More examples on tools [here](tools.md)
 
 
 ## :hook: Hooks
 
-Hooks let you influence how the Cat runs its internal functionality.  
-More details on hooks [here](hooks.md)
+Hooks are also python functions, but they pertain the Cat's runtime and not striclty the LLM. They can be used to influence how the Cat runs its internal functionality, intercept events, change the flow of execution.  
 
-## :toolbox: Tools
+The following hook for example allows you to modify the cat response just before it gets sent out to the user. In this case we make a "grumpy rephrase" of the original response.
 
-Tools let you define custom code that the Cat can use.  
-More details on tools [here](tools.md)
+```python
+@hook
+def before_returning_response_to_user(response, cat):
+
+    prompt = f'Rephrase the following sentence in a grumpy way: {response["content"]}'
+    response['content'] = cat.llm(prompt)
+
+    return response
+```
+
+More examples on hooks [here](hooks.md)
 
 
-TODO: the difference is not clear, find better working and simple examples
+

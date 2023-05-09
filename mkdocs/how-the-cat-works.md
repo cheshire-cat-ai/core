@@ -13,7 +13,7 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
 
 :rabbit: `Rabbit Hole`
 :   This component handles the ingestion of documents.   
-    Files that are sent down the *Rabbit Hole* are split into chunks and saved in the Cat's *episodic memory* to be further retrieved in the conversation. <link to episodic memory>
+    Files that are sent down the *Rabbit Hole* are split into chunks and saved in the Cat's *declarative memory* to be further retrieved in the conversation. <link to declarative memory>
 
 :brain: `Large Language Model (LLM)`
 :   This is one of the core components of the Cheshire Cat framework. 
@@ -46,7 +46,13 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
 
 ## Main loop
 
-![flow](assets/img/diagrams/flow.png)
+![flow](assets/img/diagrams/flow.jpg)
+
+
+## Retrieval augmented Genrration (docs Q&A)
+
+![flow](assets/img/diagrams/rag.jpg)
+
 
 [//]: # (```mermaid)
 
