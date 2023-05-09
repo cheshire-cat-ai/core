@@ -49,7 +49,7 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
 ![flow](assets/img/diagrams/flow.jpg)
 
 
-## Retrieval augmented Genrration (docs Q&A)
+## Retrieval augmented Generation (docs Q&A)
 
 ![flow](assets/img/diagrams/rag.jpg)
 
