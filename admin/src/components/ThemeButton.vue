@@ -22,9 +22,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<button class="btn md:btn-sm btn-ghost btn-square swap" @click="setTheme(isDark = !isDark)">
-		<input type="checkbox" class="modal-toggle" v-model="isDark" />
-		<heroicons-sun-solid class="w-6 h-6 swap-on" />
-		<heroicons-moon-solid class="w-6 h-6 swap-off" />
+	<button class="swap btn-ghost btn-square btn md:btn-sm" @click="setTheme(isDark = !isDark)">
+		<input v-model="isDark" type="checkbox" class="modal-toggle">
+		<heroicons-sun-solid class="swap-on h-6 w-6" />
+		<heroicons-moon-solid class="swap-off h-6 w-6" />
 	</button>
 </template>

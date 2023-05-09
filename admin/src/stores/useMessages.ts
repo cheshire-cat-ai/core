@@ -43,7 +43,9 @@ export const useMessages = defineStore('messages', () => {
      * and dispatches the received messages to the store.
      * It also dispatches the error to the store if an error occurs.
      */
-    MessagesService.connect(() => setReady()).onMessage((message: string, why: any) => {
+    MessagesService.connect(() => {
+      currentState.ready = true
+    }).onMessage((message: string, why: any) => {
       addMessage({
         id: uniqueId(),
         text: message,
@@ -52,19 +54,17 @@ export const useMessages = defineStore('messages', () => {
         why
       })
     }).onError((error: Error) => {
-      const errorMessage = getErrorMessage(error)
-      setError(errorMessage)
+      currentState.loading = false
+      currentState.error = getErrorMessage(error)
     })
   })
 
   tryOnUnmounted(() => {
+    /**
+     * Unsubscribes to the messages service on component unmount
+     */
     MessagesService.disconnect()
   })
-
-  /**
-   * Sets the ready state to true
-   */
-  const setReady = () => { currentState.ready = true }
 
   /**
    * Adds a message to the list of messages
@@ -73,14 +73,6 @@ export const useMessages = defineStore('messages', () => {
     currentState.error = undefined
     currentState.messages.push(msg)
     currentState.loading = msg.sender === 'user'
-  }
-
-  /**
-   * Sets the error state
-   */
-  const setError = (msg: string) => {
-    currentState.loading = false
-    currentState.error = msg
   }
 
   /**
@@ -108,9 +100,7 @@ export const useMessages = defineStore('messages', () => {
 
   return {
     currentState,
-    setReady,
     addMessage,
-    setError,
     selectRandomDefaultMessages,
     dispatchMessage
   }

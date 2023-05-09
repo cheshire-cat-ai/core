@@ -41,6 +41,7 @@ const MessagesService = Object.freeze({
         LogService.print('Connected to the WebSocket server')
         onConnected(event)
         isReady = true
+        //setInterval(() => socket.send('ping'), 5000)
       }
     }
 
