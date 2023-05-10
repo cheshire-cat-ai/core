@@ -1,7 +1,7 @@
 import os
 
-import cat.validators.llm as llms
-import cat.validators.embedder as embedders
+import cat.factory.llm as llms
+import cat.factory.embedder as embedders
 from cat.db import crud
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI
 from cat.mad_hatter.decorators import hook

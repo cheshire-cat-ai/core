@@ -9,10 +9,8 @@ router = APIRouter()
 # main loop via websocket
 @router.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    # Cheshire cat instace from the lifespan
     ccat = websocket.app.state.ccat
-    
-    # wait the handshake 
+
     await websocket.accept()
 
     try:
@@ -31,7 +29,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 notification = ccat.web_socket_notifications[-1]
                 ccat.web_socket_notifications = ccat.web_socket_notifications[:-1]
                 await websocket.send_json(notification)
-        
 
     except Exception as e:  # WebSocketDisconnect as e:
         log(e)

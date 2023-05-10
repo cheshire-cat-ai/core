@@ -1,6 +1,6 @@
 from typing import Dict
 
-import cat.validators.llm as llm_factory
+import cat.factory.llm as llm_factory
 from fastapi import Depends, Request, APIRouter
 from sqlalchemy.orm import Session
 from cat.db.database import get_db_session
