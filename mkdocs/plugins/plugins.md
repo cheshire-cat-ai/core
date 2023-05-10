@@ -43,12 +43,12 @@ The following hook for example allows you to modify the cat response just before
 
 ```python
 @hook
-def before_returning_response_to_user(response, cat):
+def before_cat_sends_message(message, cat):
 
-    prompt = f'Rephrase the following sentence in a grumpy way: {response["content"]}'
-    response['content'] = cat.llm(prompt)
+    prompt = f'Rephrase the following sentence in a grumpy way: {message["content"]}'
+    message["content"] = cat.llm(prompt)
 
-    return response
+    return message
 ```
 
 More examples on hooks [here](hooks.md)
