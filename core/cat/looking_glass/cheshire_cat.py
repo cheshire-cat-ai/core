@@ -224,23 +224,7 @@ class CheshireCat:
         )
         self.working_memory["declarative_memories"] = declarative_memories
 
-    def __call__(self, user_message):
-        if self.verbose:
-            log(user_message)
-
-        # recall episodic and declarative memories from vector collections and store them in working_memory
-        try:
-            self.recall_relevant_memories_to_working_memory(user_message)
-        except Exception as e:
-            log(e)
-            traceback.print_exc(e)
-            return {
-                "error": False,
-                # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
-                "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `core/long_term_memory` folder",
-                "why": {},
-            }
-
+    def format_agent_executor_input(self):
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.mad_hatter.execute_hook(
             "format_episodic_memories_for_prompt",
@@ -256,20 +240,51 @@ class CheshireCat:
             "format_conversation_history_for_prompt", self.working_memory["history"]
         )
 
+        return {
+            "input": self.working_memory["user_message_json"]["text"],
+            "episodic_memory": episodic_memory_formatted_content,
+            "declarative_memory": declarative_memory_formatted_content,
+            "chat_history": conversation_history_formatted_content,
+            "ai_prefix": "AI",
+        }
+
+    def __call__(self, user_message_json):
+        if self.verbose:
+            log(user_message_json)
+
+        # hook to modify/enrich user input
+        user_message_json = self.mad_hatter.execute_hook(
+            "user_message_just_arrived", user_message_json
+        )
+
+        # store user_message_json in working memory
+        self.working_memory["user_message_json"] = user_message_json
+
+        # extract actual user message text
+        user_message = user_message_json["text"]
+
+        # recall episodic and declarative memories from vector collections and store them in working_memory
+        try:
+            self.recall_relevant_memories_to_working_memory(user_message)
+        except Exception as e:
+            log(e)
+            traceback.print_exc(e)
+            return {
+                "error": False,
+                # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
+                "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `core/long_term_memory` folder",
+                "why": {},
+            }
+
+        # prepare input to be passed to the agent executor. Info will be extracted from working memory
+        agent_executor_input = self.format_agent_executor_input()
+
         # load agent (will rebuild both agent and agent_executor based on context and plugins)
         agent_executor = self.agent_manager.get_agent_executor()
 
         # reply with agent
         try:
-            cat_message = agent_executor(
-                {
-                    "input": user_message,
-                    "episodic_memory": episodic_memory_formatted_content,
-                    "declarative_memory": declarative_memory_formatted_content,
-                    "chat_history": conversation_history_formatted_content,
-                    "ai_prefix": "AI",
-                }
-            )
+            cat_message = agent_executor(agent_executor_input)
         except ValueError as e:
             # This error happens when the LLM does not respect prompt instructions.
             # We grab the LLM outptu here anyway, so small and non instruction-fine-tuned models can still be used.

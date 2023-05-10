@@ -19,7 +19,7 @@ async def websocket_endpoint(websocket: WebSocket):
             user_message = await websocket.receive_json()
 
             # get response from the cat
-            cat_message = ccat(user_message["text"])
+            cat_message = ccat(user_message)
 
             # send output to user
             await websocket.send_json(cat_message)
