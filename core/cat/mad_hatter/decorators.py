@@ -42,7 +42,6 @@ def hook(_func=None, priority=1) -> Any:
             doc_string = ""
         CatHooks.add_hook(
             {
-                "hook_function": cat_hook_wrapper,
                 "hook_name": func.__name__,
                 "docstring": func.__doc__,
                 "priority": float(priority),
