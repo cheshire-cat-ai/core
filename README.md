@@ -24,6 +24,11 @@ If you want to build a custom AI on top of a language model, the Cat can help yo
 
 This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
+## Docs and Resources
+- [Official Documentation](https://pieroit.github.io/cheshire-cat/)
+- [Discord Server](https://discord.gg/bHX5sNFCYU)
+- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://www.youtube.com/watch?v=vyHg6op6FF8)
+
 ## Quickstart
 
 ### Install
@@ -87,35 +92,10 @@ docker-compose up
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Docs and Resources
-- [Official Documentation](https://pieroit.github.io/cheshire-cat/)
-- [Discord Server](https://discord.gg/bHX5sNFCYU)
-- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://www.youtube.com/watch?v=vyHg6op6FF8)
 
 ## Roadmap
 
-* [Version 1](./ROADMAP.md)
-* Version 2
-  * Dissemination
-    * website
-    * how to guides
-    * use cases examples
-  * QA / Test
-    * End2End tests
-    * Unit tests
-  * Local LLM / embedder
-    * CustomLLMConfig / CustomEmbedderConfig adapters
-    * LLM / embedder example docker container
-  * Minimal user management
-    * User specific conversation and memory
-  * Working memory
-    * Temporary storage of arbitrary data in cat instance
-  * Hook surface (20 hooks)
-    * more hooks where customization is needed
-  * Plugin management
-    * Activate / deactivate plugins
-    * External plugin directory and customization
-
+Detailed roadmap is [here](./ROADMAP.md).
 Whilst for the current progress of development, take a look at the [projects](https://github.com/pieroit/cheshire-cat/projects?query=is%3Aopen) marked as open.
 
 ## Contributing

@@ -1,4 +1,55 @@
 
+* Version 1
+  * Forms from JSON schema ✅
+  * Configurations
+	  * Language model provider ✅
+	  * Embedder
+  * Plugins list ✅
+  * Reasoning
+  * Documentation ✅
+  * Markdown support ✅
+  * Static admin inside main container
+
+* Version 2
+  * Dissemination
+    * website
+    * how to guides
+    * use cases examples
+  * QA / Test
+    * End2End tests
+    * Unit tests
+  * Local LLM / embedder
+    * CustomLLMConfig / CustomEmbedderConfig adapters
+    * LLM / embedder example docker container
+  * Minimal user management
+    * User specific conversation and memory
+  * Hook surface (20 hooks)
+    * more hooks where customization is needed
+  * Plugin management
+    * Activate / deactivate plugins
+    * External plugin directory and customization
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Roadmap to V1
 
 This roadmap represents our plan and vision for the development of the ChechireCat v1.
@@ -7,15 +58,7 @@ This document is intended to provide a clear and concise summary of our developm
 
 ## Summary
 
-* [Forms from JSON schema](#forms-from-json-schema) ✅
-* [Configurations](#configurations)
-	* [Language model provider](#language-model-provider) ✅
-	* [Embedder](#embedder)
-* [Plugins list](#plugins-list) ✅
-* [Reasoning](#reasoning)
-* [Documentation](#documentation) ✅
-* [Markdown support](#markdown-support) ✅
-* [Separate `admin` app from `public` static index.html](#separate-admin-from-public)
+
 
 ## Forms from JSON schema
 
