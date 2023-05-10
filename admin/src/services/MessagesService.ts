@@ -6,7 +6,7 @@
 
 import { isAPIMessageServiceResponse } from '@utils/typeGuards'
 import LogService from '@services/LogService'
-import config from '../config'
+import config from '@/config'
 
 /**
  * The WebSocket instance

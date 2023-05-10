@@ -10,10 +10,14 @@ const markdown = new Remarkable({
     highlight: (str, lang) => {
         if (lang && hljs.getLanguage(lang)) {
             try { return hljs.highlight(str, { language: lang }).value } 
-            catch (_) {}
+            catch (_) {
+                console.log(_)
+            }
         }
         try { return hljs.highlightAuto(str).value } 
-        catch (_) {}
+        catch (_) {
+            console.log(_)
+        }
         return ''
     }
 }).use(linkify)
@@ -26,7 +30,7 @@ const props = defineProps<{
     text: string
 }>()
 
-const cleanedText = props.text.replace(/\"(.+)\"/g, '$1')
+const cleanedText = props.text.replace(/"(.+)"/g, '$1')
 </script>
 
 <template>

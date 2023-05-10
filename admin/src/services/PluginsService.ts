@@ -4,7 +4,7 @@
  * sending or receiving data.
  */
 import type { Plugin } from '@models/Plugin'
-import config from '../config'
+import config from '@/config'
 import { toJSON } from '@utils/commons'
 
 /*

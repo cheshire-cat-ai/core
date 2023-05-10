@@ -5,7 +5,7 @@
  */
 import LogService from '@services/LogService'
 import { toJSON } from '@utils/commons'
-import config from '../config'
+import config from '@/config'
 
 const endpoint = config.endpoints.rabbitHole
 

@@ -4,6 +4,7 @@
  */
 
 let ids = 0
+
 /**
  * Generates a unique id of type number.
  * This function is commonly employed by components that need to generate unique ids for their children.

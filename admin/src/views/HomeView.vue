@@ -7,7 +7,6 @@ import { computed, watchEffect, ref } from 'vue'
 import { useSound } from '@vueuse/sound'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import { useSettings } from '@stores/useSettings'
-import MessageBox from '@components/MessageBox.vue'
 
 const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
@@ -101,36 +100,36 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 </script>
 
 <template>
-	<div class="flex flex-col self-center justify-center w-full max-w-screen-lg gap-4 pb-16 md:!pb-20 overflow-hidden">
-		<div v-if="!messagesState.ready" class="flex items-center self-center justify-center grow">
-			<p v-if="messagesState.error" class="p-4 font-semibold w-fit rounded-xl bg-error text-base-100">
+	<div class="flex w-full max-w-screen-lg flex-col justify-center gap-4 self-center overflow-hidden pb-16 md:!pb-20">
+		<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
+			<p v-if="messagesState.error" class="w-fit rounded-xl bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
 			<p v-else>
 				Getting ready...
 			</p>
 		</div>
-		<div v-else-if="messagesState.messages.length" class="flex flex-col overflow-y-auto grow">
+		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto">
 			<MessageBox v-for="msg in messagesState.messages" :key="msg.id" :sender="msg.sender" :text="msg.text" />
-			<p v-if="messagesState.error" class="p-4 font-semibold w-fit rounded-xl bg-error">
+			<p v-if="messagesState.error" class="w-fit rounded-xl bg-error p-4 font-semibold">
 				{{ messagesState.error }}
 			</p>
 			<p v-else-if="!messagesState.error && messagesState.loading">
 				😺 Cheshire cat is thinking...
 			</p>
 		</div>
-		<div v-else class="flex flex-col items-center justify-center gap-4 cursor-pointer grow">
-			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="normal-case rounded-full shadow-xl btn"
+		<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4">
+			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-full normal-case shadow-xl"
 				@click="sendMessage(msg)">
 				{{ msg }}
 			</div>
 		</div>
-		<div class="fixed bottom-0 left-0 flex items-center justify-center w-full p-2 md:p-4 bg-gradient-to-t from-base-100">
-			<div class="flex items-center w-full max-w-screen-lg gap-2 md:gap-4">
-				<label class="bg-transparent border-none swap btn-circle btn text-primary hover:bg-base-300">
+		<div class="fixed bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100 p-2 md:p-4">
+			<div class="flex w-full max-w-screen-lg items-center gap-2 md:gap-4">
+				<label class="swap btn-circle btn border-none bg-transparent text-primary hover:bg-base-300">
 					<input v-model="isAudioEnabled" type="checkbox" class="modal-toggle">
-					<akar-icons-sound-on class="w-6 h-6 swap-on" />
-					<akar-icons-sound-off class="w-6 h-6 swap-off" />
+					<akar-icons-sound-on class="swap-on h-6 w-6" />
+					<akar-icons-sound-off class="swap-off h-6 w-6" />
 				</label>
 				<div class="relative w-full">
 					<textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
@@ -139,15 +138,15 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 						@keydown="preventSend" />
 					<div class="absolute inset-y-0 right-0 flex gap-4 pr-4">
 						<button :disabled="inputDisabled" @click="sendMessage(userMessage)">
-							<heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="w-6 h-6" />
-							<heroicons-paper-airplane v-else class="w-6 h-6" />
+							<heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="h-6 w-6" />
+							<heroicons-paper-airplane v-else class="h-6 w-6" />
 						</button>
 						<button v-if="!rabbitHoleState.loading" :disabled="inputDisabled"
 							:class="[ inputDisabled ? 'cursor-default text-neutral-focus' : 'text-primary' ]"
 							@click="openFile({ multiple: false, accept: AcceptedContentTypes.join(', ') })">
-							<heroicons-paper-clip-20-solid class="w-6 h-6" />
+							<heroicons-paper-clip-20-solid class="h-6 w-6" />
 						</button>
-						<div v-else class="flex items-center justify-center grow">
+						<div v-else class="flex grow items-center justify-center">
 							<div role="status"
 								class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] text-primary motion-reduce:animate-[spin_1.5s_linear_infinite]">
 								<span
@@ -158,13 +157,13 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				</div>
 				<button v-if="isSupported" class="btn-circle btn" :class="[isListening ? 'btn-ghost' : 'btn-primary']"
 					:disabled="inputDisabled" @pointerdown="startRecording" @pointerup="stopRecording">
-					<heroicons-microphone-solid class="w-6 h-6" />
+					<heroicons-microphone-solid class="h-6 w-6" />
 				</button>
 			</div>
 		</div>
-		<button @click="scrollToBottom"
-			class="fixed btn-outline bg-base-100 btn-primary btn-sm btn-circle btn bottom-24 right-2 md:right-4">
-			<heroicons-arrow-down-20-solid class="w-5 h-5" />
+		<button class="btn-outline btn-primary btn-sm btn-circle btn fixed bottom-24 right-2 bg-base-100 md:right-4"
+			@click="scrollToBottom">
+			<heroicons-arrow-down-20-solid class="h-5 w-5" />
 		</button>
 	</div>
 </template>

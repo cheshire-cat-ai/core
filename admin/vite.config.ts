@@ -16,6 +16,18 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       Components({
+        dts: true,
+        types: [
+          {
+            from: '@headlessui/vue',
+            names: [
+              'Menu', 'MenuButton', 'MenuItems', 'MenuItem', 
+              'Listbox', 'ListboxButton', 'ListboxOptions', 'ListboxOption',
+              'Dialog', 'DialogPanel', 'DialogTitle', 
+              'TransitionChild', 'TransitionRoot'
+            ]
+          }
+        ],
         resolvers: [ IconsResolver({ prefix: "" }) ]
       }),
       Icons({ autoInstall: true }),

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
-import ThemeButton from '@components/ThemeButton.vue'
 import { RouterLink } from 'vue-router'
 import { useNotifications } from '@stores/useNotifications'
 import { uniqueId } from '@utils/commons'
