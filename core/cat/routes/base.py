@@ -8,4 +8,5 @@ router = APIRouter()
 @router.get("/")
 async def home() -> Dict:
     """Server status"""
+    
     return {"status": "We're all mad here, dear!"}
