@@ -141,12 +141,14 @@ class RabbitHole:
             doc = ccat.mad_hatter.execute_hook(
                 "rabbit_hole_before_inserting_doc_in_vector_memory", doc
             )
-
-            _ = ccat.memory.vectors.declarative.add_texts(
-                [doc.page_content],
-                [doc.metadata],
-            )
-            log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
+            if doc.page_content != "":
+                _ = ccat.memory.vectors.declarative.add_texts(
+                    [doc.page_content],
+                    [doc.metadata],
+                )
+                log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
+            else:
+                log(f"Skipped memory insertion of empty page content ({d + 1}/{len(docs)})")
             time.sleep(0.1)
 
         # notify client
