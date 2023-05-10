@@ -10,9 +10,10 @@ from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
 
 
 class Setting(SQLModel, table=True):  # type: ignore
-    setting_id: Optional[str] = Field(
-        sa_column=Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)
-    )
+    """
+    Create a table call Setting
+    """
+    setting_id: Optional[str] = Field(sa_column=Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)) 
     name: str = Field(nullable=False)
     value: Dict = Field(nullable=False, sa_column=Column(JSON))
     category: Union[str, None] = Field(nullable=False, default="general")

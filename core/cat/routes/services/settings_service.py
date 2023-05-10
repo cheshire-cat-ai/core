@@ -31,8 +31,8 @@ def nlp_get_settings(
         "results": len(settings),
         "settings": settings,
         "schemas": schemas,
-        "allowed_configurations": allowed_configurations,
-        "selected_configuration": selected_configuration,
+        "allowed_configurations": allowed_configurations, # 
+        "selected_configuration": selected_configuration, # Current LLM model
     }
 
 

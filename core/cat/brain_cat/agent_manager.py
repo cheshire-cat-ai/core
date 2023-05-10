@@ -6,6 +6,11 @@ from langchain.agents import AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
 
 
+
+#class thta control the input pipeline
+"""
+    Define the execution of hooks and tools to generate the initial prompt. 
+"""
 class AgentManager:
     def __init__(self, cat):
         self.verbose = cat.verbose

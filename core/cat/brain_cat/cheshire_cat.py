@@ -8,10 +8,10 @@ from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemory
-from cat.memory.long_term_memory import LongTermMemory
+from cat.memory_cat.working_memory import WorkingMemory
+from cat.memory_cat.long_term_memory import LongTermMemory
 from langchain.docstore.document import Document
-from cat.looking_glass.agent_manager import AgentManager
+from cat.brain_cat.agent_manager import AgentManager
 
 
 # main class
