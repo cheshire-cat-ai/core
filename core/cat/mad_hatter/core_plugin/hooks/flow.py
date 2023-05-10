@@ -24,5 +24,5 @@ def after_cat_recalled_memories(user_message, cat):
 
 # Hook called just before sending response to a client.
 @hook(priority=0)
-def before_cat_sends_message(response, cat):
-    return response
+def before_cat_sends_message(message, cat):
+    return message
