@@ -1,4 +1,6 @@
 import os
+import sys
+import socket
 import time
 from typing import Any, Callable
 
@@ -16,10 +18,22 @@ class VectorMemory:
             raise Exception("No embedder passed to VectorMemory")
         self.embedder = embedder
 
+        qdrant_host = os.getenv("VECTOR_MEMORY_HOST", "cheshire_cat_vector_memory")
+        qdrant_port = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
+
+        try:
+            s = socket.socket()
+            s.connect((qdrant_host, qdrant_port))
+        except Exception:
+            log("QDrant don't respond")
+        finally:
+            s.close()
+            sys.exit()
+
         # Qdrant vector DB client
         self.vector_db = QdrantClient(
-            host=os.getenv("VECTOR_MEMORY_HOST", "cheshire_cat_vector_memory"),
-            port=int(os.getenv("VECTOR_MEMORY_PORT", 6333)),
+            host=qdrant_host,
+            port=qdrant_port,
         )
 
         # Episodic memory will contain user and eventually cat utterances
@@ -78,9 +92,7 @@ class VectorMemoryCollection(Qdrant):
         query_embedding = self.embedding_function(text)
 
         # search nearest vectors
-        return self.recall_memories_from_embedding(
-            query_embedding, metadata=metadata, k=k
-        )
+        return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(self, embedding, metadata=None, k=5):
@@ -94,9 +106,7 @@ class VectorMemoryCollection(Qdrant):
         )
         return [
             (
-                self._document_from_scored_point(
-                    m, self.content_payload_key, self.metadata_payload_key
-                ),
+                self._document_from_scored_point(m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
             )
             for m in memories
