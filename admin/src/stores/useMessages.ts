@@ -1,8 +1,6 @@
-import { reactive } from 'vue'
-import { defineStore } from 'pinia'
-import { tryOnMounted, tryOnUnmounted } from '@vueuse/core'
 import type { MessagesState } from '@stores/types'
 import type { Message } from '@models/Message'
+import { useNotifications } from '@stores/useNotifications'
 import MessagesService from '@services/MessagesService'
 import { now, uniqueId } from '@utils/commons'
 import { getErrorMessage } from '@utils/errors'
@@ -37,6 +35,8 @@ export const useMessages = defineStore('messages', () => {
     ]
   })
 
+  const { showNotification } = useNotifications()
+
   tryOnMounted(() => {
     /**
      * Subscribes to the messages service on component mount
@@ -45,14 +45,22 @@ export const useMessages = defineStore('messages', () => {
      */
     MessagesService.connect(() => {
       currentState.ready = true
-    }).onMessage((message: string, why: any) => {
-      addMessage({
-        id: uniqueId(),
-        text: message,
-        sender: 'bot',
-        timestamp: now(),
-        why
-      })
+    }).onMessage((message, why) => {
+      if (why) {
+        showNotification({
+          id: uniqueId(),
+          type: 'info',
+          message: why
+        })
+      } else {
+        addMessage({
+          id: uniqueId(),
+          text: message,
+          sender: 'bot',
+          timestamp: now(),
+          why
+        })
+      }
     }).onError((error: Error) => {
       currentState.loading = false
       currentState.error = getErrorMessage(error)

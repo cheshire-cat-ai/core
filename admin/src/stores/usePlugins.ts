@@ -1,6 +1,3 @@
-import { reactive, watchEffect } from 'vue'
-import { defineStore } from 'pinia'
-import { useAsyncState } from '@vueuse/core'
 import type { PluginsState } from '@stores/types'
 import PluginsService from '@services/PluginsService'
 

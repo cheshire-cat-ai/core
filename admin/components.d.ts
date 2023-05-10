@@ -35,7 +35,6 @@ declare module '@vue/runtime-core' {
     MenuItems: typeof import('@headlessui/vue')['MenuItems']
     MessageBox: typeof import('./src/components/MessageBox.vue')['default']
     NotificationStack: typeof import('./src/components/NotificationStack.vue')['default']
-    RecordingButton: typeof import('./src/components/RecordingButton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectBox: typeof import('./src/components/SelectBox.vue')['default']

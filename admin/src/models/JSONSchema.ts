@@ -5,3 +5,27 @@ import type { JSONSchema7 } from 'json-schema'
  * have to update this one type.
  */
 export type JSONSchema = JSONSchema7
+
+/**
+ * TODO: document this
+ */
+export interface SettingMetadata extends JSONSchema {
+    readonly title: string
+    readonly description: string
+    readonly name_human_readable: string
+}
+
+/**
+ * TODO: document this
+ */
+export type JSONSettings<TSettings = unknown> = Record<string, TSettings>
+
+/**
+ * TODO: document this
+ */
+export interface SettingsDescriptor {
+    readonly allowed_configurations: string[]
+    readonly schemas: Record<string, SettingMetadata>
+    readonly selected_configuration: null | string
+    readonly settings: Array<{ name: string, value: JSONSettings }>
+}

@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
 import { useSettings } from '@stores/useSettings'
-import { storeToRefs } from 'pinia'
 
 const settings = useSettings()
 const { currentTheme } = storeToRefs(settings)

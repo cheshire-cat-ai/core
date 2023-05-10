@@ -1,5 +1,3 @@
-import { reactive } from 'vue'
-import { defineStore } from 'pinia'
 import type { Notification } from '@models/Notification'
 import type { NotificationsState } from '@stores/types'
 

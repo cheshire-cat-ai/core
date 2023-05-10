@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
 import { useNotifications } from '@stores/useNotifications'
 import { uniqueId } from '@utils/commons'
 import WittyService from '@services/WittyService'

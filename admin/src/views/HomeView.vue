@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
-import { useSpeechRecognition, watchDeep, useFileDialog } from '@vueuse/core'
-import { storeToRefs } from 'pinia'
-import { computed, watchEffect, ref } from 'vue'
 import { useSound } from '@vueuse/sound'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import { useSettings } from '@stores/useSettings'

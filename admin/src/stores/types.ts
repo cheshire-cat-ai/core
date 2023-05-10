@@ -1,9 +1,11 @@
 import type { AsyncState, UpdatableState, AsyncStateBase } from '@models/commons'
 import type { RabbitHoleServiceResponse } from '@services/RabbitHole'
-import type { LLMProviderDescriptor, LLMProviderMetaData, LLMSettings } from '@models/LLMProvider'
+import type { LLMProviderDescriptor, LLMProviderMetaData } from '@models/LLMProvider'
 import type { Message } from '@models/Message'
 import type { Plugin } from '@models/Plugin'
 import type { Notification } from '@models/Notification'
+import type { EmbedderDescriptor, EmbedderMetaData } from '@models/Embedder'
+import type { JSONSettings } from '@models/JSONSchema'
 
 /**
  * Defines the structure of the redux 'fileUploader' state.
@@ -18,7 +20,7 @@ export type FileUploaderState = AsyncState<RabbitHoleServiceResponse>
  */
 export interface LLMProvidersState extends UpdatableState<LLMProviderDescriptor> {
     selected?: LLMProviderMetaData['languageModelName']
-    settings: Record<string, LLMSettings>
+    settings: Record<string, JSONSettings>
 }
 
 /**
@@ -45,4 +47,9 @@ export interface NotificationsState {
 
 export interface PluginsState extends AsyncStateBase {
     data: Plugin[]
+}
+
+export interface EmbeddersState extends UpdatableState<EmbedderDescriptor> {
+    selected?: EmbedderMetaData['languageEmbedderName']
+    settings: Record<string, JSONSettings>
 }

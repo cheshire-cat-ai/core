@@ -1,11 +1,9 @@
-import { reactive, watchEffect } from 'vue'
-import { defineStore } from 'pinia'
 import type { LLMProvidersState } from '@stores/types'
-import type { LLMProviderMetaData, LLMSettings } from '@models/LLMProvider'
-import { useAsyncState } from '@vueuse/core'
+import type { LLMProviderMetaData } from '@models/LLMProvider'
 import LanguageModels from '@services/LanguageModels'
 import { uniqueId } from '@utils/commons'
 import { useNotifications } from '@stores/useNotifications'
+import type { JSONSettings } from '@models/JSONSchema'
 
 export const useLLMProviders = defineStore('llmProviders', () => {
   const currentState = reactive<LLMProvidersState>({
@@ -38,11 +36,11 @@ export const useLLMProviders = defineStore('llmProviders', () => {
   }
 
   const getProviderSettings = (selected = currentState.selected) => {
-    if (!selected) return {} satisfies LLMSettings
-    return currentState.settings[selected] ?? {} satisfies LLMSettings
+    if (!selected) return {} satisfies JSONSettings
+    return currentState.settings[selected] ?? {} satisfies JSONSettings
   }
 
-  const setLLMSettings = async (name: LLMProviderMetaData['languageModelName'], settings: LLMSettings) => {
+  const setLLMSettings = async (name: LLMProviderMetaData['languageModelName'], settings: JSONSettings) => {
     currentState.updating = true
     const result = await LanguageModels.setProviderOptions(name, settings)
     const isError = result instanceof Error

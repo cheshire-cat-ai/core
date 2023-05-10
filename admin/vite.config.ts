@@ -4,8 +4,10 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from "unplugin-icons/resolver"
+import { HeadlessUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from "unplugin-vue-components/vite"
 import Unfonts from 'unplugin-fonts/vite'
+import AutoImport from 'unplugin-auto-import/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -15,20 +17,24 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      AutoImport({
+        dts: true,
+        imports: [
+          'vue',
+          'vue-router',
+          '@vueuse/core',
+          'pinia'
+        ],
+        eslintrc: {
+          enabled: true
+        }
+      }),
       Components({
         dts: true,
-        types: [
-          {
-            from: '@headlessui/vue',
-            names: [
-              'Menu', 'MenuButton', 'MenuItems', 'MenuItem', 
-              'Listbox', 'ListboxButton', 'ListboxOptions', 'ListboxOption',
-              'Dialog', 'DialogPanel', 'DialogTitle', 
-              'TransitionChild', 'TransitionRoot'
-            ]
-          }
-        ],
-        resolvers: [ IconsResolver({ prefix: "" }) ]
+        resolvers: [
+          HeadlessUiResolver({ prefix: "" }),
+          IconsResolver({ prefix: "" }) 
+        ]
       }),
       Icons({ autoInstall: true }),
       Unfonts({

@@ -1,5 +1,3 @@
-import { reactive } from 'vue'
-import { defineStore } from 'pinia'
 import type { FileUploaderState } from '@stores/types'
 import { getErrorMessage } from '@utils/errors'
 import { useNotifications } from '@stores/useNotifications'

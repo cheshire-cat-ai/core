@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { usePlugins } from '@stores/usePlugins'
-import { storeToRefs } from 'pinia'
 import { firstLetter } from '@utils/commons'
 
 const store = usePlugins()

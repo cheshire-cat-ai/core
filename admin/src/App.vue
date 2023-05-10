@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import Header from '@components/Header.vue'
-import NotificationStack from '@components/NotificationStack.vue'
+
 </script>
 
 <template>

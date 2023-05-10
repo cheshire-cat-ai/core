@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
 import SidePanel from '@components/SidePanel.vue'
 import SelectBox from '@components/SelectBox.vue'
 import { useLLMProviders } from '@stores/useLLMProviders'
-import { storeToRefs } from 'pinia'
-import type { LLMProviderMetaData, LLMSettings } from '@models/LLMProvider'
+import { useEmbedders } from '@stores/useEmbedders'
+import type { LLMProviderMetaData } from '@models/LLMProvider'
+import type { JSONSettings } from '@models/JSONSchema'
+import type { EmbedderMetaData } from '@models/Embedder'
 
-const store = useLLMProviders()
-const { getAvailableProviders, getProviderSchema, setLLMSettings, getProviderSettings } = store
-const { currentState: llmState } = storeToRefs(store)
+const storeProviders = useLLMProviders()
+const { getAvailableProviders, getProviderSchema, setLLMSettings, getProviderSettings } = storeProviders
+const { currentState: llmState } = storeToRefs(storeProviders)
+
+const storeEmbedders = useEmbedders()
+const { getAvailableEmbedders, getEmbedderSchema, getEmbedderSettings } = storeEmbedders
+const { currentState: embedderState } = storeToRefs(storeEmbedders)
+
+const panelTitles = [ 'Configure the Language Model', 'Configure the Embedder' ] as const
+type PanelTitle = typeof panelTitles[number] | ''
 
 const sidePanel = ref<InstanceType<typeof SidePanel>>()
-const selectProvider = ref<InstanceType<typeof SelectBox>>()
-const sidePanelTitle = ref(""), sidePanelContent = ref(0)
-const currentSchema = ref<LLMProviderMetaData>()
-const currentSettings = ref<LLMSettings>({})
-
-watchEffect(() => {
-	if (!llmState.value.loading && sidePanel.value?.open) {
-		currentSchema.value = getProviderSchema() ?? getAvailableProviders()[0]
-		currentSettings.value = getProviderSettings()
-	}
-})
+const selectProvider = ref<InstanceType<typeof SelectBox>>(), selectEmbedder = ref<InstanceType<typeof SelectBox>>()
+const sidePanelTitle = ref<PanelTitle>('')
+const currentSchema = ref<LLMProviderMetaData | EmbedderMetaData>()
+const currentSettings = ref<JSONSettings>({})
 
 const saveProvider = async () => {
 	const llmName = selectProvider.value?.selectedElement
@@ -30,25 +31,33 @@ const saveProvider = async () => {
 	if (res) sidePanel.value?.togglePanel()
 }
 
-const updateProperties = (selectedLLM: string) => {
-	currentSchema.value = getProviderSchema(selectedLLM)
-	currentSettings.value = getProviderSettings(selectedLLM)
+const updateProperties = (selected: string) => {
+	currentSchema.value = sidePanelTitle.value === 'Configure the Embedder' ? getEmbedderSchema(selected) : getProviderSchema(selected)
+	currentSettings.value = sidePanelTitle.value === 'Configure the Embedder' ? getEmbedderSettings(selected) : getProviderSettings(selected)
 	Object.values(currentSchema.value?.properties ?? {}).forEach(p => {
 		if (!p.env_names) return
 		if (!currentSettings.value[p.env_names[0]]) currentSettings.value[p.env_names[0]] = p.default
 	})
 }
 
-const openSidePanel = (content: number, title: string) => {
-	sidePanelContent.value = content
+const openSidePanel = (title: PanelTitle) => {
 	sidePanelTitle.value = title
-	sidePanel.value?.togglePanel()
+	if (title === 'Configure the Language Model') {
+		currentSchema.value = getProviderSchema() ?? getAvailableProviders()[0]
+		currentSettings.value = getProviderSettings()
+		updateProperties(currentSchema.value.title)
+	} else if (title === 'Configure the Embedder') {
+		currentSchema.value = getEmbedderSchema() ?? getAvailableEmbedders()[0]
+		currentSettings.value = getEmbedderSettings()
+		updateProperties(currentSchema.value.title)
+	}
+	sidePanel.value?.togglePanel()	
 }
 </script>
 
 <template>
-	<div class="grid self-center gap-8 auto-rows-min place-items-stretch md:w-3/4 md:grid-cols-2">
-		<div class="flex flex-col items-center justify-center gap-6 p-8 rounded-xl bg-base-300 md:col-span-2">
+	<div class="grid auto-rows-min place-items-stretch gap-8 self-center md:w-3/4 md:grid-cols-2">
+		<div class="flex flex-col items-center justify-center gap-6 rounded-xl bg-base-300 p-8 md:col-span-2">
 			<p class="text-3xl font-bold text-primary">
 				Set up your Cat
 			</p>
@@ -56,25 +65,25 @@ const openSidePanel = (content: number, title: string) => {
 				Configure your Cheshire Cat to suit your needs
 			</p>
 		</div>
-		<div class="flex flex-col items-center justify-between gap-8 p-4 rounded-xl bg-base-200">
+		<div class="flex flex-col items-center justify-between gap-8 rounded-xl bg-base-200 p-4">
 			<p class="text-xl font-medium text-primary">
 				Language Model
 			</p>
 			<p class="text-center">
 				Choose and configure your favourite Large Language Model
 			</p>
-			<button class="btn-primary btn-sm btn" @click="openSidePanel(1, 'Configure the Language Model')">
+			<button class="btn-primary btn-sm btn" @click="openSidePanel('Configure the Language Model')">
 				Configure
 			</button>
 		</div>
-		<div class="flex flex-col items-center justify-between gap-8 p-4 rounded-xl bg-base-200">
+		<div class="flex flex-col items-center justify-between gap-8 rounded-xl bg-base-200 p-4">
 			<p class="text-xl font-medium text-primary">
 				Embedder
 			</p>
 			<p class="text-center">
 				Choose a language embedder to help the Cat remember conversations and documents
 			</p>
-			<button class="btn-primary btn-sm btn" disabled @click="openSidePanel(2, 'Configure the Embedder')">
+			<button class="btn-primary btn-sm btn" @click="openSidePanel('Configure the Embedder')">
 				Configure
 			</button>
 		</div>
@@ -86,42 +95,75 @@ const openSidePanel = (content: number, title: string) => {
 			</p>
 		</div>
 		<SidePanel ref="sidePanel" :title="sidePanelTitle">
-			<div v-if="llmState.loading" class="flex items-center justify-center grow">
-				<div role="status"
-					class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-primary motion-reduce:animate-[spin_1.5s_linear_infinite]">
-					<span
-						class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+			<div v-if="sidePanelTitle === 'Configure the Language Model'" 
+				class="flex grow flex-col gap-4">
+				<div v-if="llmState.loading" class="flex grow items-center justify-center">
+					<div role="status"
+						class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-primary motion-reduce:animate-[spin_1.5s_linear_infinite]">
+						<span
+							class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+					</div>
 				</div>
-			</div>
-			<div v-else-if="llmState.error" class="flex items-center justify-center grow">
-				<div class="p-4 font-bold shadow-xl rounded-xl bg-error text-base-100">
-					Failed to fetch
+				<div v-else-if="llmState.error || !getAvailableProviders().length" class="flex grow items-center justify-center">
+					<div class="rounded-xl bg-error p-4 font-bold text-base-100 shadow-xl">
+						Failed to fetch
+					</div>
 				</div>
-			</div>
-			<div v-else-if="sidePanelContent === 1 && getAvailableProviders().length" class="flex flex-col gap-4 grow">
-				<SelectBox ref="selectProvider" :picked="llmState.selected"
-					:list="getAvailableProviders().map(p => ({ label: p.name_human_readable, value: p.languageModelName }))"
-					@update="e => updateProperties(e.value)" />
-				<div class="flex flex-col gap-2">
-					<p class="text-sm text-neutral-focus">
-						{{ currentSchema?.title }}
-					</p>
-					<p>{{ currentSchema?.description }}</p>
-					<template v-for="prop in currentSchema?.properties" :key="prop.title">
+				<div v-else class="flex grow flex-col gap-4">
+					<SelectBox ref="selectProvider" :picked="llmState.selected"
+						:list="getAvailableProviders().map(p => ({ label: p.name_human_readable, value: p.title }))"
+						@update="e => updateProperties(e.value)" />
+					<div class="flex flex-col gap-2">
 						<p class="text-sm text-neutral-focus">
-							<span v-if="!prop.default" class="text-error">*</span>
-							{{ prop.title }}
+							{{ currentSchema?.title }}
 						</p>
-						<input v-model="currentSettings[prop.env_names![0]]" type="text" :placeholder="prop.title"
-							class="w-full input-bordered input-primary input input-sm">
-					</template>
+						<p>{{ currentSchema?.description }}</p>
+						<template v-for="prop in currentSchema?.properties" :key="prop.title">
+							<p class="text-sm text-neutral-focus">
+								<span v-if="!prop.default" class="text-error">*</span>
+								{{ prop.title }}
+							</p>
+							<input v-model="currentSettings[prop.env_names![0]]" type="text" :placeholder="prop.title"
+								class="input-bordered input-primary input input-sm w-full">
+						</template>
+					</div>
+					<button class="btn-success btn-sm btn mt-auto normal-case" @click="saveProvider">
+						Save
+					</button>
 				</div>
-				<button class="mt-auto normal-case btn-success btn-sm btn" @click="saveProvider">
-					Save
-				</button>
 			</div>
-			<div v-else-if="sidePanelContent === 2">
-				Work In Progress - Embedder
+			<div v-else-if="sidePanelTitle === 'Configure the Embedder'" class="flex grow flex-col gap-4">
+				<div v-if="embedderState.loading" class="flex grow items-center justify-center">
+					<div role="status"
+						class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-primary motion-reduce:animate-[spin_1.5s_linear_infinite]">
+						<span
+							class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+					</div>
+				</div>
+				<div v-else-if="embedderState.error || !getAvailableEmbedders().length" class="flex grow items-center justify-center">
+					<div class="rounded-xl bg-error p-4 font-bold text-base-100 shadow-xl">
+						Failed to fetch
+					</div>
+				</div>
+				<div v-else class="flex grow flex-col gap-4">
+					<SelectBox ref="selectEmbedder" :picked="embedderState.selected"
+						:list="getAvailableEmbedders().map(p => ({ label: p.name_human_readable, value: p.title }))"
+						@update="e => updateProperties(e.value)" />
+					<div class="flex flex-col gap-2">
+						<p class="text-sm text-neutral-focus">
+							{{ currentSchema?.title }}
+						</p>
+						<p>{{ currentSchema?.description }}</p>
+						<template v-for="prop in currentSchema?.properties" :key="prop.title">
+							<p class="text-sm text-neutral-focus">
+								<span v-if="!prop.default" class="text-error">*</span>
+								{{ prop.title }}
+							</p>
+							<input v-model="currentSettings[prop.env_names![0]]" type="text" :placeholder="prop.title"
+								class="input-bordered input-primary input input-sm w-full">
+						</template>
+					</div>
+				</div>
 			</div>
 		</SidePanel>
 	</div>

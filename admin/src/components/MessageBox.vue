@@ -10,14 +10,10 @@ const markdown = new Remarkable({
     highlight: (str, lang) => {
         if (lang && hljs.getLanguage(lang)) {
             try { return hljs.highlight(str, { language: lang }).value } 
-            catch (_) {
-                console.log(_)
-            }
+            catch (_) { console.log(_) }
         }
         try { return hljs.highlightAuto(str).value } 
-        catch (_) {
-            console.log(_)
-        }
+        catch (_) { console.log(_) }
         return ''
     }
 }).use(linkify)
