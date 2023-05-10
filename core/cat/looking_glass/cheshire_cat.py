@@ -60,16 +60,14 @@ class CheshireCat:
         # HyDE chain
         hypothesis_prompt = langchain.PromptTemplate(
             input_variables=["input"],
-            template=self.mad_hatter.execute_hook("get_hypothetical_embedding_prompt"),
+            template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
         self.hypothetis_chain = langchain.chains.LLMChain(
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
-        self.summarization_prompt = self.mad_hatter.execute_hook(
-            "get_summarization_prompt"
-        )
+        self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
@@ -207,6 +205,9 @@ class CheshireCat:
     def recall_relevant_memories_to_working_memory(self, user_message):
         # TODO: should we compress convo history for better retrieval?
 
+        # hook to do something before recall begins
+        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+
         # HyDE
         hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
 
@@ -224,20 +225,23 @@ class CheshireCat:
         )
         self.working_memory["declarative_memories"] = declarative_memories
 
+        # hook to modify/enrich retrieved memories
+        self.mad_hatter.execute_hook("after_cat_recalled_memories", user_message)
+
     def format_agent_executor_input(self):
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.mad_hatter.execute_hook(
-            "format_episodic_memories_for_prompt",
+            "agent_prompt_episodic_memories",
             self.working_memory["episodic_memories"],
         )
         declarative_memory_formatted_content = self.mad_hatter.execute_hook(
-            "format_declarative_memories_for_prompt",
+            "agent_prompt_declarative_memories",
             self.working_memory["declarative_memories"],
         )
 
         # format conversation history to be inserted in the prompt
         conversation_history_formatted_content = self.mad_hatter.execute_hook(
-            "format_conversation_history_for_prompt", self.working_memory["history"]
+            "agent_prompt_chat_history", self.working_memory["history"]
         )
 
         return {
@@ -254,7 +258,7 @@ class CheshireCat:
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook(
-            "user_message_just_arrived", user_message_json
+            "before_cat_reads_message", user_message_json
         )
 
         # store user_message_json in working memory
@@ -339,7 +343,7 @@ class CheshireCat:
         }
 
         final_output = self.mad_hatter.execute_hook(
-            "before_returning_response_to_user", final_output
+            "before_cat_sends_message", final_output
         )
 
         return final_output

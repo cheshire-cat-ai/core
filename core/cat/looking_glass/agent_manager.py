@@ -14,11 +14,11 @@ class AgentManager:
     def get_agent_executor(self):
         mad_hatter = self.cat.mad_hatter
 
-        prompt_prefix = mad_hatter.execute_hook("get_main_prompt_prefix")
+        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
         prompt_format_instructions = mad_hatter.execute_hook(
-            "get_main_prompt_format_instructions"
+            "agent_prompt_instructions"
         )
-        prompt_suffix = mad_hatter.execute_hook("get_main_prompt_suffix")
+        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
 
         # extract automatically input_variables from prompt parts (can't do it yet)
         # full_prompt_content = prompt_prefix + prompt_format_instructions + prompt_suffix
@@ -35,7 +35,7 @@ class AgentManager:
         ]
 
         allowed_tools = mad_hatter.execute_hook(
-            "get_allowed_tools", copy(mad_hatter.tools)
+            "agent_allowed_tools", copy(mad_hatter.tools)
         )
         allowed_tools_names = [t.name for t in allowed_tools]
 

@@ -138,17 +138,19 @@ class RabbitHole:
             doc.metadata["when"] = time.time()
             if "is_summary" not in doc.metadata.keys():
                 doc.metadata["is_summary"] = True
-            doc = ccat.mad_hatter.execute_hook(
-                "rabbit_hole_before_inserting_doc_in_vector_memory", doc
-            )
+            doc = ccat.mad_hatter.execute_hook("before_rabbithole_insert_memory", doc)
             if doc.page_content != "":
                 _ = ccat.memory.vectors.declarative.add_texts(
                     [doc.page_content],
                     [doc.metadata],
                 )
-                log(f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}")
+                log(
+                    f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}"
+                )
             else:
-                log(f"Skipped memory insertion of empty page content ({d + 1}/{len(docs)})")
+                log(
+                    f"Skipped memory insertion of empty page content ({d + 1}/{len(docs)})"
+                )
             time.sleep(0.1)
 
         # notify client

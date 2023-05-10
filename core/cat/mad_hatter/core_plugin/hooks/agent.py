@@ -3,7 +3,7 @@ from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def get_allowed_tools(tools, cat):
+def agent_allowed_tools(tools, cat):
     """Decide which tools end up in the agent prompt. To decide you can filter the list of loaded tools,
         but you can also check the context in cat.working_memory and launch custom chains with cat.llm.
 

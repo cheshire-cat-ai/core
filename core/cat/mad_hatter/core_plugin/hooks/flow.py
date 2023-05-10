@@ -1,21 +1,28 @@
 from cat.mad_hatter.decorators import hook
 
 
-# Hook called when a user message arrives.
+# Called when a user message arrives.
 # Useful to edit/enrich user input (e.g. translation)
 @hook(priority=0)
-def user_message_just_arrived(user_message_json, cat):
-    user_message_json["text"] = "what time is it?"
+def before_cat_reads_message(user_message_json, cat):
     return user_message_json
+
+
+# Called just before the cat recalls memories.
+@hook(priority=0)
+def before_cat_recalls_memories(user_message, cat):
+    return None
+
+
+# Called just after memories are recalled. They are stored in:
+# - cat.working_memory["episodic_memories"]
+# - cat.working_memory["declarative_memories"]
+@hook(priority=0)
+def after_cat_recalled_memories(user_message, cat):
+    return None
 
 
 # Hook called just before sending response to a client.
 @hook(priority=0)
-def before_returning_response_to_user(response, cat):
+def before_cat_sends_message(response, cat):
     return response
-
-
-# Hook called just before of inserting documents in vector memory
-@hook(priority=0)
-def rabbit_hole_before_inserting_doc_in_vector_memory(doc, cat):
-    return doc
