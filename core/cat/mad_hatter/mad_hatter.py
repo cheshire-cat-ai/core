@@ -25,10 +25,10 @@ class MadHatter:
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
         # plugins are found in the plugins folder, plus the default core plugin (where default hooks and tools are defined)
-        plugin_folders = ["cat/mad_hatter/core_plugin"] + glob.glob("cat/plugins/*")
+        plugin_folders = ["cat/mad_hatter/core_plugin"] + glob.glob("cat/plugins/*/")
 
         all_plugins = []
-        all_tools = [] 
+        all_tools = []
 
         for folder in plugin_folders:
             py_files_path = path.join(folder, "**/*.py")
@@ -40,9 +40,7 @@ class MadHatter:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
                 for py_file in py_files:
-                    plugin_name = py_file.replace("/", ".").replace(
-                        ".py", ""
-                    )  # this is UGLY I know. I'm sorry
+                    plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
                     plugin_module = importlib.import_module(plugin_name)
                     # all_hooks[plugin_name] = dict(
@@ -75,9 +73,7 @@ class MadHatter:
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(
-            plugin_folder, plugin_json_metadata_file_name
-        )
+        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
         meta = {"id": plugin_id}
 
         if path.isfile(plugin_json_metadata_file_path):
@@ -92,9 +88,7 @@ class MadHatter:
 
                 return meta
             except:
-                log(
-                    f"Error loading plugin {plugin_folder} metadata, defaulting to generated values"
-                )
+                log(f"Error loading plugin {plugin_folder} metadata, defaulting to generated values")
 
         meta["name"] = to_camel_case(plugin_id)
         meta[
