@@ -1,3 +1,4 @@
+from cat.utils import logger
 import os
 from contextlib import asynccontextmanager
 
@@ -11,6 +12,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from cat.looking_glass.cheshire_cat import CheshireCat
 
+# import logging
+# logging.debug('EXAMPLE with debug category')
+# logging.info('EXAMPLE with info category')
+# logging.error('EXAMPLE with error category')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
