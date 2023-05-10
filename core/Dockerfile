@@ -6,4 +6,4 @@ RUN apt-get update -y
 
 COPY ./pyproject.toml pyproject.toml
 RUN pip install -U pip
-RUN pip install --no-cache-dir -r pyproject.toml
+RUN pip install --no-cache-dir ./
