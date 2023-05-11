@@ -7,12 +7,11 @@ import { AppFeatures } from '@models/AppFeatures'
 import MicIcon from './mic.svg'
 import style from './RecordingButton.module.scss'
 
-
 /**
  * A stateless button that records chat messages.
  */
 const RecordingButton: FC<RecordingButtonProps> = (props) => {
-  const { onRecordingStart, onRecordingComplete, playAudio , disabled, className, ...rest } = props
+  const { onRecordingStart, onRecordingComplete, playAudio, disabled, className, ...rest } = props
   const [, { play: stayStart }] = useAudio('start-rec.mp3')
   const ref = useRef(null)
   const { isLongPressing, onLongPressEnd, onLongPressStart } = useLongPress(ref)
@@ -21,7 +20,7 @@ const RecordingButton: FC<RecordingButtonProps> = (props) => {
   onLongPressStart(() => {
     if (onRecordingStart) {
       onRecordingStart()
-            
+
       if (playAudio) {
         stayStart()
       }

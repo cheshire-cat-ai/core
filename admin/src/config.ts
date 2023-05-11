@@ -6,15 +6,15 @@ const CORE_USE_SECURE_PROTOCOLS = import.meta.env.CORE_USE_SECURE_PROTOCOLS as s
 // const API_KEY = import.meta.env.API_KEY as string || ''
 
 // Quick Solution
-const endpoints_list = {
-  secure : {
+const endpointList = {
+  secure: {
     chat: `wss://${CORE_HOST}:${CORE_PORT}/ws`,
     rabbitHole: `https://${CORE_HOST}:${CORE_PORT}/rabbithole/`,
     allLLM: `https://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
     singleLLM: `https://${CORE_HOST}:${CORE_PORT}/settings/llm/:llm`,
     plugins: `https://${CORE_HOST}:${CORE_PORT}/plugins/`
   },
-  unsecure : {
+  unsecure: {
     chat: `ws://${CORE_HOST}:${CORE_PORT}/ws`,
     rabbitHole: `http://${CORE_HOST}:${CORE_PORT}/rabbithole/`,
     allLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
@@ -36,7 +36,7 @@ const config: Config = {
     AppFeatures.Settings,
     AppFeatures.Plugins
   ],
-  endpoints: CORE_USE_SECURE_PROTOCOLS ? endpoints_list.secure : endpoints_list.unsecure,
+  endpoints: CORE_USE_SECURE_PROTOCOLS ? endpointList.secure : endpointList.unsecure
 }
 
 export interface Config {

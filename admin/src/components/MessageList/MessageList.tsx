@@ -39,6 +39,7 @@ const MessageList: FC<MessageListProps> = ({ messages, error, isLoading, classNa
     if (messages.length > 0 && playSound) {
       playPop()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playPop, messages.length])
 
   return (
