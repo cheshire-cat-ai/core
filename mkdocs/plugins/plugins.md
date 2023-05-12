@@ -15,8 +15,8 @@ The `plugin.json` file contains plugin's title and description, as the following
 
 ```json
 {
-    "name": "AI Pizza Assistant",
-    "description": "A test plugin to demonstrate the creation of a domain expert AI Assistant"
+    "name": "The name of my plugin",
+    "description": "Short description of my plugin"
 }
 ```
 
