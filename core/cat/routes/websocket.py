@@ -1,4 +1,5 @@
 import traceback
+import asyncio
 
 from fastapi import APIRouter, WebSocket
 from cat.utils import log
@@ -13,7 +14,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     await websocket.accept()
 
-    try:
+    async def receive_message():
         while True:
             # message received from user
             user_message = await websocket.receive_json()
@@ -24,12 +25,18 @@ async def websocket_endpoint(websocket: WebSocket):
             # send output to user
             await websocket.send_json(cat_message)
 
+    async def check_notification():
+        while True:
             # chat notifications (i.e. finished uploading)
             if len(ccat.web_socket_notifications) > 0:
                 notification = ccat.web_socket_notifications[-1]
                 ccat.web_socket_notifications = ccat.web_socket_notifications[:-1]
                 await websocket.send_json(notification)
 
+            await asyncio.sleep(1)  # wait for 1 seconds before checking again
+
+    try:
+        await asyncio.gather(receive_message(), check_notification())
     except Exception as e:  # WebSocketDisconnect as e:
         log(e)
         traceback.print_exc()
