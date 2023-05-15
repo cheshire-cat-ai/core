@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { useNotifications } from '@stores/useNotifications'
 import { uniqueId } from '@utils/commons'
-import WittyService from '@services/WittyService'
 
 const { showNotification } = useNotifications()
-
-const onLogoClick = () => {
-	showNotification({
-		id: uniqueId(),
-		message: WittyService.catchPhrase(),
-		type: 'info'
-    })
-}
 </script>
 
 <template>
 	<div class="navbar sticky top-0 z-40 min-h-fit bg-base-100 shadow-xl md:px-[10%]">
 		<div class="navbar-start">
-			<img src="@assets/logo.svg" class="hidden h-8 w-8 cursor-pointer md:block" @click="onLogoClick">
+			<RouterLink to="/">
+				<img src="@assets/logo.svg" class="hidden h-8 w-8 cursor-pointer md:block">
+			</RouterLink>
 			<Menu v-slot="{ open }" as="div" class="relative inline-block rounded-lg md:hidden">
 				<MenuButton class="btn-ghost btn-square btn" title="Menu">
 					<heroicons-x-mark-20-solid v-if="open" class="swap-on h-6 w-6" />
@@ -52,7 +45,9 @@ const onLogoClick = () => {
 			</Menu>
 		</div>
 		<div class="navbar-center">
-			<img src="@assets/logo.svg" class="h-10 w-10 cursor-pointer md:hidden" @click="onLogoClick">
+			<RouterLink to="/">
+				<img src="@assets/logo.svg" class="h-10 w-10 cursor-pointer md:hidden" @click="onLogoClick">
+			</RouterLink>
 			<ul class="menu menu-compact menu-horizontal hidden gap-2 px-1 font-semibold md:flex">
 				<li>
 					<RouterLink to="/">
