@@ -104,21 +104,15 @@ Whilst for the current progress of development, take a look at the [projects](ht
 
 ## Contributing
 
-For suggestions, open an issue and we can reason about it.
-If you want to contribute with code, fork the repo and create a pull request. Before submitting any new pull request, make sure it either fixes an [existing issue](https://github.com/pieroit/cheshire-cat/issues) or is something we have discussed in our [Roadmap](#roadmap).
-
-### Simple contributions
+Here is a [full guide to contributing](CONTRIBUTING.md).
 
 You can start by:
-- Making tutorials and docs
+- Trying out the Cat
 - Sharing on social media
+- Join our [community on Discord](https://discord.gg/bHX5sNFCYU)
+- Give the project a star ⭐!
 
-If you have any ideas on how to improve the project or if you'd like to suggest new developments, please [join our community on Discord](https://discord.gg/bHX5sNFCYU)
-
-### Code contribution
-
-Here is a [full guide to contributing](CONTRIBUTING.md).
-Don't forget to give the project a star ⭐! Thanks again!🙏
+Thanks again!🙏
 
 ## Credits
 
