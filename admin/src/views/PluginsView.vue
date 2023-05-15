@@ -9,7 +9,7 @@ const { currentState: pluginsState } = storeToRefs(store)
 
 <template>
 	<div class="flex flex-col gap-8 self-center md:w-3/4">
-		<div class="col-span-2 flex flex-col items-center justify-center gap-6 rounded bg-base-300 p-8">
+		<div class="col-span-2 flex flex-col items-center justify-center gap-3 rounded p-6">
 			<p class="text-3xl font-bold text-primary">
 				Plugins
 			</p>
@@ -40,7 +40,7 @@ const { currentState: pluginsState } = storeToRefs(store)
 				<div class="flex flex-col gap-2">
 					<p class="flex flex-wrap justify-between text-xl font-bold">
 						<span>{{ item.name }}</span>
-						<input type="checkbox" class="!toggle-success !toggle" @click="togglePlugin(item.id)">
+						<input type="checkbox" class="!toggle !toggle-success" @click="togglePlugin(item.id)">
 					</p>
 					<p>{{ item.description }}</p>
 				</div>

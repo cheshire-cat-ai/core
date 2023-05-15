@@ -14,8 +14,8 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 
 <template>
 	<div class="grid auto-rows-min place-items-stretch gap-8 self-center md:w-3/4 md:grid-cols-2">
-		<div class="flex flex-col items-center justify-center gap-6 rounded bg-base-300 p-8 md:col-span-2">
-			<p class="text-2xl text-primary">
+		<div class="col-span-2 flex flex-col items-center justify-center gap-3 rounded p-6">
+			<p class="text-3xl font-bold text-primary">
 				Set up your Cat
 			</p>
 			<p class="font-medium">
@@ -23,7 +23,7 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 			</p>
 		</div>
 		<div class="flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4">
-			<p class="text-xl text-primary">
+			<p class="text-xl font-bold">
 				Language Model
 			</p>
 			<p class="text-center">
@@ -35,7 +35,7 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 			</RouterLink>
 		</div>
 		<div class="flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4">
-			<p class="text-xl text-primary">
+			<p class="text-xl font-bold">
 				Embedder
 			</p>
 			<p class="text-center">
