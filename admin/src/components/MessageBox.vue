@@ -26,7 +26,7 @@ const props = defineProps<{
     text: string
 }>()
 
-const cleanedText = props.text.replace(/"(.+)"/g, '$1')
+const cleanedText = props.text.replace(/"(.+)"/gm, '$1')
 </script>
 
 <template>

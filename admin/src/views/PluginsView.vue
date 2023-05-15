@@ -3,6 +3,7 @@ import { usePlugins } from '@stores/usePlugins'
 import { firstLetter } from '@utils/commons'
 
 const store = usePlugins()
+const { togglePlugin } = store
 const { currentState: pluginsState } = storeToRefs(store)
 </script>
 
@@ -37,8 +38,10 @@ const { currentState: pluginsState } = storeToRefs(store)
 					</div>
 				</div>
 				<div class="flex flex-col gap-2">
-					<p class="text-xl font-bold">
-						{{ item.name }}
+					<p class="flex flex-wrap justify-between text-xl font-bold">
+						<span>{{ item.name }}</span>
+						<input v-if="item.id != 'core_plugin'" type="checkbox" 
+							class="!toggle-success !toggle" @click="togglePlugin(item.id)">
 					</p>
 					<p>{{ item.description }}</p>
 				</div>
