@@ -119,7 +119,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 <template>
 	<div class="flex w-full max-w-screen-lg flex-col justify-center gap-4 self-center overflow-hidden !pt-0 pb-16 text-sm md:!pb-20">
 		<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
-			<p v-if="messagesState.error" class="w-fit rounded-xl bg-error p-4 font-semibold text-base-100">
+			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
 			<p v-else class="text-lg font-medium text-neutral">
@@ -128,7 +128,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 		</div>
 		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto">
 			<MessageBox v-for="msg in messagesState.messages" :key="msg.id" :sender="msg.sender" :text="msg.text" />
-			<p v-if="messagesState.error" class="w-fit rounded-xl bg-error p-4 font-semibold text-base-100">
+			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
 			<p v-else-if="!messagesState.error && messagesState.loading">
@@ -136,7 +136,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 			</p>
 		</div>
 		<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4">
-			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-full normal-case shadow-xl"
+			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-lg normal-case shadow-xl"
 				@click="sendMessage(msg)">
 				{{ msg }}
 			</div>
@@ -165,7 +165,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 								class="btn-outline btn-primary btn-sm btn-circle btn border-none hover:!bg-transparent hover:!text-primary-focus disabled:bg-transparent">
 								<heroicons-paper-clip-20-solid class="h-6 w-6" />
 							</MenuButton>
-							<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded-xl bg-base-200 p-2 shadow-lg focus:outline-none">
+							<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded bg-base-200 p-2 shadow-lg focus:outline-none">
 								<MenuItem as="button" class="btn-info btn-square btn-sm btn" @click="modalBox?.toggleModal()">
 									<heroicons-globe-alt class="h-6 w-6" />
 								</MenuItem>

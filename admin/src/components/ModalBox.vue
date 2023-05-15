@@ -18,7 +18,7 @@ defineExpose({
 					<TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95"
 						enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100"
 						leave-to="opacity-0 scale-95">
-						<DialogPanel class="w-full max-w-lg overflow-hidden rounded-xl bg-base-100 p-4 shadow-xl transition-all">
+						<DialogPanel class="w-full max-w-lg overflow-hidden rounded bg-base-100 p-4 shadow-xl transition-all">
 							<slot />
 						</DialogPanel>
 					</TransitionChild>
