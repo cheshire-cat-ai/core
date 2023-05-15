@@ -40,8 +40,7 @@ const { currentState: pluginsState } = storeToRefs(store)
 				<div class="flex flex-col gap-2">
 					<p class="flex flex-wrap justify-between text-xl font-bold">
 						<span>{{ item.name }}</span>
-						<input v-if="item.id != 'core_plugin'" type="checkbox" 
-							class="!toggle-success !toggle" @click="togglePlugin(item.id)">
+						<input type="checkbox" class="!toggle-success !toggle" @click="togglePlugin(item.id)">
 					</p>
 					<p>{{ item.description }}</p>
 				</div>
