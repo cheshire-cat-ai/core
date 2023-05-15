@@ -46,7 +46,7 @@ const { showNotification } = useNotifications()
 		</div>
 		<div class="navbar-center">
 			<RouterLink to="/">
-				<img src="@assets/logo.svg" class="h-10 w-10 cursor-pointer md:hidden" @click="onLogoClick">
+				<img src="@assets/logo.svg" class="h-10 w-10 cursor-pointer md:hidden">
 			</RouterLink>
 			<ul class="menu menu-compact menu-horizontal hidden gap-2 px-1 font-semibold md:flex">
 				<li>
