@@ -14,8 +14,8 @@ export const useNotifications = defineStore('notifications', () => {
     currentState.history.push(notification)
   }
 
-  const hideNotification = (notificationId: Notification['id']) => {
-    const notificationIndex = currentState.history.findIndex(notification => notification.id === notificationId)
+  const hideNotification = (id: Notification['id']) => {
+    const notificationIndex = currentState.history.findIndex(notification => notification.id === id)
     if (notificationIndex >= 0 && notificationIndex < currentState.history.length) {
       currentState.history[notificationIndex].hidden = true
     }
