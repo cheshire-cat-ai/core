@@ -20,10 +20,6 @@ All types of contributions are encouraged and valued. See the [Table of Contents
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Improving The Documentation](#improving-the-documentation)
-- [Styleguides](#styleguides)
-  - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
-
 
 
 ## I Have a Question
@@ -111,7 +107,8 @@ Try to keep your PRs small and in line with roadmap and issues.
 
 ### Improving The Documentation
 
-See [here](https://github.com/pieroit/cheshire-cat/tree/docs)
+Docs contribution are highly valuable for the project.
+See details on how to help with the docs [here](https://github.com/pieroit/cheshire-cat/tree/docs).
 
 
 ## Attribution
