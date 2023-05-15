@@ -20,19 +20,23 @@ const LanguageModels = Object.freeze({
   setProviderSettings: async (languageModelName: string, settings?: JSONSettings) => {
     const endpoint = config.endpoints.allLLM.concat(`${languageModelName}`)
     try {
-      return await fetch(endpoint, {
+      await fetch(endpoint, {
         method: 'PUT',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(settings ?? {})
-      }).then<JSONResponse>(toJSON)
+      })
+      return {
+        status: 'success',
+        message: "Language model provider updated successfully"
+      } as JSONResponse
     } catch (error) {
       return {
         status: 'error',
         message: "Language model provider couldn't be updated"
-      } satisfies JSONResponse
+      } as JSONResponse
     }
   }
 })

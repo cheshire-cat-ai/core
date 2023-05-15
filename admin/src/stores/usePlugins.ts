@@ -1,4 +1,5 @@
 import type { PluginsState } from '@stores/types'
+import type { Plugin } from '@models/Plugin'
 import PluginService from '@services/PluginService'
 
 export const usePlugins = defineStore('plugins', () => {
@@ -15,8 +16,13 @@ export const usePlugins = defineStore('plugins', () => {
     currentState.error = error.value as string
   })
 
+  const togglePlugin = (id: Plugin['id']) => {
+    console.log("Toggled", id)
+  }
+  
   return {
-    currentState
+    currentState,
+    togglePlugin
   }
 })
 

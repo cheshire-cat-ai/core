@@ -20,19 +20,23 @@ const Embedders = Object.freeze({
   setEmbedderSettings: async (languageEmbedderName: string, settings?: JSONSettings) => {
     const endpoint = config.endpoints.allEmbedders.concat(`${languageEmbedderName}`)
     try {
-      return await fetch(endpoint, {
+      await fetch(endpoint, {
         method: 'PUT',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(settings ?? {})
-      }).then<JSONResponse>(toJSON)
+      })
+      return {
+        status: 'success',
+        message: "Language model embedder updated successfully"
+      } as JSONResponse
     } catch (error) {
       return {
         status: 'error',
         message: "Language model embedder couldn't be updated"
-      } satisfies JSONResponse
+      } as JSONResponse
     }
   }
 })
