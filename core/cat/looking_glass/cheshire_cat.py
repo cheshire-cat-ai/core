@@ -99,7 +99,12 @@ class CheshireCat:
 
     def get_hyde_text_and_embedding(self, text):
         # HyDE text
-        hyde_text = self.hypothetis_chain.run(text)
+        try:
+            hyde_text = self.hypothetis_chain.run(text)
+        except Exception as e:
+            # Catch here if the OpenAI endpoint is returning an error (eg. 429 or 404)
+            log(e)
+            traceback.print_exc(e)
         if self.verbose:
             log(hyde_text)
 
