@@ -117,17 +117,8 @@ If you have any ideas on how to improve the project or if you'd like to suggest 
 
 ### Code contribution
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request (if it contains lots of code, please discuss it beforehand opening a issue)
-
+Here is a [full guide to contributing](CONTRIBUTING.md).
 Don't forget to give the project a star ⭐! Thanks again!🙏
-
-## Naming Convention
-
-This project follows the **PEP8** naming convention for all backend code. Please ensure that your contributions adhere to this standard.
 
 ## Credits
 
