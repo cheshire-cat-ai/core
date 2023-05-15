@@ -38,8 +38,8 @@ module.exports = {
 			{
 				light: {
 					"primary": "#F09070",
-					"secondary": "#633DCC",
-					"accent": "#F3977B",
+					"secondary": "#C27862",
+					"accent": "#7C4DFF",
 					"neutral": "#383938",
 					"base-100": "#F4F4F5",
 					"info": "#38BDF8",
