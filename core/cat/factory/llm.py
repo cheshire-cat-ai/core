@@ -125,7 +125,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     # Current supported versions 2022-12-01 or 2023-03-15-preview
-    api_version: str = "2022-12-01"
+    api_version: str = "2023-03-15-preview"
     deployment_name: str = "text-davinci-003"
     model_name: str = "text-davinci-003" # Use only completion models !
 

@@ -54,7 +54,7 @@ def get_language_embedder(cat):
                 "openai_api_base": cat.llm.openai_api_base,
                 # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
                 # current supported versions 2022-12-01 or 2023-03-15-preview
-                "openai_api_version": "2022-12-01",
+                "openai_api_version": "2023-03-15-preview",
             }
         )
 
