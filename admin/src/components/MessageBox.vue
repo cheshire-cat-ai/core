@@ -30,10 +30,10 @@ const cleanedText = props.text.replace(/"(.+)"/gm, '$1')
 </script>
 
 <template>
-	<div class="chat gap-y-1" :class="[sender === 'bot' ? 'chat-start' : 'chat-end']">
+	<div class="chat gap-y-2" :class="[sender === 'bot' ? 'chat-start' : 'chat-end']">
 		<div class="chat-image px-2">
 			{{ sender === 'bot' ? '😺' : '👤' }}
         </div>
-		<div class="chat-bubble min-h-fit break-words" v-html="markdown.render(cleanedText)" />
+		<div class="chat-bubble rounded-md min-h-fit break-words" v-html="markdown.render(cleanedText)" />
 	</div>
 </template>
