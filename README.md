@@ -24,7 +24,7 @@ Why use the Cat:
 - 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU)
 
-If you want to know more about our vision and values, read the [Code of Ethics](CODE-OF-ETHICS.md). We are committed to openness, privacy and creativity.
+If you want to know more about our vision and values, read the [Code of Ethics](CODE-OF-ETHICS.md). We are committed to openness, privacy and creativity, we want to bring AI to the long tail.
 
 This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
