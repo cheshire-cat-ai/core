@@ -12,15 +12,19 @@
 
 ## What is this?
 
-If you want to build a custom AI on top of a language model, the Cat can help you:
+The Cheshire Cat is a framework to build custom AIs on top of any language model.
+If you ever used systems like WordPress or Django to build web apps, imagine the Cat as a similar tool, but specific for AI.
 
+Why use the Cat:
 - 🌍 Language model agnostic (works with OpenAI, Cohere, HuggingFace models, custom)
 - 🐘 Long term memory
+- 🚀 Extendible via plugins
 - 🔧 Can use external tools (APIs, custom python code, other models)
 - 📄 Can ingest documents (.pdf, .txt, .md)
-- 🚀 Extendible via plugins
 - 🐋 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU)
+
+If you want to know more about our vision and values, read the [Ethic code].
 
 This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
