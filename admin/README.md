@@ -2,7 +2,7 @@
 
 > 🐱: Well, well, well, what do we have here?\
 > It appears that you've stumbled upon my admin repository, my dear.\
-> This codebase is none other than the Cheshire cat admin, crafted with the finest React technology. So, come on in and
+> This codebase is none other than the Cheshire cat admin, crafted with the finest Vue technology. So, come on in and
 > take a peek, but be warned, things might get curiouser and curiouser from here on out!
 
 ## Table of contents
@@ -26,12 +26,6 @@
         </li>
       </ul>
     </li>
-    <li>📂 <a href="#folder-structure">Folder structure</a></li>
-    <li>
-    💪 <a href="#guidelines-and-standards">Guidelines and standards</a></li>
-    <ul>
-        <li><a href="./src/components/README.md">Writing components</a></li>
-    </ul>
   </ul>
 </details>
 
@@ -52,7 +46,7 @@ architecture with ease.
 The Cheshire Cat platform has been fully containerized using Docker, which allows for effortless access to the UI with
 minimal setup requirements.\
 Simply follow the instructions outlined in the
-primary [README.md](https://github.com/pieroit/cheshire-cat/blob/main/README.md) file to get started.
+primary [README.md](https://github.com/zAlweNy26/vue-cheshire-cat/blob/main/README.md) file to get started.
 
 However, if you want to tinker around with the UI application in development mode, we've got you covered.
 Just make sure to follow these instructions closely
@@ -79,7 +73,7 @@ Here's a list of scripts that you can run to get the app up and running
 
 #### Dev mode
 
-Run the app in dev mode with hot-reloading enabled and the browser automatically opening on port `3000`
+Run the app in dev mode with hot-reloading enabled and the browser automatically opening on port `3000` (default)
 
 ```bash
   npm run dev
@@ -95,65 +89,8 @@ Build the app for production
 
 #### Start the app
 
-Runs the build and serves the built app on port `3000`
+Runs the build and serves the built app on port `3000` (default)
 
 ```bash
   npm run start
 ```
-
-## Folder structure
-
-Here's the folder structure of application.
-
-```
-.
-├── public/
-│   ├── public-file.img
-│   └── public-something.json
-└── src/
-    ├── components/
-    │   ├── ComponentName/
-    │   │   ├── index.ts
-    │   │   ├── ComponentName.tsx
-    │   │   └── ComponentName.module.scss
-    │   └── ...
-    ├── hooks/
-    │   ├── useSomething.ts
-    │   ├── useSomethingElse.ts
-    │   └── ...
-    ├── models/
-    │   ├── commons.ts
-    │   ├── Model.ts
-    │   └── ...
-    ├── routes/
-    │   ├── RouteName/
-    │   │   ├── index.ts
-    │   │   ├── RouteName.tsx
-    │   │   └── RouteName.module.scss
-    │   ├── OtherRoute/
-    │   ├── SubRute/
-    │   ├── ...
-    │   └── browserRouter.ts
-    ├── services/
-    │   ├── someService.ts
-    │   └── ...
-    ├── theme/
-    │   ├── libs/
-    │   │   └── ...
-    │   ├── _mixins.scss
-    │   ├── _variables.scss
-    │   ├── ...
-    │   └── index.scss
-    ├── utils/
-    │   └── ...
-    ├── main.tsx
-    └── config.ts
-```
-
-## Guidelines and standards
-
-Here's the list of guidelines and standards that must be followed while contributing to this the Cheshire Cat UI
-application.
-Please read and understand these guidelines before contributing to the application.
-
-- [Writing components](./src/components/README.md)

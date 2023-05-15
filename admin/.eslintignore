@@ -1,2 +1,4 @@
 vite.config.ts
 public/
+tailwind.config.js
+postcss.config.js

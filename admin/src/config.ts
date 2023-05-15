@@ -1,27 +1,9 @@
 import { AppFeatures } from '@models/AppFeatures'
 
-const CORE_HOST = import.meta.env.CORE_HOST as string || 'localhost'
-const CORE_PORT = import.meta.env.CORE_PORT as string || '1865'
-const CORE_USE_SECURE_PROTOCOLS = import.meta.env.CORE_USE_SECURE_PROTOCOLS as string || false
-// const API_KEY = import.meta.env.API_KEY as string || ''
-
-// Quick Solution
-const endpoints_list = {
-  secure : {
-    chat: `wss://${CORE_HOST}:${CORE_PORT}/ws`,
-    rabbitHole: `https://${CORE_HOST}:${CORE_PORT}/rabbithole/`,
-    allLLM: `https://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
-    singleLLM: `https://${CORE_HOST}:${CORE_PORT}/settings/llm/:llm`,
-    plugins: `https://${CORE_HOST}:${CORE_PORT}/plugins/`
-  },
-  unsecure : {
-    chat: `ws://${CORE_HOST}:${CORE_PORT}/ws`,
-    rabbitHole: `http://${CORE_HOST}:${CORE_PORT}/rabbithole/`,
-    allLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
-    singleLLM: `http://${CORE_HOST}:${CORE_PORT}/settings/llm/:llm`,
-    plugins: `http://${CORE_HOST}:${CORE_PORT}/plugins/`
-  }
-}
+const CORE_HOST = import.meta.env.CORE_HOST || 'localhost'
+const CORE_PORT = import.meta.env.CORE_PORT || '1865'
+const CORE_USE_SECURE_PROTOCOLS = import.meta.env.CORE_USE_SECURE_PROTOCOLS || false
+const useProtocol = CORE_USE_SECURE_PROTOCOLS ? 's' : ''
 
 /**
  * Returns the application configuration.
@@ -34,9 +16,17 @@ const config: Config = {
     AppFeatures.FileUpload,
     AppFeatures.AudioRecording,
     AppFeatures.Settings,
-    AppFeatures.Plugins
+    AppFeatures.Plugins,
+    AppFeatures.WebsiteScraping
   ],
-  endpoints: CORE_USE_SECURE_PROTOCOLS ? endpoints_list.secure : endpoints_list.unsecure,
+  endpoints: {
+    chat: `ws${useProtocol}://${CORE_HOST}:${CORE_PORT}/ws`,
+    rabbitHole: `http${useProtocol}://${CORE_HOST}:${CORE_PORT}/rabbithole/`,
+    allLLM: `http${useProtocol}://${CORE_HOST}:${CORE_PORT}/settings/llm/`,
+    allEmbedders: `http${useProtocol}://${CORE_HOST}:${CORE_PORT}/settings/embedder/`,
+    plugins: `http${useProtocol}://${CORE_HOST}:${CORE_PORT}/plugins/`,
+    wipeCollections: `http${useProtocol}://${CORE_HOST}:${CORE_PORT}/memory/wipe_collections/`
+  }
 }
 
 export interface Config {
@@ -47,8 +37,9 @@ export interface Config {
     readonly chat: string
     readonly rabbitHole: string
     readonly allLLM: string
-    readonly singleLLM: string
+    readonly allEmbedders: string
     readonly plugins: string
+    readonly wipeCollections: string
   }
 }
 

@@ -7,5 +7,5 @@ export interface Notification {
   readonly id: number
   readonly message: string
   readonly type?: 'info' | 'success' | 'error'
-  readonly hidden?: boolean
+  hidden?: boolean
 }
