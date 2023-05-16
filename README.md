@@ -31,7 +31,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 ## Docs and Resources
 - [Official Documentation](https://pieroit.github.io/cheshire-cat/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
-- [YouTube Presentation: Meet the CHESHIRE CAT - Open Source AI](https://www.youtube.com/watch?v=vyHg6op6FF8)
+- [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 
 ## Quickstart
 
