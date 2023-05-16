@@ -1,13 +1,25 @@
 # :toolbox: Tools
 
-A Tool allows the Cat to execute custom code during conversation, for example:
+A Tool is a python function that can be called directly from the language model.  
+By "called" we mean that the LLM has a desciption of the available Tools in the prompt, and (given the conversation context) it can generate as output something like:
 
-- communicate with a web service
-- search information in an external database
-- execute math calculations
-- run stuff in the terminal (danger zone)
-- keep track of specific information and do fancy stuff with it
-- your fantasy is the limit!
+> Thought: Do I need to use a Tool? Yes  
+> Action: search_ecommerce  
+> Action Input: "white sport shoes"
+
+So your `search_ecommerce` Tool will be called and given the input string `"white sport shoes"`.
+The output of your Tool will go back to the LLM or directly to the user:
+
+> Observation: "Mike air Jordania shoes are available for 59.99€"
+
+You can use Tools to:
+
+ - communicate with a web service
+ - search information in an external database
+ - execute math calculations
+ - run stuff in the terminal (danger zone)
+ - keep track of specific information and do fancy stuff with it
+ - your fantasy is the limit!
 
 Tools in the Cheshire Cat are inspired and extend [langchain Tools](https://python.langchain.com/en/latest/modules/agents/tools.html), an elegant [Toolformer](https://arxiv.org/abs/2302.04761) implementation.
 
