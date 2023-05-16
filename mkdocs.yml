@@ -26,8 +26,8 @@ nav:
       - Hooks: plugins/hooks.md
   - Advanced: advanced.md
   - Tutorials:
-      - Overview: tutorials/overview.md
-      - Installation and customization: tutorials/installation-customization.md
+      #- Overview: tutorials/overview.md
+      - Installation: tutorials/installation.md
   - FAQ: faq.md
 
 theme:
