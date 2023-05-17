@@ -10,6 +10,9 @@ jobs:
       - name: Install dependencies
         working-directory: ./admin
         run: npm ci
+      - name: Auto Lint Fix
+        working-directory: ./admin
+        run: npm run lint -- --fix 
       - name: 🐛 Run linter
         working-directory: ./admin
         run: npm run lint

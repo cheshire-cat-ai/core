@@ -21,10 +21,9 @@ import style from './Scaffold.module.scss'
  */
 const Scaffold = () => {
   const { notifications, showNotification } = useNotifications()
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const purrNotification = useCallback(() => {
-
     // show notification
     showNotification({
       id: uniqueId(),
@@ -34,7 +33,7 @@ const Scaffold = () => {
 
     // go to home page
     navigate('/')
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNotification])
 
   return (
