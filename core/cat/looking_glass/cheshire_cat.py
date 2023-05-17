@@ -322,6 +322,7 @@ class CheshireCat:
         # build data structure for output (response and why with memories)
         final_output = {
             "error": False,
+            "type": "chat",
             "content": cat_message["output"],
             "why": {
                 "input": cat_message["input"],

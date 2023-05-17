@@ -157,6 +157,7 @@ class RabbitHole:
         ccat.web_socket_notifications.append(
             {
                 "error": False,
+                "type": "notification",
                 "content": f"Finished reading {source}, I made {len(docs)} thoughts on it.",
                 "why": {},
             }
