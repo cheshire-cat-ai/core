@@ -174,8 +174,10 @@ class CheshireCat:
         )
 
         # get summaries
-        summary, intermediate_summaries = self.get_summary_text(docs)
-        docs = [summary] + intermediate_summaries + docs
+        do_summary = self.mad_hatter.execute_hook("before_rabbithole_summarizes_file")
+        if do_summary:
+            summary, intermediate_summaries = self.get_summary_text(docs)
+            docs = [summary] + intermediate_summaries + docs
 
         # store in memory
         if isinstance(file, str):
@@ -202,9 +204,13 @@ class CheshireCat:
             url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # get summaries and store
-        summary, intermediate_summaries = self.get_summary_text(docs)
-        docs = [summary] + intermediate_summaries + docs
+        # get summaries
+        do_summary = self.mad_hatter.execute_hook("before_rabbithole_summarizes_url")
+        if do_summary:
+            summary, intermediate_summaries = self.get_summary_text(docs)
+            docs = [summary] + intermediate_summaries + docs
+
+        # store docs in memory
         RabbitHole.store_documents(ccat=self, docs=docs, source=url)
 
     def recall_relevant_memories_to_working_memory(self, user_message):
