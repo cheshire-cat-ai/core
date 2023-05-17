@@ -75,15 +75,6 @@ class CheshireCat:
             ),
         )
 
-        # TODO: can input vars just be deducted from the prompt? What about plugins?
-        self.input_variables = [
-            "input",
-            "chat_history",
-            "episodic_memory",
-            "declarative_memory",
-            "agent_scratchpad",
-        ]
-
     def load_memory(self):
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
