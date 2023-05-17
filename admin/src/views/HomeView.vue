@@ -127,7 +127,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 			</p>
 		</div>
 		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto">
-			<MessageBox v-for="msg in messagesState.messages" :key="msg.id" 
+			<MessageBox v-for="msg in messagesState.messages" :key="msg.id"
 				:sender="msg.sender" :text="msg.text" :why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
 			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
@@ -151,11 +151,11 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				</label>
 				<div class="relative w-full">
 					<textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
-						class="textarea-bordered textarea block w-full resize-none overflow-hidden pr-24 !outline-none !ring-0 focus:border-2 focus:border-primary"
+						class="textarea-bordered textarea block w-full resize-none overflow-hidden !outline-none !ring-0  border-2 focus:border-2 focus:border-primary"
 						:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)"
 						@keydown="preventSend" />
 					<div class="absolute inset-y-0 right-0 flex gap-2 pr-4">
-						<button :disabled="inputDisabled" 
+						<button :disabled="inputDisabled"
 							class="btn-outline btn-sm btn-circle btn self-center border-none text-neutral hover:!bg-transparent hover:text-neutral disabled:bg-transparent"
 							@click="sendMessage(userMessage)">
 							<heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="h-6 w-6" />

@@ -24,7 +24,7 @@ defineExpose({
 	<Listbox v-model="selectedElement" @update:modelValue="value => emit('update', value)">
 		<div class="relative">
 			<ListboxButton
-				class="relative w-full cursor-default rounded bg-base-100 p-3 text-left text-sm shadow-lg focus:outline-none">
+				class="relative w-full cursor-default rounded bg-base-100 p-3 text-left text-sm shadow-md focus:outline-none">
 				<span class="block truncate font-semibold">{{ selectedElement.label }}</span>
 				<span class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
 					<heroicons-chevron-up-down-20-solid class="h-6 w-6" />

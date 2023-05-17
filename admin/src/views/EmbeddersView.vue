@@ -58,9 +58,9 @@ watchDeep(embedderState, () => {
 				@update="e => updateProperties(e.value)" />
 			<div class="flex flex-col gap-4">
 				<div class="flex flex-col">
-					<p class="text-sm text-neutral-focus">
+					<!--<p class="text-sm text-neutral-focus">
 						{{ currentSchema?.title }}
-					</p>
+					</p>-->
 					<p>{{ currentSchema?.description }}</p>
 				</div>
 				<div v-for="prop in currentSchema?.properties" :key="prop.title" class="flex flex-col gap-2">
@@ -69,7 +69,7 @@ watchDeep(embedderState, () => {
 						{{ prop.title }}
 					</p>
 					<input v-model="currentSettings[prop.env_names![0]]" type="text" :placeholder="prop.title"
-						class="input-bordered input-primary input input-sm w-full">
+						class="input-primary input input-sm w-full outline-base-300 outline-1">
 				</div>
 			</div>
 			<button class="btn-success btn-sm btn mt-auto normal-case" @click="saveEmbedder">

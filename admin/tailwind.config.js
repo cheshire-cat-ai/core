@@ -43,7 +43,7 @@ module.exports = {
 					"neutral": "#383938",
 					"base-100": "#F4F4F5",
 					"info": "#38BDF8",
-					"success": "#22C55E",
+					"success": "#1F883D",
 					"warning": "#EAB308",
 					"error": "#EF4444",
 				},
@@ -56,7 +56,7 @@ module.exports = {
 					"neutral": "#F4F4F5",
 					"base-100": "#383938",
 					"info": "#38BDF8",
-					"success": "#22C55E",
+					"success": "#1F883D",
 					"warning": "#EAB308",
 					"error": "#EF4444",
 				},
@@ -64,4 +64,3 @@ module.exports = {
 		],
 	},
 }
-
