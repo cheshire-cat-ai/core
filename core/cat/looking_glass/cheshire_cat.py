@@ -89,7 +89,7 @@ class CheshireCat:
 
     def load_memory(self):
         # Memory
-        vector_memory_config = {"embedder": self.embedder, "verbose": True}
+        vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
         self.working_memory = WorkingMemory()
 
