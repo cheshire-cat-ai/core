@@ -60,6 +60,23 @@ class LLMOpenAIChatConfig(LLMSettings):
             "description": "Chat model from OpenAI",
         }
 
+# https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
+class LLMAzureChatOpenAIConfig(LLMSettings):
+    openai_api_key: str
+    model_name: str = "gpt-35-turbo" # or gpt-4, use only chat models !
+    openai_api_base: str
+    openai_api_type: str = "azure"
+    openai_api_version: str = "2023-03-15-preview"
+
+    deployment_name: str
+
+    _pyclass: PyObject = langchain.chat_models.AzureChatOpenAI
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Azure OpenAI Chat Models",
+            "description": "Chat model from Azure OpenAI",
+        }
 
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
@@ -108,15 +125,15 @@ class LLMAzureOpenAIConfig(LLMSettings):
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     # Current supported versions 2022-12-01 or 2023-03-15-preview
-    api_version: str = "2022-12-01"
+    api_version: str = "2023-03-15-preview"
     deployment_name: str = "text-davinci-003"
-    model_name: str = "text-davinci-003"
+    model_name: str = "text-davinci-003" # Use only completion models !
 
     _pyclass: PyObject = langchain.llms.AzureOpenAI
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Azure OpenAI",
+            "name_human_readable": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
         }
 
@@ -129,6 +146,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
     LLMAzureOpenAIConfig,
+    LLMAzureChatOpenAIConfig,
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know which fields are required to create the language model.
