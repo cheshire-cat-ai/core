@@ -19,7 +19,7 @@ def before_cat_recalls_memories(user_message, cat):
 @hook(priority=0)
 def cat_recall_query(user_message, cat) -> str:
     # example 1: HyDE embedding
-    return cat.hypothetis_chain.run(user_message)
+    # return cat.hypothetis_chain.run(user_message)
 
     # example 2: Condense recent conversation
     # TODO
