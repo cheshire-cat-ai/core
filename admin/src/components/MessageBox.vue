@@ -58,7 +58,7 @@ const cleanedText = props.text.replace(/"(.+)"/gm, '$1')
 </template>
 
 <style lang="scss">
-.value-key {
+.json-view-item.root-item .value-key {
     white-space: normal !important;
 }
 </style>
