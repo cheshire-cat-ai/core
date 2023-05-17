@@ -40,7 +40,7 @@ export const useEmbedderConfig = defineStore('embedder', () => {
     showNotification({
       id: uniqueId(),
       type: result.status,
-      message: result.message
+      text: result.message
     })
     if (result.status != 'error') {
       currentState.selected = name

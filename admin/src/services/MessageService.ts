@@ -67,10 +67,10 @@ const MessagesService = Object.freeze({
       onMessage(_ws, event: MessageEvent<string>) {
         if (messageHandler) {
           const data = JSON.parse(event.data) as APIMessageServiceError | APIMessageServiceResponse
-          LogService.print('Received a message from the WebSocket server', data)
+          LogService.print('Received data from the WebSocket server', data)
     
           if (isAPIMessageServiceResponse(data)) {
-            messageHandler(data.content, data.why)
+            messageHandler(data.content, data.type, data.why)
             return
           }
     
@@ -135,7 +135,7 @@ type OnConnected = () => void
 /**
  * Defines the type for the onMessage event handler
  */
-type OnMessageHandler = (message: string, why: any) => void
+type OnMessageHandler = (message: string, type: APIMessageServiceResponse['type'], why: any) => void
 
 /**
  * Defines the type for the onError event handler
@@ -147,6 +147,7 @@ type OnErrorHandler = (err: Error) => void
  */
 export interface APIMessageServiceResponse {
   error: false
+  type: 'notification' | 'chat'
   content: string
   why: any
 }

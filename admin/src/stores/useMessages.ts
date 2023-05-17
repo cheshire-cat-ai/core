@@ -3,6 +3,7 @@ import type { Message } from '@models/Message'
 import MessagesService from '@services/MessageService'
 import { now, uniqueId } from '@utils/commons'
 import { getErrorMessage } from '@utils/errors'
+import { useNotifications } from '@stores/useNotifications'
 
 export const useMessages = defineStore('messages', () => {
   const currentState = reactive<MessagesState>({
@@ -34,6 +35,8 @@ export const useMessages = defineStore('messages', () => {
     ]
   })
 
+  const { showNotification } = useNotifications()
+
   tryOnMounted(() => {
     /**
      * Subscribes to the messages service on component mount
@@ -42,14 +45,22 @@ export const useMessages = defineStore('messages', () => {
      */
     MessagesService.connect(() => {
       currentState.ready = true
-    }).onMessage((message, why) => {
-      addMessage({
-        id: uniqueId(),
-        text: message,
-        sender: 'bot',
-        timestamp: now(),
-        why
-      })
+    }).onMessage((message, type, why) => {
+      if (type === 'chat') {
+        addMessage({
+          id: uniqueId(),
+          text: message,
+          sender: 'bot',
+          timestamp: now(),
+          why
+        })
+      } else if (type === 'notification') {
+        showNotification({
+          id: uniqueId(),
+          type: 'info',
+          text: message
+        })
+      }
     }).onError((error: Error) => {
       currentState.loading = currentState.ready = false
       currentState.error = getErrorMessage(error)

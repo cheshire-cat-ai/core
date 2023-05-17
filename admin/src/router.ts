@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SettingsView from '@views/SettingsView.vue'
 import ErrorView from '@views/ErrorView.vue'
 import PluginsView from '@views/PluginsView.vue'
+import MemoryView from '@views/MemoryView.vue'
 
 const router = createRouter({
   linkExactActiveClass: "active",
@@ -31,6 +32,11 @@ const router = createRouter({
           component: () => import('@views/EmbeddersView.vue')
         },
       ],
+    },
+    {
+      path: '/memory',
+      name: 'memory',
+      component: MemoryView
     },
     {
       path: '/plugins',

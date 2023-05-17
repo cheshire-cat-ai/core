@@ -19,7 +19,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
       currentState.data = data
     }).then(() => showNotification({
       id: uniqueId(),
-      message: `File ${file.name} successfully send down the rabbit hole!`,
+      text: `File ${file.name} successfully send down the rabbit hole!`,
       type: 'success'
     })).catch((error) => {
       currentState.error = getErrorMessage(error)
@@ -33,7 +33,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
       currentState.data = data
     }).then(() => showNotification({
       id: uniqueId(),
-      message: `Website successfully send down the rabbit hole!`,
+      text: `Website successfully send down the rabbit hole!`,
       type: 'success'
     })).catch((error) => {
       currentState.error = getErrorMessage(error)

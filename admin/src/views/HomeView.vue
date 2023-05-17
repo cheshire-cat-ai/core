@@ -127,7 +127,8 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 			</p>
 		</div>
 		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto">
-			<MessageBox v-for="msg in messagesState.messages" :key="msg.id" :sender="msg.sender" :text="msg.text" />
+			<MessageBox v-for="msg in messagesState.messages" :key="msg.id" 
+				:sender="msg.sender" :text="msg.text" :why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
 			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
