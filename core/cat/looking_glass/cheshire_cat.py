@@ -114,7 +114,7 @@ class CheshireCat:
         return hyde_text, hyde_embedding
 
     # iterative summarization
-    def get_summary_text(self, docs, group_size=3):
+    def get_summary_text(self, docs, group_size=5):
         # service variable to store intermediate results
         intermediate_summaries = docs
 
