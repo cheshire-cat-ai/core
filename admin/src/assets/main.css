@@ -11,7 +11,7 @@
 
 @layer base {
   html {
-    font-family: "Poppins", system-ui, sans-serif;
+    font-family: "Ubuntu", system-ui, sans-serif;
   }
 }
 
@@ -28,13 +28,13 @@
   .btn-ghost {
     @apply text-neutral;
   }
-  .btn-outline.btn-error:hover, .btn-outline.btn-success:hover, 
+  .btn-outline.btn-error:hover, .btn-outline.btn-success:hover,
   .btn-outline.btn-info:hover, .btn-outline.btn-warning:hover {
     @apply text-base-100;
   }
-  .btn-error:hover:not(.btn-outline), .btn-error.btn-active:not(.btn-outline), 
+  .btn-error:hover:not(.btn-outline), .btn-error.btn-active:not(.btn-outline),
   .btn-info:hover:not(.btn-outline), .btn-info.btn-active:not(.btn-outline),
-  .btn-success:hover:not(.btn-outline), .btn-success.btn-active:not(.btn-outline), 
+  .btn-success:hover:not(.btn-outline), .btn-success.btn-active:not(.btn-outline),
   .btn-warning:hover:not(.btn-outline), .btn-warning.btn-active:not(.btn-outline) {
     @apply brightness-[0.85];
   }

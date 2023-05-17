@@ -33,15 +33,15 @@ export default defineConfig(({ mode }) => {
         dts: true,
         resolvers: [
           HeadlessUiResolver({ prefix: "" }),
-          IconsResolver({ prefix: "" }) 
+          IconsResolver({ prefix: "" })
         ]
       }),
       Icons({ autoInstall: true }),
       Unfonts({
         custom: {
           families: [{
-            name: 'Poppins',
-            local: 'Poppins',
+            name: 'Ubuntu',
+            local: 'Ubuntu',
             src: './src/assets/fonts/*.ttf'
           }],
           display: 'auto',
