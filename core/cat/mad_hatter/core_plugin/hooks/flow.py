@@ -14,11 +14,25 @@ def before_cat_recalls_memories(user_message, cat):
     return None
 
 
+# What is the input to recall memories?
+# Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
+@hook(priority=0)
+def cat_recall_query(user_message, cat) -> str:
+    # example 1: HyDE embedding
+    return cat.hypothetis_chain.run(user_message)
+
+    # example 2: Condense recent conversation
+    # TODO
+
+    # here we just return the latest user message as is
+    return user_message
+
+
 # Called just after memories are recalled. They are stored in:
 # - cat.working_memory["episodic_memories"]
 # - cat.working_memory["declarative_memories"]
 @hook(priority=0)
-def after_cat_recalled_memories(user_message, cat):
+def after_cat_recalled_memories(memory_query_text, cat):
     return None
 
 
@@ -26,12 +40,3 @@ def after_cat_recalled_memories(user_message, cat):
 @hook(priority=0)
 def before_cat_sends_message(message, cat):
     return message
-
-
-# Hook called before inserting the first point in memory collection.
-# This happens at first lunch and whenever `long_term_memory` is deleted.
-# first_point is `langchain.Document` instance
-@hook(priority=0)
-def before_collection_created(first_point, cat):
-    return first_point
-

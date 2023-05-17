@@ -85,47 +85,36 @@ class CheshireCat:
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
-    def get_hyde_text_and_embedding(self, text):
-        # HyDE text
-        try:
-            hyde_text = self.hypothetis_chain.run(text)
-        except Exception as e:
-            # Catch here if the OpenAI endpoint is returning an error (eg. 429 or 404)
-            log(e)
-            traceback.print_exc(e)
-        if self.verbose:
-            log(hyde_text)
-
-        # HyDE embedding
-        hyde_embedding = self.embedder.embed_query(hyde_text)
-
-        return hyde_text, hyde_embedding
-
     def recall_relevant_memories_to_working_memory(self, user_message):
-        # TODO: should we compress convo history for better retrieval?
-
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
-        # HyDE
-        hyde_text, hyde_embedding = self.get_hyde_text_and_embedding(user_message)
+        # We may want to search in memory
+        memory_query_text = self.mad_hatter.execute_hook(
+            "cat_recall_query", user_message
+        )
+        log(f'Recall query: "{memory_query_text}"')
+
+        # embed recall query
+        memory_query_embedding = self.embedder.embed_query(memory_query_text)
+        self.working_memory["memory_query"] = memory_query_text
 
         # recall relevant memories (episodic)
         episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-            embedding=hyde_embedding
+            embedding=memory_query_embedding
         )
         self.working_memory["episodic_memories"] = episodic_memories
 
         # recall relevant memories (declarative)
         declarative_memories = (
             self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=hyde_embedding
+                embedding=memory_query_embedding
             )
         )
         self.working_memory["declarative_memories"] = declarative_memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalled_memories", user_message)
+        self.mad_hatter.execute_hook("after_cat_recalled_memories", memory_query_text)
 
     def format_agent_executor_input(self):
         # format memories to be inserted in the prompt
