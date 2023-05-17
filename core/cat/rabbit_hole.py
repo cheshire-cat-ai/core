@@ -17,11 +17,70 @@ from langchain.docstore.document import Document
 
 
 class RabbitHole:
-    def __init__(self):
-        pass
+    def __init__(self, cat):
+        self.cat = cat
 
-    @staticmethod
+    def ingest_file(
+        self,
+        file: Union[str, UploadFile],
+        chunk_size: int = 400,
+        chunk_overlap: int = 100,
+    ):
+        """
+        Load a given file in the Cat's memory.
+
+        :param file: absolute path of the file or UploadFile if ingested from the GUI
+        :param chunk_size: number of characters the text is split in
+        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        """
+
+        # split file into a list of docs
+        docs = self.file_to_docs(
+            file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+
+        # get summaries
+        summaries = self.cat.mad_hatter.execute_hook(
+            "rabbithole_summarizes_documents", docs
+        )
+        docs = summaries + docs
+
+        # store in memory
+        if isinstance(file, str):
+            filename = file
+        else:
+            filename = file.filename
+        self.store_documents(docs=docs, source=filename)
+
+    def ingest_url(
+        self,
+        url: str,
+        chunk_size: int = 400,
+        chunk_overlap: int = 100,
+    ):
+        """
+        Load a given website in the Cat's memory.
+        :param url: URL of the website to which you want to save the content
+        :param chunk_size: number of characters the text is split in
+        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        """
+
+        # get website content and split into a list of docs
+        docs = self.url_to_docs(
+            url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+
+        # get summaries
+        summaries = self.cat.mad_hatter.execute_hook(
+            "rabbithole_summarizes_documents", docs
+        )
+        docs = summaries + docs
+
+        # store docs in memory
+        self.store_documents(docs=docs, source=url)
+
     def url_to_docs(
+        self,
         url: str,
         chunk_size: int = 400,
         chunk_overlap: int = 100,
@@ -48,15 +107,15 @@ class RabbitHole:
             doc.metadata["is_summary"] = False
         return docs
 
-    @staticmethod
     def file_to_docs(
+        self,
         file: Union[str, UploadFile],
         chunk_size: int = 400,
         chunk_overlap: int = 100,
     ) -> List[Document]:
         """
         Parse a file and chunk it to a list of Documents.
-        The file can either be ingested from the web GUI or using the Cat *send_file_in_rabbit_hole* method.
+        The file can either be ingested from the web GUI, rest API or using the *cat.rabbit_hole.send_file_in_rabbit_hole* method.
         :param file: absolute path of the file or UploadFile if ingested from the GUI
         :param chunk_size: number of characters the text is split in
         :param chunk_overlap: number of overlapping characters between consecutive chunks
@@ -122,8 +181,7 @@ class RabbitHole:
             doc.metadata["is_summary"] = False
         return docs
 
-    @staticmethod  # should this method be inside of ccat?
-    def store_documents(ccat, docs: List[Document], source: str) -> None:
+    def store_documents(self, docs: List[Document], source: str) -> None:
         """
         Load a list of Documents in the Cat's declarative memory.
         :param ccat: reference to the cat instance
@@ -136,11 +194,11 @@ class RabbitHole:
         for d, doc in enumerate(docs):
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
-            if "is_summary" not in doc.metadata.keys():
-                doc.metadata["is_summary"] = True
-            doc = ccat.mad_hatter.execute_hook("before_rabbithole_insert_memory", doc)
+            doc = self.cat.mad_hatter.execute_hook(
+                "before_rabbithole_insert_memory", doc
+            )
             if doc.page_content != "":
-                _ = ccat.memory.vectors.declarative.add_texts(
+                _ = self.cat.memory.vectors.declarative.add_texts(
                     [doc.page_content],
                     [doc.metadata],
                 )
@@ -151,10 +209,12 @@ class RabbitHole:
                 log(
                     f"Skipped memory insertion of empty page content ({d + 1}/{len(docs)})"
                 )
+
+            # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
 
         # notify client
-        ccat.web_socket_notifications.append(
+        self.cat.web_socket_notifications.append(
             {
                 "error": False,
                 "type": "notification",

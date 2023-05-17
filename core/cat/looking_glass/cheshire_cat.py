@@ -1,12 +1,10 @@
 import time
 import traceback
-from typing import Union
 
 import langchain
 from cat.utils import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
-from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
@@ -42,7 +40,7 @@ class CheshireCat:
         self.agent_manager = AgentManager(self)
 
         # Rabbit Hole Instance
-        self.rabbit_hole = RabbitHole()
+        self.rabbit_hole = RabbitHole(self)
 
     def load_db(self):
         # if there is no db, create it
@@ -111,65 +109,6 @@ class CheshireCat:
         hyde_embedding = self.embedder.embed_query(hyde_text)
 
         return hyde_text, hyde_embedding
-
-    def send_file_in_rabbit_hole(
-        self,
-        file: Union[str, UploadFile],
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-    ):
-        """
-        Load a given file in the Cat's memory.
-
-        :param file: absolute path of the file or UploadFile if ingested from the GUI
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
-        """
-
-        # split file into a list of docs
-        docs = RabbitHole.file_to_docs(
-            file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
-
-        # get summaries
-        summaries = self.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
-
-        # store in memory
-        if isinstance(file, str):
-            filename = file
-        else:
-            filename = file.filename
-        RabbitHole.store_documents(ccat=self, docs=docs, source=filename)
-
-    def send_url_in_rabbit_hole(
-        self,
-        url: str,
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-    ):
-        """
-        Load a given website in the Cat's memory.
-        :param url: URL of the website to which you want to save the content
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
-        """
-
-        # get website content and split into a list of docs
-        docs = RabbitHole.url_to_docs(
-            url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
-
-        # get summaries
-        summaries = self.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
-
-        # store docs in memory
-        RabbitHole.store_documents(ccat=self, docs=docs, source=url)
 
     def recall_relevant_memories_to_working_memory(self, user_message):
         # TODO: should we compress convo history for better retrieval?
