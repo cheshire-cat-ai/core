@@ -14,8 +14,8 @@ const { currentState: pluginsState } = storeToRefs(store)
 				Plugins
 			</p>
 			<p class="text-center font-medium">
-				This page displays the list of active plugins on the <strong>Cheshire Cat</strong>. 
-				In the next version of the project, users will be able to activate or disable individual plugins according to their needs, 
+				This page displays the list of active plugins on the <strong>Cheshire Cat</strong>.
+				In the next version of the project, users will be able to activate or disable individual plugins according to their needs,
 				allowing for greater customization of the user experience.
 			</p>
 		</div>
@@ -40,7 +40,7 @@ const { currentState: pluginsState } = storeToRefs(store)
 				<div class="flex flex-col gap-2">
 					<p class="flex flex-wrap justify-between text-xl font-bold">
 						<span>{{ item.name }}</span>
-						<input type="checkbox" class="!toggle-success !toggle" @click="togglePlugin(item.id)">
+						<!--<input type="checkbox" class="!toggle-success !toggle" @click="togglePlugin(item.id)">-->
 					</p>
 					<p>{{ item.description }}</p>
 				</div>
