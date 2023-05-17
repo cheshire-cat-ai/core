@@ -7,16 +7,19 @@ from typing import Any, Callable
 from cat.utils import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
+from langchain.docstore.document import Document
 from qdrant_client.http.models import Distance, VectorParams
 
 
 class VectorMemory:
-    def __init__(self, verbose=False, embedder=None) -> None:
+    def __init__(self, cat, verbose=False) -> None:
         self.verbose = verbose
 
-        if embedder is None:
+        # Get embedder from Cat instance
+        self.embedder = cat.embedder
+
+        if self.embedder is None:
             raise Exception("No embedder passed to VectorMemory")
-        self.embedder = embedder
 
         qdrant_host = os.getenv("VECTOR_MEMORY_HOST", "cheshire_cat_vector_memory")
         qdrant_port = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
@@ -38,6 +41,7 @@ class VectorMemory:
 
         # Episodic memory will contain user and eventually cat utterances
         self.episodic = VectorMemoryCollection(
+            cat=cat,
             client=self.vector_db,
             collection_name="episodic",
             embedding_function=self.embedder.embed_query,
@@ -45,6 +49,7 @@ class VectorMemory:
 
         # Declarative memory will contain uploaded documents' content (and summaries)
         self.declarative = VectorMemoryCollection(
+            cat=cat,
             client=self.vector_db,
             collection_name="declarative",
             embedding_function=self.embedder.embed_query,
@@ -56,9 +61,13 @@ class VectorMemory:
 
 
 class VectorMemoryCollection(Qdrant):
-    def __init__(self, client: Any, collection_name: str, embedding_function: Callable):
+    def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable):
         super().__init__(client, collection_name, embedding_function)
 
+        # Get a Cat instance
+        self.cat = cat
+
+        # Check if memory collection exists, otherwise create it and add first memory
         self.create_collection_if_not_exists()
 
     def create_collection_if_not_exists(self):
@@ -78,10 +87,20 @@ class VectorMemoryCollection(Qdrant):
 
         # TODO: if the embedder changed, a new vectorstore must be created
         if tabula_rasa:
+            # Hard coded overridable first memory saved in both collections
+            first_memory = Document(page_content="I am the Cheshire Cat",
+                                    metadata={
+                                        "source": "cheshire-cat",
+                                        "when": time.time()
+                                    })
+
+            # Execute hook to override the first inserted memory
+            first_memory = self.cat.mad_hatter.execute_hook("before_collection_created", first_memory)
+
             # insert first point in the collection
             self.add_texts(
-                ["I am the Cheshire Cat"],
-                [{"source": "cheshire-cat", "when": time.time()}],
+                [first_memory.page_content],
+                [first_memory.metadata],
             )
 
         log(dict(self.client.get_collection(self.collection_name)))
