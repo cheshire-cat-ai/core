@@ -6,4 +6,5 @@ export enum AppFeatures {
   AudioRecording,
   Plugins,
   Settings,
+  WebsiteScraping,
 }

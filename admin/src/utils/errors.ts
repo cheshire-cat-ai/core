@@ -2,7 +2,6 @@
  * This module defines and export a collection of functions that are related to error management or error manipulation
  * commonly used throughout the application.
  */
-import { isRouteErrorResponse } from 'react-router-dom'
 import { isError, isErrorLikeObject, isString } from '@utils/typeGuards'
 
 /**
@@ -12,7 +11,6 @@ import { isError, isErrorLikeObject, isString } from '@utils/typeGuards'
 export const getErrorMessage = (error: unknown, unknownError = 'Unknown error'): string => {
   if (isString(error)) return error
   if (isError(error) || isErrorLikeObject(error)) return error.message
-  if (isRouteErrorResponse(error)) return getErrorMessage(error.error)
 
   return unknownError
 }
@@ -23,7 +21,6 @@ export const getErrorMessage = (error: unknown, unknownError = 'Unknown error'):
  */
 export const getErrorCode = (error: unknown) => {
   if (!error || typeof error !== 'object') return false
-  if (isRouteErrorResponse(error)) return error.status
 
   const code = (error as { code?: unknown })?.code
   if (code && typeof code === 'number') return code

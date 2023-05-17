@@ -5,30 +5,51 @@
  */
 import LogService from '@services/LogService'
 import { toJSON } from '@utils/commons'
-import config from '../config'
+import config from '@/config'
 
-const endpoint = config.endpoints.rabbitHole
+const endpointFile = config.endpoints.rabbitHole
+const endpointWeb = config.endpoints.rabbitHole + 'web/'
 
 /*
  * This service is used to send files down to the rabbit hole.
- * Meaning this service sends files to the backend... lol
+ * Meaning this service sends files to the backend.
  */
 const RabbitHoleService = Object.freeze({
-  send: async (file: File) => {
+  sendFile: async (file: File) => {
     const formData = new FormData()
     const options = { method: 'POST', body: formData }
 
     formData.append('file', file)
 
-    LogService.print('Sending a file to the rabbit hole', { endpoint, options })
+    LogService.print('Sending a file to the rabbit hole', { endpointFile, options })
 
-    return await fetch(endpoint, options).then<RabbitHoleServiceResponse>(toJSON)
-  }
+    return await fetch(endpointFile, options).then<RabbitHoleFileResponse>(toJSON)
+  },
+  sendWeb: async (url: string) => {
+    const options = { 
+      method: 'POST', 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }) 
+    }
+
+    LogService.print('Sending a website content to the rabbit hole', { endpointWeb, options })
+
+    return await fetch(endpointWeb, options).then<RabbitHoleWebResponse>(toJSON)
+  },
 })
 
-export interface RabbitHoleServiceResponse {
-  'content-type': 'text/plain' | 'text/markdown' | 'application/pdf'
+export const AcceptedContentTypes = ['text/plain', 'text/markdown', 'application/pdf'] as const
+
+export interface RabbitHoleFileResponse {
+  'content-type': typeof AcceptedContentTypes[number]
   filename: string
+  info: string
+}
+
+export interface RabbitHoleWebResponse {
+  url: string
   info: string
 }
 
