@@ -4,6 +4,6 @@
 
 <template>
 	<div class="flex flex-col items-center justify-center text-center">
-		Memory
+		Memory (coming soon)
 	</div>
 </template>
