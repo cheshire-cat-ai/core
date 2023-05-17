@@ -10,7 +10,6 @@ from starlette.datastructures import UploadFile
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
-from langchain.docstore.document import Document
 from cat.looking_glass.agent_manager import AgentManager
 
 
@@ -113,47 +112,6 @@ class CheshireCat:
 
         return hyde_text, hyde_embedding
 
-    # iterative summarization
-    def get_summary_text(self, docs, group_size=5):
-        # service variable to store intermediate results
-        intermediate_summaries = docs
-
-        # we will store iterative summaries all together in a list
-        all_summaries = []
-
-        # loop until there are no groups to summarize
-        root_summary_flag = False
-        separator = "\n --> "
-        while not root_summary_flag:
-            # make summaries of groups of docs
-            new_summaries = []
-            for i in range(0, len(intermediate_summaries), group_size):
-                group = intermediate_summaries[i : i + group_size]
-                group = list(map(lambda d: d.page_content, group))
-
-                summary = self.summarization_chain.run(
-                    separator + separator.join(group)
-                )
-                summary = Document(page_content=summary)
-                new_summaries.append(summary)
-
-            # update list of all summaries
-            all_summaries = new_summaries.copy() + all_summaries
-            intermediate_summaries = new_summaries
-
-            # did we reach root summary?
-            root_summary_flag = len(intermediate_summaries) == 1
-
-            if self.verbose:
-                log(
-                    f"Building summaries over {len(intermediate_summaries)} chunks. Please wait."
-                )
-
-        log(all_summaries)
-
-        # return root summary and all intermediate summaries
-        return all_summaries[0], all_summaries[1:]
-
     def send_file_in_rabbit_hole(
         self,
         file: Union[str, UploadFile],
@@ -174,10 +132,10 @@ class CheshireCat:
         )
 
         # get summaries
-        do_summary = self.mad_hatter.execute_hook("before_rabbithole_summarizes_file")
-        if do_summary:
-            summary, intermediate_summaries = self.get_summary_text(docs)
-            docs = [summary] + intermediate_summaries + docs
+        summaries = self.mad_hatter.execute_hook(
+            "rabbithole_summarizes_documents", docs
+        )
+        docs = summaries + docs
 
         # store in memory
         if isinstance(file, str):
@@ -205,10 +163,10 @@ class CheshireCat:
         )
 
         # get summaries
-        do_summary = self.mad_hatter.execute_hook("before_rabbithole_summarizes_url")
-        if do_summary:
-            summary, intermediate_summaries = self.get_summary_text(docs)
-            docs = [summary] + intermediate_summaries + docs
+        summaries = self.mad_hatter.execute_hook(
+            "rabbithole_summarizes_documents", docs
+        )
+        docs = summaries + docs
 
         # store docs in memory
         RabbitHole.store_documents(ccat=self, docs=docs, source=url)
