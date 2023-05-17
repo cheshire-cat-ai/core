@@ -7,14 +7,14 @@ import FeatureGuard from '@components/FeatureGuard/FeatureGuard'
 import { AppFeatures } from '@models/AppFeatures'
 
 import style from './MessageInput.module.scss'
-import { Message } from '@models/Message'
+import { type Message } from '@models/Message'
 
 /**
  * A stateless input component for input chat messages.
  * It has a textarea for the message and a submit button as well as an attachment button to upload files.
  */
 const MessageInput: FC<ChatInputProps> = (props) => {
-  const { messages ,value, onChange, onSubmit, onUpload, disabled, isUploading, className, ...rest } = props
+  const { messages, value, onChange, onSubmit, onUpload, disabled, isUploading, className, ...rest } = props
   const [isTwoLines, setIsTwoLines] = useState(false)
   const classList = clsx(style.messageInput, isTwoLines && style.bigger, className)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -103,11 +103,10 @@ const MessageInput: FC<ChatInputProps> = (props) => {
   }, [onUpload])
 
   useEffect(() => {
-    if (messages.length != 0 || messages.length %2 == 1 ) {
-      textAreaRef.current?.focus();
+    if (messages.length !== 0 || messages.length % 2 === 1) {
+      textAreaRef.current?.focus()
     }
   }, [messages.length])
-
 
   return (
       <form className={classList} onSubmit={handleSubmit}>
@@ -133,7 +132,7 @@ const MessageInput: FC<ChatInputProps> = (props) => {
         )}
       </FeatureGuard>
     </form>
-    
+
   )
 }
 
