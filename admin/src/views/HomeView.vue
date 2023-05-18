@@ -109,7 +109,7 @@ const preventSend = (e: KeyboardEvent) => {
 const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: string) => {
 	if (error) return 'Well, well, well, looks like something has gone amiss'
 	if (isLoading) return 'The enigmatic Cheshire cat is pondering...'
-	if (isRecording) return 'The curious Cheshire cat is all ear...'
+	if (isRecording) return 'The curious Cheshire cat is all ears...'
 	return 'Ask the Cheshire Cat...'
 }
 
@@ -196,7 +196,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				<h3 class="text-lg font-bold">
 					Insert URL
 				</h3>
-				<p>Write down the URL yo want the Cat to digest :</p>
+				<p>Write down the URL you want the Cat to digest :</p>
 				<input v-model="insertedURL" type="text" placeholder="Enter url..."
 					class="input-bordered input-primary input input-sm my-4 w-full">
 				<button class="btn-primary btn-sm btn" @click="dispatchWebsite">
