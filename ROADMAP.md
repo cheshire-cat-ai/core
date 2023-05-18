@@ -18,6 +18,9 @@
   * QA / Test
     * End2End tests
     * Unit tests
+  * Admin
+    * Memory management page
+    * Static version served from core
   * Local LLM / embedder
     * CustomLLMConfig / CustomEmbedderConfig adapters
     * LLM / embedder example docker container
