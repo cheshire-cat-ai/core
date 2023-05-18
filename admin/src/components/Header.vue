@@ -17,7 +17,7 @@
 					leave-active-class="transition duration-200 ease-in" leave-from-class="transform scale-100 opacity-100"
 					leave-to-class="transform scale-90 opacity-0">
 					<MenuItems as="ul"
-						class="menu menu-compact absolute left-0 z-50 mt-4 w-min origin-top-left gap-2 whitespace-nowrap rounded bg-base-300 p-2 font-semibold shadow-xl">
+						class="menu menu-compact absolute left-0 z-50 mt-4 w-min origin-top-left gap-2 whitespace-nowrap rounded bg-base-100 p-2 shadow-xl">
 						<MenuItem as="li">
 							<RouterLink to="/">
 								🏠️ Home
@@ -39,7 +39,7 @@
 							</RouterLink>
 						</MenuItem>
 						<MenuItem as="li">
-							<a href="https://pieroit.github.io/cheshire-cat" target="_blank">📖 Documentation</a>
+							<a href="https://pieroit.github.io/cheshire-cat" target="_blank">📖 Docs</a>
 						</MenuItem>
 					</MenuItems>
 				</Transition>
@@ -49,7 +49,7 @@
 			<RouterLink to="/" class="shrink-0">
 				<img src="@assets/logo.svg" class="h-10 w-10 cursor-pointer md:hidden">
 			</RouterLink>
-			<ul class="menu menu-compact menu-horizontal hidden gap-2 px-1 font-semibold md:flex">
+			<ul class="menu menu-compact menu-horizontal hidden gap-2 px-1 md:flex">
 				<li>
 					<RouterLink to="/">
 						🏠️ Home
@@ -70,7 +70,7 @@
 						⚙️ Settings
 					</RouterLink>
 				</li>
-				<li><a href="https://pieroit.github.io/cheshire-cat" target="_blank">📖 Documentation</a></li>
+				<li><a href="https://pieroit.github.io/cheshire-cat" target="_blank">📖 Docs</a></li>
 			</ul>
 		</div>
 		<div class="navbar-end">

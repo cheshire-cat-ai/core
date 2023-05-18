@@ -126,18 +126,22 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				Getting ready...
 			</p>
 		</div>
-		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto">
-			<MessageBox v-for="msg in messagesState.messages" :key="msg.id"
-				:sender="msg.sender" :text="msg.text" :why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
+		<div v-else-if="messagesState.messages.length" class="flex grow flex-col overflow-y-auto pt-10">
+			<MessageBox v-for="msg in messagesState.messages"
+				:key="msg.id"
+				:sender="msg.sender"
+				:text="msg.text"
+				:why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''"
+			/>
 			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
-			<p v-else-if="!messagesState.error && messagesState.loading">
-				😺 Cheshire cat is thinking...
+			<p v-else-if="!messagesState.error && messagesState.loading" class="ml-2">
+				<span class="text-lg">😺</span><span class="ml-10">Cheshire cat is thinking...</span>
 			</p>
 		</div>
 		<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4">
-			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-lg normal-case shadow-xl"
+			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-lg normal-case shadow-xl font-normal"
 				@click="sendMessage(msg)">
 				{{ msg }}
 			</div>

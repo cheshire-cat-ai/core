@@ -16,10 +16,10 @@ const markdown = new Remarkable({
     typographer: true,
     highlight: (str, lang) => {
         if (lang && hljs.getLanguage(lang)) {
-            try { return hljs.highlight(str, { language: lang }).value } 
+            try { return hljs.highlight(str, { language: lang }).value }
             catch (_) { console.log(_) }
         }
-        try { return hljs.highlightAuto(str).value } 
+        try { return hljs.highlightAuto(str).value }
         catch (_) { console.log(_) }
         return ''
     }
@@ -38,13 +38,13 @@ const cleanedText = props.text.replace(/"(.+)"/gm, '$1')
 </script>
 
 <template>
-	<div class="chat gap-x-2" :class="[sender === 'bot' ? 'chat-start' : 'chat-end']">
-		<div class="chat-image px-2">
+	<div class="chat gap-x-3" :class="[sender === 'bot' ? 'chat-start' : 'chat-end']">
+		<div class="chat-image px-2 text-lg">
 			{{ sender === 'bot' ? '😺' : '🙂' }}
 		</div>
-		<div class="chat-bubble min-h-fit break-words rounded-md" :class="{'pr-8': why}">
-			<p v-html="markdown.render(cleanedText)" />
-			<button v-if="why" class="btn-info btn-square btn-xs btn absolute right-1 top-1 !p-0"
+		<div class="chat-bubble min-h-fit break-words rounded-lg p-4 m-3" :class="{'pr-10': why}">
+			<p v-html="markdown.render(cleanedText)"></p>
+			<button v-if="why" class="btn-primary btn-square btn-xs btn absolute right-1 top-1 !p-0 m-1"
 				@click="whyPanel?.togglePanel()">
 				<p class="text-base text-neutral">
 					?
