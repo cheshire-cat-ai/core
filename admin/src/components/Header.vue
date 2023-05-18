@@ -2,7 +2,7 @@
 </script>
 
 <template>
-	<div class="navbar sticky top-0 z-40 min-h-fit bg-base-100 shadow-xl md:px-[5%] lg:px-[10%]">
+	<div class="navbar sticky top-0 z-40 min-h-fit bg-base-100 font-medium shadow-xl md:px-[5%] lg:px-[10%]">
 		<div class="navbar-start">
 			<RouterLink to="/" class="shrink-0">
 				<img src="@assets/logo.svg" class="hidden h-8 w-8 cursor-pointer md:block">

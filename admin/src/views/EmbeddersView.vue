@@ -69,7 +69,7 @@ watchDeep(embedderState, () => {
 						{{ prop.title }}
 					</p>
 					<input v-model="currentSettings[prop.env_names![0]]" type="text" :placeholder="prop.title"
-						class="input-primary input input-sm w-full outline-base-300 outline-1">
+						class="input-primary input input-sm w-full outline-1 outline-base-300">
 				</div>
 			</div>
 			<button class="btn-success btn-sm btn mt-auto normal-case" @click="saveEmbedder">
