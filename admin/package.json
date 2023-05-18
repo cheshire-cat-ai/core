@@ -2,7 +2,7 @@
   "name": "ccat-admin",
   "version": "1.0.0",
   "private": false,
-  "author": "Daniele 'zAlweNy26' Nicosia",
+  "author": "Project contributors",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
