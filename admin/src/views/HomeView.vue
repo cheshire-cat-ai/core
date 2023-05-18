@@ -63,7 +63,7 @@ watchEffect(() => {
 		isTwoLines.value = false
 		return
 	}
-	const letterWidth = 7.95
+	const letterWidth = 8.275
 	const isMultiLine = letterWidth * userMessage.value.length > textArea.value.offsetWidth
 	const hasLineBreak = !!(/\r|\n/.exec(userMessage.value))
 	isTwoLines.value = (textArea.value && !userMessage.value) || (isMultiLine || hasLineBreak)
@@ -131,22 +131,22 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				:key="msg.id"
 				:sender="msg.sender"
 				:text="msg.text"
-				:why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''"
-			/>
+				:why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
 			<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
 				{{ messagesState.error }}
 			</p>
 			<p v-else-if="!messagesState.error && messagesState.loading" class="ml-2">
-				<span class="text-lg">😺</span><span class="ml-10">Cheshire cat is thinking...</span>
+				<span class="text-lg">😺</span>
+				<span class="ml-10">Cheshire cat is thinking...</span>
 			</p>
 		</div>
 		<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4">
-			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-lg normal-case shadow-xl font-normal"
+			<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn rounded-lg font-normal normal-case shadow-xl"
 				@click="sendMessage(msg)">
 				{{ msg }}
 			</div>
 		</div>
-		<div class="fixed bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100 p-2 md:p-4">
+		<div class="fixed bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100 px-2 py-4">
 			<div class="flex w-full max-w-screen-lg items-center gap-2 md:gap-4">
 				<label class="swap btn-circle btn border-none bg-transparent text-primary hover:bg-base-300">
 					<input v-model="isAudioEnabled" type="checkbox" class="modal-toggle">
@@ -155,10 +155,9 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				</label>
 				<div class="relative w-full">
 					<textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
-						class="textarea-bordered textarea block w-full resize-none overflow-hidden !outline-none !ring-0  border-2 focus:border-2 focus:border-primary"
-						:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)"
-						@keydown="preventSend" />
-					<div class="absolute inset-y-0 right-0 flex gap-2 pr-4">
+						class="textarea-bordered textarea block w-full resize-none overflow-hidden border-2 !pr-20 !outline-none !ring-0 transition focus:border-2 focus:border-primary"
+						:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)" @keydown="preventSend" />
+					<div class="absolute inset-y-0 right-0 flex gap-1 pr-2">
 						<button :disabled="inputDisabled"
 							class="btn-outline btn-sm btn-circle btn self-center border-none text-neutral hover:!bg-transparent hover:text-neutral disabled:bg-transparent"
 							@click="sendMessage(userMessage)">
@@ -188,7 +187,7 @@ const scrollToBottom = () => window.scrollTo({ behavior: 'smooth', left: 0, top:
 				</button>
 			</div>
 		</div>
-		<button class="btn-outline btn-primary btn-sm btn-circle btn fixed bottom-24 right-2 bg-base-100 md:right-4"
+		<button class="btn-outline btn-primary btn-sm btn-circle btn fixed bottom-20 right-2 bg-base-100 md:right-4"
 			@click="scrollToBottom">
 			<heroicons-arrow-down-20-solid class="h-5 w-5" />
 		</button>

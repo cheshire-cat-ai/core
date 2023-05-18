@@ -13,7 +13,7 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 </script>
 
 <template>
-	<div class="grid auto-rows-min place-items-stretch gap-8 self-center md:w-3/4 md:grid-cols-2">
+	<div class="grid auto-rows-min gap-8 self-center md:w-3/4 md:grid-cols-2">
 		<div class="col-span-2 flex flex-col items-center justify-center gap-3 rounded p-6">
 			<p class="text-3xl font-bold text-primary">
 				Set up your Cat
@@ -22,7 +22,7 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 				Configure your Cheshire Cat to suit your needs
 			</p>
 		</div>
-		<div class="flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4">
+		<div class="col-span-2 flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4 md:col-span-1">
 			<p class="text-xl font-bold">
 				Language Model
 			</p>
@@ -34,7 +34,7 @@ const openSidePanel = (title: typeof panelTitles[number]) => {
 				Configure
 			</RouterLink>
 		</div>
-		<div class="flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4">
+		<div class="col-span-2 flex flex-col items-center justify-between gap-8 rounded bg-base-200 p-4 md:col-span-1">
 			<p class="text-xl font-bold">
 				Embedder
 			</p>
