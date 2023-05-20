@@ -11,6 +11,18 @@ def before_rabbithole_insert_memory(doc, cat):
     return doc
 
 
+# Hook called just before rabbithole spilts text. Input is whole Document
+@hook(priority=0)
+def before_rabbithole_splits_text(doc, cat):
+    return doc
+
+
+# Hook called after rabbithole have spiltted text into chunks. Input is the chunks 
+@hook(priority=0)
+def after_rabbithole_splitted_text(chunks, cat):
+    return chunks
+
+
 # Hook called when a list of Document is summarized from the rabbit hole.
 # Should return a list of summaries (each is a langchain Document)
 # To deactivate summaries, override this hook and just return an empty list
