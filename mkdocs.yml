@@ -14,6 +14,8 @@ plugins:
 
 nav:
   - Hello, dear: index.md
+  - Concepts: conceptual/conceptual.md
+  - API: API/api.md
   - Getting Started: getting-started.md
   - How the Cat works: how-the-cat-works.md
   - Basics:
@@ -26,9 +28,10 @@ nav:
       - Hooks: plugins/hooks.md
   - Advanced: advanced.md
   - Tutorials:
-      #- Overview: tutorials/overview.md
+      - Overview: tutorials/overview.md
       - Installation: tutorials/installation.md
   - FAQ: faq.md
+  - TO DELETE: features.md
 
 theme:
   name: material
