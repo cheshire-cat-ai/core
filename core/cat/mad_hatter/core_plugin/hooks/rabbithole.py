@@ -6,21 +6,23 @@ from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
 
 
-# Hook called just before of inserting documents in vector memory
+# Hook called just before of inserting a document in vector memory
 @hook(priority=0)
-def before_rabbithole_insert_memory(doc, cat):
+def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
     return doc
 
 
 # Hook called just before rabbithole splits text. Input is whole Document
 @hook(priority=0)
-def before_rabbithole_splits_text(doc, cat):
+def before_rabbithole_splits_text(doc: Document, cat) -> Document:
     return doc
 
 
 # Hook called when rabbithole splits text. Input is whole Document
 @hook(priority=0)
-def rabbithole_splits_text(text, chunk_size, chunk_overlap, cat):
+def rabbithole_splits_text(
+    text, chunk_size: int, chunk_overlap: int, cat
+) -> List[Document]:
     # text splitter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -41,9 +43,9 @@ def rabbithole_splits_text(text, chunk_size, chunk_overlap, cat):
     return docs
 
 
-# Hook called after rabbithole have splitted text into chunks. Input is the chunks (instances of langchain Document)
+# Hook called after rabbithole have splitted text into chunks. Input is the chunks
 @hook(priority=0)
-def after_rabbithole_splitted_text(chunks, cat):
+def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document]:
     return chunks
 
 
