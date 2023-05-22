@@ -96,6 +96,8 @@ class RabbitHole:
         loader = UnstructuredURLLoader(urls=[url])
         text = loader.load()
 
+        text = self.cat.mad_hatter.execute_hook("before_rabbithole_splits_text", text)
+
         # split in documets using chunk_size and chunk_overlap
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
@@ -103,6 +105,9 @@ class RabbitHole:
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
         docs = text_splitter.split_documents(text)
+
+        docs = self.cat.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs)
+
         for doc in docs:
             doc.metadata["is_summary"] = False
         return docs
@@ -163,6 +168,8 @@ class RabbitHole:
         # extract text from file
         text = loader.load()
 
+        text = self.cat.mad_hatter.execute_hook("before_rabbithole_splits_text", text)
+
         # delete tmp file
         os.remove(temp_name)
 
@@ -177,6 +184,9 @@ class RabbitHole:
 
         # remove short texts (page numbers, isolated words, etc.)
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
+
+        docs = self.cat.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs)
+
         for doc in docs:
             doc.metadata["is_summary"] = False
         return docs
