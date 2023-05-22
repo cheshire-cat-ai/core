@@ -64,7 +64,7 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
-    The hook is executed just before the Cat search for the meaningful context in both memories
+    The hook is executed just before the Cat searches for the meaningful context in both memories
     and stores it in the Working Memory.
 
     Args:
