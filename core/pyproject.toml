@@ -25,7 +25,8 @@ dependencies = [
     "pdfminer.six==20221105",
     "unstructured==0.5.7",
     "tiktoken==0.3.3",
-    "tomli"
+    "tomli",
+    "loguru==0.7.0"
 ]
 
 [project.optional-dependencies]
