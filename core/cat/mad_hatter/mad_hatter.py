@@ -40,7 +40,9 @@ class MadHatter:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
                 for py_file in py_files:
-                    plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
+                    plugin_name = py_file.replace("/", ".").replace(
+                        ".py", ""
+                    )  # this is UGLY I know. I'm sorry
 
                     plugin_module = importlib.import_module(plugin_name)
                     # all_hooks[plugin_name] = dict(
@@ -73,7 +75,9 @@ class MadHatter:
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
+        plugin_json_metadata_file_path = path.join(
+            plugin_folder, plugin_json_metadata_file_name
+        )
         meta = {"id": plugin_id}
 
         if path.isfile(plugin_json_metadata_file_path):
@@ -88,7 +92,9 @@ class MadHatter:
 
                 return meta
             except:
-                log(f"Error loading plugin {plugin_folder} metadata, defaulting to generated values")
+                log(
+                    f"Error loading plugin {plugin_folder} metadata, defaulting to generated values"
+                )
 
         meta["name"] = to_camel_case(plugin_id)
         meta[
@@ -106,14 +112,11 @@ class MadHatter:
         return isinstance(obj, CatTool)
 
     # execute requested hook
-    def execute_hook(self, hook_name, hook_input=None):
+    def execute_hook(self, hook_name, *args):
         for h in self.hooks:
             if hook_name == h["hook_name"]:
                 hook = h["hook_function"]
-                if hook_input is None:
-                    return hook(cat=self.ccat)
-                else:
-                    return hook(hook_input, cat=self.ccat)
+                return hook(*args, cat=self.ccat)
 
         # every hook must have a default in core_plugin
         raise Exception(f"Hook {hook_name} not present in any plugin")
