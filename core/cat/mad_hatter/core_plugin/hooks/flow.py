@@ -1,6 +1,11 @@
 from cat.mad_hatter.decorators import hook
 
 
+#Called after cat bootstrap
+@hook(priority=0)
+def init_cat(cat):
+    return None
+
 # Called when a user message arrives.
 # Useful to edit/enrich user input (e.g. translation)
 @hook(priority=0)

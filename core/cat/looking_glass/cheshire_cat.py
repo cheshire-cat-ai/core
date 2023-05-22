@@ -42,6 +42,8 @@ class CheshireCat:
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)
 
+        self.mad_hatter.execute_hook("init_cat")
+
     def load_db(self):
         # if there is no db, create it
         create_db_and_tables()
