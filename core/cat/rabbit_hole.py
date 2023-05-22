@@ -5,7 +5,6 @@ import mimetypes
 from typing import List, Union
 
 from cat.utils import log
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
@@ -96,15 +95,8 @@ class RabbitHole:
         loader = UnstructuredURLLoader(urls=[url])
         text = loader.load()
 
-        # split in documets using chunk_size and chunk_overlap
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        )
-        docs = text_splitter.split_documents(text)
-        for doc in docs:
-            doc.metadata["is_summary"] = False
+        docs = self.split_text(text, chunk_size, chunk_overlap)
+
         return docs
 
     def file_to_docs(
@@ -162,23 +154,10 @@ class RabbitHole:
 
         # extract text from file
         text = loader.load()
-
         # delete tmp file
         os.remove(temp_name)
 
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        )
-        docs = text_splitter.split_documents(text)
-
-        log(f"Preparing to clean {len(docs)} text chunks")
-
-        # remove short texts (page numbers, isolated words, etc.)
-        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
-        for doc in docs:
-            doc.metadata["is_summary"] = False
+        docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
 
     def store_documents(self, docs: List[Document], source: str) -> None:
@@ -224,3 +203,17 @@ class RabbitHole:
         )
 
         log("Done uploading")
+
+    def split_text(self, text, chunk_size, chunk_overlap):
+        # do something on the text before it is splitted
+        text = self.cat.mad_hatter.execute_hook("before_rabbithole_splits_text", text)
+
+        # split the documents using chunk_size and chunk_overlap
+        docs = self.cat.mad_hatter.execute_hook(
+            "rabbithole_splits_text", text, chunk_size, chunk_overlap
+        )
+
+        # do something on the text after it is splitted
+        docs = self.cat.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs)
+
+        return docs
