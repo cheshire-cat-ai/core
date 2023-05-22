@@ -92,17 +92,17 @@ class RabbitHole:
         :param chunk_overlap: number of overlapping characters between consecutive chunks
         """
 
-        # load text content of the website
-        loader = UnstructuredURLLoader(urls=[url])
-        text = loader.load()
-
-        # split in documets using chunk_size and chunk_overlap
+        # Initialize the text splitter with custom separators chunk_size and chunk_overlap
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
-        docs = text_splitter.split_documents(text)
+
+        # load text content of the website
+        loader = UnstructuredURLLoader(urls=[url])
+        docs = loader.load_and_split(text_splitter=text_splitter)
+
         for doc in docs:
             doc.metadata["is_summary"] = False
         return docs
@@ -160,18 +160,18 @@ class RabbitHole:
         else:
             raise Exception("MIME type not supported for upload")
 
-        # extract text from file
-        text = loader.load()
-
-        # delete tmp file
-        os.remove(temp_name)
-
+        # Initialize the text splitter with custom separators chunk_size and chunk_overlap
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
-        docs = text_splitter.split_documents(text)
+
+        # extract text from file
+        docs = loader.load_and_split(text_splitter=text_splitter)
+
+        # delete tmp file
+        os.remove(temp_name)
 
         log(f"Preparing to clean {len(docs)} text chunks")
 
