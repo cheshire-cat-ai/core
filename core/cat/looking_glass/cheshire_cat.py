@@ -32,7 +32,12 @@ class CheshireCat:
         (for example an LLM change at runtime)
         """
 
+        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
         self.load_plugins()
+
+        # allows plugins to do something before cat components are loaded
+        self.mad_hatter.execute_hook("before_cat_bootstrap")
+
         self.load_natural_language()
         self.load_memory()
 
@@ -41,6 +46,9 @@ class CheshireCat:
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)
+
+        # allows plugins to do something after the cat bootstrap is complete
+        self.mad_hatter.execute_hook("after_cat_bootstrap")
 
     def load_db(self):
         # if there is no db, create it
