@@ -13,10 +13,11 @@ from cat.mad_hatter.decorators import CatTool, CatHooks
 # - prioritizing
 # - executing
 class MadHatter:
-    # loading plugins
-    # enter into the plugin folder and loads everthing that is decorated or named properly
-    # orders plugged in hooks by name and priority
-    # exposes functionality to the cat
+    # loads and execute plugins
+    # - enter into the plugin folder and loads everthing
+    #   that is decorated or named properly
+    # - orders plugged in hooks by name and priority
+    # - exposes functionality to the cat
 
     def __init__(self, ccat):
         self.ccat = ccat
@@ -24,8 +25,11 @@ class MadHatter:
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
-        # plugins are found in the plugins folder, plus the default core plugin (where default hooks and tools are defined)
-        plugin_folders = ["cat/mad_hatter/core_plugin"] + glob.glob("cat/plugins/*/")
+        # plugins are found in the plugins folder,
+        #   plus the default core plugin
+        #   (where default hooks and tools are defined)
+        core_folder = "cat/mad_hatter/core_plugin"
+        plugin_folders = [core_folder] + glob.glob("cat/plugins/*/")
 
         all_plugins = []
         all_tools = []
@@ -35,7 +39,8 @@ class MadHatter:
             log(py_files_path)
             py_files = glob.glob(py_files_path, recursive=True)
 
-            # in order to consider it a plugin makes sure there are py files inside the plugin directory
+            # in order to consider it a plugin makes sure there are py files
+            #   inside the plugin directory
             if len(py_files) > 0:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
@@ -63,8 +68,12 @@ class MadHatter:
             t_fix = t[1]  # it was a tuple, the Tool is the second element
             # fix automatic naming for the Tool (will be used in the prompt)
             # if " - " in t_fix.description:
-            #    t_fix.description = t_fix.description.split(" - ")[1] # TODO: show function name and arguments in prompt without repetition and without the cat argument
-            # access the cat from any Tool instance (see cat.mad_hatter.decorators)
+            #    t_fix.description = t_fix.description.split(" - ")[1]
+            #           TODO: show function name and arguments in prompt
+            #           without repetition and without the cat argument
+
+            # access the cat from any Tool instance
+            #   (see cat.mad_hatter.decorators)
             t_fix.set_cat_instance(self.ccat)
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed)
@@ -91,23 +100,26 @@ class MadHatter:
                 json_file.close()
 
                 return meta
-            except:
+            except Exception:
                 log(
-                    f"Error loading plugin {plugin_folder} metadata, defaulting to generated values"
+                    f"Error loading plugin {plugin_folder} metadata, "
+                    "defaulting to generated values"
                 )
 
         meta["name"] = to_camel_case(plugin_id)
-        meta[
-            "description"
-        ] = f"Description not found for this plugin. Please create a `{plugin_json_metadata_file_name}` in the plugin folder."
+        meta["description"] = "Description not found for this plugin. " \
+            f"Please create a `{plugin_json_metadata_file_name}`" \
+            " in the plugin folder."
 
         return meta
 
-    # a plugin function has to be decorated with @hook (which returns a function named "cat_function_wrapper")
+    # a plugin function has to be decorated with @hook
+    # (which returns a function named "cat_function_wrapper")
     def is_cat_hook(self, obj):
         return isfunction(obj) and obj.__name__ == "cat_hook_wrapper"
 
-    # a plugin tool function has to be decorated with @tool (which returns an instance of langchain.agents.Tool)
+    # a plugin tool function has to be decorated with @tool
+    # (which returns an instance of langchain.agents.Tool)
     def is_cat_tool(self, obj):
         return isinstance(obj, CatTool)
 

@@ -3,7 +3,9 @@ import os
 from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
-API_KEY = [key.strip() for key in os.getenv("API_KEY", "").split("|") if key.strip()]
+API_KEY = [
+    key.strip() for key in os.getenv("API_KEY", "").split("|") if key.strip()
+]
 api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 

@@ -43,9 +43,12 @@ def rabbithole_splits_text(
     return docs
 
 
-# Hook called after rabbithole have splitted text into chunks. Input is the chunks
+# Hook called after rabbithole have splitted text into chunks.
+#   Input is the chunks
 @hook(priority=0)
-def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document]:
+def after_rabbithole_splitted_text(
+    chunks: List[Document], cat
+) -> List[Document]:
     return chunks
 
 
@@ -68,10 +71,11 @@ def rabbithole_summarizes_documents(docs, cat) -> List[Document]:
         # make summaries of groups of docs
         new_summaries = []
         for i in range(0, len(intermediate_summaries), group_size):
-            group = intermediate_summaries[i : i + group_size]
+            group = intermediate_summaries[i: i + group_size]
             group = list(map(lambda d: d.page_content, group))
 
-            summary = cat.summarization_chain.run(separator + separator.join(group))
+            text_to_summarize = separator + separator.join(group)
+            summary = cat.summarization_chain.run(text_to_summarize)
             summary = Document(page_content=summary)
             summary.metadata["is_summary"] = True
             new_summaries.append(summary)
@@ -84,7 +88,8 @@ def rabbithole_summarizes_documents(docs, cat) -> List[Document]:
         root_summary_flag = len(intermediate_summaries) == 1
 
         log(
-            f"Building summaries over {len(intermediate_summaries)} chunks. Please wait."
+            f"Building summaries over {len(intermediate_summaries)} chunks. "
+            "Please wait."
         )
 
     log(all_summaries)
