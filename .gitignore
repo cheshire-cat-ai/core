@@ -7,6 +7,7 @@ core/venv
 
 .DS_Store
 .idea
+.vscode
 
 # DBs
 long_term_memory

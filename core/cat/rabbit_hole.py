@@ -214,6 +214,8 @@ class RabbitHole:
         )
 
         # do something on the text after it is splitted
-        docs = self.cat.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs)
+        docs = self.cat.mad_hatter.execute_hook(
+            "after_rabbithole_splitted_text", docs
+        )
 
         return docs
