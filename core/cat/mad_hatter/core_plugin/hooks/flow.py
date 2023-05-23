@@ -1,9 +1,9 @@
 """Hooks to modify the Cat's flow of execution.
 
-Here is a collection of methods to filter or hook into the execution pipeline.
-Filters allow to edit user's input or Cat's output the text messages.
-Hooks allow to intercept the flow in specific execution places,
-e.g. before and after the semantic search in the memories
+Here is a collection of methods to hook into the execution pipeline.
+These hooks allow to intercept the flow in specific execution places,
+e.g. before and after the semantic search in the memories;
+or to edit and enhance user's and Cat's messages.
 
 Typical usage example:
 
@@ -54,14 +54,15 @@ def after_cat_bootstrap(cat):
 # Useful to edit/enrich user input (e.g. translation)
 @hook(priority=0)
 def before_cat_reads_message(user_message_json: dict, cat) -> dict:
-    """Filters incoming user's JSON dictionary.
+    """Hook the incoming user's JSON dictionary.
 
     Allows to edit or enrich the incoming message received from the WebSocket connection.
     This can be used to translate the user's message before feeding it to the Cat
     or to add custom keys to the JSON dictionary.
 
     Args:
-        user_message_json: JSON dictionary with the message received from the chat stored in the *text* key.
+        user_message_json: JSON dictionary with the message received from the chat. The user's message
+        is stored in the "*text*" key.
         cat: Cheshire Cat instance to exploit the Cat's methods.
 
     Returns:
@@ -97,7 +98,22 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
 # What is the input to recall memories?
 # Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
 @hook(priority=0)
-def cat_recall_query(user_message, cat) -> str:
+def cat_recall_query(user_message: str, cat) -> str:
+    """Hook the Hypothetical Document Embedding (HyDE) search query.
+
+    HyDE strategy exploits the user's message to generate a hypothetical answer. This
+    is applied to recall the relevant context from the memory. This hook allows to edit
+    the user's message. As a result, context retrieval can be conditioned enhancing the user's message.
+
+    Args:
+        user_message: string with the text received from the user.
+        cat: Cheshire Cat instance to exploit the Cat's methods.
+
+    Returns:
+        Edited string to be used for context retrieval in memory. The
+        returned string is further stored in the Working Memory at
+        `cat.working_memory["memory_query"]`
+    """
     # example 1: HyDE embedding
     # return cat.hypothetis_chain.run(user_message)
 
@@ -112,11 +128,62 @@ def cat_recall_query(user_message, cat) -> str:
 # - cat.working_memory["episodic_memories"]
 # - cat.working_memory["declarative_memories"]
 @hook(priority=0)
-def after_cat_recalled_memories(memory_query_text, cat):
+def after_cat_recalled_memories(memory_query_text: str, cat):
+    """Hook into semantic search after the memory retrieval.
+
+    Allows to intercept the recalled memories right after these are stored in the Working Memory.
+    According to the user's input, the relevant context is saved in `cat.working_memory["episodic_memories"]`
+    and `cat.working_memory["declarative_memories"]`. At this point,
+    this hook is executed to edit the search query.
+
+    Args:
+        memory_query_text: string used to query both *episodic* and *declarative* memories.
+        cat: Cheshire Cat instance to exploit the Cat's methods.
+    """
     return None
 
 
 # Hook called just before sending response to a client.
 @hook(priority=0)
 def before_cat_sends_message(message, cat):
+    """Hook the outgoing Cat's message.
+
+    Allows to edit the JSON dictionary that will be sent to the client via WebSocket connection.
+    This hook can be used to edit the message sent to the user or to add keys to the dictionary.
+
+    Args:
+        message: JSON dictionary to be sent to WebSocket client.
+        cat: Cheshire Cat instance to exploit the Cat's methods.
+
+    Returns:
+        Edited JSON dictionary with the Cat's answer. Default
+        to:
+
+        {
+            "error": False,
+
+            "type": "chat",
+
+            "content": cat_message["output"],
+
+            "why": {
+
+            "input": cat_message["input"],
+
+            "output": cat_message["output"],
+
+            "intermediate_steps": cat_message["intermediate_steps"],
+
+            "memory": {
+
+            "vectors": {
+
+            "episodic": episodic_report,
+
+            "declarative": declarative_report
+            }
+            },
+            },
+        }
+    """
     return message
