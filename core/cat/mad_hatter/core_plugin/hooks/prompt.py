@@ -245,9 +245,7 @@ def agent_prompt_chat_history(chat_history: List[Dict], cat) -> str:
 
     Args:
         chat_history: list of dictionaries collecting speaking turns.
-            Possible keys are::
-                "who": stores the name of who said the utterance;
-                "message": stores the utterance.
+            Keys are: "who" to store the name of who said the utterance; "message" to store the utterance.
         cat: Cheshire Cat instance to exploit its methods.
 
     Returns:
