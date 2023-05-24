@@ -1,5 +1,9 @@
 import langchain
+from typing import Dict
+import json
 from pydantic import PyObject, BaseSettings
+
+from cat.factory.custom_llm import LLMDefault, LLMCustom
 
 
 # Base class to manage LLM configuration.
@@ -18,15 +22,17 @@ class LLMSettings(BaseSettings):
         return cls._pyclass(**config)
 
 
-class LLMDefault(langchain.llms.base.LLM):
-    @property
-    def _llm_type(self):
-        return ""
+class LLMDefaultConfig(LLMSettings):
+    _pyclass: PyObject = LLMDefault
 
-    def _call(self, prompt, stop=None):
-        # TODO: if AI prefix in the agent changes, this will break
-        return "AI: You did not configure a Language Model. " \
-                "Do it in the settings!"
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Default Language Model",
+            "description":
+                "A dumb LLM just telling that the Cat is not configured. "
+                "There will be a nice LLM here "
+                "once consumer hardware allows it.",
+        }
 
 
 class LLMDefaultConfig(LLMSettings):
@@ -42,16 +48,27 @@ class LLMDefaultConfig(LLMSettings):
         }
 
 
-class LLMOpenAIConfig(LLMSettings):
-    openai_api_key: str
-    model_name: str = "text-davinci-003"
-    _pyclass: PyObject = langchain.llms.OpenAI
+class LLMCustomConfig(LLMSettings):
+
+    url: str
+    auth_key: str = "optional_auth_key"
+    options: str = "{}"
+    _pyclass: PyObject = LLMCustom
+
+    # instantiate Custom LLM from configuration
+    @classmethod
+    def get_llm_from_config(cls, config):
+        # options are inserted as a string in the admin
+        if type(config["options"]) == str:
+            config["options"] = json.loads(config["options"])
+            
+        return cls._pyclass(**config)
 
     class Config:
         schema_extra = {
-            "name_human_readable": "OpenAI GPT-3",
-            "description": "OpenAI GPT-3. More expensive but also "
-                           "more flexible than ChatGPT.",
+            "name_human_readable": "Custom LLM",
+            "description": "LLM on a custom endpoint. "
+                           "see docs for examples.",
         }
 
 
@@ -67,6 +84,19 @@ class LLMOpenAIChatConfig(LLMSettings):
         }
 
 
+class LLMOpenAIConfig(LLMSettings):
+    openai_api_key: str
+    model_name: str = "text-davinci-003"
+    _pyclass: PyObject = langchain.llms.OpenAI
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "OpenAI GPT-3",
+            "description": "OpenAI GPT-3. More expensive but "
+                           "also more flexible than ChatGPT.",
+        }
+
+        
 # https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
@@ -150,8 +180,9 @@ class LLMAzureOpenAIConfig(LLMSettings):
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
-    LLMOpenAIConfig,
+    LLMCustomConfig,
     LLMOpenAIChatConfig,
+    LLMOpenAIConfig,
     LLMCohereConfig,
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
