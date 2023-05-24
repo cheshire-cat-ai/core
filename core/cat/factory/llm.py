@@ -12,7 +12,8 @@ class LLMSettings(BaseSettings):
     def get_llm_from_config(cls, config):
         if cls._pyclass is None:
             raise Exception(
-                "Language model configuration class has self._pyclass = None. Should be a valid LLM class"
+                "Language model configuration class has self._pyclass = None. "
+                "Should be a valid LLM class"
             )
         return cls._pyclass(**config)
 
@@ -24,7 +25,8 @@ class LLMDefault(langchain.llms.base.LLM):
 
     def _call(self, prompt, stop=None):
         # TODO: if AI prefix in the agent changes, this will break
-        return "AI: You did not configure a Language Model. Do it in the settings!"
+        return "AI: You did not configure a Language Model. " \
+                "Do it in the settings!"
 
 
 class LLMDefaultConfig(LLMSettings):
@@ -33,7 +35,10 @@ class LLMDefaultConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "Default Language Model",
-            "description": "A dumb LLM just telling that the Cat is not configured. There will be a nice LLM here once consumer hardware allows it.",
+            "description":
+                "A dumb LLM just telling that the Cat is not configured. "
+                "There will be a nice LLM here "
+                "once consumer hardware allows it.",
         }
 
 
@@ -45,7 +50,8 @@ class LLMOpenAIConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "OpenAI GPT-3",
-            "description": "OpenAI GPT-3. More expensive but also more flexible than ChatGPT.",
+            "description": "OpenAI GPT-3. More expensive but also "
+                           "more flexible than ChatGPT.",
         }
 
 
@@ -60,10 +66,11 @@ class LLMOpenAIChatConfig(LLMSettings):
             "description": "Chat model from OpenAI",
         }
 
+
 # https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "gpt-35-turbo" # or gpt-4, use only chat models !
+    model_name: str = "gpt-35-turbo"  # or gpt-4, use only chat models !
     openai_api_base: str
     openai_api_type: str = "azure"
     openai_api_version: str = "2023-03-15-preview"
@@ -77,6 +84,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
             "name_human_readable": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
         }
+
 
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
@@ -115,8 +123,10 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "HuggingFace Endpoint",
-            "description": "Configuration for HuggingFace Endpoint language models",
+            "description":
+                "Configuration for HuggingFace Endpoint language models",
         }
+
 
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
 class LLMAzureOpenAIConfig(LLMSettings):
@@ -127,7 +137,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
     # Current supported versions 2022-12-01 or 2023-03-15-preview
     api_version: str = "2023-03-15-preview"
     deployment_name: str = "text-davinci-003"
-    model_name: str = "text-davinci-003" # Use only completion models !
+    model_name: str = "text-davinci-003"  # Use only completion models !
 
     _pyclass: PyObject = langchain.llms.AzureOpenAI
 
@@ -149,7 +159,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureChatOpenAIConfig,
 ]
 
-# LLM_SCHEMAS contains metadata to let any client know which fields are required to create the language model.
+# LLM_SCHEMAS contains metadata to let any client know
+# which fields are required to create the language model.
 LLM_SCHEMAS = {}
 for config_class in SUPPORTED_LANGUAGE_MODELS:
     schema = config_class.schema()
