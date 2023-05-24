@@ -1,18 +1,18 @@
 """Hooks to modify the Cat's flow of execution.
 
 Here is a collection of methods to hook into the execution pipeline.
+
 These hooks allow to intercept the flow in specific execution places,
 e.g. before and after the semantic search in the memories;
 or to edit and enhance user's and Cat's messages.
 
-Typical usage example:
+Typical usage example::
+    from cat.mad_hatter.decorators import tool, hook
 
-  from cat.mad_hatter.decorators import tool, hook
-
-  @hook(priority=1)
-  def name_of_the_hook_to_overridden(use-equal-parameters):
-    **custom execution**
-    return custom_output
+    @hook(priority=1)
+    def name_of_the_hook_to_overridden(use-equal-parameters):
+        **custom execution**
+        return custom_output
 """
 
 from cat.mad_hatter.decorators import hook
