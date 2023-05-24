@@ -61,7 +61,7 @@ class LLMCustomConfig(LLMSettings):
         # options are inserted as a string in the admin
         if type(config["options"]) == str:
             config["options"] = json.loads(config["options"])
-            
+
         return cls._pyclass(**config)
 
     class Config:
