@@ -48,7 +48,8 @@ class LLMCustom(LLM):
         try:
             response_json = requests.post(self.url, json=request_body).json()
         except Exception:
-            raise Exception("Custom LLM endpoint error")
+            raise Exception("Custom LLM endpoint error "
+                            "during http POST request")
 
         generated_text = response_json["text"]
 
