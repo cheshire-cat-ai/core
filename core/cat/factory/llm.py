@@ -96,7 +96,31 @@ class LLMOpenAIConfig(LLMSettings):
                            "also more flexible than ChatGPT.",
         }
 
-        
+
+class LLMAnthropicConfig(LLMSettings):
+    anthropic_api_key: str
+    model: str = "claude-v1"
+    _pyclass: PyObject = langchain.chat_models.ChatAnthropic
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Anthropic",
+            "description": "Configuration for Anthropic language Model",
+        }
+
+
+class LLMGooglePalmConfig(LLMSettings):
+    google_api_key: str
+    model_name: str = "models/text-bison-001"
+    _pyclass: PyObject = langchain.llms.GooglePalm
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Google PaLM",
+            "description": "Configuration for Google PaLM language model",
+        }
+
+
 # https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
@@ -188,6 +212,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMHuggingFaceEndpointConfig,
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
+    LLMAnthropicConfig,
+    LLMGooglePalmConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know
