@@ -26,7 +26,9 @@ dependencies = [
     "unstructured==0.5.7",
     "tiktoken==0.3.3",
     "tomli",
-    "loguru==0.7.0"
+    "loguru==0.7.0",
+    "anthropic==0.2.9",
+    "google-generativeai==0.1.0rc3",
 ]
 
 [project.optional-dependencies]
