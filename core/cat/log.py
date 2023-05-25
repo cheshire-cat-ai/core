@@ -131,7 +131,7 @@ class CatLogEnine:
         lines = msg_body.splitlines()
 
         # On debug level print the traceback better
-        if level == "DEBUG":
+        if self.LOG_LEVEL == "DEBUG":
             if type(msg) is str and not msg.startswith("> "):
                 traceback_log_format = "<red>{extra[traceback]}</red>"
                 stack = ""
@@ -159,8 +159,8 @@ class CatLogEnine:
         )
 
         for line in lines:
-            line = line.strip()
-            if line != "\n":
+            line = line.strip().replace("\\n", "")
+            if line != "":
                 _logger.bind(**context).log(level, f"{line}")
         # After our custom log we need to set again the logger as default for the other dependencies
         self.default_log()
