@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## 0.0.4 ( 2023-05-25 )
 
 ### Enhancements
@@ -22,6 +23,7 @@
 * added `cat.working_memory` to store temporary and arbitrary info (recent convo, recalled memories, data shared by plugins)
 * endpoints to erase memory contents (also completely wipe out memory)
 
+
 ## 0.0.2 ( 2023-04-28 )
 
 ### Enhancements
@@ -31,6 +33,7 @@
 * more hooks to control summarization prompt and reelaborate final reply to user
 * chat autofocus and easier home navigation in admin
 * support for Azure LLMs
+
 
 ## 0.0.1 ( 2023-04-20 )
 
