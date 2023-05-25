@@ -1,3 +1,11 @@
+"""Hooks to modify the RabbitHole's documents ingestion.
+
+Here is a collection of methods to hook into the RabbitHole execution pipeline.
+
+These hooks allow to intercept the uploaded documents at different places before they are saved into memory.
+
+"""
+
 from typing import List
 
 from cat.log import log
@@ -9,18 +17,68 @@ from langchain.docstore.document import Document
 # Hook called just before of inserting a document in vector memory
 @hook(priority=0)
 def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
+    """Hook the `Document` before is inserted in the vector memory.
+
+    Allows to edit and enhance a single `Document` before the *RabbitHole* add it to the declarative vector memory.
+
+    The `Document` has two properties::
+
+        `page_content`: the string with the text to save in memory;
+        `metadata`: a dictionary with at least two keys:
+            `source`: where the text comes from;
+            `when`: timestamp to track when it's been uploaded.
+
+    Args:
+        doc: langchain `Document` to be inserted in memory.
+        cat: Cheshire Cat instance.
+
+    Returns:
+        langchain `Document` that is added in the declarative vector memory.
+
+    """
     return doc
 
 
 # Hook called just before rabbithole splits text. Input is whole Document
 @hook(priority=0)
 def before_rabbithole_splits_text(doc: Document, cat) -> Document:
+    """Hook the `Document` before is split.
+
+    Allows to edit the whole uploaded `Document` before the *RabbitHole* recursively splits it in shorter ones.
+
+    For instance, the hook allows to change the text or edit/add metadata.
+
+    Args:
+        doc: langchain `Document` uploaded in the *RabbitHole* to be ingested.
+        cat: Cheshire Cat instance.
+
+    Returns:
+        Edited langchain `Document`.
+
+    """
     return doc
 
 
 # Hook called when rabbithole splits text. Input is whole Document
 @hook(priority=0)
 def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> List[Document]:
+    """Hook into the recursive split pipeline.
+
+    Allows to edit the recursive split the *RabbitHole* applies to chunk the ingested documents.
+
+    This is applied when ingesting a documents and urls from a script, using an endpoint or from the GUI.
+
+    Args:
+        text: list of langchain `Document` to chunk.
+        chunk_size: length of every chunk in characters.
+        chunk_overlap: amount of overlap between consecutive chunks.
+        cat: Cheshire Cat instance.
+
+    Returns:
+        list of chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+
+    """
+
     # text splitter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -45,6 +103,19 @@ def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> Li
 #   Input is the chunks
 @hook(priority=0)
 def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document]:
+    """Hook the `Document` after is split.
+
+    Allows to edit the list of `Document` right after the *RabbitHole* chunked them in smaller ones.
+
+    Args:
+        chunks: list of langchain `Document`.
+        cat: Cheshire Cat instance.
+
+    Returns:
+        list of modified chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+
+    """
+
     return chunks
 
 
@@ -52,7 +123,21 @@ def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document
 # Should return a list of summaries (each is a langchain Document)
 # To deactivate summaries, override this hook and just return an empty list
 @hook(priority=0)
-def rabbithole_summarizes_documents(docs, cat) -> List[Document]:
+def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]:
+    """Hook into the summarization pipeline.
+
+    Allows to modify how the list of `Document` is summarized before being inserted in the vector memory.
+
+    For example, the hook allows to make the summarization optional or to apply another summarization technique.
+
+    Args:
+        docs: list of langchain `Document` to be summarized.
+        cat: Cheshire Cat instance.
+
+    Returns:
+        list of langchain`Document` with text summaries of the original ones.
+
+    """
     # service variable to store intermediate results
     intermediate_summaries = docs
 
