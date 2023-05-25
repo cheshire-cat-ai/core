@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.4 ( 2023-05-25 )
+
+### Enhancements
+
+* added more hooks (see `core_plugin`)
+* added ethics code
+* switched admin from React to Vue
+* added `why` panel in the admin
+* updated docs with plugin dev guide
+* refactored the rabbithole
+* plugins can have their own requirements.txt
+* added support for Claude and PaLM
+
 
 ## 0.0.3 ( 2023-05-03 )
 
