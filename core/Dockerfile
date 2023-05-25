@@ -32,12 +32,7 @@ WORKDIR /admin
 # install and build
 RUN npm install && npm run build
 
-# copy static files
-WORKDIR /app
-RUN ls -la
-#RUN rm -fr cat/admin_static
-#RUN mkdir cat/admin_static
-#RUN cp -r admin_tmp/dist cat/admin_static
 
 ### FINISH ###
+WORKDIR /app
 # ready to go (docker-compose up)
