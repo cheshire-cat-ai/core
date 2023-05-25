@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.staticfiles import StaticFiles
 from cat.routes import base, memory, plugins, upload, websocket
 from cat.api_auth import check_api_key
 from fastapi.responses import JSONResponse
@@ -62,6 +63,11 @@ cheshire_cat_api.include_router(
     upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"
 )
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
+
+# static files
+import os
+print(os.system("ls -la /admin/dist"))
+cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/dist/", html=True), name="admin")
 
 
 # error handling

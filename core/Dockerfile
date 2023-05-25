@@ -1,7 +1,11 @@
-# TODO: better start with a cuda image? Dunno
+
 FROM tiangolo/uvicorn-gunicorn:python3.10
 
 RUN apt-get update -y
+
+
+### CORE ###
+
 #RUN apt-get install -y poppler-utils tesseract-ocr libreoffice ### needed form unstructured?
 
 COPY ./requirements.txt requirements.txt
@@ -13,3 +17,27 @@ COPY ./install_plugin_dependencies.sh install_plugin_dependencies.sh
 
 RUN chmod +x ./install_plugin_dependencies.sh
 RUN ./install_plugin_dependencies.sh
+
+
+### ADMIN (static build) ###
+
+# install node
+WORKDIR /
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y nodejs
+
+# clone admin sources
+RUN git clone https://github.com/pieroit/cheshire-cat-admin.git admin
+WORKDIR /admin
+# install and build
+RUN npm install && npm run build
+
+# copy static files
+WORKDIR /app
+RUN ls -la
+#RUN rm -fr cat/admin_static
+#RUN mkdir cat/admin_static
+#RUN cp -r admin_tmp/dist cat/admin_static
+
+### FINISH ###
+# ready to go (docker-compose up)
