@@ -64,11 +64,11 @@ cheshire_cat_api.include_router(
 )
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
-# static files
-import os
-print(os.system("ls -la /admin/dist"))
+# admin (static build)
 cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/dist/", html=True), name="admin")
 
+# static files
+# TODO
 
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)
