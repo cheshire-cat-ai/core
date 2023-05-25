@@ -9,6 +9,8 @@
 * added ethics code
 * switched admin from React to Vue
 * added `why` panel in the admin
+* moved admin sources in a separate repo
+* core serves a static build of the admin under `localhost:1865/admin`
 * updated docs with plugin dev guide
 * refactored the rabbithole
 * plugins can have their own requirements.txt
