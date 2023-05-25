@@ -1,6 +1,6 @@
 from typing import List
 
-from cat.utils import log
+from cat.log import log
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
@@ -20,9 +20,7 @@ def before_rabbithole_splits_text(doc: Document, cat) -> Document:
 
 # Hook called when rabbithole splits text. Input is whole Document
 @hook(priority=0)
-def rabbithole_splits_text(
-    text, chunk_size: int, chunk_overlap: int, cat
-) -> List[Document]:
+def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> List[Document]:
     # text splitter
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -46,9 +44,7 @@ def rabbithole_splits_text(
 # Hook called after rabbithole have splitted text into chunks.
 #   Input is the chunks
 @hook(priority=0)
-def after_rabbithole_splitted_text(
-    chunks: List[Document], cat
-) -> List[Document]:
+def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document]:
     return chunks
 
 
@@ -71,7 +67,7 @@ def rabbithole_summarizes_documents(docs, cat) -> List[Document]:
         # make summaries of groups of docs
         new_summaries = []
         for i in range(0, len(intermediate_summaries), group_size):
-            group = intermediate_summaries[i: i + group_size]
+            group = intermediate_summaries[i : i + group_size]
             group = list(map(lambda d: d.page_content, group))
 
             text_to_summarize = separator + separator.join(group)
@@ -87,10 +83,7 @@ def rabbithole_summarizes_documents(docs, cat) -> List[Document]:
         # did we reach root summary?
         root_summary_flag = len(intermediate_summaries) == 1
 
-        log(
-            f"Building summaries over {len(intermediate_summaries)} chunks. "
-            "Please wait."
-        )
+        log(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.")
 
     log(all_summaries)
 

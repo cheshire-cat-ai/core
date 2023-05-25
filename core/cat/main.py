@@ -1,4 +1,4 @@
-from cat.utils import logger
+from cat.log import log
 import os
 from contextlib import asynccontextmanager
 
@@ -17,6 +17,7 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 # logging.debug('EXAMPLE with debug category')
 # logging.info('EXAMPLE with info category')
 # logging.error('EXAMPLE with error category')
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,20 +49,12 @@ cheshire_cat_api.add_middleware(
 
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"])
-cheshire_cat_api.include_router(
-    general_setting.router, tags=["Settings - General"], prefix="/settings"
-)
-cheshire_cat_api.include_router(
-    llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm"
-)
-cheshire_cat_api.include_router(
-    embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder"
-)
+cheshire_cat_api.include_router(general_setting.router, tags=["Settings - General"], prefix="/settings")
+cheshire_cat_api.include_router(llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm")
+cheshire_cat_api.include_router(embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(
-    upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole"
-)
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 # admin (static build)
