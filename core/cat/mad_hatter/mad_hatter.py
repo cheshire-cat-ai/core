@@ -4,7 +4,8 @@ import importlib
 from os import path
 from inspect import getmembers, isfunction  # , signature
 
-from cat.utils import log, to_camel_case
+from cat.log import log
+from cat.utils import to_camel_case
 from cat.mad_hatter.decorators import CatTool, CatHooks
 
 
@@ -45,9 +46,7 @@ class MadHatter:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
                 for py_file in py_files:
-                    plugin_name = py_file.replace("/", ".").replace(
-                        ".py", ""
-                    )  # this is UGLY I know. I'm sorry
+                    plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
                     plugin_module = importlib.import_module(plugin_name)
                     # all_hooks[plugin_name] = dict(
@@ -55,14 +54,16 @@ class MadHatter:
                     # )
                     all_tools += getmembers(plugin_module, self.is_cat_tool)
 
-        log("Loaded plugins:")
-        log(all_plugins)
+        log("Plugins loading:", "INFO")
+        for plugin in all_plugins:
+            log("> " + plugin["name"])
 
-        log("Loaded hooks:")
+        log("Hooks loading", "INFO")
         all_hooks = CatHooks.sort_hooks()
-        log(all_hooks)
+        for hook in all_hooks:
+            log("> " + hook["hook_name"])
 
-        log("Loaded tools:")
+        log("Tools loading")
         all_tools_fixed = []
         for t in all_tools:
             t_fix = t[1]  # it was a tuple, the Tool is the second element
@@ -89,9 +90,7 @@ class MadHatter:
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(
-            plugin_folder, plugin_json_metadata_file_name
-        )
+        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
         meta = {"id": plugin_id}
 
         if path.isfile(plugin_json_metadata_file_path):
@@ -106,15 +105,14 @@ class MadHatter:
 
                 return meta
             except Exception:
-                log(
-                    f"Error loading plugin {plugin_folder} metadata, "
-                    "defaulting to generated values"
-                )
+                log(f"Error loading plugin {plugin_folder} metadata, " "defaulting to generated values")
 
         meta["name"] = to_camel_case(plugin_id)
-        meta["description"] = "Description not found for this plugin. " \
-            f"Please create a `{plugin_json_metadata_file_name}`" \
+        meta["description"] = (
+            "Description not found for this plugin. "
+            f"Please create a `{plugin_json_metadata_file_name}`"
             " in the plugin folder."
+        )
 
         return meta
 
