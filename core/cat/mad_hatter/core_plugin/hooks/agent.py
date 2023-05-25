@@ -15,15 +15,17 @@ from cat.mad_hatter.decorators import hook
 def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
     """Hook the allowed tools.
 
-    Decide which tools end up in the *Aget* prompt. To decide, you can filter the list of loaded tools,
-    but you can also check the context in `cat.working_memory` and launch custom chains with `cat.llm`.
+    Allows to decide which tools end up in the *Agent* prompt.
+
+    To decide, you can filter the list of loaded tools, but you can also check the context in `cat.working_memory`
+     and launch custom chains with `cat.llm`.
 
     Args:
-        tools: list of @tool functions extracted from the plugins
-        cat: instance of the Cat
+        tools: list of @tool functions extracted from the plugins.
+        cat: Cheshire Cat instance.
 
     Returns:
-        List of allowed tools
+        List of allowed tools.
     """
 
     # add to plugin defined tools, also some default tool included in langchain

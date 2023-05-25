@@ -19,7 +19,10 @@ from cat.mad_hatter.decorators import hook
 def get_language_model(cat) -> BaseLLM:
     """Hook into the Large Language Model (LLM) selection.
 
-    Allows to modify how the Cat selects the LLM at bootstrap time, i.e. when the Cat is instantiated.
+    Allows to modify how the Cat selects the LLM at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
 
     Args:
         cat: Cheshire Cat instance.
@@ -52,10 +55,13 @@ def get_language_model(cat) -> BaseLLM:
 def get_language_embedder(cat):
     """Hook into the  embedder selection.
 
-    Allows to modify how the Cat selects the embedder at bootstrap time, i.e. when the Cat is instantiated.
+    Allows to modify how the Cat selects the embedder at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
 
     Args:
-        cat: Cheshire Cat instance
+        cat: Cheshire Cat instance.
 
     Returns:
         Selected embedder model.

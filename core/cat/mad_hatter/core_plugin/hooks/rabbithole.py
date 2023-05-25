@@ -29,11 +29,11 @@ def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
             `when`: timestamp to track when it's been uploaded.
 
     Args:
-        doc: `langchain.Document` to be inserted in memory.
-        cat: Cheshire Cat instance
+        doc: langchain `Document` to be inserted in memory.
+        cat: Cheshire Cat instance.
 
     Returns:
-        `langchain.Document` that is added in the declarative vector memory.
+        langchain `Document` that is added in the declarative vector memory.
 
     """
     return doc
@@ -49,11 +49,11 @@ def before_rabbithole_splits_text(doc: Document, cat) -> Document:
     For instance, the hook allows to change the text or edit/add metadata.
 
     Args:
-        doc: `langchain.Document` uploaded in the *RabbitHole* to be ingested.
+        doc: langchain `Document` uploaded in the *RabbitHole* to be ingested.
         cat: Cheshire Cat instance.
 
     Returns:
-        `langchain.Document` with applied changes.
+        Edited langchain `Document`.
 
     """
     return doc
@@ -71,13 +71,13 @@ def rabbithole_splits_text(
     This is applied when ingesting a documents and urls from a script, using an endpoint or from the GUI.
 
     Args:
-        text: list of `langchain.Document` to chunk.
+        text: list of langchain `Document` to chunk.
         chunk_size: length of every chunk in characters.
         chunk_overlap: amount of overlap between consecutive chunks.
         cat: Cheshire Cat instance.
 
     Returns:
-        list of chunked `langchain.Document` to be optionally summarized and stored in episodic memory.
+        list of chunked langchain `Document` to be optionally summarized and stored in episodic memory.
 
     """
     # text splitter
@@ -111,11 +111,11 @@ def after_rabbithole_splitted_text(
     Allows to edit the list of `Document` right after the *RabbitHole* chunked them in smaller ones.
 
     Args:
-        chunks: list of `langchain.Document`.
+        chunks: list of langchain `Document`.
         cat: Cheshire Cat instance.
 
     Returns:
-        list of modified chunked `langchain.Document` to be optionally summarized and stored in episodic memory.
+        list of modified chunked langchain `Document` to be optionally summarized and stored in episodic memory.
 
     """
     return chunks
@@ -133,11 +133,11 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
     For example, the hook allows to make the summarization optional or to apply another summarization technique.
 
     Args:
-        docs: list of `langchain.Document` to be summarized.
+        docs: list of langchain `Document` to be summarized.
         cat: Cheshire Cat instance.
 
     Returns:
-        list of `langchain.Document` with text summaries of the original ones.
+        list of langchain`Document` with text summaries of the original ones.
 
     """
     # service variable to store intermediate results

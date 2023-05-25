@@ -17,20 +17,19 @@ from cat.mad_hatter.decorators import hook
 def agent_prompt_prefix(cat) -> str:
     """Hook the main prompt prefix.
 
-    Allows to edit the prefix of the *Main Prompt* that the Cat feeds to the *Agent*
-    with access to the Large Language Model (LLM).
+    Allows to edit the prefix of the *Main Prompt* that the Cat feeds to the *Agent*.
 
     The prefix is then composed with two other prompts components, i.e. the `agent_prompt_instructions`
     and the `agent_prompt_suffix`.
 
-    The default prefix instructs the *Agent* on how to answer and provides it with the relevant context
-    recalled from the memories.
+    The default prefix instructs the *Agent* on how to answer and hold two placeholders for the context recalled
+    from *episodic* and *declarative* memories.
 
     Args:
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
-        The prefix string to be composed with the other two components that make up the *Main Prompt*.
+        The prefix string to be composed with the other two components to make up the *Main Prompt*.
 
     """
     prefix = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
@@ -51,24 +50,25 @@ If Context is not enough, you have access to the following tools:
 def agent_prompt_instructions(cat) -> str:
     """Hook the instruction prompt.
 
-    Allows to edit the instructions that the Cat feeds to the *Agent* with access to the Large Language Model (LLM).
-    This prompt explains the *Agent* how to format its chain of reasoning to make a decision on when
-    and which tool to use.
+    Allows to edit the instructions that the Cat feeds to the *Agent*.
 
-    The instructions are then composed with two other prompt components,
-    i.e. `agent_prompt_prefix` and `agent_prompt_suffix`.
+    The instructions are then composed with two other prompt components, i.e. `agent_prompt_prefix`
+    and `agent_prompt_suffix`.
+
+    This prompt explains the *Agent* how to format its chain of reasoning when deciding when and which tool to use.
 
     Default prompt splits the reasoning in::
-        *Thought*: Yes/No answer to the question "Do I need to use a tool?";
 
-        *Action*: a tool chosen among the available ones;
+        - Thought: Yes/No answer to the question "Do I need to use a tool?";
 
-        *Action Input*: input to be passed to the tool. This is inferred as explained by the selected tool docstring;
+        - Action: a tool chosen among the available ones;
 
-        *Observation*: description of the result.
+        - Action Input: input to be passed to the tool. This is inferred as explained in the tool docstring;
+
+        - Observation: description of the result.
 
     Args:
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
         The string with the set of instructions informing the *Agent* on how to format its reasoning to select a
@@ -98,17 +98,16 @@ Thought: Do I need to use a tool? No
 def agent_prompt_suffix(cat) -> str:
     """Hook the main prompt suffix.
 
-    Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*
-    with access to the Large Language Model (LLM).
+    Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*.
 
     The suffix is then composed with two other prompts components, i.e. the `agent_prompt_suffix`
     and the `agent_prompt_instructions`.
 
-    The default prefix provides the *Agent* the recent conversation history
-    and the user's input, asking a concise.
+    The default prefix has two placeholders: {chat_history} provides the *Agent* the recent conversation history
+    and {input} provides the user's input.
 
     Args:
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
         The suffix string to be composed with the other two components that make up the *Main Prompt*.
@@ -130,21 +129,22 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
     """Hook memories retrieved from episodic memory.
 
     This hook formats the relevant memories retrieved from the context of things the human said in the past.
-    Retrieved memories are converted to string and the temporal information is added to inform the *Agent* about
+
+    Retrieved memories are converted to string and temporal information is added to inform the *Agent* about
     when the user said that sentence in the past.
 
     This hook allows to edit the retrieved memory to condition the information provided as context to the *Agent*.
 
-    Such context is placed in the `agent_prompt_prefix`.
-
+    Such context is placed in the `agent_prompt_prefix` in the place held by {episodic_memory}.
 
     Args:
         memory_docs: list of langchain `Document` retrieved from the episodic memory.
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
-        String of retrieved context from the episodic memory. For
-        example::
+        String of retrieved context from the episodic memory.
+        For example::
+
             "Hello Cheshire Cat! (2 days ago)"
 
     """
@@ -180,21 +180,22 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
     """Hook memories retrieved from declarative memory.
 
     This hook formats the relevant memories retrieved from the context of documents uploaded in the Cat's memory.
+
     Retrieved memories are converted to string and the source information is added to inform the *Agent* on
     which document the information was retrieved from.
 
     This hook allows to edit the retrieved memory to condition the information provided as context to the *Agent*.
 
-    Such context is placed in the `agent_prompt_prefix`.
-
+    Such context is placed in the `agent_prompt_prefix` in the place held by {declarative_memory}.
 
     Args:
         memory_docs: list of langchain `Document` retrieved from the declarative memory.
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
-        String of retrieved context from the declarative memory. For
-        example::
+        String of retrieved context from the declarative memory.
+        For example::
+
             "Alice was beginning to get very tired of sitting by her sister
             on the bank![...] (extracted from Alice.txt)"
 
@@ -229,12 +230,15 @@ def agent_prompt_chat_history(chat_history: List[Dict], cat) -> str:
 
     The hook allows to edit and enhance the chat history provided as context to the *Agent*.
 
-    Such context is placed in the `agent_prompt_suffix`.
+    Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
+
+    The chat history is a dictionary with keys::
+        'who': the name of who said the utterance;
+        'message: the utterance.
 
     Args:
         chat_history: list of dictionaries collecting speaking turns.
-            Keys are: "who" to store the name of who said the utterance; "message" to store the utterance.
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instances.
 
     Returns:
         String with recent conversation turns to be provided as context to the *Agent*.
@@ -255,11 +259,11 @@ def hypothetical_embedding_prompt(cat) -> str:
     Such an answer is used to the retrieve relevant memories based on similarity search.
     This guarantees more accurate memories to be retrieved, rather than using the question itself a search query.
 
-    The default prompt exploits few-shot examples to instructs the *Agent* on how to answer;
+    The default prompt exploits few-shot examples to instruct the *Agent* on how to answer;
     i.e. it provides an example input and its desired answer.
 
     Args:
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
         The string prompt to perform HyDE and recall accurate context from the memory.
@@ -284,13 +288,13 @@ Sentence:
 def summarization_prompt(cat) -> str:
     """Hook the summarization prompt.
 
-    Allows to edit the prompt with the instruction to ask for document summarizes to the *Agent*.
+    Allows to edit the prompt with to ask for document summarizes.
     
     Args:
-        cat: Cheshire Cat instance to exploit its methods.
+        cat: Cheshire Cat instance.
 
     Returns:
-        The string to ask the *Agent* to summarize some text.
+        The string to ask to summarize text.
 
     """
     summarization_prompt = """Write a concise summary of the following:

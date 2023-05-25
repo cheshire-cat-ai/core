@@ -21,19 +21,25 @@ def before_collection_created(first_point: Document, cat) -> Document:
 
     Collections creation happens the first time the Cat starts up or after a memory swap.
 
+    The `Document` has two mandatory properties::
+
+        'page_content': the string content to be inserted into memory;
+        'metadata': a dictionary to store custom metadata.
+
     Args:
-        first_point: `langchain.Document` to be added to the vector memory collection.
-            The `Document` has two mandatory properties: `page_content`,
-            i.e. the string content to be inserted into memory; `metadata`, i.e. a dictionary to store custom metadata.
-        cat: Cheshire Car instance to exploit its methods.
+        first_point: langchain`Document` to be added to the vector memory collection as first point.
+        cat: Cheshire Car instance.
 
     Returns:
-        Custom `langchain.Document`. Default
-        to::
+        Custom langchain `Document`.
+        Default to::
+
             first_memory = Document(page_content="I am the Cheshire Cat",
                                     metadata={
                                             "source": "cheshire-cat",
                                             "when": time.time()
-                                            })
+                                            }
+                                    )
+
     """
     return first_point
