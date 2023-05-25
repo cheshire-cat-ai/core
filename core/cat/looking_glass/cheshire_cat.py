@@ -28,11 +28,17 @@ class CheshireCat:
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
-        has to be called whenever LLM, embedder, agent or memory need to be reinstantiated
-        (for example an LLM change at runtime)
+            has to be called whenever LLM, embedder,
+            agent or memory need to be reinstantiated
+            (for example an LLM change at runtime)
         """
 
+        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
         self.load_plugins()
+
+        # allows plugins to do something before cat components are loaded
+        self.mad_hatter.execute_hook("before_cat_bootstrap")
+
         self.load_natural_language()
         self.load_memory()
 
@@ -41,6 +47,9 @@ class CheshireCat:
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)
+
+        # allows plugins to do something after the cat bootstrap is complete
+        self.mad_hatter.execute_hook("after_cat_bootstrap")
 
     def load_db(self):
         # if there is no db, create it
@@ -57,14 +66,18 @@ class CheshireCat:
         # HyDE chain
         hypothesis_prompt = langchain.PromptTemplate(
             input_variables=["input"],
-            template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
+            template=self.mad_hatter.execute_hook(
+                "hypothetical_embedding_prompt"
+            ),
         )
 
         self.hypothetis_chain = langchain.chains.LLMChain(
             prompt=hypothesis_prompt, llm=self.llm, verbose=True
         )
 
-        self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
+        self.summarization_prompt = self.mad_hatter.execute_hook(
+            "summarization_prompt"
+        )
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
@@ -87,7 +100,9 @@ class CheshireCat:
 
     def recall_relevant_memories_to_working_memory(self, user_message):
         # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        self.mad_hatter.execute_hook(
+            "before_cat_recalls_memories", user_message
+        )
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook(
@@ -100,9 +115,10 @@ class CheshireCat:
         self.working_memory["memory_query"] = memory_query_text
 
         # recall relevant memories (episodic)
-        episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-            embedding=memory_query_embedding
-        )
+        episodic_memories = \
+            self.memory.vectors.episodic.recall_memories_from_embedding(
+                embedding=memory_query_embedding
+            )
         self.working_memory["episodic_memories"] = episodic_memories
 
         # recall relevant memories (declarative)
@@ -114,7 +130,9 @@ class CheshireCat:
         self.working_memory["declarative_memories"] = declarative_memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalled_memories", memory_query_text)
+        self.mad_hatter.execute_hook(
+            "after_cat_recalled_memories", memory_query_text
+        )
 
     def format_agent_executor_input(self):
         # format memories to be inserted in the prompt
@@ -155,33 +173,45 @@ class CheshireCat:
         # extract actual user message text
         user_message = user_message_json["text"]
 
-        # recall episodic and declarative memories from vector collections and store them in working_memory
+        # recall episodic and declarative memories from vector collections
+        #   and store them in working_memory
         try:
             self.recall_relevant_memories_to_working_memory(user_message)
         except Exception as e:
             log(e)
             traceback.print_exc(e)
+
+            err_message = "Vector memory error: you probably changed " \
+                "Embedder and old vector memory is not compatible. " \
+                "Please delete `core/long_term_memory` folder."
             return {
                 "error": False,
-                # TODO: Otherwise the frontend gives notice of the error but does not show what the error is
-                "content": "Vector memory error: you probably changed Embedder and old vector memory is not compatible. Please delete `core/long_term_memory` folder",
+                # TODO: Otherwise the frontend gives notice of the error
+                #   but does not show what the error is
+                "content": err_message,
                 "why": {},
             }
 
-        # prepare input to be passed to the agent executor. Info will be extracted from working memory
+        # prepare input to be passed to the agent executor.
+        #   Info will be extracted from working memory
         agent_executor_input = self.format_agent_executor_input()
 
-        # load agent (will rebuild both agent and agent_executor based on context and plugins)
+        # load agent (will rebuild both agent and agent_executor
+        #   based on context and plugins)
         agent_executor = self.agent_manager.get_agent_executor()
 
         # reply with agent
         try:
             cat_message = agent_executor(agent_executor_input)
         except ValueError as e:
-            # This error happens when the LLM does not respect prompt instructions.
-            # We grab the LLM outptu here anyway, so small and non instruction-fine-tuned models can still be used.
+            # This error happens when the LLM
+            #   does not respect prompt instructions.
+            # We grab the LLM outptu here anyway, so small and
+            #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
-            if not error_description.startswith("Could not parse LLM output: `"):
+            if not error_description.startswith(
+                "Could not parse LLM output: `"
+            ):
                 raise e
 
             unparsable_llm_output = error_description.removeprefix(
@@ -201,13 +231,22 @@ class CheshireCat:
         )
 
         # store user message in episodic memory
-        # TODO: vectorize and store also conversation chunks (not raw dialog, but summarization)
+        # TODO: vectorize and store also conversation chunks
+        #   (not raw dialog, but summarization)
         _ = self.memory.vectors.episodic.add_texts(
             [user_message],
             [{"source": "user", "when": time.time()}],
         )
 
         # build data structure for output (response and why with memories)
+        episodic_report = [
+            dict(d[0]) | {"score": float(d[1])}
+            for d in self.working_memory["episodic_memories"]
+        ]
+        declarative_report = [
+            dict(d[0]) | {"score": float(d[1])}
+            for d in self.working_memory["declarative_memories"]
+        ]
         final_output = {
             "error": False,
             "type": "chat",
@@ -218,14 +257,8 @@ class CheshireCat:
                 "intermediate_steps": cat_message["intermediate_steps"],
                 "memory": {
                     "vectors": {
-                        "episodic": [
-                            dict(d[0]) | {"score": float(d[1])}
-                            for d in self.working_memory["episodic_memories"]
-                        ],
-                        "declarative": [
-                            dict(d[0]) | {"score": float(d[1])}
-                            for d in self.working_memory["declarative_memories"]
-                        ],
+                        "episodic": episodic_report,
+                        "declarative": declarative_report,
                     }
                 },
             },

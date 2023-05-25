@@ -34,6 +34,10 @@ class InterceptHandler(logging.Handler):
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
+# workaround for pdfminer logging
+# https://github.com/pdfminer/pdfminer.six/issues/347
+logging.getLogger("pdfminer").setLevel(logging.WARNING)
+
 
 def get_caller_info(skip=2):
     """Get the name of a caller in the format module.class.method.
