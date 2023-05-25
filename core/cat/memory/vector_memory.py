@@ -75,9 +75,9 @@ class VectorMemoryCollection(Qdrant):
         try:
             self.client.get_collection(self.collection_name)
             tabula_rasa = False
-            log(f'Collection "{self.collection_name}" already present in vector store')
+            log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
         except:
-            log(f"Creating collection {self.collection_name} ...")
+            log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
@@ -101,7 +101,7 @@ class VectorMemoryCollection(Qdrant):
                 [first_memory.metadata],
             )
 
-        log(dict(self.client.get_collection(self.collection_name)))
+        log(dict(self.client.get_collection(self.collection_name)), "DEBUG")
 
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=5):

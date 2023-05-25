@@ -54,16 +54,16 @@ class MadHatter:
                     # )
                     all_tools += getmembers(plugin_module, self.is_cat_tool)
 
-        log("Loaded plugins:")
+        log("Plugins loading:", "INFO")
         for plugin in all_plugins:
             log("> " + plugin["name"])
 
-        log("Loaded hooks:")
+        log("Hooks loading", "INFO")
         all_hooks = CatHooks.sort_hooks()
         for hook in all_hooks:
             log("> " + hook["hook_name"])
 
-        log("Loaded tools:")
+        log("Tools loading")
         all_tools_fixed = []
         for t in all_tools:
             t_fix = t[1]  # it was a tuple, the Tool is the second element

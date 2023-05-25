@@ -10,12 +10,17 @@ from pprint import pformat
 from loguru import logger
 
 
+def get_log_level():
+    """Return the global LOG level."""
+    return os.getenv("LOG_LEVEL", "DEBUG")
+
+
 class CatLogEnine:
     """The log engine."""
 
     def __init__(self):
-        """Initialize stuff."""
-        self.LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
+        """Initialize log for Cheshire Cat and the dependencies."""
+        self.LOG_LEVEL = get_log_level()
         self.LOG_LEVEL_DEPENDENCIES = os.getenv("LOG_LEVEL_DEPENDENCIES", "DEBUG")
         self.default_log()
         LOG_LEVEL_DEPENDENCIES = self.LOG_LEVEL_DEPENDENCIES
@@ -24,7 +29,7 @@ class CatLogEnine:
             """Force all the logging under loguru."""
 
             def emit(self, record):
-                """Set global LOG_LEVEL for all the dependencies."""
+                """Set global LOG_LEVEL_DEPENDENCIES for all the dependencies."""
                 # Find caller from where originated the logged message.
                 frame, depth = sys._getframe(6), 6
                 while frame and frame.f_code.co_filename == logging.__file__:
@@ -39,14 +44,20 @@ class CatLogEnine:
         # https://github.com/pdfminer/pdfminer.six/issues/347
         logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
+    def show_log_level(self, record):
+        """Allows to show stuff in the log based on the global setting."""
+        return record["level"].no >= logger.level(self.LOG_LEVEL).no
+
     def default_log(self):
         """Set the same debug level to all the project dependecies."""
         log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> => <level>{message}</level>"
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
-            return logger.add(sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True)
+            return logger.add(
+                sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
+            )
         else:
-            return logger.add(sys.stdout, colorize=True, format=log_format)
+            return logger.add(sys.stdout, colorize=True, format=log_format, filter=self.show_log_level)
 
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
@@ -66,7 +77,6 @@ class CatLogEnine:
             - line (int): the line of the call.
             - An empty string is returned if skipped levels exceed stack height.
         """
-
         stack = inspect.stack()
         start = 0 + skip
         if len(stack) < start + 1:
@@ -131,6 +141,7 @@ class CatLogEnine:
                     format=traceback_log_format,
                     backtrace=True,
                     diagnose=True,
+                    filter=self.show_log_level,
                 )
                 frames = takewhile(lambda f: "/loguru/" not in f.filename, traceback.extract_stack())
                 for f in frames:
@@ -144,15 +155,13 @@ class CatLogEnine:
                 logger.remove()
 
         _logger.add(
-            sys.stdout,
-            colorize=True,
-            format=log_format,
-            backtrace=True,
-            diagnose=True,
+            sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
         )
 
         for line in lines:
-            _logger.bind(**context).log(level, f"{line}")
+            line = line.strip()
+            if line != "\n":
+                _logger.bind(**context).log(level, f"{line}")
         # After our custom log we need to set again the logger as default for the other dependencies
         self.default_log()
 

@@ -13,9 +13,7 @@ from cat.looking_glass.agent_manager import AgentManager
 
 # main class
 class CheshireCat:
-    def __init__(self, verbose=True):
-        self.verbose = verbose
-
+    def __init__(self):
         # access to DB
         self.load_db()
 
@@ -69,7 +67,7 @@ class CheshireCat:
             template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm, verbose=True)
+        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm)
 
         self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
@@ -142,8 +140,7 @@ class CheshireCat:
         }
 
     def __call__(self, user_message_json):
-        if self.verbose:
-            log(user_message_json)
+        log(user_message_json, "DEBUG")
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
@@ -198,8 +195,7 @@ class CheshireCat:
             unparsable_llm_output = error_description.removeprefix("Could not parse LLM output: `").removesuffix("`")
             cat_message = {"output": unparsable_llm_output}
 
-        if self.verbose:
-            log(cat_message)
+        log(cat_message, "DEBUG")
 
         # update conversation history
         self.working_memory.update_conversation_history(who="Human", message=user_message)
