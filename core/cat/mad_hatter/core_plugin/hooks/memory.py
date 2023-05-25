@@ -2,13 +2,6 @@
 
 Here is a collection of methods to hook the insertion of memories in the vector databases.
 
-Typical usage example::
-    from cat.mad_hatter.decorators import tool, hook
-
-    @hook(priority=1)
-    def name_of_the_hook_to_overridden(use-equal-parameters):
-        **custom execution**
-        return custom_output
 """
 
 from langchain.docstore.document import Document

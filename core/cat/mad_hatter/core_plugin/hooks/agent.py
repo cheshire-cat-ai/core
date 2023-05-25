@@ -2,17 +2,6 @@
 
 Here is a collection of methods to hook into the *Agent* execution pipeline.
 
-Example:
-
-    from cat.mad_hatter.decorators import tool, hook
-
-    @hook(priority=1)
-
-    def name_of_the_hook_to_overridden(use-equal-parameters):
-        **custom execution**
-
-        return custom_output
-
 """
 
 from typing import List

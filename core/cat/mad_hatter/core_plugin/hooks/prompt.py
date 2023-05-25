@@ -2,18 +2,6 @@
 
 Here is a collection of methods to hook the prompts components that instruct the *Agent*.
 
-These hooks allow to edit all the components that make up the *Main Prompt*. These are::
-    the main prompt prefix, the tool instructions, the suffix,
-    the context retrieved from episodic and declarative memories, the chat history,
-    the Hypothetical Document Embedding prompt and the summarization prompt.
-
-Typical usage example::
-    from cat.mad_hatter.decorators import tool, hook
-
-    @hook(priority=1)
-    def name_of_the_hook_to_overridden(use-equal-parameters):
-        **custom execution**
-        return custom_output
 """
 
 import time
