@@ -4,7 +4,7 @@ import tempfile
 import mimetypes
 from typing import List, Union
 
-from cat.utils import log
+from cat.log import log
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,

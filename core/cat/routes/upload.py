@@ -2,7 +2,7 @@ import mimetypes
 from typing import Dict
 
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from cat.utils import log
+from cat.log import log
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
@@ -43,9 +43,7 @@ async def rabbithole_upload_endpoint(
         )
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(
-        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap
-    )
+    background_tasks.add_task(ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap)
 
     # reply to client
     return {
@@ -59,9 +57,7 @@ async def rabbithole_upload_endpoint(
 async def rabbithole_url_endpoint(
     request: Request,
     background_tasks: BackgroundTasks,
-    url: str = Body(
-        description="URL of the website to which you want to save the content"
-    ),
+    url: str = Body(description="URL of the website to which you want to save the content"),
     chunk_size: int = Body(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
@@ -73,8 +69,6 @@ async def rabbithole_url_endpoint(
     ccat = request.app.state.ccat
 
     # upload file to long term memory, in the background
-    background_tasks.add_task(
-        ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap
-    )
+    background_tasks.add_task(ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap)
 
     return {"url": url, "info": "Website is being ingested asynchronously"}

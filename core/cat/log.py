@@ -1,0 +1,166 @@
+"""The log engine."""
+
+import logging
+import sys
+import os
+import inspect
+import traceback
+from itertools import takewhile
+from pprint import pformat
+from loguru import logger
+
+
+class CatLogEnine:
+    """The log engine."""
+
+    def __init__(self):
+        """Initialize stuff."""
+        self.LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
+        self.LOG_LEVEL_DEPENDENCIES = os.getenv("LOG_LEVEL_DEPENDENCIES", "DEBUG")
+        self.default_log()
+        LOG_LEVEL_DEPENDENCIES = self.LOG_LEVEL_DEPENDENCIES
+
+        class InterceptHandler(logging.Handler):
+            """Force all the logging under loguru."""
+
+            def emit(self, record):
+                """Set global LOG_LEVEL for all the dependencies."""
+                # Find caller from where originated the logged message.
+                frame, depth = sys._getframe(6), 6
+                while frame and frame.f_code.co_filename == logging.__file__:
+                    frame = frame.f_back
+                    depth += 1
+
+                logger.opt(depth=depth, exception=record.exc_info).log(LOG_LEVEL_DEPENDENCIES, record.getMessage())
+
+        logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
+
+        # workaround for pdfminer logging
+        # https://github.com/pdfminer/pdfminer.six/issues/347
+        logging.getLogger("pdfminer").setLevel(logging.WARNING)
+
+    def default_log(self):
+        """Set the same debug level to all the project dependecies."""
+        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> => <level>{message}</level>"
+        logger.remove()
+        if self.LOG_LEVEL == "DEBUG":
+            return logger.add(sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True)
+        else:
+            return logger.add(sys.stdout, colorize=True, format=log_format)
+
+    def get_caller_info(self, skip=3):
+        """Get the name of a caller in the format module.class.method.
+
+            Copied from: https://gist.github.com/techtonik/2151727
+
+              :arguments:
+            - skip (integer): Specifies how many levels of stack
+                              to skip while getting caller name.
+                              skip=1 means "who calls me",
+                              skip=2 "who calls my caller" etc.
+        :returns:
+            - package (string): caller package.
+            - module (string): caller module.
+            - klass (string): caller classname if one otherwise None.
+            - caller (string): caller function or method (if a class exist).
+            - line (int): the line of the call.
+            - An empty string is returned if skipped levels exceed stack height.
+        """
+
+        stack = inspect.stack()
+        start = 0 + skip
+        if len(stack) < start + 1:
+            return ""
+        parentframe = stack[start][0]
+
+        # module and packagename.
+        module_info = inspect.getmodule(parentframe)
+        if module_info:
+            mod = module_info.__name__.split(".")
+            package = mod[0]
+            module = mod[1]
+
+        # class name.
+        klass = None
+        if "self" in parentframe.f_locals:
+            klass = parentframe.f_locals["self"].__class__.__name__
+
+        # method or function name.
+        caller = None
+        if parentframe.f_code.co_name != "<module>":  # top level usually
+            caller = parentframe.f_code.co_name
+
+        # call line.
+        line = parentframe.f_lineno
+
+        # Remove reference to frame
+        # See: https://docs.python.org/3/library/inspect.html#the-interpreter-stack
+        del parentframe
+
+        return package, module, klass, caller, line
+
+    def log(self, msg, level="DEBUG"):
+        """Add to log based on settings."""
+        global logger
+        logger.remove()
+
+        # Add real caller for the log
+        (package, module, klass, caller, line) = self.get_caller_info()
+        context = {
+            "original_name": f"{package}.{module}",
+            "original_line": line,
+            "original_class": klass,
+            "original_caller": caller,
+        }
+
+        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.py</cyan> <cyan>{extra[original_line]} ({extra[original_class]}.{extra[original_caller]})</cyan> => <level>{message}</level>"
+
+        _logger = logger
+
+        msg_body = pformat(msg)
+        lines = msg_body.splitlines()
+
+        # On debug level print the traceback better
+        if level == "DEBUG":
+            if type(msg) is str and not msg.startswith("> "):
+                traceback_log_format = "<red>{extra[traceback]}</red>"
+                stack = ""
+                _logger.add(
+                    sys.stdout,
+                    colorize=True,
+                    format=traceback_log_format,
+                    backtrace=True,
+                    diagnose=True,
+                )
+                frames = takewhile(lambda f: "/loguru/" not in f.filename, traceback.extract_stack())
+                for f in frames:
+                    if f.filename.startswith("/app/./cat"):
+                        filename = f.filename.replace("/app/./cat", "")
+                        if not filename.startswith("/log.py"):
+                            stack = "> " + "".join("{}:{}:{}".format(filename, f.name, f.lineno))
+                            context["traceback"] = stack
+
+                            _logger.bind(**context).log(level, "")
+                logger.remove()
+
+        _logger.add(
+            sys.stdout,
+            colorize=True,
+            format=log_format,
+            backtrace=True,
+            diagnose=True,
+        )
+
+        for line in lines:
+            _logger.bind(**context).log(level, f"{line}")
+        # After our custom log we need to set again the logger as default for the other dependencies
+        self.default_log()
+
+
+logEngine = CatLogEnine()
+
+
+def log(msg, level="DEBUG"):
+    """Create function wrapper to class."""
+    global logEngine
+    return logEngine.log(msg, level)

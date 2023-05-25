@@ -1,7 +1,7 @@
 # import re
 from copy import copy
 
-from cat.utils import log
+from cat.log import log
 from langchain.agents import AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
 

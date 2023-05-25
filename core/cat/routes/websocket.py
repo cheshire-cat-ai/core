@@ -2,7 +2,7 @@ import traceback
 import asyncio
 
 from fastapi import APIRouter, WebSocket
-from cat.utils import log
+from cat.log import log
 
 router = APIRouter()
 

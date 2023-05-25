@@ -4,7 +4,7 @@ import socket
 import time
 from typing import Any, Callable
 
-from cat.utils import log
+from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
@@ -88,11 +88,9 @@ class VectorMemoryCollection(Qdrant):
         # TODO: if the embedder changed, a new vectorstore must be created
         if tabula_rasa:
             # Hard coded overridable first memory saved in both collections
-            first_memory = Document(page_content="I am the Cheshire Cat",
-                                    metadata={
-                                        "source": "cheshire-cat",
-                                        "when": time.time()
-                                    })
+            first_memory = Document(
+                page_content="I am the Cheshire Cat", metadata={"source": "cheshire-cat", "when": time.time()}
+            )
 
             # Execute hook to override the first inserted memory
             first_memory = self.cat.mad_hatter.execute_hook("before_collection_created", first_memory)
