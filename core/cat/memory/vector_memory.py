@@ -10,6 +10,8 @@ from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
 from qdrant_client.http.models import Distance, VectorParams
 
+# TODO: hook get_embedder_size and remove dict
+
 
 class VectorMemory:
     def __init__(self, cat, verbose=False) -> None:
@@ -67,6 +69,35 @@ class VectorMemoryCollection(Qdrant):
         # Get a Cat instance
         self.cat = cat
 
+        # inizo le modifiche
+        #print("beccati sto gatto! ",self.cat.embedder, "\n")
+
+        size_dict = {
+        "embed-multilingual-v2.0": 768,
+        "embed-english-v2.0": 4096,
+        "embed-english-light-v2.0": 1024,
+        "text-embedding-ada-002":1536,
+        "sentence-transformers/all-mpnet-base-v2":768
+        }
+
+        if hasattr(self.cat.embedder, 'model'):
+            if self.cat.embedder.model in size_dict:
+                self.embedder_size = size_dict[self.cat.embedder.model]
+            else:
+                "not in size dict"
+        elif hasattr(self.cat.embedder, 'repo_id'):
+            self.embedder_size = size_dict[self.cat.embedder.repo_id]
+            #print(print("beccati sto Hub! ",self.cat.embedder, "\n"))
+        else:
+            #print("beccati sto gatto di default")
+            self.embedder_size = 1536
+
+        #print("beccati sta size! ",self.embedder_size)
+        #print("facciamo un test: ", len(self.embedding_function("Hello Cat!")))
+
+        # fine modifiche
+
+
         # Check if memory collection exists, otherwise create it and add first memory
         self.create_collection_if_not_exists()
 
@@ -74,18 +105,32 @@ class VectorMemoryCollection(Qdrant):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
-            tabula_rasa = False
             log(f'Collection "{self.collection_name}" already present in vector store')
+            # rough edit, if you have different size delete and recreate from scratch
+            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+                tabula_rasa = False
+                log(f'Collection "{self.collection_name}" has the same size of the embedder')
+            else:
+                log(f'Collection "{self.collection_name}" has different size of the embedder')
+                self.client.delete_collection(self.collection_name)
+                log(f'Collection "{self.collection_name}" deleted')
+                log(f"Creating collection {self.collection_name} ...")
+                self.client.recreate_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                )
+                tabula_rasa = True
         except:
             log(f"Creating collection {self.collection_name} ...")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
                 # TODO: if we change the embedder, how do we know the dimensionality?
             )
             tabula_rasa = True
 
         # TODO: if the embedder changed, a new vectorstore must be created
+        # TODO: need a more elegant solution
         if tabula_rasa:
             # Hard coded overridable first memory saved in both collections
             first_memory = Document(page_content="I am the Cheshire Cat",
