@@ -68,6 +68,8 @@ After that you can run:
 docker-compose up
 ```
 
+> NOTE: if you have a later version of docker-compose, use the command `docker compose up` (without the dash). [REF.](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose) 
+
 The first time (only) it will take several minutes, as the images occupy a few GBs.
 
 - Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin).
