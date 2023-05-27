@@ -35,19 +35,6 @@ class LLMDefaultConfig(LLMSettings):
         }
 
 
-class LLMDefaultConfig(LLMSettings):
-    _pyclass: PyObject = LLMDefault
-
-    class Config:
-        schema_extra = {
-            "name_human_readable": "Default Language Model",
-            "description":
-                "A dumb LLM just telling that the Cat is not configured. "
-                "There will be a nice LLM here "
-                "once consumer hardware allows it.",
-        }
-
-
 class LLMCustomConfig(LLMSettings):
 
     url: str
@@ -96,7 +83,7 @@ class LLMOpenAIConfig(LLMSettings):
                            "also more flexible than ChatGPT.",
         }
 
-        
+
 # https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
@@ -113,6 +100,26 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
         schema_extra = {
             "name_human_readable": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
+        }
+
+
+# https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
+class LLMAzureOpenAIConfig(LLMSettings):
+    openai_api_key: str
+    openai_api_base: str
+    api_type: str = "azure"
+    # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
+    # Current supported versions 2022-12-01 or 2023-03-15-preview
+    api_version: str = "2023-03-15-preview"
+    deployment_name: str = "text-davinci-003"
+    model_name: str = "text-davinci-003"  # Use only completion models !
+
+    _pyclass: PyObject = langchain.llms.AzureOpenAI
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Azure OpenAI Completion models",
+            "description": "Configuration for Cognitive Services Azure OpenAI",
         }
 
 
@@ -158,23 +165,27 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
         }
 
 
-# https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
-class LLMAzureOpenAIConfig(LLMSettings):
-    openai_api_key: str
-    openai_api_base: str
-    api_type: str = "azure"
-    # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
-    # Current supported versions 2022-12-01 or 2023-03-15-preview
-    api_version: str = "2023-03-15-preview"
-    deployment_name: str = "text-davinci-003"
-    model_name: str = "text-davinci-003"  # Use only completion models !
-
-    _pyclass: PyObject = langchain.llms.AzureOpenAI
+class LLMAnthropicConfig(LLMSettings):
+    anthropic_api_key: str
+    model: str = "claude-v1"
+    _pyclass: PyObject = langchain.chat_models.ChatAnthropic
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Azure OpenAI Completion models",
-            "description": "Configuration for Cognitive Services Azure OpenAI",
+            "name_human_readable": "Anthropic",
+            "description": "Configuration for Anthropic language Model",
+        }
+
+
+class LLMGooglePalmConfig(LLMSettings):
+    google_api_key: str
+    model_name: str = "models/text-bison-001"
+    _pyclass: PyObject = langchain.llms.GooglePalm
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Google PaLM",
+            "description": "Configuration for Google PaLM language model",
         }
 
 
@@ -188,6 +199,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMHuggingFaceEndpointConfig,
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
+    LLMAnthropicConfig,
+    LLMGooglePalmConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know

@@ -70,11 +70,11 @@ docker-compose up
 
 The first time (only) it will take several minutes, as the images occupy a few GBs.
 
-- Chat with the Cheshire Cat on [localhost:3000](http://localhost:3000).
+- Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin).
 - You can also interact via REST API and try out the endpoints on [localhost:1865/docs](http://localhost:1865/docs)
 
 As a first thing, the Cat will ask you to configure your favourite language model.
-It can be done directly via the interface in the [Settings page](http://localhost:3000/settings).
+It can be done directly via the interface in the Settings page (top right in the admin).
 
 Enjoy the Cat!
 

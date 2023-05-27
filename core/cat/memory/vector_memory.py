@@ -4,7 +4,7 @@ import socket
 import time
 from typing import Any, Callable
 
-from cat.utils import log
+from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
@@ -105,6 +105,7 @@ class VectorMemoryCollection(Qdrant):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
+<<<<<<< HEAD
             log(f'Collection "{self.collection_name}" already present in vector store')
             # rough edit, if you have different size delete and recreate from scratch
             if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
@@ -120,8 +121,12 @@ class VectorMemoryCollection(Qdrant):
                     vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
                 )
                 tabula_rasa = True
+=======
+            tabula_rasa = False
+            log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+>>>>>>> main
         except:
-            log(f"Creating collection {self.collection_name} ...")
+            log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
@@ -133,11 +138,9 @@ class VectorMemoryCollection(Qdrant):
         # TODO: need a more elegant solution
         if tabula_rasa:
             # Hard coded overridable first memory saved in both collections
-            first_memory = Document(page_content="I am the Cheshire Cat",
-                                    metadata={
-                                        "source": "cheshire-cat",
-                                        "when": time.time()
-                                    })
+            first_memory = Document(
+                page_content="I am the Cheshire Cat", metadata={"source": "cheshire-cat", "when": time.time()}
+            )
 
             # Execute hook to override the first inserted memory
             first_memory = self.cat.mad_hatter.execute_hook("before_collection_created", first_memory)
@@ -148,7 +151,7 @@ class VectorMemoryCollection(Qdrant):
                 [first_memory.metadata],
             )
 
-        log(dict(self.client.get_collection(self.collection_name)))
+        log(dict(self.client.get_collection(self.collection_name)), "DEBUG")
 
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=5):

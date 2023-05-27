@@ -1,6 +1,22 @@
 # Changelog
 
 
+## 0.0.4 ( 2023-05-25 )
+
+### Enhancements
+
+* added more hooks (see `core_plugin`)
+* added ethics code
+* switched admin from React to Vue
+* added `why` panel in the admin
+* moved admin sources in a separate repo
+* core serves a static build of the admin under `localhost:1865/admin`
+* updated docs with plugin dev guide
+* refactored the rabbithole
+* plugins can have their own requirements.txt
+* added support for Claude and PaLM
+
+
 ## 0.0.3 ( 2023-05-03 )
 
 ### Enhancements
@@ -8,6 +24,7 @@
 * added more hooks to control prompting and allowed tools (see `core_plugin`)
 * added `cat.working_memory` to store temporary and arbitrary info (recent convo, recalled memories, data shared by plugins)
 * endpoints to erase memory contents (also completely wipe out memory)
+
 
 ## 0.0.2 ( 2023-04-28 )
 
@@ -18,6 +35,7 @@
 * more hooks to control summarization prompt and reelaborate final reply to user
 * chat autofocus and easier home navigation in admin
 * support for Azure LLMs
+
 
 ## 0.0.1 ( 2023-04-20 )
 

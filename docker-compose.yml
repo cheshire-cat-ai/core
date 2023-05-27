@@ -26,20 +26,6 @@ services:
       - --reload # take away in prod
     restart: unless-stopped
 
-  cheshire-cat-admin:
-    build:
-      context: ./admin
-    container_name: cheshire_cat_admin
-    depends_on:
-      - cheshire-cat-core
-    env_file:
-      - .env
-    ports:
-      - ${ADMIN_PORT}:3000
-    volumes:
-      - ./admin:/app
-    restart: unless-stopped
-
   cheshire-cat-vector-memory:
     image: qdrant/qdrant:v1.1.1
     container_name: cheshire_cat_vector_memory
@@ -48,3 +34,17 @@ services:
     volumes:
       - ./long_term_memory/vector:/qdrant/storage
     restart: unless-stopped
+
+#  cheshire-cat-admin:
+#    build:
+#      context: ./admin
+#    container_name: cheshire_cat_admin
+#    depends_on:
+#      - cheshire-cat-core
+#    env_file:
+#      - .env
+#    ports:
+#      - ${ADMIN_PORT}:3000
+#    volumes:
+#      - ./admin:/app
+#    restart: unless-stopped
