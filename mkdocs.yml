@@ -1,4 +1,4 @@
-site_name: cheshire_cat Docs
+site_name: Cheshire Cat Docs
 repo_url: https://github.com/pieroit/cheshire-cat
 
 docs_dir: mkdocs
@@ -85,10 +85,10 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/pieroit/cheshire-cat
-      name: The cheshire_cat repo on GitHub
+      name: The Cheshire Cat repo on GitHub
     - icon: fontawesome/brands/discord
       link: https://discord.gg/bHX5sNFCYU
-      name: The cheshire_cat Discord Server
+      name: The Cheshire Cat Discord Server
 
 markdown_extensions:
   - pymdownx.highlight:

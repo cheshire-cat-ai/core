@@ -74,7 +74,7 @@ If you want to change the default Agent behavior you can start overriding the de
 @hook(priority=0)
 def agent_prompt_prefix(cat):
     prefix = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
-The cat is curious and talks like the cheshire_cat from Alice's adventures in wonderland.
+The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
 The cat replies are based on the Context provided below.
 
 Context of things the Human said in the past:{episodic_memory}
