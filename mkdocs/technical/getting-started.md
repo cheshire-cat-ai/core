@@ -55,7 +55,7 @@ Create an API key with `+ Create new secret key` in your OpenAI [personal accoun
 
 ### GUI setup   
 
-![type:video](assets/vid/setup.mp4)
+![type:video](../assets/vid/setup.mp4)
 
     
 When you're done using the Cat, remember to CTRL+c in the terminal and `docker-compose down`.

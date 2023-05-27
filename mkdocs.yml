@@ -1,4 +1,4 @@
-site_name: Cheshire Cat Docs
+site_name: cheshire_cat Docs
 repo_url: https://github.com/pieroit/cheshire-cat
 
 docs_dir: mkdocs
@@ -14,24 +14,41 @@ plugins:
 
 nav:
   - Hello, dear: index.md
-  - Concepts: conceptual/conceptual.md
-  - API: API/api.md
-  - Getting Started: getting-started.md
-  - How the Cat works: how-the-cat-works.md
-  - Basics:
-      - Folders & APIs: basics/basics.md
-      - The Cat Core: basics/cat-core.md
-      - Admin Interface: basics/admin-interface.md
-  - Plugins:
-      - How to write a plugin: plugins/plugins.md
-      - Tools: plugins/tools.md
-      - Hooks: plugins/hooks.md
-  - Advanced: advanced.md
-  - Tutorials:
-      - Overview: tutorials/overview.md
-      - Installation: tutorials/installation.md
+  - Conceptual:
+      - The Cheshire Cat:
+          - The Mad Hatter: conceptual/cheshire_cat/mad_hatter.md
+          - The Rabbit Hole: conceptual/cheshire_cat/rabbit_hole.md
+          - The Agent: conceptual/cheshire_cat/agent.md
+      - Language Models:
+          - Large Language Model: conceptual/language_models/llm.md
+          - Embedder: conceptual/language_models/embedder.md
+      - Memory:
+          - Vector Memory: conceptual/memory/vector_memory.md
+          - Long Term Memory: conceptual/memory/long_term_memory.md
+          - Working Memory: conceptual/memory/working_memory.md
+      - Prompts:
+          - HyDE prompt: conceptual/prompts/hyde.md
+          - Main Prompt: conceptual/prompts/main_prompt.md
+          - Summarization Prompt: conceptual/prompts/summarization.md
+      - Plugins:
+          - Hooks: conceptual/plugins/hooks.md
+          - Tools: conceptual/plugins/tools.md
+  - Technical:
+      - Getting Started: technical/getting-started.md
+      - How the Cat works: technical/how-the-cat-works.md
+      - Basics:
+          - Folders & APIs: technical/basics/basics.md
+          - The Cat Core: technical/basics/cat-core.md
+          - Admin Interface: technical/basics/admin-interface.md
+      - Plugins:
+          - How to write a plugin: technical/plugins/plugins.md
+          - Tools: technical/plugins/tools.md
+          - Hooks: technical/plugins/hooks.md
+      - Advanced: technical/advanced.md
+      - Tutorials:
+          - Overview: technical/tutorials/overview.md
+          - Installation: technical/tutorials/installation.md
   - FAQ: faq.md
-  - TO DELETE: features.md
 
 theme:
   name: material
@@ -68,10 +85,10 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/pieroit/cheshire-cat
-      name: The Cheshire Cat repo on GitHub
+      name: The cheshire_cat repo on GitHub
     - icon: fontawesome/brands/discord
       link: https://discord.gg/bHX5sNFCYU
-      name: The Cheshire Cat Discord Server
+      name: The cheshire_cat Discord Server
 
 markdown_extensions:
   - pymdownx.highlight:

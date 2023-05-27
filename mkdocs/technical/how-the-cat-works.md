@@ -1,6 +1,6 @@
 # :smirk_cat: How the Cat works
 
-![components](assets/img/diagrams/components.png)   
+![components](../assets/img/diagrams/components.png)   
    
 
 ## Components   
@@ -46,12 +46,12 @@ The Cheshire Cat is made of many pluggable components that make it fully customi
 
 ## Main loop
 
-![flow](assets/img/diagrams/flow.jpg)
+![flow](../assets/img/diagrams/flow.jpg)
 
 
 ## Retrieval augmented Generation (docs Q&A)
 
-![flow](assets/img/diagrams/rag.jpg)
+![flow](../assets/img/diagrams/rag.jpg)
 
 
 [//]: # (```mermaid)
