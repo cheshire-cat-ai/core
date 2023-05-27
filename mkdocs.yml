@@ -19,9 +19,8 @@ nav:
           - The Mad Hatter: conceptual/cheshire_cat/mad_hatter.md
           - The Rabbit Hole: conceptual/cheshire_cat/rabbit_hole.md
           - The Agent: conceptual/cheshire_cat/agent.md
-      - Language Models:
-          - Large Language Model: conceptual/language_models/llm.md
-          - Embedder: conceptual/language_models/embedder.md
+      - Language Models: conceptual/language_models/llm.md
+#          - Large Language Model: conceptual/language_models/llm.md
       - Memory:
           - Vector Memory: conceptual/memory/vector_memory.md
           - Long Term Memory: conceptual/memory/long_term_memory.md
