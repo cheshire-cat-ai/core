@@ -37,7 +37,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 
 ### Install
 
-You just need `docker` and `docker-compose` installed on your system.
+You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compose`](https://docs.docker.com/compose/install/) installed on your system.
 Clone the repo:
 
 ```bash
