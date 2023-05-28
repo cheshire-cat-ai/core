@@ -16,3 +16,4 @@ pdfminer.six==20221105
 unstructured==0.5.7
 tiktoken==0.3.3
 loguru==0.7.0
+validators
