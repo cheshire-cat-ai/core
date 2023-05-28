@@ -21,9 +21,9 @@ D["🪝recursive split"] --> E["🪝"];
 E["🪝"] --> F["🪝summarization"];
 F["🪝summarization"] --> G["🪝"];
 end
-rb --> H["🐘Episodic Memory"] 
+G["🪝"] --> H["🐘Episodic Memory"] 
 ```
 
-Nodes with the :hook: point the execution places where there is an available [hook](../plugins/hooks.md) to customize the execution pipeline.
+Nodes with the :hook: point the execution places where there is an available [hook](../plugins.md) to customize the execution pipeline.
 
 

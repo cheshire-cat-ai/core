@@ -29,10 +29,9 @@ nav:
           - HyDE prompt: conceptual/prompts/hyde.md
           - Main Prompt: conceptual/prompts/main_prompt.md
           - Summarization Prompt: conceptual/prompts/summarization.md
-      - Plugins:
-          - Plugin: conceptual/plugins/plugin.md
-          - Hooks: conceptual/plugins/hooks.md
-          - Tools: conceptual/plugins/tools.md
+      - Plugins: conceptual/plugins.md
+#          - Hooks: conceptual/plugins/hooks.md
+#          - Tools: conceptual/plugins/tools.md
   - Technical:
       - Getting Started: technical/getting-started.md
       - How the Cat works: technical/how-the-cat-works.md
