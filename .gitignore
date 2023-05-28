@@ -21,3 +21,6 @@ admin
 core/cat/plugins/*
 # plugins readme can stay
 !core/cat/plugins/how-to-write-a-plugin.md
+
+# compiled requirements file
+core/requirements/test.txt
