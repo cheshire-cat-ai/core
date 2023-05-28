@@ -30,8 +30,10 @@ class CatHooks:
         return CatHooks.__hooks
 
 
-# @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
-# @hook priority defaults to 1, the higher the more important. Hooks in the default core plugin have all priority=0 so they are automatically overwritten from plugins
+# @hook decorator. Any function in a plugin decorated by @hook
+# and named properly (among list of available hooks) is used by the Cat
+# @hook priority defaults to 1, the higher the more important.
+# Hooks in the default core plugin have all priority=0 so they are automatically overwritten from plugins
 def hook(_func=None, priority=1) -> Any:
     def decorator(func):
         def cat_hook_wrapper(*args, **kargs):
@@ -57,7 +59,8 @@ def hook(_func=None, priority=1) -> Any:
 
 
 # All @tool decorated functions in plugins become a CatTool.
-# The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
+# The difference between base langchain Tool and CatTool is that CatTool has an instance
+# of the cat as attribute (set by the MadHatter)
 class CatTool(Tool):
     # used by the MadHatter while loading plugins in order to let a Tool access the cat instance
     def set_cat_instance(self, cat_instance):

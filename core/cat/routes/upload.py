@@ -35,10 +35,11 @@ async def rabbithole_upload_endpoint(
 
     # check if MIME type of uploaded file is supported
     if content_type not in admitted_mime_types:
+        admitted_types = {" - ".join(admitted_mime_types)}
         return JSONResponse(
             status_code=422,
             content={
-                "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
+                "error": f"MIME type {file.content_type} not supported. Admitted types: {admitted_types}"
             },
         )
 

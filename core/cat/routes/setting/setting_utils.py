@@ -6,7 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 
-# utility function to GET LLMs and embedders configuration (used from both /settings/llm/ and /settings/embedder/ endpoints)
+# utility function to GET LLMs and embedders configuration
+# (used from both /settings/llm/ and /settings/embedder/ endpoints)
 def nlp_get_settings(
     db: Session,
     setting_factory_category: str,
@@ -43,7 +44,8 @@ def nlp_get_example_put_payload():
     return ExamplePutBody
 
 
-# utility function to PUT LLMs and embedders configuration (used from both /settings/llm/ and /settings/embedder/ endpoints)
+# utility function to PUT LLMs and embedders configuration
+# (used from both /settings/llm/ and /settings/embedder/ endpoints)
 def put_nlp_setting(
     db: Session,
     modelName: str,

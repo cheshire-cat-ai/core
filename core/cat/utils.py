@@ -4,7 +4,10 @@ from datetime import timedelta
 
 
 def to_camel_case(text):
-    """Take in a string of words separated by either hyphens or underscores and returns a string of words in camel case."""
+    """
+    Take in a string of words separated by either hyphens or underscores
+    and returns a string of words in camel case.
+    """
     s = text.replace("-", " ").replace("_", " ").capitalize()
     s = s.split()
     if len(text) == 0:

@@ -268,7 +268,8 @@ def hypothetical_embedding_prompt(cat) -> str:
 
     """
     hyde_prompt = """You will be given a sentence.
-If the sentence is a question, convert it to a plausible answer. If the sentence does not contain a question, just repeat the sentence as is without adding anything to it.
+If the sentence is a question, convert it to a plausible answer. If the sentence does not contain a question, 
+just repeat the sentence as is without adding anything to it.
 
 Examples:
 - what furniture there is in my room? --> In my room there is a bed, a wardrobe and a desk with my computer

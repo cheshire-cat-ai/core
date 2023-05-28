@@ -52,7 +52,11 @@ class CatLogEnine:
 
     def default_log(self):
         """Set the same debug level to all the project dependecies."""
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> => <level>{message}</level>"
+        log_format = (
+            "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> "
+            + "<level>{level: <6}</level> <cyan>{name}.py</cyan> "
+            + "<cyan>{line}</cyan> => <level>{message}</level>"
+        )
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
             return logger.add(
@@ -132,7 +136,12 @@ class CatLogEnine:
             "original_caller": caller,
         }
 
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.py</cyan> <cyan>{extra[original_line]} ({extra[original_class]}.{extra[original_caller]})</cyan> => <level>{message}</level>"
+        log_format = (
+            "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> "
+            + "<level>{level: <6}</level> <cyan>{extra[original_name]}.py</cyan> "
+            + "<cyan>{extra[original_line]} ({extra[original_class]}.{extra[original_caller]})</cyan> => "
+            + "<level>{message}</level>"
+        )
 
         _logger = logger
 

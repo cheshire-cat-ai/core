@@ -22,7 +22,9 @@ class AgentManager:
         # extract automatically input_variables from prompt parts (can't do it yet)
         # full_prompt_content = prompt_prefix + prompt_format_instructions + prompt_suffix
         # input_variables = re.findall(r'\{(.*?)\}', full_prompt_content)
-        # input_variables = list(filter(lambda v: ("'" not in v) and ('"' not in v), input_variables)) # avoid problems if prompt contains an example dictionary/JSON
+
+        # avoid problems if prompt contains an example dictionary/JSON
+        # input_variables = list(filter(lambda v: ("'" not in v) and ('"' not in v), input_variables))
         # log('INPUT VARIABLES')
         # log(input_variables)
         input_variables = [

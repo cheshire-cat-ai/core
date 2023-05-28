@@ -1,0 +1,11 @@
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.ruff]
+extend-exclude = [
+    "__pycache__",
+    ".pytest_cache",
+    ".vscode*",
+    "*/migrations/*",
+]
+line-length = 120

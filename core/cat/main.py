@@ -1,4 +1,3 @@
-from cat.log import log
 import os
 from contextlib import asynccontextmanager
 

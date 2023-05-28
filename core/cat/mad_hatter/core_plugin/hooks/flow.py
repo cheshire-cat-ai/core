@@ -99,7 +99,8 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
 
 
 # What is the input to recall memories?
-# Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
+# Here you can do HyDE embedding, condense recent conversation or
+# condition recall query on something else important to your AI
 @hook(priority=0)
 def cat_recall_query(user_message: str, cat) -> str:
     """Hook the Hypothetical Document Embedding (HyDE) search query.

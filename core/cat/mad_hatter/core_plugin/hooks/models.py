@@ -4,7 +4,6 @@ Here is a collection of methods to hook into the settings of the Large Language 
 
 """
 
-import os
 
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders

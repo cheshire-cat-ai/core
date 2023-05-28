@@ -81,7 +81,7 @@ class VectorMemoryCollection(Qdrant):
                 f'Collection "{self.collection_name}" already present in vector store',
                 "INFO",
             )
-        except:
+        except:  # noqa
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
