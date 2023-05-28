@@ -30,9 +30,9 @@ pytest:  ## Run debugging test
 report:  ## Run coverage report
 	./scripts/report.sh
 
-# .PHONY: test
-# test:  ## Run test
-# 	./scripts/test.sh
+.PHONY: test
+test:  ## Run test
+	PYTHONPATH=src/ python -m pytest --cache-clear
 
 .PHONY: help
 help:
