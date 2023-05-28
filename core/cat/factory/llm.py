@@ -28,15 +28,13 @@ class LLMDefaultConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "Default Language Model",
-            "description":
-                "A dumb LLM just telling that the Cat is not configured. "
-                "There will be a nice LLM here "
-                "once consumer hardware allows it.",
+            "description": "A dumb LLM just telling that the Cat is not configured. "
+            "There will be a nice LLM here "
+            "once consumer hardware allows it.",
         }
 
 
 class LLMCustomConfig(LLMSettings):
-
     url: str
     auth_key: str = "optional_auth_key"
     options: str = "{}"
@@ -54,8 +52,7 @@ class LLMCustomConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "Custom LLM",
-            "description": "LLM on a custom endpoint. "
-                           "see docs for examples.",
+            "description": "LLM on a custom endpoint. " "see docs for examples.",
         }
 
 
@@ -80,7 +77,7 @@ class LLMOpenAIConfig(LLMSettings):
         schema_extra = {
             "name_human_readable": "OpenAI GPT-3",
             "description": "OpenAI GPT-3. More expensive but "
-                           "also more flexible than ChatGPT.",
+            "also more flexible than ChatGPT.",
         }
 
 
@@ -160,8 +157,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     class Config:
         schema_extra = {
             "name_human_readable": "HuggingFace Endpoint",
-            "description":
-                "Configuration for HuggingFace Endpoint language models",
+            "description": "Configuration for HuggingFace Endpoint language models",
         }
 
 
@@ -200,7 +196,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
-    LLMGooglePalmConfig
+    LLMGooglePalmConfig,
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know

@@ -61,7 +61,9 @@ class VectorMemory:
 
 
 class VectorMemoryCollection(Qdrant):
-    def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable):
+    def __init__(
+        self, cat, client: Any, collection_name: str, embedding_function: Callable
+    ):
         super().__init__(client, collection_name, embedding_function)
 
         # Get a Cat instance
@@ -75,7 +77,10 @@ class VectorMemoryCollection(Qdrant):
         try:
             self.client.get_collection(self.collection_name)
             tabula_rasa = False
-            log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+            log(
+                f'Collection "{self.collection_name}" already present in vector store',
+                "INFO",
+            )
         except:
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
@@ -89,11 +94,14 @@ class VectorMemoryCollection(Qdrant):
         if tabula_rasa:
             # Hard coded overridable first memory saved in both collections
             first_memory = Document(
-                page_content="I am the Cheshire Cat", metadata={"source": "cheshire-cat", "when": time.time()}
+                page_content="I am the Cheshire Cat",
+                metadata={"source": "cheshire-cat", "when": time.time()},
             )
 
             # Execute hook to override the first inserted memory
-            first_memory = self.cat.mad_hatter.execute_hook("before_collection_created", first_memory)
+            first_memory = self.cat.mad_hatter.execute_hook(
+                "before_collection_created", first_memory
+            )
 
             # insert first point in the collection
             self.add_texts(
@@ -109,7 +117,9 @@ class VectorMemoryCollection(Qdrant):
         query_embedding = self.embedding_function(text)
 
         # search nearest vectors
-        return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
+        return self.recall_memories_from_embedding(
+            query_embedding, metadata=metadata, k=k
+        )
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(self, embedding, metadata=None, k=5):
@@ -123,7 +133,9 @@ class VectorMemoryCollection(Qdrant):
         )
         return [
             (
-                self._document_from_scored_point(m, self.content_payload_key, self.metadata_payload_key),
+                self._document_from_scored_point(
+                    m, self.content_payload_key, self.metadata_payload_key
+                ),
                 m.score,
             )
             for m in memories

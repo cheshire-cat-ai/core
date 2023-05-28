@@ -36,7 +36,9 @@ class CatLogEnine:
                     frame = frame.f_back
                     depth += 1
 
-                logger.opt(depth=depth, exception=record.exc_info).log(LOG_LEVEL_DEPENDENCIES, record.getMessage())
+                logger.opt(depth=depth, exception=record.exc_info).log(
+                    LOG_LEVEL_DEPENDENCIES, record.getMessage()
+                )
 
         logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
@@ -54,10 +56,17 @@ class CatLogEnine:
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
             return logger.add(
-                sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
+                sys.stdout,
+                colorize=True,
+                format=log_format,
+                backtrace=True,
+                diagnose=True,
+                filter=self.show_log_level,
             )
         else:
-            return logger.add(sys.stdout, colorize=True, format=log_format, filter=self.show_log_level)
+            return logger.add(
+                sys.stdout, colorize=True, format=log_format, filter=self.show_log_level
+            )
 
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
@@ -143,19 +152,28 @@ class CatLogEnine:
                     diagnose=True,
                     filter=self.show_log_level,
                 )
-                frames = takewhile(lambda f: "/loguru/" not in f.filename, traceback.extract_stack())
+                frames = takewhile(
+                    lambda f: "/loguru/" not in f.filename, traceback.extract_stack()
+                )
                 for f in frames:
                     if f.filename.startswith("/app/./cat"):
                         filename = f.filename.replace("/app/./cat", "")
                         if not filename.startswith("/log.py"):
-                            stack = "> " + "".join("{}:{}:{}".format(filename, f.name, f.lineno))
+                            stack = "> " + "".join(
+                                "{}:{}:{}".format(filename, f.name, f.lineno)
+                            )
                             context["traceback"] = stack
 
                             _logger.bind(**context).log(level, "")
                 logger.remove()
 
         _logger.add(
-            sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
+            sys.stdout,
+            colorize=True,
+            format=log_format,
+            backtrace=True,
+            diagnose=True,
+            filter=self.show_log_level,
         )
 
         for line in lines:

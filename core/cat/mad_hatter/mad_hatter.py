@@ -46,7 +46,9 @@ class MadHatter:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
                 for py_file in py_files:
-                    plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
+                    plugin_name = py_file.replace("/", ".").replace(
+                        ".py", ""
+                    )  # this is UGLY I know. I'm sorry
 
                     plugin_module = importlib.import_module(plugin_name)
                     # all_hooks[plugin_name] = dict(
@@ -70,13 +72,12 @@ class MadHatter:
             # fix automatic naming for the Tool (will be used in the prompt)
             # if " - " in t_fix.description:
             #    t_fix.description = t_fix.description.split(" - ")[1]
-            
+
             # remove cat argument from description signature
             # so it does not end up in prompts
             cat_arg_signature = ", cat)"
             if cat_arg_signature in t_fix.description:
-                t_fix.description = \
-                    t_fix.description.replace(cat_arg_signature, ")")
+                t_fix.description = t_fix.description.replace(cat_arg_signature, ")")
 
             # access the cat from any Tool instance
             #   (see cat.mad_hatter.decorators)
@@ -90,7 +91,9 @@ class MadHatter:
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
+        plugin_json_metadata_file_path = path.join(
+            plugin_folder, plugin_json_metadata_file_name
+        )
         meta = {"id": plugin_id}
 
         if path.isfile(plugin_json_metadata_file_path):
@@ -105,7 +108,10 @@ class MadHatter:
 
                 return meta
             except Exception:
-                log(f"Error loading plugin {plugin_folder} metadata, " "defaulting to generated values")
+                log(
+                    f"Error loading plugin {plugin_folder} metadata, "
+                    "defaulting to generated values"
+                )
 
         meta["name"] = to_camel_case(plugin_id)
         meta["description"] = (

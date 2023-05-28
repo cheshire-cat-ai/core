@@ -155,7 +155,6 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
     # add time information (e.g. "2 days ago")
     memory_timestamps = []
     for m in memory_docs:
-
         # Get Time information in the Document metadata
         timestamp = m[0].metadata["when"]
 
@@ -207,7 +206,6 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
     # add source information (e.g. "extracted from file.txt")
     memory_sources = []
     for m in memory_docs:
-
         # Get and save the source of the memory
         source = m[0].metadata["source"]
         memory_sources.append(f" (extracted from {source})")
@@ -289,7 +287,7 @@ def summarization_prompt(cat) -> str:
     """Hook the summarization prompt.
 
     Allows to edit the prompt with to ask for document summarizes.
-    
+
     Args:
         cat: Cheshire Cat instance.
 

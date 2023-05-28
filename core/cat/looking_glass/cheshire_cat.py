@@ -67,7 +67,9 @@ class CheshireCat:
             template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm)
+        self.hypothetis_chain = langchain.chains.LLMChain(
+            prompt=hypothesis_prompt, llm=self.llm
+        )
 
         self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
@@ -75,7 +77,9 @@ class CheshireCat:
         self.summarization_chain = langchain.chains.LLMChain(
             llm=self.llm,
             verbose=False,
-            prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
+            prompt=langchain.PromptTemplate(
+                template=self.summarization_prompt, input_variables=["text"]
+            ),
         )
 
     def load_memory(self):
@@ -93,7 +97,9 @@ class CheshireCat:
         self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
-        memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
+        memory_query_text = self.mad_hatter.execute_hook(
+            "cat_recall_query", user_message
+        )
         log(f'Recall query: "{memory_query_text}"')
 
         # embed recall query
@@ -107,8 +113,10 @@ class CheshireCat:
         self.working_memory["episodic_memories"] = episodic_memories
 
         # recall relevant memories (declarative)
-        declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-            embedding=memory_query_embedding
+        declarative_memories = (
+            self.memory.vectors.declarative.recall_memories_from_embedding(
+                embedding=memory_query_embedding
+            )
         )
         self.working_memory["declarative_memories"] = declarative_memories
 
@@ -143,7 +151,9 @@ class CheshireCat:
         log(user_message_json, "DEBUG")
 
         # hook to modify/enrich user input
-        user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
+        user_message_json = self.mad_hatter.execute_hook(
+            "before_cat_reads_message", user_message_json
+        )
 
         # store user_message_json in working memory
         self.working_memory["user_message_json"] = user_message_json
@@ -192,14 +202,20 @@ class CheshireCat:
             if not error_description.startswith("Could not parse LLM output: `"):
                 raise e
 
-            unparsable_llm_output = error_description.removeprefix("Could not parse LLM output: `").removesuffix("`")
+            unparsable_llm_output = error_description.removeprefix(
+                "Could not parse LLM output: `"
+            ).removesuffix("`")
             cat_message = {"output": unparsable_llm_output}
 
         log(cat_message, "DEBUG")
 
         # update conversation history
-        self.working_memory.update_conversation_history(who="Human", message=user_message)
-        self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
+        self.working_memory.update_conversation_history(
+            who="Human", message=user_message
+        )
+        self.working_memory.update_conversation_history(
+            who="AI", message=cat_message["output"]
+        )
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
@@ -210,8 +226,14 @@ class CheshireCat:
         )
 
         # build data structure for output (response and why with memories)
-        episodic_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["episodic_memories"]]
-        declarative_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["declarative_memories"]]
+        episodic_report = [
+            dict(d[0]) | {"score": float(d[1])}
+            for d in self.working_memory["episodic_memories"]
+        ]
+        declarative_report = [
+            dict(d[0]) | {"score": float(d[1])}
+            for d in self.working_memory["declarative_memories"]
+        ]
         final_output = {
             "error": False,
             "type": "chat",
@@ -229,6 +251,8 @@ class CheshireCat:
             },
         }
 
-        final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output)
+        final_output = self.mad_hatter.execute_hook(
+            "before_cat_sends_message", final_output
+        )
 
         return final_output

@@ -193,20 +193,17 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                log(
-                    f"Inserted into memory({inserting_info})"
-                )
+                log(f"Inserted into memory({inserting_info})")
             else:
-                log(
-                    f"Skipped memory insertion of empty doc ({inserting_info})"
-                )
+                log(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
 
         # notify client
-        finished_reading_message = f"Finished reading {source}, " \
-            f"I made {len(docs)} thoughts on it."
+        finished_reading_message = (
+            f"Finished reading {source}, " f"I made {len(docs)} thoughts on it."
+        )
         self.cat.web_socket_notifications.append(
             {
                 "error": False,
@@ -220,9 +217,7 @@ class RabbitHole:
 
     def split_text(self, text, chunk_size, chunk_overlap):
         # do something on the text before it is splitted
-        text = self.cat.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text
-        )
+        text = self.cat.mad_hatter.execute_hook("before_rabbithole_splits_text", text)
 
         # split the documents using chunk_size and chunk_overlap
         docs = self.cat.mad_hatter.execute_hook(
@@ -230,8 +225,6 @@ class RabbitHole:
         )
 
         # do something on the text after it is splitted
-        docs = self.cat.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs
-        )
+        docs = self.cat.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs)
 
         return docs

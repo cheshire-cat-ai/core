@@ -104,33 +104,32 @@ def get_language_embedder(cat):
                 "cohere_api_key": cat.llm.cohere_api_key,
                 "model": "embed-multilingual-v2.0",
                 # Now the best model for embeddings is embed-multilingual-v2.0
-
             }
         )
 
     # HuggingFace
     elif type(cat.llm) in [HuggingFaceHub]:
         embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-                {
-                    "huggingfacehub_api_token": cat.llm.huggingfacehub_api_token,
-                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
-                }
-            )
+            {
+                "huggingfacehub_api_token": cat.llm.huggingfacehub_api_token,
+                "repo_id": "sentence-transformers/all-mpnet-base-v2",
+            }
+        )
     # elif "HF_TOKEN" in os.environ:
-      #   if "HF_EMBEDDER" in os.environ:
-        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-        #         {
-        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-        #             "repo_id": os.environ["HF_EMBEDDER"],
-        #         }
-        #     )
-        # else:
-        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-        #         {
-        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-        #             # repo_id: "..." TODO: at the moment use default
-        #         }
-        #     )
+    #   if "HF_EMBEDDER" in os.environ:
+    #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+    #         {
+    #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+    #             "repo_id": os.environ["HF_EMBEDDER"],
+    #         }
+    #     )
+    # else:
+    #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+    #         {
+    #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+    #             # repo_id: "..." TODO: at the moment use default
+    #         }
+    #     )
     else:
         embedder = embedders.EmbedderFakeConfig.get_embedder_from_config(
             {"size": 1536}  # mock openai embedding size

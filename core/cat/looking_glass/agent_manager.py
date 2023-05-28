@@ -14,7 +14,9 @@ class AgentManager:
         mad_hatter = self.cat.mad_hatter
 
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
-        prompt_format_instructions = mad_hatter.execute_hook("agent_prompt_instructions")
+        prompt_format_instructions = mad_hatter.execute_hook(
+            "agent_prompt_instructions"
+        )
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
 
         # extract automatically input_variables from prompt parts (can't do it yet)
@@ -31,7 +33,9 @@ class AgentManager:
             "agent_scratchpad",
         ]
 
-        allowed_tools = mad_hatter.execute_hook("agent_allowed_tools", copy(mad_hatter.tools))
+        allowed_tools = mad_hatter.execute_hook(
+            "agent_allowed_tools", copy(mad_hatter.tools)
+        )
         allowed_tools_names = [t.name for t in allowed_tools]
 
         prompt = ConversationalAgent.create_prompt(
