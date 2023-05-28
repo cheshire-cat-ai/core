@@ -7,11 +7,15 @@ core/venv
 
 .DS_Store
 .idea
+.vscode
 
 # DBs
 long_term_memory
 *metadata.db
 *metadata-v*.db
+
+# old admin folder
+admin
 
 # plugins are not tracked by git
 core/cat/plugins/*

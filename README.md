@@ -37,7 +37,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 
 ### Install
 
-You just need `docker` and `docker-compose` installed on your system.
+You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compose`](https://docs.docker.com/compose/install/) installed on your system.
 Clone the repo:
 
 ```bash
@@ -68,13 +68,15 @@ After that you can run:
 docker-compose up
 ```
 
+> NOTE: if you have a later version of docker-compose, use the command `docker compose up` (without the dash). [REF.](https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose) 
+
 The first time (only) it will take several minutes, as the images occupy a few GBs.
 
-- Chat with the Cheshire Cat on [localhost:3000](http://localhost:3000).
+- Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin).
 - You can also interact via REST API and try out the endpoints on [localhost:1865/docs](http://localhost:1865/docs)
 
 As a first thing, the Cat will ask you to configure your favourite language model.
-It can be done directly via the interface in the [Settings page](http://localhost:3000/settings).
+It can be done directly via the interface in the Settings page (top right in the admin).
 
 Enjoy the Cat!
 

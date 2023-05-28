@@ -1,15 +1,37 @@
+"""Hooks to modify the Cat's language and embedding models.
+
+Here is a collection of methods to hook into the settings of the Large Language Model and the Embedder.
+
+"""
+
 import os
 
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
+from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI
+from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def get_language_model(cat):
+def get_language_model(cat) -> BaseLLM:
+    """Hook into the Large Language Model (LLM) selection.
+
+    Allows to modify how the Cat selects the LLM at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
+
+    Args:
+        cat: Cheshire Cat instance.
+
+    Returns:
+        langchain `BaseLLM` instance for the selected model.
+
+    """
     selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
 
     if selected_llm is None:
@@ -32,12 +54,29 @@ def get_language_model(cat):
 
 @hook(priority=0)
 def get_language_embedder(cat):
+    """Hook into the  embedder selection.
+
+    Allows to modify how the Cat selects the embedder at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
+
+    Args:
+        cat: Cheshire Cat instance.
+
+    Returns:
+        Selected embedder model.
+    """
     # Embedding LLM
+
+    print("naked cat: ", cat.llm)
 
     # OpenAI embedder
     if type(cat.llm) in [OpenAI, OpenAIChat]:
         embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
-            {"openai_api_key": cat.llm.openai_api_key}
+            {
+                "openai_api_key": cat.llm.openai_api_key,
+            }
         )
 
     # Azure
@@ -61,25 +100,37 @@ def get_language_embedder(cat):
     # Cohere
     elif type(cat.llm) in [Cohere]:
         embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
-            {"cohere_api_key": cat.llm.cohere_api_key}
+            {
+                "cohere_api_key": cat.llm.cohere_api_key,
+                "model": "embed-multilingual-v2.0",
+                # Now the best model for embeddings is embed-multilingual-v2.0
+
+            }
         )
 
-    # HuggingFace # TODO: avoid using env variables
-    elif "HF_TOKEN" in os.environ:
-        if "HF_EMBEDDER" in os.environ:
-            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+    # HuggingFace
+    elif type(cat.llm) in [HuggingFaceHub]:
+        embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
                 {
-                    "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-                    "repo_id": os.environ["HF_EMBEDDER"],
+                    "huggingfacehub_api_token": cat.llm.huggingfacehub_api_token,
+                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
                 }
             )
-        else:
-            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-                {
-                    "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-                    # repo_id: "..." TODO: at the moment use default
-                }
-            )
+    # elif "HF_TOKEN" in os.environ:
+      #   if "HF_EMBEDDER" in os.environ:
+        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+        #         {
+        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+        #             "repo_id": os.environ["HF_EMBEDDER"],
+        #         }
+        #     )
+        # else:
+        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+        #         {
+        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
+        #             # repo_id: "..." TODO: at the moment use default
+        #         }
+        #     )
     else:
         embedder = embedders.EmbedderFakeConfig.get_embedder_from_config(
             {"size": 1536}  # mock openai embedding size

@@ -4,8 +4,7 @@ import tempfile
 import mimetypes
 from typing import List, Union
 
-from cat.utils import log
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from cat.log import log
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
@@ -29,9 +28,11 @@ class RabbitHole:
         """
         Load a given file in the Cat's memory.
 
-        :param file: absolute path of the file or UploadFile if ingested from the GUI
+        :param file: absolute path of the file or UploadFile
+            if ingested from the GUI
         :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        :param chunk_overlap: number of overlapping characters
+            between consecutive chunks
         """
 
         # split file into a list of docs
@@ -62,7 +63,8 @@ class RabbitHole:
         Load a given website in the Cat's memory.
         :param url: URL of the website to which you want to save the content
         :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        :param chunk_overlap: number of overlapping characters
+            between consecutive chunks
         """
 
         # get website content and split into a list of docs
@@ -89,22 +91,16 @@ class RabbitHole:
         Scrape website content and chunk it to a list of Documents.
         :param url: URL of the website to which you want to save the content
         :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        :param chunk_overlap: number of overlapping characters
+            between consecutive chunks
         """
 
         # load text content of the website
         loader = UnstructuredURLLoader(urls=[url])
         text = loader.load()
 
-        # split in documets using chunk_size and chunk_overlap
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        )
-        docs = text_splitter.split_documents(text)
-        for doc in docs:
-            doc.metadata["is_summary"] = False
+        docs = self.split_text(text, chunk_size, chunk_overlap)
+
         return docs
 
     def file_to_docs(
@@ -115,10 +111,14 @@ class RabbitHole:
     ) -> List[Document]:
         """
         Parse a file and chunk it to a list of Documents.
-        The file can either be ingested from the web GUI, rest API or using the *cat.rabbit_hole.send_file_in_rabbit_hole* method.
-        :param file: absolute path of the file or UploadFile if ingested from the GUI
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters between consecutive chunks
+        The file can either be ingested from the web GUI, rest API
+            or using the *cat.rabbit_hole.send_file_in_rabbit_hole* method.
+        :param file: absolute path of the file or UploadFile
+            if ingested from the GUI
+        :param chunk_size: number of characters
+            the text is split in
+        :param chunk_overlap: number of overlapping characters
+            between consecutive chunks
         """
 
         # Create temporary file
@@ -126,7 +126,8 @@ class RabbitHole:
         temp_name = temp_file.name
 
         # Check type of incoming file.
-        # It can be either UploadFile if coming from GUI or an absolute path if auto-ingested be the Cat
+        # It can be either UploadFile if coming from GUI
+        #   or an absolute path if auto-ingested be the Cat
         if isinstance(file, UploadFile):
             # Get mime type of UploadFile
             # content_type = file.content_type
@@ -162,23 +163,10 @@ class RabbitHole:
 
         # extract text from file
         text = loader.load()
-
         # delete tmp file
         os.remove(temp_name)
 
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        )
-        docs = text_splitter.split_documents(text)
-
-        log(f"Preparing to clean {len(docs)} text chunks")
-
-        # remove short texts (page numbers, isolated words, etc.)
-        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
-        for doc in docs:
-            doc.metadata["is_summary"] = False
+        docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
 
     def store_documents(self, docs: List[Document], source: str) -> None:
@@ -186,7 +174,8 @@ class RabbitHole:
         Load a list of Documents in the Cat's declarative memory.
         :param ccat: reference to the cat instance
         :param docs: a list of documents to store in memory
-        :param source: a string representing the source, either the file name or the website URL
+        :param source: a string representing the source,
+            either the file name or the website URL
         """
         log(f"Preparing to memorize {len(docs)} vectors")
 
@@ -197,30 +186,52 @@ class RabbitHole:
             doc = self.cat.mad_hatter.execute_hook(
                 "before_rabbithole_insert_memory", doc
             )
+            inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
                 _ = self.cat.memory.vectors.declarative.add_texts(
                     [doc.page_content],
                     [doc.metadata],
                 )
+
                 log(
-                    f"Inserted into memory ({d + 1}/{len(docs)}):    {doc.page_content}"
+                    f"Inserted into memory({inserting_info})"
                 )
             else:
                 log(
-                    f"Skipped memory insertion of empty page content ({d + 1}/{len(docs)})"
+                    f"Skipped memory insertion of empty doc ({inserting_info})"
                 )
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
 
         # notify client
+        finished_reading_message = f"Finished reading {source}, " \
+            f"I made {len(docs)} thoughts on it."
         self.cat.web_socket_notifications.append(
             {
                 "error": False,
                 "type": "notification",
-                "content": f"Finished reading {source}, I made {len(docs)} thoughts on it.",
+                "content": finished_reading_message,
                 "why": {},
             }
         )
 
         log("Done uploading")
+
+    def split_text(self, text, chunk_size, chunk_overlap):
+        # do something on the text before it is splitted
+        text = self.cat.mad_hatter.execute_hook(
+            "before_rabbithole_splits_text", text
+        )
+
+        # split the documents using chunk_size and chunk_overlap
+        docs = self.cat.mad_hatter.execute_hook(
+            "rabbithole_splits_text", text, chunk_size, chunk_overlap
+        )
+
+        # do something on the text after it is splitted
+        docs = self.cat.mad_hatter.execute_hook(
+            "after_rabbithole_splitted_text", docs
+        )
+
+        return docs

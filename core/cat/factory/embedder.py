@@ -30,6 +30,7 @@ class EmbedderFakeConfig(EmbedderSettings):
 
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
+    model: str = "text-embedding-ada-002"
     _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
@@ -59,6 +60,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
+    model: str = "embed-multilingual-v2.0"
     _pyclass: PyObject = langchain.embeddings.CohereEmbeddings
 
     class Config:
@@ -69,7 +71,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str
+    repo_id: str = "sentence-transformers/all-mpnet-base-v2"
     huggingfacehub_api_token: str
     _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
 
