@@ -7,7 +7,7 @@ The Cat's Long Term Memory (LTM) is made of two components:
 
 These are nothing but two [vector databases](vector_memory.md) where memories are stored in the form of vectors.
 
-You can interact with the LTM by mean of its [endpoint]().
+You can interact with the LTM using its [endpoint]().
 
 By default, the Cat queries the LTM to retrieve the relevant context that is used to make up the [Main Prompt](../prompts/main_prompt.md).
 
