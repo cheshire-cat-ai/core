@@ -20,8 +20,8 @@ By default, the Cat queries the LTM to retrieve the relevant context that is use
 flowchart LR
     subgraph LTM ["🐘Long Term Memory"]
             direction TB
-            C[(Episodic Memory)];
-            D[(Declarative Memory)];
+            C[(Episodic)];
+            D[(Declarative)];
     end
     A[Query] --> LTM; 
     LTM --> E["🪝"];
