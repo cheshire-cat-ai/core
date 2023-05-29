@@ -6,14 +6,14 @@ These are particular databases that store the content in the form of geometrical
 A vector memory comes in the guise of a named collection of vectors and additional, optional metadata.
 Each vector represents a memory.  
 They are also called *embeddings* as they are the results of the text-to-vector conversion yielded 
-by the [embedder](../language_models/llm.md). 
+by the [embedder](../llm.md). 
 
 Such databases are particularly useful because they allow to fetch relevant memories based on the vector similarity
 between a query and the stored embeddings.
 
 By default, Vector Memory Collections are created when the Cat is installed or after a complete memory swap.
 
-### Vector Memory Collections flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## Vector Memory Collections flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
 
 !!! note "Developer documentation"
     [Vector Memory Collections hooks](../../technical/plugins/hooks.md)
@@ -21,18 +21,18 @@ By default, Vector Memory Collections are created when the Cat is installed or a
 ```mermaid
 flowchart LR
     subgraph CAT ["🐱Cheshire Cat"]
-        direction TB
+        direction LR
         subgraph LTM ["🐘Long Term Memory"]
-            direction LR
+            direction TB
             C[(Episodic Memory)];
             D[(Declarative Memory)];
         end
         A["First Memory"] --> H["🪝"];
-        H["🪝"] --> C[(Episodic Memory)];
-        H["🪝"] --> D[(Declarative Memory)];
+        H["🪝"] --> C[(Episodic)];
+        H["🪝"] --> D[(Declarative )];
     end
-    E[First Installation] --> CAT;
-    F[Memory Swap] --> LTM;
+    E[First Installation] ----> CAT;
+    F[Memory Swap] ----> LTM;
 ```
 
 Nodes with the :hook: point the execution places where there is an available [hook](../plugins.md) to customize the execution pipeline.

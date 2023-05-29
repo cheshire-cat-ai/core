@@ -19,8 +19,6 @@ nav:
           - The Mad Hatter: conceptual/cheshire_cat/mad_hatter.md
           - The Rabbit Hole: conceptual/cheshire_cat/rabbit_hole.md
           - The Agent: conceptual/cheshire_cat/agent.md
-      - Language Models: conceptual/language_models/llm.md
-#          - Large Language Model: conceptual/language_models/llm.md
       - Memory:
           - Vector Memory: conceptual/memory/vector_memory.md
           - Long Term Memory: conceptual/memory/long_term_memory.md
@@ -29,9 +27,8 @@ nav:
           - HyDE prompt: conceptual/prompts/hyde.md
           - Main Prompt: conceptual/prompts/main_prompt.md
           - Summarization Prompt: conceptual/prompts/summarization.md
+      - Language Models: conceptual/llm.md
       - Plugins: conceptual/plugins.md
-#          - Hooks: conceptual/plugins/hooks.md
-#          - Tools: conceptual/plugins/tools.md
   - Technical:
       - Getting Started: technical/getting-started.md
       - How the Cat works: technical/how-the-cat-works.md

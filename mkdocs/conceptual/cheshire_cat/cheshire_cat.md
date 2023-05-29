@@ -1,2 +1,0 @@
-# Cheshire Cat
-
