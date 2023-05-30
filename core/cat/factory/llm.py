@@ -90,7 +90,8 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
     model_name: str = "gpt-35-turbo"  # or gpt-4, use only chat models !
     openai_api_base: str
     openai_api_type: str = "azure"
-    openai_api_version: str = "2023-03-15-preview"
+    # Dont mix api versions https://github.com/hwchase17/langchain/issues/4775
+    openai_api_version: str = "2023-05-15"
 
     deployment_name: str
 
@@ -109,8 +110,9 @@ class LLMAzureOpenAIConfig(LLMSettings):
     openai_api_base: str
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
-    # Current supported versions 2022-12-01 or 2023-03-15-preview
-    api_version: str = "2023-03-15-preview"
+    # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
+    # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
+    api_version: str = "2023-05-15"
     deployment_name: str = "text-davinci-003"
     model_name: str = "text-davinci-003"  # Use only completion models !
 
