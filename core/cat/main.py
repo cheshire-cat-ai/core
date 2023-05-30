@@ -13,11 +13,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from cat.looking_glass.cheshire_cat import CheshireCat
 
-# import logging
-# logging.debug('EXAMPLE with debug category')
-# logging.info('EXAMPLE with info category')
-# logging.error('EXAMPLE with error category')
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,8 +24,13 @@ async def lifespan(app: FastAPI):
     # - Not using Depends because it only supports callables (not instances)
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
-    yield
 
+    # startup message with admin and swagger addresses
+    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+    print(f'\n\nChat with the Cat on:\t{cat_address}/admin')
+    print(f'Endpoints demo on:\t{cat_address}/docs\n\n')
+
+    yield
 
 # REST API
 cheshire_cat_api = FastAPI(lifespan=lifespan, dependencies=[Depends(check_api_key)])
@@ -74,3 +74,4 @@ async def validation_exception_handler(request, exc):
 
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
+
