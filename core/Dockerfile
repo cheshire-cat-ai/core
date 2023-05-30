@@ -8,9 +8,9 @@ RUN apt-get update -y
 
 #RUN apt-get install -y poppler-utils tesseract-ocr libreoffice ### needed form unstructured?
 
-COPY ./requirements.txt requirements.txt
+COPY ./pyproject.toml pyproject.toml
 RUN pip install -U pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir ./
 
 COPY ./cat/plugins ./cat/plugins
 COPY ./install_plugin_dependencies.py install_plugin_dependencies.py
@@ -35,3 +35,4 @@ RUN npm install && npm run build
 ### FINISH ###
 WORKDIR /app
 # ready to go (docker-compose up)
+
