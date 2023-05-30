@@ -74,6 +74,7 @@ def admin_index_injected():
     cat_core_config = json.dumps({
         "CORE_HOST": os.getenv("CORE_HOST"),
         "CORE_PORT": os.getenv("CORE_PORT"),
+        "CORE_USE_SECURE_PROTOCOLS": os.getenv("CORE_USE_SECURE_PROTOCOLS"),
         "API_KEY": os.getenv("API_KEY"),
     })
 
