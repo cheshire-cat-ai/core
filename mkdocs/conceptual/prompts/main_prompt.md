@@ -1,19 +1,21 @@
 # Main Prompt
 
-The Main Prompt is the full set of instructions that are fed to the [*Agent*](../cheshire_cat/agent.md).
-For instance, instructions can be engineered to instruct the Cat on how to behave or how to use the memory and the [tools](../plugins.md).
+The Main Prompt is the full set of instructions that is fed to the [*Agent*](../cheshire_cat/agent.md).
+For instance, the prompt can be engineered to instruct the Cat to behave in a specific manner or to use the memory and the [tools](../plugins.md).
  
 This prompt is split in three parts:
 
 - a prefix;
-- the instructions
+- the instructions;
 - a suffix.
 
 Using such a complex prompt is an approach know as Retrieval Augmented Generation[^1]. 
 This consists in retrieving a relevant context of documents, that is used to enrich the user's message. 
-For example, the Cat exploits the [Hypothetical Document Embedding](hyde.md)[^2] (HyDE) technique to recall the relevant
-context from the [Long Term Memory](../memory/long_term_memory.md) and, indeed, augment the Main Prompt.  
-In the following sections, we'll explain each of these.
+Specifically, the Cat exploits the [Hypothetical Document Embedding](hyde.md)[^2] (HyDE) technique to recall the relevant
+context from the [Long Term Memory](../memory/long_term_memory.md) and, indeed, augment the Main Prompt. 
+This is also augmented with the history of the recent conversation, a set of [tools](../plugins.md) and the history the [Agent's](../cheshire_cat/agent.md) reasoning.
+
+In the following sections, we explain every prompt component.
 
 ## Prefix
 
@@ -30,7 +32,8 @@ Context of documents containing relevant information:{declarative_memory}
 If Context is not enough, you have access to the following tools:
 """
 ```
-As you may notice, the Prefix sets the information context bearing two placeholder: One for the [episodic memory](../memory/long_term_memory.md) and the other for the [declarative memory](../memory/long_term_memory.md).
+As you may notice, the Prefix sets the information context bearing two placeholder: one for the [episodic memory](../memory/long_term_memory.md) and the other for the [declarative memory](../memory/long_term_memory.md).
+It also informs the Cat about whom the Cat is.
 
 ## Instructions
 
@@ -74,7 +77,7 @@ Answer concisely to the user needs as best you can, according to the provided re
 The main goal of this component is to provide the Cat with the recent conversation history, followed by the user's input. 
 Lastly, the `{agent_scratchpad}` is the collection of notes the Cat reads from and writes to its reasoning when performing chain of thoughts.
 
-## Main Prompt flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## Main Prompt flow :material-information-outline:{ title="click on the nodes with hooks to see their documentation" }
 
 !!! note "Developer documentation"
     [Main Prompt hooks](../../technical/plugins/hooks.md)

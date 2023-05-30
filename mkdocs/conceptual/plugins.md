@@ -7,13 +7,13 @@ A plugin is nothing but a collection of hook and tools.
 
 The Cat uses functions knows as Hooks, which can be overridden, to customize the framework behavior in specific execution places.   
 Hooks come with a *priority* property. 
-The [plugins manager](cheshire_cat/mad_hatter.md) takes care of collecting all the hooks, sorting them in ascending order and executing them in descending order of priority.
+The [plugins manager](cheshire_cat/mad_hatter.md) takes care of collecting all the hooks, sorting and executing them in descending order of priority.
 
 ## Tools
 
 Tools are custom Python functions that are called by the [Agent](cheshire_cat/agent.md).   
-These functions, provided by a rich docstring, end up in the [Main Prompt](prompts/main_prompt.md). 
-In this way, the [Agent](cheshire_cat/agent.md) can make decisions about when and which tool is more suitable to fulfill the user's request.
+They come with a rich docstring upon with the [Agent](cheshire_cat/agent.md) choose *whether* and *which* tool is the most suitable to fulfill the user's request.
+The list of available tools ends up in the [Main Prompt](prompts/main_prompt.md#instructions), where the [Agent](cheshire_cat/agent.md) receives instructions on how to structure its reasoning. 
 
 !!! note "Developer documentation"   
     - [How to write a plugin](../technical/plugins/plugins.md)   

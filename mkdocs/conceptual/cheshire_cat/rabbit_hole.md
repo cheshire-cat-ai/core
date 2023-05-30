@@ -5,7 +5,7 @@ You can interact with it either through its [endpoint](../../technical/basics/ba
 
 Currently supported file formats are: `.txt`, `.md`, `.pdf` or `.html` via web URL.
 
-## Rabbit Hole flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## Rabbit Hole flow :material-information-outline:{ title="click on the nodes with hooks to see their documentation" }
 
 !!! note "Developer documentation"
     [Rabbit Hole hooks](../../technical/plugins/hooks.md)

@@ -2,15 +2,15 @@
 
 Hypothetical Document Embedding (HyDE)[^1] is a technique used to improve accuracy during similarity search among documents.
 
-Similarity search is the task of comparing text [*embeddings*](../llm.md), i.e. the vector representation of documents,
+Similarity search is the task of comparing text [*embeddings*](../llm.md#embedding-model), i.e. the vector representation of documents,
 to find similarities between them, e.g. during document question-answering. 
 
-As such, HyDE technique consists in asking the [language model](../llm.md) to generate a hypothetical answer that is used as query for the similarity search task.
+As such, HyDE technique consists in asking the [language model](../llm.md#completion-model) to generate a hypothetical answer that is used as query for the similarity search task.
 The idea behind this approach is that, during in a question-answering task, using the hypothetical answer to search for similar documents would lead to better results than using the question itself as a search query.
 
 Specifically, the Cat uses this method to retrieve the relevant memories that are provided as context and end up in the [Main Prompt](main_prompt.md).   
 Moreover, it exploits a technique named few shots learning[^2]. 
-Namely, a method that consists in providing the [language model](../llm.md) a few examples in the prompt to get more accurate answers.
+Namely, a method that consists in providing the [language model](../llm.md#completion-model) a few examples in the prompt to get more accurate answers.
 
 By default, the HyDE prompt is the following:
 ```python
@@ -30,7 +30,7 @@ Sentence:
 - {input} --> """
 ```
 
-## HyDE flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## HyDE flow :material-information-outline:{ title="click on the nodes with hooks to see their documentation" }
 
 !!! note "Developer documentation"
     - [HyDE hooks](../../technical/plugins/hooks.md)

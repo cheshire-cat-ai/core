@@ -6,7 +6,7 @@ For instance, it can be used to share data across plugins or, in general, across
 By default, the Working Memory stores the *chat history* that ends up in the [Main Prompt](../prompts/main_prompt.md).
 Moreover, the Working Memory collects the relevant context that is fetched from the *episodic* and *declarative* memories in the [Long Term Memory](long_term_memory.md).
 
-## Working Memory flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## Working Memory flow :material-information-outline:{ title="click on the nodes with hooks to see their documentation" }
 
 !!! note "Developer documentation"
     [Long Term Memory hooks](../../technical/plugins/hooks.md)

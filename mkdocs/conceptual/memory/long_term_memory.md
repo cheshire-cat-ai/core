@@ -11,7 +11,7 @@ You can interact with the LTM using its [endpoint]().
 
 By default, the Cat queries the LTM to retrieve the relevant context that is used to make up the [Main Prompt](../prompts/main_prompt.md).
 
-## Long Term Memory flow :material-information-outline:{ title="click on the hooks node to see the hooks documentation" }
+## Long Term Memory flow :material-information-outline:{ title="click on the nodes with hooks to see their documentation" }
 
 !!! note "Developer documentation"
     [Long Term Memory hooks](../../technical/plugins/hooks.md)
