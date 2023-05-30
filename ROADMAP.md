@@ -8,7 +8,7 @@
   * Reasoning
   * Documentation ✅
   * Markdown support ✅
-  * Static admin inside main container
+  * Static admin inside main container ✅
 
 * Version 2
   * Dissemination
