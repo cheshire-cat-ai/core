@@ -1,8 +1,15 @@
+"""Hooks to modify the Cat's language and embedding models.
+
+Here is a collection of methods to hook into the settings of the Large Language Model and the Embedder.
+
+"""
+
 import os
 
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
+from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
@@ -10,7 +17,21 @@ from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def get_language_model(cat):
+def get_language_model(cat) -> BaseLLM:
+    """Hook into the Large Language Model (LLM) selection.
+
+    Allows to modify how the Cat selects the LLM at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
+
+    Args:
+        cat: Cheshire Cat instance.
+
+    Returns:
+        langchain `BaseLLM` instance for the selected model.
+
+    """
     selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
 
     if selected_llm is None:
@@ -33,6 +54,19 @@ def get_language_model(cat):
 
 @hook(priority=0)
 def get_language_embedder(cat):
+    """Hook into the  embedder selection.
+
+    Allows to modify how the Cat selects the embedder at bootstrap time.
+
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+    the memories, the *Agent Manager* and the *Rabbit Hole*.
+
+    Args:
+        cat: Cheshire Cat instance.
+
+    Returns:
+        Selected embedder model.
+    """
     # Embedding LLM
 
     print("naked cat: ", cat.llm)
@@ -58,8 +92,9 @@ def get_language_embedder(cat):
                 # "deployment": "my-text-embedding-ada-002",
                 "openai_api_base": cat.llm.openai_api_base,
                 # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
-                # current supported versions 2022-12-01 or 2023-03-15-preview
-                "openai_api_version": "2023-03-15-preview",
+                # current supported versions 2022-12-01,2023-03-15-preview, 2023-05-15
+                # Don't mix api versions https://github.com/hwchase17/langchain/issues/4775
+                "openai_api_version": "2023-05-15",
             }
         )
 
