@@ -13,10 +13,9 @@ RUN pip install -U pip
 RUN pip install --no-cache-dir ./
 
 COPY ./cat/plugins ./cat/plugins
-COPY ./install_plugin_dependencies.sh install_plugin_dependencies.sh
+COPY ./install_plugin_dependencies.py install_plugin_dependencies.py
 
-RUN chmod +x ./install_plugin_dependencies.sh
-RUN ./install_plugin_dependencies.sh
+RUN python3 install_plugin_dependencies.py
 
 
 ### ADMIN (static build) ###
