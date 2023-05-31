@@ -14,8 +14,8 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
       - name: Prepare python
         run: ls && pip install .[dev]
-      - run: pip install perflint pylint-actions
       - name: Pylint
         run: pylint -f actions ./
