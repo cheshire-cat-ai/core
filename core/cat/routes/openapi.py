@@ -15,7 +15,7 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
 
         openapi_schema = get_openapi(
             title="😸 Cheshire-Cat API",
-            version=tomli.load(open("../../pyproject.toml", "rb"))["project"]["version"],
+            version=tomli.load(open("pyproject.toml", "rb"))["project"]["version"],
             description="Customizable AI architecture",
             routes=cheshire_cat_api.routes,
         )

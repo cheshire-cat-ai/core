@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Open source and customizable AI architecture "
-version = "0.0.1"
+version = "0.0.4"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -29,6 +29,8 @@ dependencies = [
     "loguru==0.7.0",
     "anthropic==0.2.9",
     "google-generativeai==0.1.0rc3",
+    "gunicorn==20.1.0",
+    "uvicorn[standard]==0.20.0",
 ]
 
 [project.optional-dependencies]
