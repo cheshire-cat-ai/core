@@ -12,6 +12,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: cd core && ls
-      - run: pip install --no-cache-dir .[dev]
+      - run: pip install .[dev]
       - run: pip install perflint pylint-actions
       - run: poetry run pylint -f actions ./
