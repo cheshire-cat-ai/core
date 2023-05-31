@@ -36,7 +36,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "autopep8",
-    "pylint"
+    "pylint",
+    "perflint",
+    "pylint-actions"
 ]
 
 [tool.coverage.run]
@@ -45,5 +47,8 @@ source = ["cat"]
 [tool.pylint]
 max-line-length = 180
 disable = [
-    "C0301","C0103","C0114","E0401","C0115","C0116","E1101","R0801","C0202","W0406","R0201","W1514","W0201","W0511"
+    "C0301","C0103","C0114","E0401","C0115","C0116","E1101","R0801","C0202","W0406","W1514","W0201","W0511"
 ]
+
+[tool.pylint.main]
+load-plugins = "pylint_actions, perflint"

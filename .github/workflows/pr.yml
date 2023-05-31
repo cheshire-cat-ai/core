@@ -1,0 +1,22 @@
+on: pull_request
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./core
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+      - name: Prepare python
+        run: ls && pip install .[dev]
+      - name: Pylint
+        run: pylint -f actions ./
