@@ -36,7 +36,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "autopep8",
-    "pylint"
+    "pylint",
+    "perflint",
+    "pylint-actions"
 ]
 
 [tool.coverage.run]
