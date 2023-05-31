@@ -3,7 +3,7 @@ from typing import Dict
 
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.log import log
-import requests as req
+import requests
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
@@ -72,7 +72,7 @@ async def rabbithole_url_endpoint(
     # check that URL is valid
     try:
         # Send a HEAD request to the specified URL
-        response = req.head(url)
+        response = requests.head(url)
         status_code = response.status_code
 
         if status_code == 200:
@@ -86,5 +86,5 @@ async def rabbithole_url_endpoint(
             return {"url": url, "info": "Website is being ingested asynchronously"}
         else:
             return {"url": url, "info": "Invalid URL"}
-    except req.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         return {"url": url, "info": "Unable to reach the link."}
