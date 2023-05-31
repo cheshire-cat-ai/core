@@ -6,10 +6,9 @@ RUN mkdir -p /app && mkdir -p /admin
 COPY ./pyproject.toml /app/pyproject.toml
 COPY ./cat/plugins /app/cat/plugins
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
-WORKDIR /admin
 
 ### SYSTEM SETUP ###
-RUN apt-get -y update && apt-get install -y curl xz-utils libmagic-mgc libmagic1 && \
+RUN apt-get -y update && apt-get install -y curl build-essential xz-utils libmagic-mgc libmagic1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -29,17 +28,19 @@ RUN NODEARCH= && dpkgArch="$(dpkg --print-architecture)" &&\
     rm node-v18.16.0-linux-${NODEARCH}.tar.xz &&\
     ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-### INSTALL PYTHON DEPENDENCIES (Core and Plugins) ###
-RUN pip install -U pip && \
-    pip install --no-cache-dir /app/ &&\
-    python3 /app/install_plugin_dependencies.py
-
 ### ADMIN (static build) ###
+WORKDIR /admin
 RUN curl -sL https://github.com/pieroit/cheshire-cat-admin/archive/main.tar.gz | tar xz -C /admin --strip-components=1 &&\
     npm install &&\
     npm run build
 
-### FINISH ###
+### INSTALL PYTHON DEPENDENCIES (Core and Plugins) ###
 WORKDIR /app
+RUN pip install -U pip && \
+    pip install --no-cache-dir ./ &&\
+    python3 install_plugin_dependencies.py
+
+
+### FINISH ###
 # ready to go (docker-compose up)
 
