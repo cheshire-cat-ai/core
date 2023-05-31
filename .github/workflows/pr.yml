@@ -11,10 +11,11 @@ jobs:
         python-version: ["3.10"]
     steps:
       - uses: actions/checkout@v3
-      - name: Prepare python
       - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - run: ls && pip install .[dev]
+      - name: Prepare python
+        run: ls && pip install .[dev]
       - run: pip install perflint pylint-actions
-      - run: pylint -f actions ./
+      - name: Pylint
+        run: pylint -f actions ./
