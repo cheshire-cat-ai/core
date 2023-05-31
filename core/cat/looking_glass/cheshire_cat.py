@@ -183,16 +183,16 @@ class CheshireCat:
         # reply with agent
         try:
             cat_message = agent_executor(agent_executor_input)
-        except ValueError as e:
+        except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
             # We grab the LLM outptu here anyway, so small and
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
-            if not error_description.startswith("Could not parse LLM output: `"):
+            if not "Could not parse LLM output: `" in error_description:
                 raise e
 
-            unparsable_llm_output = error_description.removeprefix("Could not parse LLM output: `").removesuffix("`")
+            unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {"output": unparsable_llm_output}
 
         log(cat_message, "DEBUG")
