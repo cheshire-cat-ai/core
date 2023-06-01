@@ -28,7 +28,7 @@ class VectorMemory:
             s = socket.socket()
             s.connect((qdrant_host, qdrant_port))
         except Exception:
-            log("QDrant don't respond to %s:%s" % (qdrant_host, qdrant_port))
+            log("QDrant don't respond to %s:%s" % (qdrant_host, qdrant_port), "ERROR")
             sys.exit()
         finally:
             s.close()
