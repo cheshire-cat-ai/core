@@ -93,7 +93,7 @@ def admin_index_injected():
 cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/dist/", html=False), name="admin")
 
 # static files (for plugins and other purposes)
-cheshire_cat_api.mount("/static", StaticFiles(directory="static"), name="static")
+cheshire_cat_api.mount("/static", StaticFiles(directory="cat/static"), name="static")
 
 
 # error handling
