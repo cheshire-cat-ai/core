@@ -1,5 +1,5 @@
 
-* Version 1
+* 
   * Forms from JSON schema ✅
   * Configurations
 	  * Language model provider ✅
@@ -9,10 +9,17 @@
   * Documentation ✅
   * Markdown support ✅
   * Static admin inside main container ✅
+  * Public `/chat` endpoint  
+  * js widget (for `/chat` and external websites)
+
+
+<hr>
 
 * Version 2
+  * User management
+    * User specific conversation and memory
   * Dissemination
-    * website
+    * minimal website
     * how to guides
     * use cases examples
   * QA / Test
@@ -23,10 +30,10 @@
   * Local LLM / embedder
     * CustomLLMConfig / CustomEmbedderConfig adapters
     * LLM / embedder example docker container
-  * Minimal user management
-    * User specific conversation and memory
-  * Hook surface (20 hooks)
+  * Hook surface
+    * 20 hooks ✅
     * more hooks where customization is needed
   * Plugin management
+    * Install plugin dependencies ✅
     * Activate / deactivate plugins
     * External plugin directory and customization
