@@ -1,5 +1,5 @@
 
-* 
+* Version 1
   * Forms from JSON schema ✅
   * Configurations
 	  * Language model provider ✅
