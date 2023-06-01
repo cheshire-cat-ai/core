@@ -9,8 +9,8 @@
   * Documentation ✅
   * Markdown support ✅
   * Static admin inside main container ✅
-  * Public `/chat` endpoint  
-  * js widget (for `/chat` and external websites)
+  * [Public `/chat` endpoint](https://github.com/pieroit/cheshire-cat/issues/267)  
+  * [js widget (for `/chat` and external websites)](https://github.com/pieroit/cheshire-cat/issues/269)
 
 
 <hr>
