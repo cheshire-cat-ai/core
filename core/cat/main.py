@@ -36,9 +36,9 @@ async def lifespan(app: FastAPI):
 
     yield
 
+
 # REST API
 cheshire_cat_api = FastAPI(lifespan=lifespan, dependencies=[Depends(check_api_key)])
-
 
 # Configures the CORS middleware for the FastAPI app
 cors_allowed_origins_str = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -70,7 +70,6 @@ cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 #  - API_KEY
 @cheshire_cat_api.get("/admin/")
 def admin_index_injected():
-
     cat_core_config = json.dumps({
         "CORE_HOST": os.getenv("CORE_HOST"),
         "CORE_PORT": os.getenv("CORE_PORT"),
@@ -94,7 +93,8 @@ def admin_index_injected():
 cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/dist/", html=False), name="admin")
 
 # static files (for plugins and other purposes)
-# TODO
+cheshire_cat_api.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # error handling
 @cheshire_cat_api.exception_handler(RequestValidationError)
@@ -107,4 +107,3 @@ async def validation_exception_handler(request, exc):
 
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
-
