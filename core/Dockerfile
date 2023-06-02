@@ -1,38 +1,46 @@
 
-FROM tiangolo/uvicorn-gunicorn:python3.10
+FROM python:3.10.11-slim-bullseye
 
-RUN apt-get update -y
+### PREPARE BUILD WITH NECESSARY FILES AND FOLDERS ###
+RUN mkdir -p /app && mkdir -p /admin
+COPY ./pyproject.toml /app/pyproject.toml
+COPY ./cat/plugins /app/cat/plugins
+COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
 
+### SYSTEM SETUP ###
+RUN apt-get -y update && apt-get install -y curl build-essential xz-utils libmagic-mgc libmagic1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-### CORE ###
-
-#RUN apt-get install -y poppler-utils tesseract-ocr libreoffice ### needed form unstructured?
-
-COPY ./requirements.txt requirements.txt
-RUN pip install -U pip
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY ./cat/plugins ./cat/plugins
-COPY ./install_plugin_dependencies.sh install_plugin_dependencies.sh
-
-RUN chmod +x ./install_plugin_dependencies.sh
-RUN ./install_plugin_dependencies.sh
-
+### INSTALL NODEJS ###
+RUN NODEARCH= && dpkgArch="$(dpkg --print-architecture)" &&\
+    case "${dpkgArch##*-}" in \
+      amd64) NODEARCH='x64';; \
+      ppc64el) NODEARCH='ppc64le';; \
+      s390x) NODEARCH='s390x';; \
+      arm64) NODEARCH='arm64';; \
+      armhf) NODEARCH='armv7l';; \
+      i386) NODEARCH='x86';; \
+      *) echo "unsupported architecture"; exit 1 ;;\
+    esac &&\
+    curl -fsSLO --compressed "https://nodejs.org/dist/v18.16.0/node-v18.16.0-linux-${NODEARCH}.tar.xz" &&\
+    tar -xJf node-v18.16.0-linux-${NODEARCH}.tar.xz -C /usr/local --strip-components=1 --no-same-owner &&\
+    rm node-v18.16.0-linux-${NODEARCH}.tar.xz &&\
+    ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
 ### ADMIN (static build) ###
-
-# install node
-WORKDIR /
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get install -y nodejs
-
-# clone admin sources
-RUN git clone https://github.com/pieroit/cheshire-cat-admin.git admin
 WORKDIR /admin
-# install and build
-RUN npm install && npm run build
+RUN curl -sL https://github.com/pieroit/cheshire-cat-admin/archive/main.tar.gz | tar xz -C /admin --strip-components=1 &&\
+    npm install &&\
+    npm run build
+
+### INSTALL PYTHON DEPENDENCIES (Core and Plugins) ###
+WORKDIR /app
+RUN pip install -U pip && \
+    pip install --no-cache-dir ./ &&\
+    python3 install_plugin_dependencies.py
 
 
 ### FINISH ###
-WORKDIR /app
 # ready to go (docker-compose up)
+

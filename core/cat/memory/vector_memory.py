@@ -8,7 +8,8 @@ from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
-from qdrant_client.http.models import Distance, VectorParams
+from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
+ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
 
 # TODO: hook get_embedder_size and remove dict
 
@@ -105,7 +106,6 @@ class VectorMemoryCollection(Qdrant):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
-<<<<<<< HEAD
             log(f'Collection "{self.collection_name}" already present in vector store')
             # rough edit, if you have different size delete and recreate from scratch
             if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
@@ -119,17 +119,27 @@ class VectorMemoryCollection(Qdrant):
                 self.client.recreate_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                    quantization_config=ScalarQuantization(
+                        scalar=ScalarQuantizationConfig(
+                            type=ScalarType.INT8,
+                            quantile=0.99,
+                            always_ram=False
+                        )
+                    )
                 )
                 tabula_rasa = True
-=======
-            tabula_rasa = False
-            log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
->>>>>>> main
         except:
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                quantization_config=ScalarQuantization(
+                        scalar=ScalarQuantizationConfig(
+                            type=ScalarType.INT8,
+                            quantile=0.99,
+                            always_ram=False
+                        )
+                    )
                 # TODO: if we change the embedder, how do we know the dimensionality?
             )
             tabula_rasa = True
@@ -170,6 +180,12 @@ class VectorMemoryCollection(Qdrant):
             query_filter=self._qdrant_filter_from_dict(metadata),
             with_payload=True,
             limit=k,
+            search_params=SearchParams(
+                quantization=QuantizationSearchParams(
+                    ignore=False,
+                    rescore=True
+                )
+            )
         )
         return [
             (
