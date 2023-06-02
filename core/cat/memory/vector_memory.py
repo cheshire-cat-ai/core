@@ -105,8 +105,26 @@ class VectorMemoryCollection(Qdrant):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
+<<<<<<< HEAD
+            log(f'Collection "{self.collection_name}" already present in vector store')
+            # rough edit, if you have different size delete and recreate from scratch
+            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+                tabula_rasa = False
+                log(f'Collection "{self.collection_name}" has the same size of the embedder')
+            else:
+                log(f'Collection "{self.collection_name}" has different size of the embedder')
+                self.client.delete_collection(self.collection_name)
+                log(f'Collection "{self.collection_name}" deleted')
+                log(f"Creating collection {self.collection_name} ...")
+                self.client.recreate_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                )
+                tabula_rasa = True
+=======
             tabula_rasa = False
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+>>>>>>> main
         except:
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
