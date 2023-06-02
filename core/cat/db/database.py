@@ -1,5 +1,5 @@
 import os
-
+from cat.log import get_log_level
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -7,7 +7,11 @@ SQLITE_DATABASE_URL = os.getenv("SQLITE_DATABASE_URL", "sqlite:///./metadata-v3.
 
 # `check_same_thread` equals to False enables multithreading for SQLite.
 connect_args = {"check_same_thread": False}
-engine = create_engine(SQLITE_DATABASE_URL, echo=True, connect_args=connect_args)
+echo = False
+
+if get_log_level() == "DEBUG":
+    echo = True
+engine = create_engine(SQLITE_DATABASE_URL, echo=echo, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
