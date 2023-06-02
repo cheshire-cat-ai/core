@@ -30,7 +30,7 @@ RUN NODEARCH= && dpkgArch="$(dpkg --print-architecture)" &&\
 
 ### ADMIN (static build) ###
 WORKDIR /admin
-RUN curl -sL https://github.com/pieroit/cheshire-cat-admin/archive/main.tar.gz | tar xz -C /admin --strip-components=1 &&\
+RUN curl -sL https://github.com/cheshire-cat-ai/admin-vue/archive/main.tar.gz | tar xz -C /admin --strip-components=1 &&\
     npm install &&\
     npm run build
 
