@@ -55,7 +55,7 @@ async def collection(request: Request, collection_id: str = "") -> Dict:
 
 
 # DELETE all collections
-@router.delete("/wipe_collections/")
+@router.delete("/wipe-collections/")
 async def wipe_collections(
     request: Request,
 ) -> Dict:
@@ -73,3 +73,17 @@ async def wipe_collections(
     ccat.load_memory()  # recreate the long term memories
 
     return to_return
+
+#DELETE conversation history from working memory
+@router.delete("/working-memory/conversation-history")
+async def wipe_conversation_history(
+    request: Request,
+) -> Dict:
+    """Delete conversation history from working memory"""
+
+    ccat = request.app.state.ccat
+    ccat.working_memory["history"] = []
+
+    return {
+        "deleted": "true",
+    }
