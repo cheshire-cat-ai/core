@@ -75,7 +75,7 @@ async def wipe_collections(
     return to_return
 
 #DELETE conversation history from working memory
-@router.delete("/working-memory/conversation-history")
+@router.delete("/working-memory/conversation-history/")
 async def wipe_conversation_history(
     request: Request,
 ) -> Dict:
