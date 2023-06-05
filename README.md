@@ -41,7 +41,7 @@ You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compo
 Clone the repo:
 
 ```bash
-git clone https://github.com/cheshire-cat-ai/core.git
+git clone https://github.com/cheshire-cat-ai/core.git cheshire-cat
 ```
 
 Enter the created folder:
