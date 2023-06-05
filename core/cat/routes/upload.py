@@ -29,7 +29,7 @@ async def rabbithole_upload_endpoint(
     ccat = request.app.state.ccat
 
     content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} down the rabbit hole")
+    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
     # list of admitted MIME types
 
     admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]

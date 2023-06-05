@@ -56,7 +56,7 @@ class MadHatter:
 
         log("Plugins loading:", "INFO")
         for plugin in all_plugins:
-            log("> " + plugin["name"])
+            log("> " + plugin["name"], "DEBUG")
 
         log("Hooks loading", "INFO")
         all_hooks = CatHooks.sort_hooks()

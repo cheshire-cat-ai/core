@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         await asyncio.gather(receive_message(), check_notification())
     except Exception as e:  # WebSocketDisconnect as e:
-        log(e)
+        log(e, "ERROR")
         traceback.print_exc()
 
         # send error to user
