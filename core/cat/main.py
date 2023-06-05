@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from cat.log import log
 from cat.routes import base, memory, plugins, upload, websocket
-from cat.routes.static import chat, admin, static
+from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.routes.setting import llm_setting, general_setting, embedder_setting
@@ -69,6 +69,8 @@ admin.mount_admin_index(cheshire_cat_api)
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)
 static.mount(cheshire_cat_api)
+# static files for hackable chat in cat/public
+public.mount(cheshire_cat_api)
 
 
 # error handling
