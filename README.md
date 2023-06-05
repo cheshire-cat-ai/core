@@ -29,7 +29,7 @@ If you want to know more about our vision and values, read the [Code of Ethics](
 This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
 ## Docs and Resources
-- [Official Documentation](https://cheshire-cat-ai.github.io/core/)
+- [Official Documentation](https://cheshire-cat-ai.github.io/docs/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
 - [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 
