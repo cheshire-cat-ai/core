@@ -133,7 +133,7 @@ class CatLogEnine:
         # On debug level print the traceback better
         if self.LOG_LEVEL == "DEBUG":
             if type(msg) is str and not msg.startswith("> "):
-                traceback_log_format = "<red>{extra[traceback]}</red>"
+                traceback_log_format = "<yellow>{extra[traceback]}</yellow>"
                 stack = ""
                 _logger.add(
                     sys.stdout,

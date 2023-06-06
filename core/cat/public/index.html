@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/public/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheshire Cat Chat</title>
+
+    <script type="module" crossorigin
+        src="https://raw.githack.com/cheshire-cat-ai/widget-vue/main/example/widget.js"></script>
+    <link rel="stylesheet" href="https://raw.githack.com/cheshire-cat-ai/widget-vue/main/example/widget.css">
+    <link rel="stylesheet" href="/public/main.css">
+</head>
+
+<body>
+
+    <h1>Cat ready to hack!</h1>
+
+    <div class="widget-container">
+        <cheshire-cat-chat id="cat-chat" api="none" callback="myCallback" timeout="50000" url="localhost:1865"
+            primary="#00ff00" dark />
+    </div>
+
+    <script>
+        const catChat = document.querySelector("#cat-chat")
+
+        catChat.defaults = ['How are you?', 'Who are you?', 'What time is it?']
+        catChat.features = ['web', 'reset']
+        catChat.files = ['text/plain', 'application/pdf']
+
+        function myCallback(message) {
+            console.log("Callback called.")
+            return `Let's have a chat. ${message}`
+        }
+
+        catChat.addEventListener("message", ({ detail }) => {
+            console.log("Message:", detail.text)
+        })
+
+        catChat.addEventListener("upload", ({ detail }) => {
+            console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
+        })
+
+        catChat.addEventListener("notification", ({ detail }) => {
+            console.log("Notification:", detail.text)
+        })
+    </script>
+</body>
+
+</html>

@@ -194,7 +194,7 @@ class RabbitHole:
                 )
 
                 log(
-                    f"Inserted into memory({inserting_info})"
+                    f"Inserted into memory({inserting_info})", "INFO"
                 )
             else:
                 log(

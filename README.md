@@ -26,10 +26,10 @@ Why use the Cat:
 
 If you want to know more about our vision and values, read the [Code of Ethics](CODE-OF-ETHICS.md). We are committed to openness, privacy and creativity, we want to bring AI to the long tail.
 
-This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/pieroit/cheshire-cat/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
+This project is growing fast, refactorings and code changes happens very often, join the [Issues](https://github.com/cheshire-cat-ai/core/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) to help!
 
 ## Docs and Resources
-- [Official Documentation](https://cheshire-cat-ai.github.io/core/)
+- [Official Documentation](https://cheshire-cat-ai.github.io/docs/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
 - [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 
@@ -41,25 +41,13 @@ You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compo
 Clone the repo:
 
 ```bash
-git clone https://github.com/pieroit/cheshire-cat.git
+git clone https://github.com/cheshire-cat-ai/core.git cheshire-cat
 ```
 
 Enter the created folder:
 
 ```bash
 cd cheshire-cat
-```
-
-Create your `.env` file by copying and renaming `.env.example`:
-
-On linux/mac
-```bash
-cp .env.example .env
-```
-
-On Windows
-```bash
-copy .env.example .env
 ```
 
 After that you can run:
@@ -102,7 +90,7 @@ docker-compose up
 ## Roadmap
 
 Detailed roadmap is [here](./ROADMAP.md).
-Whilst for the current progress of development, take a look at the [projects](https://github.com/pieroit/cheshire-cat/projects?query=is%3Aopen) marked as open.
+Whilst for the current progress of development, take a look at the [projects](https://github.com/orgs/cheshire-cat-ai/projects) marked as open.
 
 ## Contributing
 

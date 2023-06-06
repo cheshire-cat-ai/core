@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.0.5 ( 2023-06-05 )
+
+### Enhancements
+
+* `.env` file no more necessary for installation
+* public chat to be customized under `/public`
+* chat widget to be used on any website, from [this repo](https://github.com/cheshire-cat-ai/widget-vue)
+* static file server under `/static`
+* better logs with levels customizable in .env
+* endpoint to reset conversation
+* PR/issues templates
+* .toml instead of requirements.txt
+* faster and lighter image from Dockerfile
+* `/admin` serves a static build of the admin from [this repo](https://github.com/cheshire-cat-ai/admin-vue)
+* improved documentation, in a [new repo](https://github.com/cheshire-cat-ai/docs)
+* new hooks
 
 ## 0.0.4 ( 2023-05-25 )
 
