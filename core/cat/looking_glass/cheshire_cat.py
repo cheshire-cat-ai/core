@@ -215,11 +215,11 @@ class CheshireCat:
         final_output = {
             "error": False,
             "type": "chat",
-            "content": cat_message["output"],
+            "content": cat_message.get("output"),
             "why": {
-                "input": cat_message["input"],
-                "output": cat_message["output"],
-                "intermediate_steps": cat_message["intermediate_steps"],
+                "input": cat_message.get("input"),
+                "output": cat_message.get("output"),
+                "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
                     "vectors": {
                         "episodic": episodic_report,
