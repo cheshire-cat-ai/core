@@ -28,8 +28,12 @@ async def lifespan(app: FastAPI):
 
     # startup message with admin and swagger addresses
     cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
-    print(f'\n\nChat with the Cat on:\t{cat_address}/admin')
-    print(f'Endpoints demo on:\t{cat_address}/docs\n\n')
+
+    print('\n\n\n=============== ^._.^ ===============\n')
+    print(f'Cat REST API:\t{cat_address}/docs')
+    print(f'Cat PUBLIC:\t{cat_address}/public')
+    print(f'Cat ADMIN:\t{cat_address}/admin\n')
+    print('======================================')
 
     yield
 
