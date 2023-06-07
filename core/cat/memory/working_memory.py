@@ -7,4 +7,12 @@ class WorkingMemory(dict):
         super().__init__(history=[])
 
     def update_conversation_history(self, who, message):
+        
+        # append latest message in conversation
         self["history"].append({"who": who, "message": message})
+
+        # do not allow more than k messages in convo history
+        k = 3
+        self["history"] = self["history"][(-k-1):]
+
+

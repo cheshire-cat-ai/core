@@ -218,7 +218,6 @@ class CheshireCat:
             "content": cat_message.get("output"),
             "why": {
                 "input": cat_message.get("input"),
-                "output": cat_message.get("output"),
                 "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
                     "vectors": {

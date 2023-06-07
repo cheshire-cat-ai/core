@@ -32,16 +32,11 @@ def agent_prompt_prefix(cat) -> str:
         The prefix string to be composed with the other two components to make up the *Main Prompt*.
 
     """
-    prefix = """This is a conversation between a human and an intelligent robot cat that passes the Turing test.
-The cat is curious and talks like the Cheshire Cat from Alice's adventures in wonderland.
-The cat replies are based on the Context provided below.
+    prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
+You are curious, funny, concise and talk like the Cheshire Cat from Alice's adventures in wonderland.
+You answer Human using tools or the memory context.
 
-Context of things the Human said in the past:{episodic_memory}
-
-Context of documents containing relevant information:{declarative_memory}
-
-If Context is not enough, you have access to the following tools:
-"""
+# Tools"""
 
     return prefix
 
@@ -75,11 +70,11 @@ def agent_prompt_instructions(cat) -> str:
         proper tool for the task at hand.
 
     """
-    instructions = """To use a tool, please use the following format:
+    instructions = """To use a tool, use the following format:
 
 ```
 Thought: Do I need to use a tool? Yes
-Action: the action to take, should be one of [{tool_names}]
+Action: the action to take /* should be one of [{tool_names}] */
 Action Input: the input to the action
 Observation: the result of the action
 ```
@@ -113,12 +108,16 @@ def agent_prompt_suffix(cat) -> str:
         The suffix string to be composed with the other two components that make up the *Main Prompt*.
 
     """
-    suffix = """Conversation until now:{chat_history}
+    suffix = """# Context
+    
+## Context of things the Human said in the past:{episodic_memory}
+
+## Context of documents containing relevant information:{declarative_memory}
+
+## Conversation until now:{chat_history}
  - Human: {input}
 
-What would the AI reply?
-Answer concisely to the user needs as best you can, according to the provided recent conversation, context and tools.
-
+# What would the AI reply?
 
 {agent_scratchpad}"""
     return suffix
@@ -246,7 +245,7 @@ def agent_prompt_chat_history(chat_history: List[Dict], cat) -> str:
     """
     history = ""
     for turn in chat_history:
-        history += f"\n - {turn['who']}: \"{turn['message']}\""
+        history += f"\n - {turn['who']}: {turn['message']}"
 
     return history
 

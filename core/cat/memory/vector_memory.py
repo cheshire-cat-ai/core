@@ -104,7 +104,7 @@ class VectorMemoryCollection(Qdrant):
         log(dict(self.client.get_collection(self.collection_name)), "DEBUG")
 
     # retrieve similar memories from text
-    def recall_memories_from_text(self, text, metadata=None, k=5):
+    def recall_memories_from_text(self, text, metadata=None, k=3):
         # embed the text
         query_embedding = self.embedding_function(text)
 
@@ -112,7 +112,7 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
 
     # retrieve similar memories from embedding
-    def recall_memories_from_embedding(self, embedding, metadata=None, k=5):
+    def recall_memories_from_embedding(self, embedding, metadata=None, k=3):
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,

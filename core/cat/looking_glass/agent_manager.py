@@ -54,6 +54,7 @@ class AgentManager:
         agent = ConversationalAgent(
             llm_chain=agent_chain,
             allowed_tools=allowed_tools_names,
+            verbose=True
         )
 
         # agent executor
