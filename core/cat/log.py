@@ -21,24 +21,7 @@ class CatLogEnine:
     def __init__(self):
         """Initialize log for Cheshire Cat and the dependencies."""
         self.LOG_LEVEL = get_log_level()
-        self.LOG_LEVEL_DEPENDENCIES = os.getenv("LOG_LEVEL_DEPENDENCIES", "DEBUG")
         self.default_log()
-        LOG_LEVEL_DEPENDENCIES = self.LOG_LEVEL_DEPENDENCIES
-
-        class InterceptHandler(logging.Handler):
-            """Force all the logging under loguru."""
-
-            def emit(self, record):
-                """Set global LOG_LEVEL_DEPENDENCIES for all the dependencies."""
-                # Find caller from where originated the logged message.
-                frame, depth = sys._getframe(6), 6
-                while frame and frame.f_code.co_filename == logging.__file__:
-                    frame = frame.f_back
-                    depth += 1
-
-                logger.opt(depth=depth, exception=record.exc_info).log(LOG_LEVEL_DEPENDENCIES, record.getMessage())
-
-        logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
         # workaround for pdfminer logging
         # https://github.com/pdfminer/pdfminer.six/issues/347
