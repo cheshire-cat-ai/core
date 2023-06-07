@@ -59,7 +59,10 @@ class AgentManager:
 
         # agent executor
         agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=agent, tools=allowed_tools, return_intermediate_steps=True
+            agent=agent,
+            tools=allowed_tools,
+            return_intermediate_steps=True,
+            verbose=True
         )
 
         return agent_executor
