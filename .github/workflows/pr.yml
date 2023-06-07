@@ -1,7 +1,15 @@
-on: pull_request
+name: Cheshire-Cat Action on Pull Requests
+on:
+  pull_request:
+    branches:
+      - "main"
+  push:
+    branches:
+      - "master"
 
 jobs:
   pylint:
+    name: "Coding Standards"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -10,13 +18,15 @@ jobs:
       matrix:
         python-version: ["3.10"]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Download
+        uses: actions/checkout@v3
+      - name: Prepare Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
           cache-dependency-path: pyproject.toml
-      - name: Prepare python
-        run: ls && pip install .[dev]
+      - name: Download python dependencies
+        run: pip install .[dev]
       - name: Pylint
         run: pylint -f actions ./
