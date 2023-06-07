@@ -193,13 +193,10 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                log(
-                    f"Inserted into memory({inserting_info})", "INFO"
-                )
+                #log(f"Inserted into memory({inserting_info})", "INFO")
+                print(f"Inserted into memory({inserting_info})")
             else:
-                log(
-                    f"Skipped memory insertion of empty doc ({inserting_info})"
-                )
+                log(f"Skipped memory insertion of empty doc ({inserting_info})", "INFO")
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
@@ -216,7 +213,7 @@ class RabbitHole:
             }
         )
 
-        log("Done uploading")
+        print(f"\n\nDone uploading {source}")
 
     def split_text(self, text, chunk_size, chunk_overlap):
         # do something on the text before it is splitted

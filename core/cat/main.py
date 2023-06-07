@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from cat.log import log
+from cat.log import log, welcome
 from cat.routes import base, memory, plugins, upload, websocket
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
@@ -26,14 +26,8 @@ async def lifespan(app: FastAPI):
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
 
-    # startup message with admin and swagger addresses
-    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
-
-    print('\n\n\n=============== ^._.^ ===============\n')
-    print(f'Cat REST API:\t{cat_address}/docs')
-    print(f'Cat PUBLIC:\t{cat_address}/public')
-    print(f'Cat ADMIN:\t{cat_address}/admin\n')
-    print('======================================')
+    # startup message with admin, public and swagger addresses
+    welcome()
 
     yield
 

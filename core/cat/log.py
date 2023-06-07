@@ -12,7 +12,7 @@ from loguru import logger
 
 def get_log_level():
     """Return the global LOG level."""
-    return os.getenv("LOG_LEVEL", "DEBUG")
+    return os.getenv("LOG_LEVEL", "ERROR")
 
 
 class CatLogEnine:
@@ -156,3 +156,18 @@ def log(msg, level="DEBUG"):
     """Create function wrapper to class."""
     global logEngine
     return logEngine.log(msg, level)
+
+
+def welcome():
+
+    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+
+    with open("cat/welcome.txt", 'r') as f:
+        print(f.read())
+
+
+    print('\n=============== ^._.^ ===============\n')
+    print(f'Cat REST API:\t{cat_address}/docs')
+    print(f'Cat PUBLIC:\t{cat_address}/public')
+    print(f'Cat ADMIN:\t{cat_address}/admin\n')
+    print('======================================')
