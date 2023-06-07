@@ -22,8 +22,8 @@ def agent_prompt_prefix(cat) -> str:
     The prefix is then composed with two other prompts components, i.e. the `agent_prompt_instructions`
     and the `agent_prompt_suffix`.
 
-    The default prefix instructs the *Agent* on how to answer and hold two placeholders for the context recalled
-    from *episodic* and *declarative* memories.
+    The default prefix describe who the AI is and how it is expected to answer the Human.
+    Note it ends with "# Tools" because the next part of the prompt (generated form the *Agent*) contains the list of Tools.
 
     Args:
         cat: Cheshire Cat instance.
@@ -60,7 +60,7 @@ def agent_prompt_instructions(cat) -> str:
 
         - Action Input: input to be passed to the tool. This is inferred as explained in the tool docstring;
 
-        - Observation: description of the result.
+        - Observation: description of the result (which is the output of the @tool decorated function found in plugins).
 
     Args:
         cat: Cheshire Cat instance.
@@ -83,7 +83,7 @@ When you have a response to say to the Human, or if you do not need to use a too
 
 ```
 Thought: Do I need to use a tool? No
-{ai_prefix}: [your response here]
+{ai_prefix}: /* your response here */
 ```"""
 
     return instructions
@@ -95,11 +95,15 @@ def agent_prompt_suffix(cat) -> str:
 
     Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*.
 
-    The suffix is then composed with two other prompts components, i.e. the `agent_prompt_suffix`
+    The suffix is then composed with two other prompts components, i.e. the `agent_prompt_prefix`
     and the `agent_prompt_instructions`.
 
-    The default prefix has two placeholders: {chat_history} provides the *Agent* the recent conversation history
-    and {input} provides the user's input.
+    The default suffix has a few placeholders:
+    - {episodic_memory} provides memories retrieved from *episodic* memory (past conversations)
+    - {declarative_memory} provides memories retrieved from *declarative* memory (uploaded documents)
+    - {chat_history} provides the *Agent* the recent conversation history
+    - {input} provides the last user's input
+    - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     Args:
         cat: Cheshire Cat instance.
