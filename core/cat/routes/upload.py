@@ -1,8 +1,8 @@
+import mimetypes
 from typing import Dict
 
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.log import log
-from cat.utils import guess_mimetype_from_filename
 import requests
 from fastapi.responses import JSONResponse
 
@@ -28,7 +28,7 @@ async def rabbithole_upload_endpoint(
 
     ccat = request.app.state.ccat
 
-    content_type = guess_mimetype_from_filename(file.filename)
+    content_type = mimetypes.guess_type(file.filename)[0]
     log(f"Uploaded {content_type} down the rabbit hole", "INFO")
     # list of admitted MIME types
 

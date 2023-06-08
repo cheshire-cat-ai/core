@@ -1,10 +1,10 @@
 import os
 import time
 import tempfile
+import mimetypes
 from typing import List, Union
 
 from cat.log import log
-from cat.utils import guess_mimetype_from_filename
 from starlette.datastructures import UploadFile
 from langchain.document_loaders import (
     PDFMinerLoader,
@@ -131,14 +131,14 @@ class RabbitHole:
         if isinstance(file, UploadFile):
             # Get mime type of UploadFile
             # content_type = file.content_type
-            content_type = guess_mimetype_from_filename(file.filename)
+            content_type = mimetypes.guess_type(file.filename)[0]
 
             # Get file bytes
             file_bytes = file.file.read()
 
         elif isinstance(file, str):
             # Get mime type from file extension
-            content_type = guess_mimetype_from_filename(file)
+            content_type = mimetypes.guess_type(file)[0]
 
             # Get file bytes
             with open(file, "rb") as f:

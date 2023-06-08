@@ -8,7 +8,7 @@ COPY ./cat/plugins /app/cat/plugins
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
 
 ### SYSTEM SETUP ###
-RUN apt-get -y update && apt-get install -y curl build-essential xz-utils libmagic-mgc libmagic1 && \
+RUN apt-get -y update && apt-get install -y curl build-essential xz-utils libmagic-mgc libmagic1 mime-support && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
