@@ -24,13 +24,17 @@ async def recall_memories_from_text(
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
 
+    # Embed the query to plot it in the Memory page
+    query = ccat.embedder.embed_query(text)
+
     episodes = vector_memory.episodic.recall_memories_from_text(text=text, k=k)
     documents = vector_memory.declarative.recall_memories_from_text(text=text, k=k)
 
-    episodes = [dict(m[0]) | {"score": float(m[1])} for m in episodes]
-    documents = [dict(m[0]) | {"score": float(m[1])} for m in documents]
+    episodes = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in episodes]
+    documents = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in documents]
 
     return {
+        "query": query,
         "episodic": episodes,
         "declarative": documents,
     }

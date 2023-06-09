@@ -119,12 +119,14 @@ class VectorMemoryCollection(Qdrant):
             query_vector=embedding,
             query_filter=self._qdrant_filter_from_dict(metadata),
             with_payload=True,
+            with_vectors=True,
             limit=k,
         )
         return [
             (
                 self._document_from_scored_point(m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
+                m.vector
             )
             for m in memories
         ]
