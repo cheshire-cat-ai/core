@@ -1,5 +1,12 @@
 {
     "name": "cheshire-cat-core",
+    "customizations": {
+        "codespaces": {
+            "openFiles": [
+                "CODESPACES.md"
+            ]
+        }
+    },
     "postStartCommand": "cp .env.codespaces .env",
     "forwardPorts": [
         443
