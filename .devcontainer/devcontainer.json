@@ -1,4 +1,14 @@
 {
     "name": "cheshire-cat-core",
-    "forwardPorts": [443]
+    "postStartCommand": "cp .env.codespaces .env",
+    "forwardPorts": [
+        443
+    ],
+    "portsAttributes": {
+        "443": {
+            "label": "core",
+            "protocol": "http",
+            "onAutoForward": "ignore"
+        }
+    }
 }
