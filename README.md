@@ -35,6 +35,18 @@ This project is growing fast, refactorings and code changes happens very often, 
 
 ## Quickstart
 
+### GitHub Codespaces
+
+You can use the cat in GitHub codespaces without installing anything on your computer.
+
+Use the sample `.env.codespaces` environment file.
+
+```
+cp .env.codespaces .env
+```
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
+
 ### Install
 
 You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compose`](https://docs.docker.com/compose/install/) installed on your system.

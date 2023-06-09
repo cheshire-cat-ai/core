@@ -1,0 +1,4 @@
+{
+    "name": "cheshire-cat-core",
+    "forwardPorts": [443]
+}
