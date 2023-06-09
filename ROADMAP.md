@@ -9,9 +9,9 @@
   * Documentation ✅
   * Markdown support ✅
   * Static admin inside main container ✅
-  * [Public `/chat` endpoint](https://github.com/cheshire-cat-ai/core/issues/267/)  
-  * [js widget (for `/chat` and external websites)](https://github.com/cheshire-cat-ai/core/issues/269/)
-
+  * [Public `/chat` endpoint](https://github.com/cheshire-cat-ai/core/issues/267/)  ✅
+  * [js widget (for `/chat` and external websites)](https://github.com/cheshire-cat-ai/core/issues/269/) ✅
+  * Memory management page in admin ✅
 
 <hr>
 
@@ -26,7 +26,11 @@
     * End2End tests
     * Unit tests
   * Admin
-    * Memory management page
+    * import / export memories
+    * filters for memory search
+  * Agent
+    * Tool embeddings
+    * Custom hookable agent 
   * Local LLM / embedder
     * CustomLLMConfig / CustomEmbedderConfig adapters
     * LLM / embedder example docker container
