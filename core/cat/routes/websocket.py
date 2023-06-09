@@ -1,7 +1,7 @@
 import traceback
 import asyncio
 
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from cat.log import log
 
 router = APIRouter()
@@ -37,7 +37,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         await asyncio.gather(receive_message(), check_notification())
-    except Exception as e:  # WebSocketDisconnect as e:
+    except WebSocketDisconnect:
+        log("WebSocket connection closed", "INFO")
+    except Exception as e:
         log(e, "ERROR")
         traceback.print_exc()
 
