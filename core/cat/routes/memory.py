@@ -25,13 +25,14 @@ async def recall_memories_from_text(
     vector_memory = ccat.memory.vectors
 
     # Embed the query to plot it in the Memory page
+    query_embedding = ccat.embedder.embed_query(text)
     query = {
         "text": text,
-        "vector": ccat.embedder.embed_query(text),
+        "vector": query_embedding,
     }
 
-    episodes = vector_memory.episodic.recall_memories_from_text(text=text, k=k)
-    documents = vector_memory.declarative.recall_memories_from_text(text=text, k=k)
+    episodes = vector_memory.episodic.recall_memories_from_embedding(query_embedding, k=k)
+    documents = vector_memory.declarative.recall_memories_from_embedding(query_embedding, k=k)
 
     episodes = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in episodes]
     documents = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in documents]
@@ -39,7 +40,7 @@ async def recall_memories_from_text(
     return {
         "query": query,
         "vectors": {
-            "embedder": "EmbedderName",
+            "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
             "collections": {
                 "episodic": episodes,
                 "declarative": documents,
