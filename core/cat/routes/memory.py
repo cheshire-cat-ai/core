@@ -25,7 +25,10 @@ async def recall_memories_from_text(
     vector_memory = ccat.memory.vectors
 
     # Embed the query to plot it in the Memory page
-    query = ccat.embedder.embed_query(text)
+    query = {
+        "text": text,
+        "vector": ccat.embedder.embed_query(text),
+    }
 
     episodes = vector_memory.episodic.recall_memories_from_text(text=text, k=k)
     documents = vector_memory.declarative.recall_memories_from_text(text=text, k=k)
@@ -35,9 +38,30 @@ async def recall_memories_from_text(
 
     return {
         "query": query,
-        "episodic": episodes,
-        "declarative": documents,
+        "vectors": {
+            "embedder": "EmbedderName",
+            "collections": {
+                "episodic": episodes,
+                "declarative": documents,
+            }
+        }
     }
+
+
+# GET collection list with some metadata
+@router.get("/collection/")
+async def get_collections(request: Request) -> Dict:
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+    collections = list(vector_memory.collections.keys())
+
+    collections_metadata = {}
+    for c in collections:
+        coll_meta = vector_memory.vector_db.get_collection(c)
+        collections_metadata[c] = {
+            "vectors_count": coll_meta.vectors_count
+        }
+    return collections_metadata
 
 
 # DELETE one collection
