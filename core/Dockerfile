@@ -1,5 +1,5 @@
 
-FROM nikolaik/python-nodejs:python3.11-nodejs20
+FROM nikolaik/python-nodejs:python3.10-nodejs18-slim
 
 ### PREPARE BUILD WITH NECESSARY FILES AND FOLDERS ###
 RUN mkdir -p /app && mkdir -p /admin
