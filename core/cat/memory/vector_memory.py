@@ -8,7 +8,8 @@ from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
-from qdrant_client.http.models import Distance, VectorParams
+from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
+ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
 
 # TODO: hook get_embedder_size and remove dict
 
@@ -30,7 +31,7 @@ class VectorMemory:
             s = socket.socket()
             s.connect((qdrant_host, qdrant_port))
         except Exception:
-            log("QDrant don't respond to %s:%s" % (qdrant_host, qdrant_port), "ERROR")
+            log("QDrant does not respond to %s:%s" % (qdrant_host, qdrant_port), "ERROR")
             sys.exit()
         finally:
             s.close()
@@ -69,35 +70,6 @@ class VectorMemoryCollection(Qdrant):
         # Get a Cat instance
         self.cat = cat
 
-        # inizo le modifiche
-        #print("beccati sto gatto! ",self.cat.embedder, "\n")
-
-        size_dict = {
-        "embed-multilingual-v2.0": 768,
-        "embed-english-v2.0": 4096,
-        "embed-english-light-v2.0": 1024,
-        "text-embedding-ada-002":1536,
-        "sentence-transformers/all-mpnet-base-v2":768
-        }
-
-        if hasattr(self.cat.embedder, 'model'):
-            if self.cat.embedder.model in size_dict:
-                self.embedder_size = size_dict[self.cat.embedder.model]
-            else:
-                "not in size dict"
-        elif hasattr(self.cat.embedder, 'repo_id'):
-            self.embedder_size = size_dict[self.cat.embedder.repo_id]
-            #print(print("beccati sto Hub! ",self.cat.embedder, "\n"))
-        else:
-            #print("beccati sto gatto di default")
-            self.embedder_size = 1536
-
-        #print("beccati sta size! ",self.embedder_size)
-        #print("facciamo un test: ", len(self.embedding_function("Hello Cat!")))
-
-        # fine modifiche
-
-
         # Check if memory collection exists, otherwise create it and add first memory
         self.create_collection_if_not_exists()
 
@@ -111,7 +83,14 @@ class VectorMemoryCollection(Qdrant):
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                quantization_config=ScalarQuantization(
+                        scalar=ScalarQuantizationConfig(
+                            type=ScalarType.INT8,
+                            quantile=0.99,
+                            always_ram=False
+                        )
+                    )
                 # TODO: if we change the embedder, how do we know the dimensionality?
             )
             tabula_rasa = True
@@ -136,7 +115,7 @@ class VectorMemoryCollection(Qdrant):
         log(dict(self.client.get_collection(self.collection_name)), "DEBUG")
 
     # retrieve similar memories from text
-    def recall_memories_from_text(self, text, metadata=None, k=5):
+    def recall_memories_from_text(self, text, metadata=None, k=3):
         # embed the text
         query_embedding = self.embedding_function(text)
 
@@ -144,19 +123,27 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
 
     # retrieve similar memories from embedding
-    def recall_memories_from_embedding(self, embedding, metadata=None, k=5):
+    def recall_memories_from_embedding(self, embedding, metadata=None, k=3):
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,
             query_vector=embedding,
             query_filter=self._qdrant_filter_from_dict(metadata),
             with_payload=True,
+            with_vectors=True,
             limit=k,
+            search_params=SearchParams(
+                quantization=QuantizationSearchParams(
+                    ignore=False,
+                    rescore=True
+                )
+            )
         )
         return [
             (
                 self._document_from_scored_point(m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
+                m.vector
             )
             for m in memories
         ]

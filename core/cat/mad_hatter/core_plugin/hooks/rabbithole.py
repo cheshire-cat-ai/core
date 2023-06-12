@@ -168,9 +168,8 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
         # did we reach root summary?
         root_summary_flag = len(intermediate_summaries) == 1
 
-        log(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.", "INFO")
-
-    log(all_summaries)
+        #log(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.", "INFO")
+        print(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.")
 
     # return root summary (first element) and all intermediate summaries
     return all_summaries

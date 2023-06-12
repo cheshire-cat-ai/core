@@ -12,7 +12,7 @@ from loguru import logger
 
 def get_log_level():
     """Return the global LOG level."""
-    return os.getenv("LOG_LEVEL", "DEBUG")
+    return os.getenv("LOG_LEVEL", "ERROR")
 
 
 class CatLogEnine:
@@ -21,24 +21,7 @@ class CatLogEnine:
     def __init__(self):
         """Initialize log for Cheshire Cat and the dependencies."""
         self.LOG_LEVEL = get_log_level()
-        self.LOG_LEVEL_DEPENDENCIES = os.getenv("LOG_LEVEL_DEPENDENCIES", "DEBUG")
         self.default_log()
-        LOG_LEVEL_DEPENDENCIES = self.LOG_LEVEL_DEPENDENCIES
-
-        class InterceptHandler(logging.Handler):
-            """Force all the logging under loguru."""
-
-            def emit(self, record):
-                """Set global LOG_LEVEL_DEPENDENCIES for all the dependencies."""
-                # Find caller from where originated the logged message.
-                frame, depth = sys._getframe(6), 6
-                while frame and frame.f_code.co_filename == logging.__file__:
-                    frame = frame.f_back
-                    depth += 1
-
-                logger.opt(depth=depth, exception=record.exc_info).log(LOG_LEVEL_DEPENDENCIES, record.getMessage())
-
-        logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
         # workaround for pdfminer logging
         # https://github.com/pdfminer/pdfminer.six/issues/347
@@ -173,3 +156,18 @@ def log(msg, level="DEBUG"):
     """Create function wrapper to class."""
     global logEngine
     return logEngine.log(msg, level)
+
+
+def welcome():
+
+    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+
+    with open("cat/welcome.txt", 'r') as f:
+        print(f.read())
+
+
+    print('\n=============== ^._.^ ===============\n')
+    print(f'Cat REST API:\t{cat_address}/docs')
+    print(f'Cat PUBLIC:\t{cat_address}/public')
+    print(f'Cat ADMIN:\t{cat_address}/admin\n')
+    print('======================================')
