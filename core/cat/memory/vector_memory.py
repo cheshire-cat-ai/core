@@ -8,7 +8,10 @@ from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
-from qdrant_client.http.models import Distance, VectorParams
+from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
+ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
+
+# TODO: hook get_embedder_size and remove dict
 
 
 class VectorMemory:
@@ -81,11 +84,19 @@ class VectorMemoryCollection(Qdrant):
             self.client.recreate_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                quantization_config=ScalarQuantization(
+                        scalar=ScalarQuantizationConfig(
+                            type=ScalarType.INT8,
+                            quantile=0.99,
+                            always_ram=False
+                        )
+                    )
                 # TODO: if we change the embedder, how do we know the dimensionality?
             )
             tabula_rasa = True
 
         # TODO: if the embedder changed, a new vectorstore must be created
+        # TODO: need a more elegant solution
         if tabula_rasa:
             # Hard coded overridable first memory saved in both collections
             first_memory = Document(
@@ -121,6 +132,12 @@ class VectorMemoryCollection(Qdrant):
             with_payload=True,
             with_vectors=True,
             limit=k,
+            search_params=SearchParams(
+                quantization=QuantizationSearchParams(
+                    ignore=False,
+                    rescore=True
+                )
+            )
         )
         return [
             (
