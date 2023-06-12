@@ -9,6 +9,7 @@ router = APIRouter()
 @router.delete("/point/{memory_id}/")
 async def delete_memories(memory_id: str) -> Dict:
     """Delete specific element in memory."""
+    
     return {"error": "to be implemented"}
 
 
@@ -50,23 +51,30 @@ async def recall_memories_from_text(
 
 
 # GET collection list with some metadata
-@router.get("/collection/")
+@router.get("/collections/")
 async def get_collections(request: Request) -> Dict:
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
     collections = list(vector_memory.collections.keys())
 
-    collections_metadata = {}
+    collections_metadata = []
+
     for c in collections:
         coll_meta = vector_memory.vector_db.get_collection(c)
-        collections_metadata[c] = {
+        collections_metadata += [{
+            "name": c,
             "vectors_count": coll_meta.vectors_count
-        }
-    return collections_metadata
+        }]
+
+    return {
+        "status": "success", 
+        "results": len(collections_metadata), 
+        "collections": collections_metadata
+    }
 
 
 # DELETE one collection
-@router.delete("/collection/{collection_id}")
+@router.delete("/collections/{collection_id}")
 async def collection(request: Request, collection_id: str = "") -> Dict:
     """Delete and recreate a collection"""
 
