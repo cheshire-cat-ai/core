@@ -10,7 +10,7 @@ import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
 from langchain.llms.base import BaseLLM
-from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI
+from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook

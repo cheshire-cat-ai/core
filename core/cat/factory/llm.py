@@ -136,6 +136,22 @@ class LLMCohereConfig(LLMSettings):
             "description": "Configuration for Cohere language model",
         }
 
+# https://python.langchain.com/en/latest/modules/models/llms/integrations/huggingface_textgen_inference.html
+class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
+    inference_server_url: str
+    max_new_tokens: int = 512
+    top_k: int = 10
+    top_p: float = 0.95
+    typical_p: float = 0.95
+    temperature: float = 0.01
+    repetition_penalty: float = 1.03
+    _pyclass: PyObject = langchain.llms.HuggingFaceTextGenInference
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "HuggingFace TextGen Inference",
+            "description": "Configuration for HuggingFace TextGen Inference",
+        }
 
 class LLMHuggingFaceHubConfig(LLMSettings):
     # model_kwargs = {
@@ -199,6 +215,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMCohereConfig,
     LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
+    LLMHuggingFaceTextGenInferenceConfig,
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
