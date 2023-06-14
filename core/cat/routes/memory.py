@@ -32,20 +32,18 @@ async def recall_memories_from_text(
         "vector": query_embedding,
     }
 
-    episodes = vector_memory.episodic.recall_memories_from_embedding(query_embedding, k=k)
-    documents = vector_memory.declarative.recall_memories_from_embedding(query_embedding, k=k)
-
-    episodes = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in episodes]
-    documents = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in documents]
-
+    # Loop over collections and retrieve nearby memories
+    collections = list(vector_memory.collections.keys())
+    recalled = {}
+    for c in collections:
+        memories = vector_memory.collections[c].recall_memories_from_embedding(query_embedding, k=k)
+        recalled[c] = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in memories]
+    
     return {
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
-            "collections": {
-                "episodic": episodes,
-                "declarative": documents,
-            }
+            "collections": recalled
         }
     }
 
