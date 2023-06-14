@@ -1,6 +1,7 @@
 import glob
 import json
 import importlib
+import time
 from os import path
 from inspect import getmembers, isfunction  # , signature
 
@@ -67,24 +68,77 @@ class MadHatter:
         all_tools_fixed = []
         for t in all_tools:
             t_fix = t[1]  # it was a tuple, the Tool is the second element
-            # fix automatic naming for the Tool (will be used in the prompt)
-            # if " - " in t_fix.description:
-            #    t_fix.description = t_fix.description.split(" - ")[1]
-            
-            # remove cat argument from description signature
-            # so it does not end up in prompts
-            cat_arg_signature = ", cat)"
-            if cat_arg_signature in t_fix.description:
-                t_fix.description = t_fix.description.replace(cat_arg_signature, ")")
 
-            # access the cat from any Tool instance
-            #   (see cat.mad_hatter.decorators)
-            t_fix.set_cat_instance(self.ccat)
+            # Prepare the tool to be used in the Cat (setting the cat instanca, adding properties)
+            t_fix.augment_tool(self.ccat)
 
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed)
 
         return all_hooks, all_tools_fixed, all_plugins
+    
+
+    # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
+    def embed_tools(self):
+        
+        # retrieve from vectorDB all tool embeddings
+        vector_db = self.ccat.memory.vectors.vector_db 
+        all_tools_points, _ = vector_db.scroll(
+            collection_name="procedural",
+            with_vectors=True,
+            limit=None,
+        )
+        
+        # easy access to plugin tools
+        plugins_tools_index = {t.description: t for t in self.ccat.mad_hatter.tools}
+        #log(plugins_tools_index, "WARNING")
+
+        points_to_be_deleted = []
+
+        # loop over vectors
+        for record in all_tools_points:
+            # if the tools is active in plugins, assign embedding
+            try:
+                tool_description = record.payload["page_content"]
+                plugins_tools_index[tool_description].embedding = record.vector
+                #log(plugins_tools_index[tool_description], "WARNING")
+            # else delete it
+            except Exception as e:
+                log(f"Deleting embedded tool: {record.payload['page_content']}", "WARNING")
+                points_to_be_deleted.append(record.id)
+        
+        if len(points_to_be_deleted) > 0:
+            vector_db.delete(
+                collection_name="procedural",
+                points_selector=points_to_be_deleted
+            )
+
+        # loop over tools
+        for tool in self.ccat.mad_hatter.tools:
+            # if there is no embedding, create it
+            if not tool.embedding:
+
+                # save it to DB
+                ids_inserted = self.ccat.memory.vectors.procedural.add_texts(
+                    [tool.description],
+                    [{
+                        "source": "tool",
+                        "when": time.time(),
+                        "name": tool.name,
+                        "docstring": tool.docstring
+                    }],
+                )
+
+                # retrieve saved point and assign embedding to the Tool
+                records_inserted = vector_db.retrieve(
+                    collection_name="procedural",
+                    ids=ids_inserted,
+                    with_vectors=True
+                )
+                tool.embedding = records_inserted[0].vector
+
+                log(f"Newly embedded tool: {tool.description}", "WARNING")
+                
 
     # Tries to load the plugin metadata from the provided plugin folder
     def get_plugin_metadata(self, plugin_folder: str):

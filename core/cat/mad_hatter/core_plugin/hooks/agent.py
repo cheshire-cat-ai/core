@@ -12,7 +12,7 @@ from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
+def agent_allowed_tools(cat) -> List[BaseTool]:
     """Hook the allowed tools.
 
     Allows to decide which tools end up in the *Agent* prompt.
@@ -21,7 +21,6 @@ def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
      and launch custom chains with `cat.llm`.
 
     Args:
-        tools: list of @tool functions extracted from the plugins.
         cat: Cheshire Cat instance.
 
     Returns:
@@ -33,7 +32,7 @@ def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
     default_tools_name = ["llm-math"]  # , "python_repl", "terminal"]
     default_tools = load_tools(default_tools_name, llm=cat.llm)
 
-    allowed_tools = tools + default_tools
+    allowed_tools = cat.mad_hatter.tools + default_tools
 
     return allowed_tools
 
