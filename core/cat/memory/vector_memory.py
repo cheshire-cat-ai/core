@@ -58,9 +58,21 @@ class VectorMemory:
             embedding_function=self.embedder.embed_query,
         )
 
+        # Procedural memory will contain tools and knowledge on how to do things
+        self.procedural = VectorMemoryCollection(
+            cat=cat,
+            client=self.vector_db,
+            collection_name="procedural",
+            embedding_function=self.embedder.embed_query,
+        )
+
         # Dictionary containing all collections
         # Useful for cross-searching and to create/use collections from plugins
-        self.collections = {"episodic": self.episodic, "declarative": self.declarative}
+        self.collections = {
+            "episodic": self.episodic,
+            "declarative": self.declarative,
+            "procedural": self.procedural,
+        }
 
 
 class VectorMemoryCollection(Qdrant):
