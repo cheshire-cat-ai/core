@@ -68,7 +68,7 @@ class CatTool(Tool):
 
     async def _arun(self, input_by_llm):
         # should be used for async Tools, just using sync here
-        return self._run(input_by_llm)
+        return self._run(input_by_llm, cat=self.cat)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:

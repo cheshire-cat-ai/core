@@ -75,12 +75,12 @@ class MadHatter:
             # so it does not end up in prompts
             cat_arg_signature = ", cat)"
             if cat_arg_signature in t_fix.description:
-                t_fix.description = \
-                    t_fix.description.replace(cat_arg_signature, ")")
+                t_fix.description = t_fix.description.replace(cat_arg_signature, ")")
 
             # access the cat from any Tool instance
             #   (see cat.mad_hatter.decorators)
             t_fix.set_cat_instance(self.ccat)
+
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed)
 
