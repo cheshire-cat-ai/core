@@ -59,16 +59,33 @@ def hook(_func=None, priority=1) -> Any:
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
 class CatTool(Tool):
+
+    # Tool embedding is saved in the "procedural" vector DB collection.
+    # During CheshireCat.bootstrap(), after memory is loaded, the mad_hatter will retrieve the embedding from memory or create one if not present, and assign this attribute
+    embedding: List = None
+
+    # Tool docstring, is also available under self.func.__doc__
+    docstring: str = ""
+
     # used by the MadHatter while loading plugins in order to let a Tool access the cat instance
-    def set_cat_instance(self, cat_instance):
+    def augment_tool(self, cat_instance):
+        
         self.cat = cat_instance
+        self.docstring = self.func.__doc__
+
+        # remove cat argument from description signature
+        # so it does not end up in prompts
+        cat_arg_signature = ", cat)"
+        if cat_arg_signature in self.description:
+            self.description = self.description.replace(cat_arg_signature, ")")
+
 
     def _run(self, input_by_llm):
         return self.func(input_by_llm, cat=self.cat)
 
     async def _arun(self, input_by_llm):
         # should be used for async Tools, just using sync here
-        return self._run(input_by_llm)
+        return self._run(input_by_llm, cat=self.cat)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:

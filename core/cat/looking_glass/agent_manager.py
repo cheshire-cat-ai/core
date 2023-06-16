@@ -31,7 +31,10 @@ class AgentManager:
             "agent_scratchpad",
         ]
 
-        allowed_tools = mad_hatter.execute_hook("agent_allowed_tools", copy(mad_hatter.tools))
+        input_variables = mad_hatter.execute_hook("before_agent_creates_prompt", input_variables,
+                                                  " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
+
+        allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
         allowed_tools_names = [t.name for t in allowed_tools]
 
         prompt = ConversationalAgent.create_prompt(

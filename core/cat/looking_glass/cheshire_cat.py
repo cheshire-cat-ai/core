@@ -37,8 +37,14 @@ class CheshireCat:
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap")
 
+        # load LLM and embedder
         self.load_natural_language()
+
+        # Load memories (vector collections and working_memory)
         self.load_memory()
+
+        # After memory is loaded, we can get/create tools embeddings
+        self.mad_hatter.embed_tools()
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager(self)

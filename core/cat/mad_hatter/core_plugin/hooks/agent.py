@@ -12,7 +12,7 @@ from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
+def agent_allowed_tools(cat) -> List[BaseTool]:
     """Hook the allowed tools.
 
     Allows to decide which tools end up in the *Agent* prompt.
@@ -21,7 +21,6 @@ def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
      and launch custom chains with `cat.llm`.
 
     Args:
-        tools: list of @tool functions extracted from the plugins.
         cat: Cheshire Cat instance.
 
     Returns:
@@ -33,6 +32,31 @@ def agent_allowed_tools(tools: List[BaseTool], cat) -> List[BaseTool]:
     default_tools_name = ["llm-math"]  # , "python_repl", "terminal"]
     default_tools = load_tools(default_tools_name, llm=cat.llm)
 
-    allowed_tools = tools + default_tools
+    allowed_tools = cat.mad_hatter.tools + default_tools
 
     return allowed_tools
+
+
+@hook(priority=0)
+def before_agent_creates_prompt(input_variables, main_prompt, cat):
+    """Hook to dynamically define the input variables.
+
+    Allows to dynamically filter the input variables that end up in the main prompt by looking for which placeholders
+    there are in it starting from a fixed list.
+
+    Args:
+        input_variables: list of placeholders to look for in the main prompt
+        main_prompt: string made of the prompt prefix, the agent instructions and the prompt suffix
+        cat: Cheshire Cat instance
+
+    Returns:
+        list of placeholders present in the main prompt.
+
+    """
+
+    # Loop the input variables and check if they are in the main prompt
+    input_variables = [i for i in input_variables if i in main_prompt]
+
+    return input_variables
+
+

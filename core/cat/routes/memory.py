@@ -9,6 +9,7 @@ router = APIRouter()
 @router.delete("/point/{memory_id}/")
 async def delete_memories(memory_id: str) -> Dict:
     """Delete specific element in memory."""
+    
     return {"error": "to be implemented"}
 
 
@@ -31,42 +32,47 @@ async def recall_memories_from_text(
         "vector": query_embedding,
     }
 
-    episodes = vector_memory.episodic.recall_memories_from_embedding(query_embedding, k=k)
-    documents = vector_memory.declarative.recall_memories_from_embedding(query_embedding, k=k)
-
-    episodes = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in episodes]
-    documents = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in documents]
-
+    # Loop over collections and retrieve nearby memories
+    collections = list(vector_memory.collections.keys())
+    recalled = {}
+    for c in collections:
+        memories = vector_memory.collections[c].recall_memories_from_embedding(query_embedding, k=k)
+        recalled[c] = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in memories]
+    
     return {
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
-            "collections": {
-                "episodic": episodes,
-                "declarative": documents,
-            }
+            "collections": recalled
         }
     }
 
 
 # GET collection list with some metadata
-@router.get("/collection/")
+@router.get("/collections/")
 async def get_collections(request: Request) -> Dict:
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
     collections = list(vector_memory.collections.keys())
 
-    collections_metadata = {}
+    collections_metadata = []
+
     for c in collections:
         coll_meta = vector_memory.vector_db.get_collection(c)
-        collections_metadata[c] = {
+        collections_metadata += [{
+            "name": c,
             "vectors_count": coll_meta.vectors_count
-        }
-    return collections_metadata
+        }]
+
+    return {
+        "status": "success", 
+        "results": len(collections_metadata), 
+        "collections": collections_metadata
+    }
 
 
 # DELETE one collection
-@router.delete("/collection/{collection_id}")
+@router.delete("/collections/{collection_id}")
 async def collection(request: Request, collection_id: str = "") -> Dict:
     """Delete and recreate a collection"""
 
