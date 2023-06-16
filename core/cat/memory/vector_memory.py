@@ -42,6 +42,9 @@ class VectorMemory:
             port=qdrant_port,
         )
 
+        # dimensionality embedder? --> "hello world"
+        dim = 1010
+
         # Episodic memory will contain user and eventually cat utterances
         self.episodic = VectorMemoryCollection(
             cat=cat,

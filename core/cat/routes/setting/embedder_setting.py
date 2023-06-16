@@ -52,8 +52,7 @@ def upsert_llm_setting(
     )
 
     # reload the cat at runtime
-    # TODO: delete old embedding space
-    # ccat = request.app.state.ccat
-    # ccat.bootstrap()
+    ccat = request.app.state.ccat
+    ccat.bootstrap()
 
     return status
