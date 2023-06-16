@@ -9,6 +9,7 @@ from typing import List
 from langchain.tools.base import BaseTool
 from langchain.agents import load_tools
 from cat.mad_hatter.decorators import hook
+from cat.log import log
 
 
 @hook(priority=0)
@@ -27,12 +28,29 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
         List of allowed tools.
     """
 
-    # add to plugin defined tools, also some default tool included in langchain
-    # see complete list here: https://python.langchain.com/en/latest/modules/agents/tools.html
+    # Get the User's input
+    user_input = cat.working_memory["user_message_json"]["text"]
+
+    # Embed the user's input to query the procedural memory with it
+    query_embedding = cat.embedder.embed_query(user_input)
+
+    # Make semantic search in the procedural memory to retrieve the name of the 3 most suitable tools
+    embedded_tools = cat.memory.vectors.procedural.recall_memories_from_embedding(query_embedding)
+
+    # Get the tools names only
+    tools_names = [t[0].metadata["name"] for t in embedded_tools]
+
+    # Get the LangChain BaseTool by name
+    tools = [i for i in cat.mad_hatter.tools if i.name in tools_names]
+
+    # log(tools, "ERROR")
+
+    # Add LangChain default tools
+    # Full list here: https://python.langchain.com/en/latest/modules/agents/tools.html
     default_tools_name = ["llm-math"]  # , "python_repl", "terminal"]
     default_tools = load_tools(default_tools_name, llm=cat.llm)
 
-    allowed_tools = cat.mad_hatter.tools + default_tools
+    allowed_tools = tools + default_tools
 
     return allowed_tools
 
