@@ -12,7 +12,7 @@ router = APIRouter()
 # receive files via http endpoint
 # TODO: should we receive files also via websocket?
 @router.post("/")
-async def rabbithole_upload_endpoint(
+async def rabbithole_file_upload(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -57,7 +57,7 @@ async def rabbithole_upload_endpoint(
 
 
 @router.post("/web/")
-async def rabbithole_url_endpoint(
+async def rabbithole_url_upload(
     request: Request,
     background_tasks: BackgroundTasks,
     url: str = Body(
@@ -88,3 +88,17 @@ async def rabbithole_url_endpoint(
             return {"url": url, "info": "Invalid URL"}
     except requests.exceptions.RequestException as e:
         return {"url": url, "info": "Unable to reach the link."}
+
+
+@router.post("/memory/")
+async def rabbithole_memory_upload(
+    request: Request,
+    file: UploadFile,
+    background_tasks: BackgroundTasks
+) -> Dict:
+    """Upload a memory json file to the CCat memory"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    return {"error": "to be implemented"}

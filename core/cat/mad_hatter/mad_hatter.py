@@ -154,6 +154,12 @@ class MadHatter:
 
                 meta["name"] = json_file_data["name"]
                 meta["description"] = json_file_data["description"]
+                meta["author_name"] = json_file_data["author_name"]
+                meta["author_url"] = json_file_data["author_url"]
+                meta["plugin_url"] = json_file_data["plugin_url"]
+                meta["tags"] = json_file_data["tags"]
+                meta["thumb"] = json_file_data["thumb"]
+                meta["version"] = json_file_data["version"]
 
                 json_file.close()
 
@@ -167,6 +173,12 @@ class MadHatter:
             f"Please create a `{plugin_json_metadata_file_name}`"
             " in the plugin folder."
         )
+        meta["author_name"] = "Unknown author"
+        meta["author_url"] = ""
+        meta["plugin_url"] = ""
+        meta["tags"] = "unknown"
+        meta["thumb"] = ""
+        meta["version"] = "0.0.1"
 
         return meta
 
