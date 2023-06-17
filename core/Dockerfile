@@ -38,6 +38,7 @@ RUN curl -sL https://github.com/cheshire-cat-ai/admin-vue/archive/main.tar.gz | 
 WORKDIR /app
 RUN pip install -U pip && \
     pip install --no-cache-dir ./ &&\
+    python3 -c "import nltk; nltk.download('punkt')" &&\
     python3 install_plugin_dependencies.py
 
 

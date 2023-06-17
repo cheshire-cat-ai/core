@@ -135,9 +135,13 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
         cat: Cheshire Cat instance.
 
     Returns:
-        list of langchain`Document` with text summaries of the original ones.
+        list of langchain `Document` with text summaries of the original ones.
 
     """
+
+    if not docs:
+        return []
+
     # service variable to store intermediate results
     intermediate_summaries = docs
 

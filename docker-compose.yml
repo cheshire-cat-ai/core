@@ -27,6 +27,8 @@ services:
       - --port
       - "80"
       - --reload # take away in prod
+      - --reload-include
+      - "plugin.json"
     restart: unless-stopped
 
   cheshire-cat-vector-memory:
