@@ -134,7 +134,7 @@ def get_language_embedder(cat):
         #     )
     else:
         embedder = embedders.EmbedderFakeConfig.get_embedder_from_config(
-            {"size": 1536}  # mock openai embedding size
+            {"size": 128}  # mock openai embedding size
         )
 
     return embedder
