@@ -13,6 +13,7 @@ core/venv
 long_term_memory
 *metadata.db
 *metadata-v*.db
+test_db.db
 
 # old admin folder
 admin
