@@ -76,19 +76,18 @@ class MadHatter:
         log(all_tools_fixed)
 
         return all_hooks, all_tools_fixed, all_plugins
-    
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
-        
+
         # retrieve from vectorDB all tool embeddings
-        vector_db = self.ccat.memory.vectors.vector_db 
+        vector_db = self.ccat.memory.vectors.vector_db
         all_tools_points, _ = vector_db.scroll(
             collection_name="procedural",
             with_vectors=True,
             limit=None,
         )
-        
+
         # easy access to plugin tools
         plugins_tools_index = {t.description: t for t in self.ccat.mad_hatter.tools}
         #log(plugins_tools_index, "WARNING")
@@ -101,12 +100,12 @@ class MadHatter:
             try:
                 tool_description = record.payload["page_content"]
                 plugins_tools_index[tool_description].embedding = record.vector
-                #log(plugins_tools_index[tool_description], "WARNING")
+                # log(plugins_tools_index[tool_description], "WARNING")
             # else delete it
             except Exception as e:
                 log(f"Deleting embedded tool: {record.payload['page_content']}", "WARNING")
                 points_to_be_deleted.append(record.id)
-        
+
         if len(points_to_be_deleted) > 0:
             vector_db.delete(
                 collection_name="procedural",
@@ -117,7 +116,6 @@ class MadHatter:
         for tool in self.ccat.mad_hatter.tools:
             # if there is no embedding, create it
             if not tool.embedding:
-
                 # save it to DB
                 ids_inserted = self.ccat.memory.vectors.procedural.add_texts(
                     [tool.description],
@@ -138,7 +136,6 @@ class MadHatter:
                 tool.embedding = records_inserted[0].vector
 
                 log(f"Newly embedded tool: {tool.description}", "WARNING")
-                
 
     # Tries to load the plugin metadata from the provided plugin folder
     def get_plugin_metadata(self, plugin_folder: str):
