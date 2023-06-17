@@ -42,15 +42,13 @@ class VectorMemory:
             port=qdrant_port,
         )
 
-        # dimensionality embedder? --> "hello world"
-        dim = 1010
-
         # Episodic memory will contain user and eventually cat utterances
         self.episodic = VectorMemoryCollection(
             cat=cat,
             client=self.vector_db,
             collection_name="episodic",
             embedding_function=self.embedder.embed_query,
+            # vector_size = self.embedder_size,
         )
 
         # Declarative memory will contain uploaded documents' content (and summaries)
@@ -59,6 +57,7 @@ class VectorMemory:
             client=self.vector_db,
             collection_name="declarative",
             embedding_function=self.embedder.embed_query,
+            # vector_size = self.embedder_size,
         )
 
         # Procedural memory will contain tools and knowledge on how to do things
@@ -67,6 +66,7 @@ class VectorMemory:
             client=self.vector_db,
             collection_name="procedural",
             embedding_function=self.embedder.embed_query,
+            # vector_size = self.embedder_size,
         )
 
         # Dictionary containing all collections
@@ -85,6 +85,20 @@ class VectorMemoryCollection(Qdrant):
         # Get a Cat instance
         self.cat = cat
 
+        # print("beccati sto gatto! ",self.cat.embedder, "\n")
+
+        if hasattr(self.cat.embedder, 'model'):
+            self.embedder_size = len(self.cat.embedder.embed_query("hello world"))
+        elif hasattr(self.cat.embedder, 'repo_id'):
+            self.embedder_size = len(self.cat.embedder.embed_query("hello world"))
+            print(print("beccati sto Hub! ",self.cat.embedder, "\n"))
+        else:
+            print("beccati sto gatto di default")
+            self.embedder_size = 128
+        
+        # print("beccati sta size! ",self.embedder_size)
+        # print("facciamo un test: ", len(self.cat.embedder.embed_query("Hello Cat!")))
+
         # Check if memory collection exists, otherwise create it and add first memory
         self.create_collection_if_not_exists()
 
@@ -92,13 +106,34 @@ class VectorMemoryCollection(Qdrant):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
-            tabula_rasa = False
+            # tabula_rasa = False
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+                tabula_rasa = False
+                log(f'Collection "{self.collection_name}" has the same size of the embedder')
+                # print("stessa dimensione")
+            else:
+                log(f'Collection "{self.collection_name}" has different size of the embedder')
+                self.client.delete_collection(self.collection_name)
+                log(f'Collection "{self.collection_name}" deleted')
+                log(f"Creating collection {self.collection_name} ...")
+                self.client.recreate_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+                    quantization_config=ScalarQuantization(
+                        scalar=ScalarQuantizationConfig(
+                            type=ScalarType.INT8,
+                            quantile=0.99,
+                            always_ram=False
+                        )
+                    )
+                )
+                tabula_rasa = True
         except:
             log(f"Creating collection {self.collection_name} ...", "INFO")
             self.client.recreate_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
                 quantization_config=ScalarQuantization(
                         scalar=ScalarQuantizationConfig(
                             type=ScalarType.INT8,
