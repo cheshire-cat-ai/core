@@ -18,7 +18,7 @@ class EmbedderSettings(BaseSettings):
 
 
 class EmbedderFakeConfig(EmbedderSettings):
-    size: int = 1536
+    size: int = 128
     _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
 
     class Config:
