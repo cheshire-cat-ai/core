@@ -73,7 +73,7 @@ class MadHatter:
             t_fix.augment_tool(self.ccat)
 
             all_tools_fixed.append(t_fix)
-        log(all_tools_fixed)
+        log(all_tools_fixed, "INFO")
 
         return all_hooks, all_tools_fixed, all_plugins
 
@@ -89,7 +89,7 @@ class MadHatter:
         )
 
         # easy access to plugin tools
-        plugins_tools_index = {t.description: t for t in self.ccat.mad_hatter.tools}
+        plugins_tools_index = {t.description: t for t in self.tools}
         #log(plugins_tools_index, "WARNING")
 
         points_to_be_deleted = []
@@ -113,7 +113,7 @@ class MadHatter:
             )
 
         # loop over tools
-        for tool in self.ccat.mad_hatter.tools:
+        for tool in self.tools:
             # if there is no embedding, create it
             if not tool.embedding:
                 # save it to DB

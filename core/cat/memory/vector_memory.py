@@ -71,6 +71,7 @@ class VectorMemory:
 class VectorMemoryCollection(Qdrant):
 
     def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable, vector_size: int):
+
         super().__init__(client, collection_name, embedding_function)
 
         # Get a Cat instance
@@ -94,34 +95,28 @@ class VectorMemoryCollection(Qdrant):
                 # TODO: dump collection on disk before deleting, so it can be recovered
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
-                log(f"Creating collection {self.collection_name} ...", "INFO")
-                self.client.recreate_collection(
-                    collection_name=self.collection_name,
-                    vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
-                    quantization_config=ScalarQuantization(
-                        scalar=ScalarQuantizationConfig(
-                            type=ScalarType.INT8,
-                            quantile=0.99,
-                            always_ram=False
-                        )
-                    )
-                )
+                self.create_collection()
         except:
-            log(f"Creating collection {self.collection_name} ...", "INFO")
-            self.client.recreate_collection(
-                collection_name=self.collection_name,
-                vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
-                quantization_config=ScalarQuantization(
-                        scalar=ScalarQuantizationConfig(
-                            type=ScalarType.INT8,
-                            quantile=0.99,
-                            always_ram=False
-                        )
-                    )
-            )
+            self.create_collection()
 
-        log(f"Collection {self.collection_name}:", "ERROR")
-        log(dict(self.client.get_collection(self.collection_name)), "ERROR")
+        log(f"Collection {self.collection_name}:", "INFO")
+        log(dict(self.client.get_collection(self.collection_name)), "INFO")
+
+    # create collection
+    def create_collection(self):
+        
+        log(f"Creating collection {self.collection_name} ...", "WARNING")
+        self.client.recreate_collection(
+            collection_name=self.collection_name,
+            vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+            quantization_config=ScalarQuantization(
+                scalar=ScalarQuantizationConfig(
+                    type=ScalarType.INT8,
+                    quantile=0.99,
+                    always_ram=False
+                )
+            )
+        )
 
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=3):
