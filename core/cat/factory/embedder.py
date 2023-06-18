@@ -18,7 +18,7 @@ class EmbedderSettings(BaseSettings):
 
 
 class EmbedderFakeConfig(EmbedderSettings):
-    size: int = 1536
+    size: int = 128
     _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
 
     class Config:
@@ -71,7 +71,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/all-mpnet-base-v2"
+    repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
     huggingfacehub_api_token: str
     _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
 

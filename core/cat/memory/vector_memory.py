@@ -11,8 +11,6 @@ from langchain.docstore.document import Document
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
 ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
 
-# TODO: hook get_embedder_size and remove dict
-
 
 class VectorMemory:
     def __init__(self, cat, verbose=False) -> None:
@@ -42,92 +40,83 @@ class VectorMemory:
             port=qdrant_port,
         )
 
-        # dimensionality embedder? --> "hello world"
-        dim = 1010
+        # get current embedding size (langchain classes do not store it)
+        self.embedder_size = len(cat.embedder.embed_query("hello world"))
 
-        # Episodic memory will contain user and eventually cat utterances
-        self.episodic = VectorMemoryCollection(
-            cat=cat,
-            client=self.vector_db,
-            collection_name="episodic",
-            embedding_function=self.embedder.embed_query,
-        )
+        # Create vector collections
+        # - Episodic memory will contain user and eventually cat utterances
+        # - Declarative memory will contain uploaded documents' content (and summaries)
+        # - Procedural memory will contain tools and knowledge on how to do things
+        self.collections = {}
+        for collection_name in ["episodic", "declarative", "procedural"]:
 
-        # Declarative memory will contain uploaded documents' content (and summaries)
-        self.declarative = VectorMemoryCollection(
-            cat=cat,
-            client=self.vector_db,
-            collection_name="declarative",
-            embedding_function=self.embedder.embed_query,
-        )
+            # Instantiate collection
+            collection = VectorMemoryCollection(
+                cat=cat,
+                client=self.vector_db,
+                collection_name=collection_name,
+                embedding_function=self.embedder.embed_query,
+                vector_size = self.embedder_size,
+            )
 
-        # Procedural memory will contain tools and knowledge on how to do things
-        self.procedural = VectorMemoryCollection(
-            cat=cat,
-            client=self.vector_db,
-            collection_name="procedural",
-            embedding_function=self.embedder.embed_query,
-        )
-
-        # Dictionary containing all collections
-        # Useful for cross-searching and to create/use collections from plugins
-        self.collections = {
-            "episodic": self.episodic,
-            "declarative": self.declarative,
-            "procedural": self.procedural,
-        }
+            # Update dictionary containing all collections
+            # Useful for cross-searching and to create/use collections from plugins
+            self.collections[collection_name] = collection
+            
+            # Have the collection as an instance attribute
+            # (i.e. do things like cat.memory.vectors.declarative.something())
+            setattr(self, collection_name, collection)
 
 
 class VectorMemoryCollection(Qdrant):
-    def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable):
+
+    def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable, vector_size: int):
+
         super().__init__(client, collection_name, embedding_function)
 
         # Get a Cat instance
         self.cat = cat
+        
+        # Set embedding size (may be changed at runtime)
+        self.embedder_size = vector_size
 
-        # Check if memory collection exists, otherwise create it and add first memory
+        # Check if memory collection exists, otherwise create it
         self.create_collection_if_not_exists()
 
     def create_collection_if_not_exists(self):
         # create collection if it does not exist
         try:
             self.client.get_collection(self.collection_name)
-            tabula_rasa = False
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+                log(f'Collection "{self.collection_name}" has the same size of the embedder', "INFO")
+            else:
+                log(f'Collection "{self.collection_name}" has different size of the embedder', "WARNING")
+                # TODO: dump collection on disk before deleting, so it can be recovered
+                self.client.delete_collection(self.collection_name)
+                log(f'Collection "{self.collection_name}" deleted', "WARNING")
+                self.create_collection()
         except:
-            log(f"Creating collection {self.collection_name} ...", "INFO")
-            self.client.recreate_collection(
-                collection_name=self.collection_name,
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
-                quantization_config=ScalarQuantization(
-                        scalar=ScalarQuantizationConfig(
-                            type=ScalarType.INT8,
-                            quantile=0.99,
-                            always_ram=False
-                        )
-                    )
-                # TODO: if we change the embedder, how do we know the dimensionality?
+            self.create_collection()
+
+        log(f"Collection {self.collection_name}:", "INFO")
+        log(dict(self.client.get_collection(self.collection_name)), "INFO")
+
+    # create collection
+    def create_collection(self):
+        
+        log(f"Creating collection {self.collection_name} ...", "WARNING")
+        self.client.recreate_collection(
+            collection_name=self.collection_name,
+            vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+            quantization_config=ScalarQuantization(
+                scalar=ScalarQuantizationConfig(
+                    type=ScalarType.INT8,
+                    quantile=0.99,
+                    always_ram=False
+                )
             )
-            tabula_rasa = True
-
-        # TODO: if the embedder changed, a new vectorstore must be created
-        # TODO: need a more elegant solution
-        if tabula_rasa:
-            # Hard coded overridable first memory saved in both collections
-            first_memory = Document(
-                page_content="I am the Cheshire Cat", metadata={"source": "cheshire-cat", "when": time.time()}
-            )
-
-            # Execute hook to override the first inserted memory
-            first_memory = self.cat.mad_hatter.execute_hook("before_collection_created", first_memory)
-
-            # insert first point in the collection
-            self.add_texts(
-                [first_memory.page_content],
-                [first_memory.metadata],
-            )
-
-        log(dict(self.client.get_collection(self.collection_name)), "DEBUG")
+        )
 
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=3):
