@@ -162,7 +162,7 @@ class MadHatter:
 
                 return meta
             except Exception:
-                log(f"Error loading plugin {plugin_folder} metadata, " "defaulting to generated values")
+                log(f"Loading plugin {plugin_folder} metadata, defaulting to generated values", "INFO")
 
         meta["name"] = to_camel_case(plugin_id)
         meta["description"] = (
