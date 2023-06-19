@@ -60,17 +60,12 @@ def hook(_func=None, priority=1) -> Any:
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
 class CatTool(Tool):
 
-    # Tool embedding is saved in the "procedural" vector DB collection.
-    # During CheshireCat.bootstrap(), after memory is loaded, the mad_hatter will retrieve the embedding from memory or create one if not present, and assign this attribute
-    embedding: List = None
-
-    # Tool docstring, is also available under self.func.__doc__
-    docstring: str = ""
-
     # used by the MadHatter while loading plugins in order to let a Tool access the cat instance
     def augment_tool(self, cat_instance):
         
         self.cat = cat_instance
+        
+        # Tool docstring, is also available under self.func.__doc__
         self.docstring = self.func.__doc__
 
         # remove cat argument from description signature
@@ -79,6 +74,9 @@ class CatTool(Tool):
         if cat_arg_signature in self.description:
             self.description = self.description.replace(cat_arg_signature, ")")
 
+        # Tool embedding is saved in the "procedural" vector DB collection. 
+        # During CheshireCat.bootstrap(), after memory is loaded, the mad_hatter will retrieve the embedding from memory or create one if not present, and assign this attribute
+        self.embedding = None
 
     def _run(self, input_by_llm):
         return self.func(input_by_llm, cat=self.cat)
