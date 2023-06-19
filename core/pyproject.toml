@@ -39,7 +39,9 @@ dev = [
     "autopep8",
     "pylint",
     "perflint",
-    "pylint-actions"
+    "pylint-actions",
+    "pytest",
+    "httpx"
 ]
 
 [tool.coverage.run]
