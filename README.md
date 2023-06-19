@@ -92,6 +92,23 @@ docker-compose up
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Test
+
+### Running Tests
+
+To run the tests within the Docker container, execute the following command:
+
+```bash
+docker exec cheshire_cat_core python -m pytest --color=yes .
+```
+
+If you are running the tests locally on your machine, use the following command:
+
+```bash
+python -m pytest --color=yes .
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Roadmap
 
