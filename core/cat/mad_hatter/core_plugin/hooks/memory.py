@@ -5,41 +5,37 @@ Here is a collection of methods to hook the insertion of memories in the vector 
 """
 
 from langchain.docstore.document import Document
-
+from cat.memory.vector_memory import VectorMemoryCollection
 from cat.mad_hatter.decorators import hook
 
 
-# Hook called before inserting the first point in memory collection.
-# This happens at first lunch and whenever `long_term_memory` is deleted.
-# first_point is `langchain.Document` instance
+# Hook called before a memory collection has been created.
+# This happens at first launch and whenever the collection is deleted and recreated.
 @hook(priority=0)
-def before_collection_created(first_point: Document, cat) -> Document:
-    """Hook the first point inserted in memory.
-
-    Allows to edit the first point inserted in both *declarative* and *episodic* memories,
-    when the collections are created.
-
-    Collections creation happens the first time the Cat starts up or after a memory swap.
-
-    The `Document` has two mandatory properties::
-
-        'page_content': the string content to be inserted into memory;
-        'metadata': a dictionary to store custom metadata.
+def before_collection_created(vector_memory_collection: VectorMemoryCollection, cat):
+    """Do something before a new collection is created in vectorDB
 
     Args:
-        first_point: langchain`Document` to be added to the vector memory collection as first point.
+        vector_memory_collection: instance of VectorMemoryCollection wrapping the actual db collection.
         cat: Cheshire Car instance.
 
     Returns:
-        Custom langchain `Document`.
-        Default to::
-
-            first_memory = Document(page_content="I am the Cheshire Cat",
-                                    metadata={
-                                            "source": "cheshire-cat",
-                                            "when": time.time()
-                                            }
-                                    )
-
+        None
     """
-    return first_point
+    pass
+
+
+# Hook called after a memory collection has been created.
+# This happens at first launch and whenever the collection is deleted and recreated.
+@hook(priority=0)
+def after_collection_created(vector_memory_collection: VectorMemoryCollection, cat):
+    """Do something after a new collection is created in vectorDB
+
+    Args:
+        vector_memory_collection: instance of VectorMemoryCollection wrapping the actual db collection.
+        cat: Cheshire Car instance.
+
+    Returns:
+        None
+    """
+    pass

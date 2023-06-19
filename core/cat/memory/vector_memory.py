@@ -104,6 +104,8 @@ class VectorMemoryCollection(Qdrant):
 
     # create collection
     def create_collection(self):
+
+        self.cat.mad_hatter.execute_hook('before_collection_created', self)
         
         log(f"Creating collection {self.collection_name} ...", "WARNING")
         self.client.recreate_collection(
@@ -117,6 +119,8 @@ class VectorMemoryCollection(Qdrant):
                 )
             )
         )
+
+        self.cat.mad_hatter.execute_hook('after_collection_created', self)
 
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=3):
