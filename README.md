@@ -37,7 +37,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 
 ### GitHub Codespaces
 
-You can use the cat in GitHub codespaces without installing anything on your computer.
+You can try out the cat in GitHub codespaces before installing it on your computer.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
 
