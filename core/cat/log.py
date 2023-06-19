@@ -160,7 +160,11 @@ def log(msg, level="DEBUG"):
 
 def welcome():
 
-    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+    if secure != '':
+        secure = 's'
+
+    cat_address = f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
 
     with open("cat/welcome.txt", 'r') as f:
         print(f.read())
