@@ -84,7 +84,7 @@ async def collection(request: Request, collection_id: str = "") -> Dict:
         ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
         to_return[collection_id] = ret
 
-        ccat.load_memory()  # recreate the long term memories
+        ccat.bootstrap()  # recreate the long term memories
 
     return to_return
 
@@ -105,7 +105,7 @@ async def wipe_collections(
         ret = vector_memory.vector_db.delete_collection(collection_name=c)
         to_return[c] = ret
 
-    ccat.load_memory()  # recreate the long term memories
+    ccat.bootstrap()  # recreate the long term memories
 
     return to_return
 
