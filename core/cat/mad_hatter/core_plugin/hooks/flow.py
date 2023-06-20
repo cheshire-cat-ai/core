@@ -145,6 +145,14 @@ def after_cat_recalled_memories(memory_query_text: str, cat) -> None:
         memory_query_text: string used to query both *episodic* and *declarative* memories.
         cat: Cheshire Cat instance.
     """
+    #set the treshold to filter the memory items (items under threshold are removed from memory and not inserted in prompt)
+    threshold=0.8
+    for m in cat.working_memory["declarative_memories"][:]:
+        if (float(m[1]) < threshold):
+            cat.working_memory["declarative_memories"].remove(m)
+    for m in cat.working_memory["episodic_memories"][:]:
+        if (float(m[1]) < threshold):
+            cat.working_memory["episodic_memories"].remove(m)
     return None
 
 
