@@ -146,6 +146,7 @@ def after_cat_recalled_memories(memory_query_text: str, cat) -> None:
         cat: Cheshire Cat instance.
     """
     #set the treshold to filter the memory items (items under threshold are removed from memory and not inserted in prompt)
+    # TODO: check out the `score_threshold` in Qdrant search
     threshold=0.8
     for m in cat.working_memory["declarative_memories"][:]:
         if (float(m[1]) < threshold):
