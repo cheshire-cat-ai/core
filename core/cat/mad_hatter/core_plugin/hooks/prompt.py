@@ -114,9 +114,9 @@ def agent_prompt_suffix(cat) -> str:
     """
     suffix = """# Context
     
-## Context of things the Human said in the past:{episodic_memory}
+{episodic_memory}
 
-## Context of documents containing relevant information:{declarative_memory}
+{declarative_memory}
 
 ## Conversation until now:{chat_history}
  - Human: {input}
@@ -173,7 +173,11 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = memories_separator + memories_separator.join(memory_texts)
+    memory_content = "## Context of things the Human said in the past: " + memories_separator + memories_separator.join(memory_texts)
+
+    #if no data is retrieved from memory don't erite anithing in the prompt
+    if len(memory_texts) == 0:
+        memory_content = ""
 
     return memory_content
 
@@ -220,7 +224,12 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = memories_separator + memories_separator.join(memory_texts)
+    
+    memory_content = "## Context of documents containing relevant information: " + memories_separator + memories_separator.join(memory_texts)
+
+    # if no data is retrieved from memory don't erite anithing in the prompt
+    if len(memory_texts) == 0:
+        memory_content=""
 
     return memory_content
 
