@@ -94,22 +94,24 @@ class CheshireCat:
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
-    def recall_relevant_memories_to_working_memory(self, user_message, prompt_settings):
+    def recall_relevant_memories_to_working_memory(self):
+
+        user_message = self.working_memory["user_message_json"]["text"]
+        prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
+
+
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
-        log(f'Recall query: "{memory_query_text}"')
+        print(f'Recall query: "{memory_query_text}"')
 
         # embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        if "use_episodic_memory" in prompt_settings:
-            use_episodic = prompt_settings["use_episodic_memory"]
-
-        if (use_episodic == True):
+        if prompt_settings["use_episodic_memory"]:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
                 embedding=memory_query_embedding
@@ -119,10 +121,7 @@ class CheshireCat:
 
         self.working_memory["episodic_memories"] = episodic_memories
 
-        if "use_declarative_memory" in prompt_settings:
-            use_declarative = prompt_settings["use_declarative_memory"]
-
-        if (use_declarative == True):
+        if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
                 embedding=memory_query_embedding
@@ -160,27 +159,30 @@ class CheshireCat:
         }
 
     def __call__(self, user_message_json):
-        log(user_message_json, "DEBUG")
+
+        log(user_message_json, "CRITICAL")
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
         # store user_message_json in working memory
+        # it contains the new message, prompt settings and other info plugins may find useful
         self.working_memory["user_message_json"] = user_message_json
 
-        # extract actual user message text
-        user_message = user_message_json["text"]
-
-        # check if user message contains prompt settings key and assign to prompt_settings variabkle
-        if "prompt_settings" in user_message_json:
-            prompt_settings = user_message_json["prompt_settings"]
-        else:
-            prompt_settings = None
+        # override default prompt_settings with prompt settings sent via websocket (if any)
+        prompt_settings = {
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,            
+        }
+        prompt_settings.update(
+            user_message_json.get("prompt_settings", {})
+        )
+        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
         try:
-            self.recall_relevant_memories_to_working_memory(user_message,prompt_settings)
+            self.recall_relevant_memories_to_working_memory()
         except Exception as e:
             log(e)
             traceback.print_exc(e)
@@ -224,6 +226,7 @@ class CheshireCat:
         log(cat_message, "DEBUG")
 
         # update conversation history
+        user_message = self.working_memory["user_message_json"]["text"]
         self.working_memory.update_conversation_history(who="Human", message=user_message)
         self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
