@@ -31,7 +31,7 @@ class MadHatter:
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
         core_folder = "cat/mad_hatter/core_plugin"
-        plugin_folders = [core_folder] + glob.glob("cat/plugins/*/")
+        plugin_folders = [core_folder] + glob.glob("cat/plugins/*")
 
         all_plugins = []
         all_tools = []
@@ -143,39 +143,28 @@ class MadHatter:
         plugin_json_metadata_file_name = "plugin.json"
         plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
         meta = {"id": plugin_id}
+        json_file_data = {}
 
         if path.isfile(plugin_json_metadata_file_path):
             try:
                 json_file = open(plugin_json_metadata_file_path)
                 json_file_data = json.load(json_file)
-
-                meta["name"] = json_file_data["name"]
-                meta["description"] = json_file_data["description"]
-                meta["author_name"] = json_file_data["author_name"]
-                meta["author_url"] = json_file_data["author_url"]
-                meta["plugin_url"] = json_file_data["plugin_url"]
-                meta["tags"] = json_file_data["tags"]
-                meta["thumb"] = json_file_data["thumb"]
-                meta["version"] = json_file_data["version"]
-
                 json_file.close()
-
-                return meta
             except Exception:
                 log(f"Loading plugin {plugin_folder} metadata, defaulting to generated values", "INFO")
 
-        meta["name"] = to_camel_case(plugin_id)
-        meta["description"] = (
+        meta["name"] = json_file_data.get("name", to_camel_case(plugin_id))
+        meta["description"] = json_file_data.get("description", (
             "Description not found for this plugin. "
             f"Please create a `{plugin_json_metadata_file_name}`"
             " in the plugin folder."
-        )
-        meta["author_name"] = "Unknown author"
-        meta["author_url"] = ""
-        meta["plugin_url"] = ""
-        meta["tags"] = "unknown"
-        meta["thumb"] = ""
-        meta["version"] = "0.0.1"
+        ))
+        meta["author_name"] = json_file_data.get("author_name", "Unknown author")
+        meta["author_url"] = json_file_data.get("author_url", "")
+        meta["plugin_url"] = json_file_data.get("plugin_url", "")
+        meta["tags"] = json_file_data.get("tags", "unknown")
+        meta["thumb"] = json_file_data.get("thumb", "")
+        meta["version"] = json_file_data.get("version", "0.0.1")
 
         return meta
 
