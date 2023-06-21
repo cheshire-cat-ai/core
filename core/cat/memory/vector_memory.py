@@ -131,7 +131,7 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
 
     # retrieve similar memories from embedding
-    def recall_memories_from_embedding(self, embedding, metadata=None, k=3):
+    def recall_memories_from_embedding(self, embedding, metadata=None, k=3, threshold=0.8):
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,
@@ -140,8 +140,7 @@ class VectorMemoryCollection(Qdrant):
             with_payload=True,
             with_vectors=True,
             limit=k,
-            #score_threshold=0.7 # at the moment we deal with min score in the hook `after_cat_recalled_memories`
-            #   this parameter at the moment is buggy and conflicts with `limit` 
+            score_threshold=threshold,
             search_params=SearchParams(
                 quantization=QuantizationSearchParams(
                     ignore=False,

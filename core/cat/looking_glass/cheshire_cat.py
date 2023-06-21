@@ -96,7 +96,7 @@ class CheshireCat:
 
     def recall_relevant_memories_to_working_memory(self, user_message):
         # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -108,13 +108,13 @@ class CheshireCat:
 
         # recall relevant memories (episodic)
         episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-            embedding=memory_query_embedding
+            embedding=memory_query_embedding,k=k,threshold=threshold
         )
         self.working_memory["episodic_memories"] = episodic_memories
 
         # recall relevant memories (declarative)
         declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-            embedding=memory_query_embedding
+            embedding=memory_query_embedding,k=k,threshold=threshold
         )
         self.working_memory["declarative_memories"] = declarative_memories
 
