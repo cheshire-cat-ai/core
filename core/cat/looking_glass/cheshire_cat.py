@@ -157,6 +157,22 @@ class CheshireCat:
             "chat_history": conversation_history_formatted_content,
             "ai_prefix": "AI",
         }
+    
+    def store_new_message_in_working_memory(self, user_message_json):
+
+        # store last message in working memory
+        self.working_memory["user_message_json"] = user_message_json
+        
+        # override default prompt_settings with prompt settings sent via websocket (if any)
+        prompt_settings = {
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,            
+        }
+        prompt_settings.update(
+            user_message_json.get("prompt_settings", {})
+        )
+        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+
 
     def __call__(self, user_message_json):
 
@@ -167,17 +183,10 @@ class CheshireCat:
 
         # store user_message_json in working memory
         # it contains the new message, prompt settings and other info plugins may find useful
-        self.working_memory["user_message_json"] = user_message_json
+        self.store_new_message_in_working_memory(user_message_json)
 
-        # override default prompt_settings with prompt settings sent via websocket (if any)
-        prompt_settings = {
-            "use_episodic_memory": True,
-            "use_declarative_memory": True,            
-        }
-        prompt_settings.update(
-            user_message_json.get("prompt_settings", {})
-        )
-        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+        # TODO another hook here?
+
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
