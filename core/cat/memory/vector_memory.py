@@ -140,6 +140,8 @@ class VectorMemoryCollection(Qdrant):
             with_payload=True,
             with_vectors=True,
             limit=k,
+            #score_threshold=0.7 # at the moment we deal with min score in the hook `after_cat_recalled_memories`
+            #   this parameter at the moment is buggy and conflicts with `limit` 
             search_params=SearchParams(
                 quantization=QuantizationSearchParams(
                     ignore=False,
