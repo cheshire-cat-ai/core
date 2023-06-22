@@ -3,7 +3,7 @@
     "customizations": {
         "codespaces": {
             "openFiles": [
-                "CODESPACES.md"
+                "readme/CODESPACES.md"
             ]
         }
     },
