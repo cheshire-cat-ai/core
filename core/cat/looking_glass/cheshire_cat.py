@@ -101,7 +101,7 @@ class CheshireCat:
 
 
         # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -114,7 +114,7 @@ class CheshireCat:
         if prompt_settings["use_episodic_memory"]:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding
+                embedding=memory_query_embedding, k=k, threshold=threshold
             )
         else:
             episodic_memories = []
@@ -124,7 +124,7 @@ class CheshireCat:
         if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding
+                embedding=memory_query_embedding, k=k, threshold=threshold
             )
         else:
             declarative_memories = []
@@ -176,7 +176,7 @@ class CheshireCat:
 
     def __call__(self, user_message_json):
 
-        log(user_message_json, "CRITICAL")
+        log(user_message_json, "INFO")
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
