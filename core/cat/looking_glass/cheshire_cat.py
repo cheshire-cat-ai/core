@@ -114,7 +114,7 @@ class CheshireCat:
         if prompt_settings["use_episodic_memory"]:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding
+                embedding=memory_query_embedding, k=k, threshold=threshold
             )
         else:
             episodic_memories = []
@@ -124,7 +124,7 @@ class CheshireCat:
         if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding
+                embedding=memory_query_embedding, k=k, threshold=threshold
             )
         else:
             declarative_memories = []
