@@ -23,7 +23,7 @@ def agent_prompt_prefix(cat) -> str:
     and the `agent_prompt_suffix`.
 
     The default prefix describe who the AI is and how it is expected to answer the Human.
-    Note it ends with "# Tools" because the next part of the prompt (generated form the *Agent*) contains the list of Tools.
+    The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     Args:
         cat: Cheshire Cat instance.
@@ -35,8 +35,7 @@ def agent_prompt_prefix(cat) -> str:
     prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human using tools and context.
-
-# Tools"""
+"""
 
     return prefix
 

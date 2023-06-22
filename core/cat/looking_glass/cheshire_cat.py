@@ -25,11 +25,6 @@ class CheshireCat:
         # i.e. finished uploading a file
         self.web_socket_notifications = []
         
-        # set the default prompt settings
-        self.default_prompt_settings = {
-            "use_episodic_memory": True,
-            "use_declarative_memory": True,
-        }
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -70,6 +65,7 @@ class CheshireCat:
         self.db = get_db_session
 
     def load_natural_language(self):
+
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
@@ -90,6 +86,14 @@ class CheshireCat:
             verbose=False,
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
+
+        # set the default prompt settings
+        self.default_prompt_settings = {
+            "prefix": self.mad_hatter.execute_hook("agent_prompt_prefix"),
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,
+            "use_procedural_memory": True,
+        }
 
     def load_memory(self):
         # Memory
