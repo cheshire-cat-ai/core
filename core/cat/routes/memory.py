@@ -36,7 +36,7 @@ async def recall_memories_from_text(
     collections = list(vector_memory.collections.keys())
     recalled = {}
     for c in collections:
-        memories = vector_memory.collections[c].recall_memories_from_embedding(query_embedding, k=k, threshold=0)
+        memories = vector_memory.collections[c].recall_memories_from_embedding(query_embedding, k=k, threshold=0.0)
         recalled[c] = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in memories]
     
     return {
