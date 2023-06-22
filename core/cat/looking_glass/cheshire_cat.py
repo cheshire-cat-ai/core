@@ -112,7 +112,7 @@ class CheshireCat:
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
-        print(f'Recall query: "{memory_query_text}"')
+        log(f'Recall query: "{memory_query_text}"')
 
         # embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
@@ -170,9 +170,9 @@ class CheshireCat:
         # store last message in working memory
         self.working_memory["user_message_json"] = user_message_json
         
-        # override current prompt_settings with prompt settings sent via websocket (if any)
         prompt_settings = deepcopy(self.default_prompt_settings)
 
+        # override current prompt_settings with prompt settings sent via websocket (if any)
         prompt_settings.update(user_message_json.get("prompt_settings", {}))
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
