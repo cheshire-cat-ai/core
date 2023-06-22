@@ -1,4 +1,5 @@
 import time
+from copy import deepcopy
 import traceback
 
 import langchain
@@ -23,6 +24,12 @@ class CheshireCat:
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
         self.web_socket_notifications = []
+        
+        # set the default prompt settings
+        self.default_prompt_settings = {
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,
+        }
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -163,14 +170,11 @@ class CheshireCat:
         # store last message in working memory
         self.working_memory["user_message_json"] = user_message_json
         
-        # override default prompt_settings with prompt settings sent via websocket (if any)
-        prompt_settings = {
-            "use_episodic_memory": True,
-            "use_declarative_memory": True,            
-        }
-        prompt_settings.update(
-            user_message_json.get("prompt_settings", {})
-        )
+        # override current prompt_settings with prompt settings sent via websocket (if any)
+        prompt_settings = deepcopy(self.default_prompt_settings)
+
+        prompt_settings.update(user_message_json.get("prompt_settings", {}))
+
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
 
@@ -258,10 +262,8 @@ class CheshireCat:
                 "input": cat_message.get("input"),
                 "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
-                    "vectors": {
-                        "episodic": episodic_report,
-                        "declarative": declarative_report,
-                    }
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
                 },
             },
         }
