@@ -24,7 +24,7 @@ class CheshireCat:
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
         self.web_socket_notifications = []
-        
+
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -168,12 +168,12 @@ class CheshireCat:
             "chat_history": conversation_history_formatted_content,
             "ai_prefix": "AI",
         }
-    
+
     def store_new_message_in_working_memory(self, user_message_json):
 
         # store last message in working memory
         self.working_memory["user_message_json"] = user_message_json
-        
+
         prompt_settings = deepcopy(self.default_prompt_settings)
 
         # override current prompt_settings with prompt settings sent via websocket (if any)
@@ -231,15 +231,19 @@ class CheshireCat:
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
-            # We grab the LLM outptu here anyway, so small and
+            # We grab the LLM output here anyway, so small and
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
+            log("LLM does not respect prompt instructions", "ERROR")
+            log(error_description, "DEBUG")
             if not "Could not parse LLM output: `" in error_description:
                 raise e
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
-            cat_message = {"output": unparsable_llm_output}
+            cat_message = agent_executor_input
+            cat_message['output'] = unparsable_llm_output
 
+        log("cat_message:", "DEBUG")
         log(cat_message, "DEBUG")
 
         # update conversation history
