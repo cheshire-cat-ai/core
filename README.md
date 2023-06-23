@@ -10,6 +10,8 @@
   </h4>
 </div>
 
+[![Try in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
+
 ## What is this?
 
 The Cheshire Cat is a framework to build custom AIs on top of any language model.
@@ -34,12 +36,6 @@ This project is growing fast, refactorings and code changes happens very often, 
 - [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 
 ## Quickstart
-
-### GitHub Codespaces
-
-You can try out the cat in GitHub codespaces before installing it on your computer.
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
 
 ### Install
 
@@ -89,10 +85,6 @@ git pull origin main
 docker-compose build --no-cache
 docker-compose up
 ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Test
 
 ### Running Tests
 
