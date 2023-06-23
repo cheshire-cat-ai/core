@@ -9,3 +9,7 @@ def send_websocket_message(msg, client):
 
         # get reply
         return websocket.receive_json()
+
+
+def key_in_json(key, json):
+    return key in json.keys()
