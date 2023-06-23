@@ -1,7 +1,5 @@
 <a name="readme-top"></a>
 
-[![Try in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
-
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -11,6 +9,8 @@
     Customizable AI architecture
   </h4>
 </div>
+
+[![Try in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
 
 ## What is this?
 
