@@ -10,6 +10,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from cat.memory.vector_memory import VectorMemory
+from qdrant_client import QdrantClient
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_db.db"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -47,7 +50,15 @@ def client(
     """
     Create a new FastAPI TestClient that uses the `db_session` fixture to override
     the `get_db_session` dependency that is injected into routes.
+    Mock the VectorMemory class to use an in memory vector db.
     """
+
+    # Use in memory vector db
+    def mock_connect_to_vector_memory(self, *args, **kwargs):
+        self.vector_db = QdrantClient(":memory:")
+
+    monkeypatch.setattr(VectorMemory, "connect_to_vector_memory",
+                        mock_connect_to_vector_memory)
 
     def _get_test_db():
         try:
@@ -56,5 +67,6 @@ def client(
             pass
 
     app.dependency_overrides[get_db_session] = _get_test_db
+
     with TestClient(app) as client:
         yield client
