@@ -1,7 +1,7 @@
 
 from tests.utils import send_websocket_message
 
-'''
+
 def test_websocket(client):
         
         # use fake LLM
@@ -22,4 +22,3 @@ def test_websocket(client):
         assert type(res["content"]) == str
         assert "You did not configure" in res["content"]
         assert len(res["why"].keys()) > 0
-'''
