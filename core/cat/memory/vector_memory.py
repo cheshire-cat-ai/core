@@ -9,7 +9,7 @@ from qdrant_client import QdrantClient
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
-ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
+                                       ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
 
 
 class VectorMemory:
@@ -22,23 +22,7 @@ class VectorMemory:
         if self.embedder is None:
             raise Exception("No embedder passed to VectorMemory")
 
-        qdrant_host = os.getenv("VECTOR_MEMORY_HOST", "cheshire_cat_vector_memory")
-        qdrant_port = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
-
-        try:
-            s = socket.socket()
-            s.connect((qdrant_host, qdrant_port))
-        except Exception:
-            log("QDrant does not respond to %s:%s" % (qdrant_host, qdrant_port), "ERROR")
-            sys.exit()
-        finally:
-            s.close()
-
-        # Qdrant vector DB client
-        self.vector_db = QdrantClient(
-            host=qdrant_host,
-            port=qdrant_port,
-        )
+        self.connect_to_vector_memory()
 
         # get current embedding size (langchain classes do not store it)
         self.embedder_size = len(cat.embedder.embed_query("hello world"))
@@ -56,16 +40,37 @@ class VectorMemory:
                 client=self.vector_db,
                 collection_name=collection_name,
                 embedding_function=self.embedder.embed_query,
-                vector_size = self.embedder_size,
+                vector_size=self.embedder_size,
             )
 
             # Update dictionary containing all collections
             # Useful for cross-searching and to create/use collections from plugins
             self.collections[collection_name] = collection
-            
+
             # Have the collection as an instance attribute
             # (i.e. do things like cat.memory.vectors.declarative.something())
             setattr(self, collection_name, collection)
+
+    def connect_to_vector_memory(self) -> None:
+        qdrant_host = os.getenv("VECTOR_MEMORY_HOST",
+                                "cheshire_cat_vector_memory")
+        qdrant_port = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
+
+        try:
+            s = socket.socket()
+            s.connect((qdrant_host, qdrant_port))
+        except Exception:
+            log("QDrant does not respond to %s:%s" %
+                (qdrant_host, qdrant_port), "ERROR")
+            sys.exit()
+        finally:
+            s.close()
+
+        # Qdrant vector DB client
+        self.vector_db = QdrantClient(
+            host=qdrant_host,
+            port=qdrant_port,
+        )
 
 
 class VectorMemoryCollection(Qdrant):
@@ -76,7 +81,7 @@ class VectorMemoryCollection(Qdrant):
 
         # Get a Cat instance
         self.cat = cat
-        
+
         # Set embedding size (may be changed at runtime)
         self.embedder_size = vector_size
 
@@ -88,7 +93,7 @@ class VectorMemoryCollection(Qdrant):
         try:
             self.client.get_collection(self.collection_name)
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
-            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+            if self.client.get_collection(self.collection_name).config.params.vectors.size == self.embedder_size:
                 log(f'Collection "{self.collection_name}" has the same size of the embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different size of the embedder', "WARNING")
@@ -106,11 +111,12 @@ class VectorMemoryCollection(Qdrant):
     def create_collection(self):
 
         self.cat.mad_hatter.execute_hook('before_collection_created', self)
-        
+
         log(f"Creating collection {self.collection_name} ...", "WARNING")
         self.client.recreate_collection(
             collection_name=self.collection_name,
-            vectors_config=VectorParams(size=self.embedder_size, distance=Distance.COSINE),
+            vectors_config=VectorParams(
+                size=self.embedder_size, distance=Distance.COSINE),
             quantization_config=ScalarQuantization(
                 scalar=ScalarQuantizationConfig(
                     type=ScalarType.INT8,
@@ -152,7 +158,8 @@ class VectorMemoryCollection(Qdrant):
         )
         return [
             (
-                self._document_from_scored_point(m, self.content_payload_key, self.metadata_payload_key),
+                self._document_from_scored_point(
+                    m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
                 m.vector
             )
