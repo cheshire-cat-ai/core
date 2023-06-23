@@ -235,13 +235,16 @@ class CheshireCat:
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
             log("LLM does not respect prompt instructions", "ERROR")
-            log(error_description, "DEBUG")
+            log(error_description, "ERROR")
             if not "Could not parse LLM output: `" in error_description:
                 raise e
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
-            cat_message = agent_executor_input
-            cat_message['output'] = unparsable_llm_output
+            cat_message = {
+                "input" : agent_executor_input["input"],
+                "intermediate_steps": [],
+                "output": unparsable_llm_output
+            }
 
         log("cat_message:", "DEBUG")
         log(cat_message, "DEBUG")
