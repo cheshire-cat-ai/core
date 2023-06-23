@@ -1,4 +1,5 @@
 
+
 # utility function to communicate with the cat via websocket
 def send_websocket_message(msg, client):
 
@@ -11,6 +12,7 @@ def send_websocket_message(msg, client):
         reply = websocket.receive_json()
     
     return reply
+
 
 # utility to send n messages via chat
 def send_n_websocket_messages(num_messages, client):
@@ -25,4 +27,7 @@ def send_n_websocket_messages(num_messages, client):
 
     return responses
             
-        
+
+def key_in_json(key, json):
+    return key in json.keys()
+
