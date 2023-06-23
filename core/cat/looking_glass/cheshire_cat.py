@@ -106,6 +106,24 @@ class CheshireCat:
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
+    def get_base_url(self):
+        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+        if secure != '':
+            secure = 's'
+        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+
+    def get_base_path(self):
+        return os.path.join(os.getcwd(), "cat/")
+
+    def get_plugin_path(self):
+        return os.path.join(os.getcwd(), "cat/plugins/")
+
+    def get_static_url(self):
+        return self.get_base_url() + "/static"
+    
+    def get_static_path(self):
+        return os.path.join(os.getcwd(), "cat/static/")
+
     def recall_relevant_memories_to_working_memory(self):
 
         user_message = self.working_memory["user_message_json"]["text"]
@@ -182,21 +200,6 @@ class CheshireCat:
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
-
-    def get_base_url(self):
-        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
-        if secure != '':
-            secure = 's'
-        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
-
-    def get_base_path(self):
-        return os.path.join(os.getcwd(), "cat/")
-
-    def get_plugin_path(self):
-        return os.path.join(os.getcwd(), "cat/plugins/")
-
-    def get_static_url(self):
-        return self.get_base_url() + "/static"
 
     def __call__(self, user_message_json):
 
