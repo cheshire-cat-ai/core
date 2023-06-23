@@ -3,6 +3,7 @@ from copy import deepcopy
 import traceback
 
 import langchain
+import os
 from cat.log import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
@@ -181,6 +182,21 @@ class CheshireCat:
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
+
+    def get_base_url(self):
+        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+        if secure != '':
+            secure = 's'
+        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+
+    def get_base_path(self):
+        return os.path.join(os.getcwd(), "cat/")
+
+    def get_plugin_path(self):
+        return os.path.join(os.getcwd(), "cat/plugins/")
+
+    def get_static_url(self):
+        return self.get_base_url() + "/static"
 
     def __call__(self, user_message_json):
 
