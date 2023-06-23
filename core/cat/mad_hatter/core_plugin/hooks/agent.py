@@ -34,8 +34,10 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
     # Embed the user's input to query the procedural memory with it
     query_embedding = cat.embedder.embed_query(user_input)
 
-    # Make semantic search in the procedural memory to retrieve the name of the 3 most suitable tools
-    embedded_tools = cat.memory.vectors.procedural.recall_memories_from_embedding(query_embedding)
+    # Make semantic search in the procedural memory to retrieve the name of the most suitable tools
+    embedded_tools = cat.memory.vectors.procedural.recall_memories_from_embedding(
+        query_embedding, k=5, threshold=0.6
+    )
 
     # Get the tools names only
     tools_names = [t[0].metadata["name"] for t in embedded_tools]
@@ -47,12 +49,12 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
 
     # Add LangChain default tools
     # Full list here: https://python.langchain.com/en/latest/modules/agents/tools.html
-    default_tools_name = ["llm-math"]  # , "python_repl", "terminal"]
-    default_tools = load_tools(default_tools_name, llm=cat.llm)
+    #default_tools_name = ["llm-math"]  # , "python_repl", "terminal"]
+    #default_tools = load_tools(default_tools_name, llm=cat.llm)
 
-    allowed_tools = tools + default_tools
+    #allowed_tools = tools + default_tools
 
-    return allowed_tools
+    return tools
 
 
 @hook(priority=0)

@@ -13,7 +13,7 @@ class AgentManager:
     def get_agent_executor(self):
         mad_hatter = self.cat.mad_hatter
 
-        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
+        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix") + "\n# Tools:"
         prompt_format_instructions = mad_hatter.execute_hook("agent_prompt_instructions")
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
 

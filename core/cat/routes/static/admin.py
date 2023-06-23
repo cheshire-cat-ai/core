@@ -11,7 +11,7 @@ def mount(cheshire_cat_api):
 
     # note html=False because index.html needs to be injected with runtime information
     cheshire_cat_api.mount(
-        "/admin", StaticFiles(directory="/admin/dist/", html=False), name="admin")
+        "/admin", StaticFiles(directory="/admin/", html=False), name="admin")
 
 
 def mount_admin_index(cheshire_cat_api):
@@ -34,7 +34,7 @@ def mount_admin_index(cheshire_cat_api):
         # the admin sttic build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue
         # the files live inside the /admin folder (not visible in volume / cat code)
-        with open("/admin/dist/index.html", 'r') as f:
+        with open("/admin/index.html", 'r') as f:
             html = f.read()
 
         # TODO: this is ugly, should be done with beautiful soup or a template

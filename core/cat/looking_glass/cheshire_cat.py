@@ -1,4 +1,5 @@
 import time
+from copy import deepcopy
 import traceback
 
 import langchain
@@ -23,6 +24,7 @@ class CheshireCat:
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
         self.web_socket_notifications = []
+        
 
     def bootstrap(self):
         """This method is called when the cat is instantiated and
@@ -63,6 +65,7 @@ class CheshireCat:
         self.db = get_db_session
 
     def load_natural_language(self):
+
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
@@ -84,6 +87,14 @@ class CheshireCat:
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
 
+        # set the default prompt settings
+        self.default_prompt_settings = {
+            "prefix": self.mad_hatter.execute_hook("agent_prompt_prefix"),
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,
+            "use_procedural_memory": True,
+        }
+
     def load_memory(self):
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
@@ -94,9 +105,14 @@ class CheshireCat:
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
-    def recall_relevant_memories_to_working_memory(self, user_message):
+    def recall_relevant_memories_to_working_memory(self):
+
+        user_message = self.working_memory["user_message_json"]["text"]
+        prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
+
+
         # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -106,16 +122,24 @@ class CheshireCat:
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        # recall relevant memories (episodic)
-        episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-            embedding=memory_query_embedding
-        )
+        if prompt_settings["use_episodic_memory"]:
+            # recall relevant memories (episodic)
+            episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
+                embedding=memory_query_embedding, k=k, threshold=threshold
+            )
+        else:
+            episodic_memories = []
+
         self.working_memory["episodic_memories"] = episodic_memories
 
-        # recall relevant memories (declarative)
-        declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-            embedding=memory_query_embedding
-        )
+        if prompt_settings["use_declarative_memory"]:
+            # recall relevant memories (declarative)
+            declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
+                embedding=memory_query_embedding, k=k, threshold=threshold
+            )
+        else:
+            declarative_memories = []
+
         self.working_memory["declarative_memories"] = declarative_memories
 
         # hook to modify/enrich retrieved memories
@@ -144,23 +168,38 @@ class CheshireCat:
             "chat_history": conversation_history_formatted_content,
             "ai_prefix": "AI",
         }
+    
+    def store_new_message_in_working_memory(self, user_message_json):
+
+        # store last message in working memory
+        self.working_memory["user_message_json"] = user_message_json
+        
+        prompt_settings = deepcopy(self.default_prompt_settings)
+
+        # override current prompt_settings with prompt settings sent via websocket (if any)
+        prompt_settings.update(user_message_json.get("prompt_settings", {}))
+
+        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+
 
     def __call__(self, user_message_json):
-        log(user_message_json, "DEBUG")
+
+        log(user_message_json, "INFO")
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
         # store user_message_json in working memory
-        self.working_memory["user_message_json"] = user_message_json
+        # it contains the new message, prompt settings and other info plugins may find useful
+        self.store_new_message_in_working_memory(user_message_json)
 
-        # extract actual user message text
-        user_message = user_message_json["text"]
+        # TODO another hook here?
+
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
         try:
-            self.recall_relevant_memories_to_working_memory(user_message)
+            self.recall_relevant_memories_to_working_memory()
         except Exception as e:
             log(e)
             traceback.print_exc(e)
@@ -204,6 +243,7 @@ class CheshireCat:
         log(cat_message, "DEBUG")
 
         # update conversation history
+        user_message = self.working_memory["user_message_json"]["text"]
         self.working_memory.update_conversation_history(who="Human", message=user_message)
         self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
@@ -226,10 +266,8 @@ class CheshireCat:
                 "input": cat_message.get("input"),
                 "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
-                    "vectors": {
-                        "episodic": episodic_report,
-                        "declarative": declarative_report,
-                    }
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
                 },
             },
         }

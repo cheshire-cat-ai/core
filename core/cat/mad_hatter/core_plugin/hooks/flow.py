@@ -91,11 +91,16 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
     The hook is executed just before the Cat searches for the meaningful context in both memories
     and stores it in the *Working Memory*.
 
+    The hook return the values for maximum number (k) of item to retrieve from memory and the score threshold applied 
+    to the query in vector memory (items with score under threshold not are retreived)
+
     Args:
         user_message: string with the text received from the user. This is used as a query to search into memories.
         cat: Cheshire Cat instance.
     """
-    return None
+    k=3
+    threshold=0.8
+    return k,threshold
 
 
 # What is the input to recall memories?

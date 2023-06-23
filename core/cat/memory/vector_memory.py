@@ -129,15 +129,17 @@ class VectorMemoryCollection(Qdrant):
         self.cat.mad_hatter.execute_hook('after_collection_created', self)
 
     # retrieve similar memories from text
-    def recall_memories_from_text(self, text, metadata=None, k=3):
+    def recall_memories_from_text(self, text, metadata=None, k=5, threshold=0.0):
         # embed the text
         query_embedding = self.embedding_function(text)
 
         # search nearest vectors
-        return self.recall_memories_from_embedding(query_embedding, metadata=metadata, k=k)
+        return self.recall_memories_from_embedding(
+            query_embedding, metadata=metadata, k=k, threshold=threshold
+        )
 
     # retrieve similar memories from embedding
-    def recall_memories_from_embedding(self, embedding, metadata=None, k=3):
+    def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=0.0):
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,
@@ -146,6 +148,7 @@ class VectorMemoryCollection(Qdrant):
             with_payload=True,
             with_vectors=True,
             limit=k,
+            score_threshold=threshold,
             search_params=SearchParams(
                 quantization=QuantizationSearchParams(
                     ignore=False,

@@ -23,7 +23,7 @@ def agent_prompt_prefix(cat) -> str:
     and the `agent_prompt_suffix`.
 
     The default prefix describe who the AI is and how it is expected to answer the Human.
-    Note it ends with "# Tools" because the next part of the prompt (generated form the *Agent*) contains the list of Tools.
+    The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     Args:
         cat: Cheshire Cat instance.
@@ -33,10 +33,9 @@ def agent_prompt_prefix(cat) -> str:
 
     """
     prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
-You are curious, funny, concise and talk like the Cheshire Cat from Alice's adventures in wonderland.
+You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human using tools and context.
-
-# Tools"""
+"""
 
     return prefix
 
@@ -114,9 +113,9 @@ def agent_prompt_suffix(cat) -> str:
     """
     suffix = """# Context
     
-## Context of things the Human said in the past:{episodic_memory}
+{episodic_memory}
 
-## Context of documents containing relevant information:{declarative_memory}
+{declarative_memory}
 
 ## Conversation until now:{chat_history}
  - Human: {input}
@@ -173,7 +172,11 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = memories_separator + memories_separator.join(memory_texts)
+    memory_content = "## Context of things the Human said in the past: " + memories_separator + memories_separator.join(memory_texts)
+
+    #if no data is retrieved from memory don't erite anithing in the prompt
+    if len(memory_texts) == 0:
+        memory_content = ""
 
     return memory_content
 
@@ -220,7 +223,12 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = memories_separator + memories_separator.join(memory_texts)
+    
+    memory_content = "## Context of documents containing relevant information: " + memories_separator + memories_separator.join(memory_texts)
+
+    # if no data is retrieved from memory don't erite anithing in the prompt
+    if len(memory_texts) == 0:
+        memory_content=""
 
     return memory_content
 
