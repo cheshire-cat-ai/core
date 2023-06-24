@@ -19,13 +19,17 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
     Allows to decide which tools end up in the *Agent* prompt.
 
     To decide, you can filter the list of loaded tools, but you can also check the context in `cat.working_memory`
-     and launch custom chains with `cat.llm`.
+    and launch custom chains with `cat.llm`.
 
-    Args:
-        cat: Cheshire Cat instance.
+    Parameters
+    ---------
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        List of allowed tools.
+    Returns
+    -------
+    tools : List[BaseTool]
+        List of allowed Langchain tools.
     """
 
     # Get the User's input
@@ -64,13 +68,19 @@ def before_agent_creates_prompt(input_variables, main_prompt, cat):
     Allows to dynamically filter the input variables that end up in the main prompt by looking for which placeholders
     there are in it starting from a fixed list.
 
-    Args:
-        input_variables: list of placeholders to look for in the main prompt
-        main_prompt: string made of the prompt prefix, the agent instructions and the prompt suffix
-        cat: Cheshire Cat instance
+    Parameters
+    ----------
+    input_variables : List
+        List of placeholders to look for in the main prompt.
+    main_prompt: str
+        String made of the prompt prefix, the agent instructions and the prompt suffix.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        list of placeholders present in the main prompt.
+    Returns
+    -------
+    input_variables : List[str]
+        List of placeholders present in the main prompt.
 
     """
 
