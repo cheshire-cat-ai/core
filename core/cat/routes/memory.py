@@ -23,10 +23,6 @@ class CollectionData(BaseModel):
     score: int
     vector: list[int]
 
-class Collection(BaseModel):
-    name: str
-    vectors_count: int
-
 class VectorsData(BaseModel):
     embedder: str
     collections: Dict[str, list[CollectionData]]
@@ -73,6 +69,9 @@ async def recall_memories_from_text(
         }
     }
 
+class Collection(BaseModel):
+    name: str
+    vectors_count: int
 
 class CollectionsList(BaseModel):
     status: str
@@ -81,7 +80,7 @@ class CollectionsList(BaseModel):
 
 # GET collection list with some metadata
 @router.get("/collections/")
-async def get_collections(request: Request) -> Dict:
+async def get_collections(request: Request) -> CollectionsList:
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
     collections = list(vector_memory.collections.keys())
