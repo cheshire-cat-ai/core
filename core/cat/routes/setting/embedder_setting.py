@@ -30,7 +30,7 @@ def get_settings(db: Session = Depends(get_db_session)):
 
 
 @router.put("/{languageEmbedderName}")
-def upsert_llm_setting(
+def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
     payload: Dict = setting_utils.nlp_get_example_put_payload(),

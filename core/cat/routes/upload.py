@@ -12,7 +12,7 @@ router = APIRouter()
 # receive files via http endpoint
 # TODO: should we receive files also via websocket?
 @router.post("/")
-async def rabbithole_file_upload(
+async def upload_file(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -57,7 +57,7 @@ async def rabbithole_file_upload(
 
 
 @router.post("/web/")
-async def rabbithole_url_upload(
+async def upload_url(
     request: Request,
     background_tasks: BackgroundTasks,
     url: str = Body(
@@ -91,7 +91,7 @@ async def rabbithole_url_upload(
 
 
 @router.post("/memory/")
-async def rabbithole_memory_upload(
+async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks

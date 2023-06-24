@@ -7,7 +7,7 @@ router = APIRouter()
 
 # DELETE delete_memories
 @router.delete("/point/{memory_id}/")
-async def delete_memories(memory_id: str) -> Dict:
+async def delete_element_in_memory(memory_id: str) -> Dict:
     """Delete specific element in memory."""
     
     return {"error": "to be implemented"}
@@ -73,7 +73,7 @@ async def get_collections(request: Request) -> Dict:
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}")
-async def collection(request: Request, collection_id: str = "") -> Dict:
+async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
     """Delete and recreate a collection"""
 
     to_return = {}
