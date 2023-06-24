@@ -1,12 +1,18 @@
 import mimetypes
 from typing import Dict
-
+from pydantic import BaseModel
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from cat.log import log
 import requests
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
+
+class FileResponse(BaseModel):
+    status: str
+    filename: str
+    content_type: str
+    info: str
 
 
 # receive files via http endpoint
@@ -21,7 +27,7 @@ async def upload_file(
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-) -> Dict:
+) -> FileResponse:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
     """
@@ -50,10 +56,17 @@ async def upload_file(
 
     # reply to client
     return {
+        "status": "success",
         "filename": file.filename,
-        "content-type": file.content_type,
+        "content_type": file.content_type,
         "info": "File is being ingested asynchronously.",
     }
+
+
+class WebResponse(BaseModel):
+    status: str
+    url: str
+    info: str
 
 
 @router.post("/web/")
@@ -67,8 +80,11 @@ async def upload_url(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-):
+    chunk_overlap: int = Body(
+        default=100, 
+        description="Chunk overlap (in characters)"
+    ),
+) -> WebResponse:
     # check that URL is valid
     try:
         # Send a HEAD request to the specified URL
@@ -83,11 +99,23 @@ async def upload_url(
             background_tasks.add_task(
                 ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap
             )
-            return {"url": url, "info": "Website is being ingested asynchronously"}
+            return {
+                "status": "success",
+                "url": url, 
+                "info": "Website is being ingested asynchronously"
+            }
         else:
-            return {"url": url, "info": "Invalid URL"}
+            return {
+                "status": "error",
+                "url": url, 
+                "info": "Invalid URL"
+            }
     except requests.exceptions.RequestException as e:
-        return {"url": url, "info": "Unable to reach the link."}
+        return {
+            "status": "error",
+            "url": url, 
+            "info": "Unable to reach the link."
+        }
 
 
 @router.post("/memory/")

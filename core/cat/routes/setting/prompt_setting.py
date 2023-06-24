@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Request
-from sqlalchemy.orm import Session
-from cat.db.database import get_db_session
+from pydantic import BaseModel
 
 router = APIRouter()
 
+class PromptSettings(BaseModel):
+    prefix: str
+    use_episodic_memory: bool
+    use_declarative_memory: bool
+    use_procedural_memory: bool
+
 # get default prompt settings
 @router.get("/")
-def get_default_prompt_settings(request: Request):
+def get_default_prompt_settings(request: Request) -> PromptSettings:
     ccat = request.app.state.ccat
 
     return ccat.default_prompt_settings
