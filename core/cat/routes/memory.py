@@ -5,15 +5,15 @@ from fastapi import Query, Request, APIRouter
 router = APIRouter()
 
 
-# DELETE delete_memories
+# DELETE memories
 @router.delete("/point/{memory_id}/")
-async def delete_memories(memory_id: str) -> Dict:
+async def delete_element_in_memory(memory_id: str) -> Dict:
     """Delete specific element in memory."""
     
     return {"error": "to be implemented"}
 
 
-# GET recall_memories
+# GET memories from recall
 @router.get("/recall/")
 async def recall_memories_from_text(
     request: Request,
@@ -51,6 +51,8 @@ async def recall_memories_from_text(
 # GET collection list with some metadata
 @router.get("/collections/")
 async def get_collections(request: Request) -> Dict:
+    """Get list of available collections"""
+
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
     collections = list(vector_memory.collections.keys())
@@ -73,7 +75,7 @@ async def get_collections(request: Request) -> Dict:
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}")
-async def collection(request: Request, collection_id: str = "") -> Dict:
+async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
     """Delete and recreate a collection"""
 
     to_return = {}

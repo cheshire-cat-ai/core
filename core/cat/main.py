@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,9 +32,15 @@ async def lifespan(app: FastAPI):
 
     yield
 
+def custom_generate_unique_id(route: APIRoute):
+    return f"{route.name}"
 
 # REST API
-cheshire_cat_api = FastAPI(lifespan=lifespan, dependencies=[Depends(check_api_key)])
+cheshire_cat_api = FastAPI(
+    lifespan=lifespan, 
+    dependencies=[Depends(check_api_key)],
+    generate_unique_id_function=custom_generate_unique_id
+)
 
 # Configures the CORS middleware for the FastAPI app
 cors_allowed_origins_str = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -54,7 +61,7 @@ cheshire_cat_api.include_router(llm_setting.router, tags=["Settings - Large Lang
 cheshire_cat_api.include_router(embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 

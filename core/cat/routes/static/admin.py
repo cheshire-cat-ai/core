@@ -10,20 +10,20 @@ def mount(cheshire_cat_api):
     mount_admin_index(cheshire_cat_api)
 
     # note html=False because index.html needs to be injected with runtime information
-    cheshire_cat_api.mount(
-        "/admin", StaticFiles(directory="/admin/", html=False), name="admin")
+    cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/", html=False), name="admin")
 
 
 def mount_admin_index(cheshire_cat_api):
 
     @cheshire_cat_api.get("/admin/")
-    def admin_index_injected():
+    def get_injected_admin():
         # admin index.html
         # all the admin files are served in a statci way
         # with the exception of index.html that needs a config file derived from core environments variable:
-        #  - CORE_HOST
-        #  - CORE_PORT
-        #  - API_KEY
+        # - CORE_HOST
+        # - CORE_PORT
+        # - CORE_USE_SECURE_PROTOCOLS
+        # - API_KEY
         cat_core_config = json.dumps({
             "CORE_HOST": os.getenv("CORE_HOST"),
             "CORE_PORT": os.getenv("CORE_PORT"),
