@@ -158,7 +158,8 @@ class VectorMemoryCollection(Qdrant):
             search_params=SearchParams(
                 quantization=QuantizationSearchParams(
                     ignore=False,
-                    rescore=True
+                    rescore=True,
+                    # oversampling=1.5 # Available as of v1.3.0
                 )
             )
         )
