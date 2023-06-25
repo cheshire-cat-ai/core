@@ -51,6 +51,8 @@ async def recall_memories_from_text(
 # GET collection list with some metadata
 @router.get("/collections/")
 async def get_collections(request: Request) -> Dict:
+    """Get list of available collections"""
+
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
     collections = list(vector_memory.collections.keys())

@@ -21,6 +21,8 @@ EMBEDDER_SELECTED_CONFIGURATION = "embedder_selected"
 # get configured LLMs and configuration schemas
 @router.get("/")
 def get_settings(db: Session = Depends(get_db_session)):
+    """Get the list of the Embedders"""
+
     return setting_utils.nlp_get_settings(
         db,
         setting_factory_category=EMBEDDER_DB_FACTORY_CATEGORY,
@@ -36,6 +38,8 @@ def upsert_embedder_setting(
     payload: Dict = setting_utils.nlp_get_example_put_payload(),
     db: Session = Depends(get_db_session),
 ):
+    """Upsert the Embedder setting"""
+
     db_naming = {
         "setting_factory_category": EMBEDDER_DB_FACTORY_CATEGORY,
         "setting_selected_category": EMBEDDER_DB_GENERAL_CATEGORY,

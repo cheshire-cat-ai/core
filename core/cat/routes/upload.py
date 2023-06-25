@@ -69,6 +69,8 @@ async def upload_url(
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
 ):
+    """Upload a url. Website content will be extracted and segmented into chunks.
+    Chunks will be then vectorized and stored into documents memory."""
     # check that URL is valid
     try:
         # Send a HEAD request to the specified URL
@@ -96,7 +98,7 @@ async def upload_memory(
     file: UploadFile,
     background_tasks: BackgroundTasks
 ) -> Dict:
-    """Upload a memory json file to the CCat memory"""
+    """Upload a memory json file to the cat memory"""
 
     # access cat instance
     ccat = request.app.state.ccat
