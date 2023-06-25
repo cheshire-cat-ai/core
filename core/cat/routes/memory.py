@@ -1,11 +1,11 @@
 from typing import Dict
-from pydantic import BaseModel
+
 from fastapi import Query, Request, APIRouter
 
 router = APIRouter()
 
 
-# DELETE specific element in memory
+# DELETE delete_memories
 @router.delete("/point/{memory_id}/")
 async def delete_element_in_memory(memory_id: str) -> Dict:
     """Delete specific element in memory."""
@@ -13,39 +13,13 @@ async def delete_element_in_memory(memory_id: str) -> Dict:
     return {"error": "to be implemented"}
 
 
-class MetaData(BaseModel):
-    source: str
-    when: int
-
-class CollectionData(BaseModel):
-    page_content: str
-    metadata: MetaData
-    score: int
-    vector: list[int]
-
-class Collection(BaseModel):
-    name: str
-    vectors_count: int
-
-class VectorsData(BaseModel):
-    embedder: str
-    collections: Dict[str, list[CollectionData]]
-
-class QueryData(BaseModel):
-    text: str
-    vector: list[int]
-
-class MemoryRecall(BaseModel):
-    query: QueryData
-    vectors: VectorsData
-
-# GET recall memories
+# GET recall_memories
 @router.get("/recall/")
 async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-) -> MemoryRecall:
+) -> Dict:
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat
@@ -74,11 +48,6 @@ async def recall_memories_from_text(
     }
 
 
-class CollectionsList(BaseModel):
-    status: str
-    results: int
-    collections: list[Collection]
-
 # GET collection list with some metadata
 @router.get("/collections/")
 async def get_collections(request: Request) -> Dict:
@@ -104,7 +73,7 @@ async def get_collections(request: Request) -> Dict:
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}")
-async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict[str, bool]:
+async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
     """Delete and recreate a collection"""
 
     to_return = {}
@@ -124,7 +93,7 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
 @router.delete("/wipe-collections/")
 async def wipe_collections(
     request: Request,
-) -> Dict[str, bool]:
+) -> Dict:
     """Delete and create all collections"""
 
     ccat = request.app.state.ccat
@@ -140,19 +109,16 @@ async def wipe_collections(
 
     return to_return
 
-class WipedConversation(BaseModel):
-    deleted: bool
-
 #DELETE conversation history from working memory
 @router.delete("/working-memory/conversation-history/")
 async def wipe_conversation_history(
     request: Request,
-) -> WipedConversation:
+) -> Dict:
     """Delete conversation history from working memory"""
 
     ccat = request.app.state.ccat
     ccat.working_memory["history"] = []
 
     return {
-        "deleted": True,
+        "deleted": "true",
     }

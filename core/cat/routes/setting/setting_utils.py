@@ -1,4 +1,5 @@
 from typing import Dict
+
 from cat.db import crud, models
 from fastapi import Body, HTTPException
 from sqlalchemy import func

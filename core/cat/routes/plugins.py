@@ -1,29 +1,12 @@
 from fastapi import Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from typing import Dict
-from pydantic import BaseModel
 
 router = APIRouter()
-
-class Plugin(BaseModel):
-    id: str
-    name: str
-    description: str
-    author_name: str
-    author_url: str
-    plugin_url: str
-    tags: str
-    thumb: str
-    version: str
-
-class PluginsList(BaseModel):
-    results: int
-    installed: list[Plugin]
-    registry: list[Plugin]
 
 
 # GET plugins
 @router.get("/", status_code=200)
-async def list_available_plugins(request: Request) -> PluginsList:
+async def list_available_plugins(request: Request) -> Dict:
     """List available plugins"""
 
     # access cat instance
@@ -36,13 +19,13 @@ async def list_available_plugins(request: Request) -> PluginsList:
     registry = []
 
     return {
+        "status": "success", 
         "results": len(plugins) + len(registry), 
         "installed": plugins,
         "registry": registry
     }
 
 
-# POST install plugin
 @router.post("/install/")
 async def install_plugin(
     request: Request,
@@ -57,7 +40,6 @@ async def install_plugin(
     return {"error": "to be implemented"}
 
 
-# PUT enable or disable a plugin
 @router.put("/toggle/{plugin_id}", status_code=200)
 async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     """Enable or disable a single plugin"""
@@ -68,9 +50,8 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     return {"error": "to be implemented"}
 
 
-# GET single plugin details
 @router.get("/{plugin_id}", status_code=200)
-async def get_plugin_details(plugin_id: str, request: Request) -> Plugin:
+async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     """Returns information on a single plugin"""
 
     # access cat instance
@@ -84,4 +65,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Plugin:
     if not found:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    return found
+    return {
+        "status": "success", 
+        "data": found
+    }
