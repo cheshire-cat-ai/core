@@ -10,8 +10,6 @@
   </h4>
 </div>
 
-[![Try in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
-
 ## What is this?
 
 The Cheshire Cat is a framework to build custom AIs on top of any language model.
@@ -37,9 +35,25 @@ This project is growing fast, refactorings and code changes happens very often, 
 
 ## Quickstart
 
+### Try in on GitHub Codespace
+You can try Cheshire Cat on GitHub Codespace. The free account provides 60 free hours a month.
+
+[![Try in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/cheshire-cat-ai/core)
+
+
+#### Instructions
+
+- Right-click this [link](https://codespaces.new/cheshire-cat-ai/core) and select "open a new window." It will open a webpage titled "Create a new codespace":
+- You can ignore the options on the screen and press the green button "create codespace"
+- Wait for the codespace to load, and then type on the terminal "docker-compose up"
+- It will take a few minutes. When you read "Application startup complete," it will show three links: REST API, PUBLIC, and ADMIN.
+- Click on the ADMIN link to configure Cheshire Cat and start playing with it.
+- Have fun!
+- As soon as you're satisfied, you can press "CTRL C" on the terminal to stop the Cheshire Cat. Then type docker-compose down to close the docker container.
+
 ### Install
 
-You just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compose`](https://docs.docker.com/compose/install/) installed on your system.
+To make Cheshire Cat run on your machine, you just need [`docker`](https://docs.docker.com/get-docker/) and [`docker-compose`](https://docs.docker.com/compose/install/) installed.
 Clone the repo:
 
 ```bash
