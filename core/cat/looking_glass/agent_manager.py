@@ -7,10 +7,31 @@ from langchain.chains import LLMChain
 
 
 class AgentManager:
+    """Manager of Langchain Agent.
+
+    This class manages the Agent that uses the LLM. It takes care of formatting the prompt and filtering the tools
+    before feeding them to the Agent. It also instantiates the Langchain Agent.
+
+    Attributes
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    """
     def __init__(self, cat):
         self.cat = cat
 
-    def get_agent_executor(self):
+    def get_agent_executor(self) -> AgentExecutor:
+        """Instantiate the Agent with tools.
+
+        The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
+        from Langchain.
+
+        Returns
+        -------
+        agent_executor : AgentExecutor
+            Instance of the Agent provided with a set of tools.
+        """
         mad_hatter = self.cat.mad_hatter
 
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix") + "\n# Tools:"
