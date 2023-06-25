@@ -15,7 +15,22 @@ from cat.looking_glass.agent_manager import AgentManager
 
 # main class
 class CheshireCat:
+    """The Cheshire Cat.
+
+    This is the main class that manages everything.
+
+    Attributes
+    ----------
+    web_socket_notifications : list
+        List of notifications to be sent to the frontend.
+
+    """
+
     def __init__(self):
+        """Cat initialization.
+
+        At init time the Cat loads the database and execute the bootstrap.
+        """
         # access to DB
         self.load_db()
 
@@ -26,12 +41,31 @@ class CheshireCat:
         # i.e. finished uploading a file
         self.web_socket_notifications = []
 
-
     def bootstrap(self):
-        """This method is called when the cat is instantiated and
-        has to be called whenever LLM, embedder,
-        agent or memory need to be reinstantiated
-        (for example an LLM change at runtime)
+        """Cat's bootstrap.
+
+        This method is called when the Cat is instantiated and whenever LLM, embedder, agent or memory need
+        to be reinstantiated (for example an LLM change at runtime).
+
+        Notes
+        -----
+        The pipeline of execution of the functions is important as some method rely on the previous ones.
+        Two hooks allows to intercept the pipeline before and after the bootstrap.
+        The pipeline is:
+
+            1. Load the plugins, i.e. the MadHatter.
+            2. Execute the `before_cat_bootstrap` hook.
+            3. Load Natural Language Processing related stuff, i.e. the Language Models, the prompts, etc.
+            4. Load the memories, i.e. the LongTermMemory and the WorkingMemory.
+            5. Embed the tools, i.e. insert the tools in the procedural memory.
+            6. Load the AgentManager.
+            7. Load the RabbitHole.
+            8. Execute the `after_cat_bootstrap` hook.
+
+        See Also
+        --------
+        before_cat_bootstrap
+        after_cat_bootstrap
         """
 
         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
@@ -59,6 +93,7 @@ class CheshireCat:
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
     def load_db(self):
+        """Load the SQl database."""
         # if there is no db, create it
         create_db_and_tables()
 
@@ -66,7 +101,30 @@ class CheshireCat:
         self.db = get_db_session
 
     def load_natural_language(self):
+        """Load Natural Language related objects.
 
+        The method exposes in the Cat all the NLP related stuff. Specifically, it sets the language models
+        (LLM and Embedder), the HyDE and summarization prompts and relative Langchain chains and the main prompt with
+        default settings.
+
+        Notes
+        -----
+        `use_episodic_memory`, `use_declarative_memory` and `use_procedural_memory` settings can be set from the admin
+        GUI and allows to prevent the Cat from using any of the three vector memories.
+
+        Warnings
+        --------
+        When using small Language Models it is suggested to turn off the memories and make the main prompt smaller
+        to prevent them to fail.
+
+        See Also
+        --------
+        get_language_model
+        get_language_embedder
+        hypothetical_embedding_prompt
+        summarization_prompt
+        agent_prompt_prefix
+         """
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
@@ -97,20 +155,35 @@ class CheshireCat:
         }
 
     def load_memory(self):
+        """Load LongTerMemory and WorkingMemory."""
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
         self.working_memory = WorkingMemory()
 
     def load_plugins(self):
+        """Instantiate the plugins manager."""
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
     def recall_relevant_memories_to_working_memory(self):
+        """Retrieve context from memory.
 
+        The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
+        Recalled memories are stored in the working memory.
+
+        Notes
+        -----
+        The user's message is used as a query to make a similarity search in the Cat's vector memories.
+        Two hooks allow to customize the recall pipeline before and after it is done.
+
+        See Also
+        --------
+        before_cat_recalls_memories
+        before_cat_recalls_memories
+        """
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
-
 
         # hook to do something before recall begins
         k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
@@ -144,9 +217,31 @@ class CheshireCat:
         self.working_memory["declarative_memories"] = declarative_memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalled_memories", memory_query_text)
+        self.mad_hatter.execute_hook("before_cat_recalls_memories", memory_query_text)
 
     def format_agent_executor_input(self):
+        """Format the input for the Agent.
+
+        The method formats the strings of recalled memories and chat history that will be provided to the Langchain
+        Agent and inserted in the prompt.
+
+        Returns
+        -------
+        dict
+            Formatted output to be parsed by the Agent executor.
+
+        Notes
+        -----
+        The context of memories and conversation history is properly formatted before being parsed by the and, hence,
+        information are inserted in the main prompt.
+        All the formatting pipeline is hookable and memories can be edited.
+
+        See Also
+        --------
+        agent_prompt_episodic_memories
+        agent_prompt_declarative_memories
+        agent_prompt_chat_history
+        """
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.mad_hatter.execute_hook(
             "agent_prompt_episodic_memories",
@@ -171,6 +266,17 @@ class CheshireCat:
         }
 
     def store_new_message_in_working_memory(self, user_message_json):
+        """Store message in working_memory and update the prompt settings.
+
+        The method update the working memory with the last user's message.
+        Also, the client sends the settings to turn on/off the vector memories.
+
+        Parameters
+        ----------
+        user_message_json : dict
+            Dictionary with the message received from the Websocket client
+
+        """
 
         # store last message in working memory
         self.working_memory["user_message_json"] = user_message_json
@@ -182,24 +288,47 @@ class CheshireCat:
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
-
     def get_base_url(self):
+        """Allows the Cat expose the base url."""
         secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
         if secure != '':
             secure = 's'
         return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
 
     def get_base_path(self):
+        """Allows the Cat expose the base path."""
         return os.path.join(os.getcwd(), "cat/")
 
     def get_plugin_path(self):
+        """Allows the Cat expose the plugins path."""
         return os.path.join(os.getcwd(), "cat/plugins/")
 
     def get_static_url(self):
+        """Allows the Cat expose the static server url."""
         return self.get_base_url() + "/static"
 
     def __call__(self, user_message_json):
+        """Call the Cat instance.
 
+        This method is called on the user's message received from the client.
+
+        Parameters
+        ----------
+        user_message_json : dict
+            Dictionary received from the Websocket client.
+
+        Returns
+        -------
+        final_output : dict
+            Dictionary with the Cat's answer to be sent to the client.
+
+        Notes
+        -----
+        Here happens the main pipeline of the Cat. Namely, the Cat receives the user's input and recall the memories.
+        The retrieved context is formatted properly and given in input to the Agent that uses the LLM to produce the
+        answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
+
+        """
         log(user_message_json, "INFO")
 
         # hook to modify/enrich user input
@@ -210,7 +339,6 @@ class CheshireCat:
         self.store_new_message_in_working_memory(user_message_json)
 
         # TODO another hook here?
-
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
@@ -257,7 +385,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input" : agent_executor_input["input"],
+                "input": agent_executor_input["input"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }
