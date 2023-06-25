@@ -306,6 +306,10 @@ class CheshireCat:
     def get_static_url(self):
         """Allows the Cat expose the static server url."""
         return self.get_base_url() + "/static"
+    
+    def get_static_path(self):
+        """Allows the Cat expose the static files path."""
+        return os.path.join(os.getcwd(), "cat/static/")
 
     def __call__(self, user_message_json):
         """Call the Cat instance.

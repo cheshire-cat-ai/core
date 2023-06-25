@@ -51,7 +51,7 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
 
 
 @router.get("/{plugin_id}", status_code=200)
-async def plugin_detail(plugin_id: str, request: Request) -> Dict:
+async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     """Returns information on a single plugin"""
 
     # access cat instance
