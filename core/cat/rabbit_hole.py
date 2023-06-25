@@ -16,6 +16,9 @@ from langchain.docstore.document import Document
 
 
 class RabbitHole:
+    """
+
+    """
     def __init__(self, cat):
         self.cat = cat
 
@@ -25,14 +28,29 @@ class RabbitHole:
         chunk_size: int = 400,
         chunk_overlap: int = 100,
     ):
-        """
-        Load a given file in the Cat's memory.
+        """Load a file in the Cat's declarative memory.
 
-        :param file: absolute path of the file or UploadFile
-            if ingested from the GUI
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters
-            between consecutive chunks
+        The method splits and converts the file in Langchain `Document`. Then, it stores the `Document` in the Cat's
+        memory. Optionally, the document can be summarized and summaries are saved along with the original
+        content.
+
+        Parameters
+        ----------
+        file : str, UploadFile
+            The file can be a path passed as a string or an `UploadFile` object if the document is ingested using the
+            `rabbithole` endpoint.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+
+        Notes
+        ----------
+        Currently supported formats are `.txt`, `.pdf` and `.md`.
+
+        See Also
+        ----------
+        rabbithole_summarizes_documents
         """
 
         # split file into a list of docs
@@ -59,12 +77,25 @@ class RabbitHole:
         chunk_size: int = 400,
         chunk_overlap: int = 100,
     ):
-        """
-        Load a given website in the Cat's memory.
-        :param url: URL of the website to which you want to save the content
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters
-            between consecutive chunks
+        """Load a webpage in the Cat's declarative memory.
+
+        The method splits and converts a `.html` page to Langchain `Document`. Then, it stores the `Document` in
+        the Cat's memory. Optionally, the document can be summarized and summaries are saved along with the
+        original content.
+
+        Parameters
+        ----------
+        url : str
+            Url to the webpage.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+
+        See Also
+        ----------
+        rabbithole_summarizes_documents
+
         """
 
         # get website content and split into a list of docs
@@ -87,12 +118,25 @@ class RabbitHole:
         chunk_size: int = 400,
         chunk_overlap: int = 100,
     ) -> List[Document]:
-        """
-        Scrape website content and chunk it to a list of Documents.
-        :param url: URL of the website to which you want to save the content
-        :param chunk_size: number of characters the text is split in
-        :param chunk_overlap: number of overlapping characters
-            between consecutive chunks
+        """Converts an url to Langchain `Document`.
+
+        The method loads and splits an url content in overlapped chunks of text.
+        The content is then converted to Langchain `Document`.
+
+        Parameters
+        ----------
+        url : str
+            Url to the webpage.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+
+        Returns
+        -------
+        docs : List[Document]
+            List of Langchain `Document` of chunked text.
+
         """
 
         # load text content of the website
@@ -109,16 +153,30 @@ class RabbitHole:
         chunk_size: int = 400,
         chunk_overlap: int = 100,
     ) -> List[Document]:
-        """
-        Parse a file and chunk it to a list of Documents.
-        The file can either be ingested from the web GUI, rest API
-            or using the *cat.rabbit_hole.send_file_in_rabbit_hole* method.
-        :param file: absolute path of the file or UploadFile
-            if ingested from the GUI
-        :param chunk_size: number of characters
-            the text is split in
-        :param chunk_overlap: number of overlapping characters
-            between consecutive chunks
+
+        """Load and convert files to Langchain `Document`.
+
+        This method takes a file either from a Python script or from the `/rabbithole/` endpoint.
+        Hence, it loads it in memory and splits it in overlapped chunks of text.
+
+        Parameters
+        ----------
+        file : str, UploadFile
+            The file can be either a string path if loaded programmatically or a FastAPI `UploadFile` if coming from
+            the `/rabbithole/` endpoint.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+
+        Returns
+        -------
+        docs : List[Document]
+            List of Langchain `Document` of chunked text.
+
+        Notes
+        -----
+        Currently supported formats are `.txt`, `.pdf` and `.md`.
         """
 
         # Create temporary file
@@ -170,13 +228,28 @@ class RabbitHole:
         return docs
 
     def store_documents(self, docs: List[Document], source: str) -> None:
+        """Add documents to the Cat's declarative memory.
+
+        This method loops a list of Langchain `Document` and adds some metadata. Namely, the source filename and the
+        timestamp of insertion. Once done, the method notifies the client via Websocket connection.
+
+        Parameters
+        ----------
+        docs : List[Document]
+            List of Langchain `Document` to be inserted in the Cat's declarative memory.
+        source : str
+            Source name to be added as a metadata. It can be a file name or an URL.
+
+        Notes
+        -------
+        At this point, it is possible to customize the Cat's behavior using the `before_rabbithole_insert_memory` hook
+        to edit the memories before they are inserted in the vector database.
+
+        See Also
+        --------
+        before_rabbithole_insert_memory
         """
-        Load a list of Documents in the Cat's declarative memory.
-        :param ccat: reference to the cat instance
-        :param docs: a list of documents to store in memory
-        :param source: a string representing the source,
-            either the file name or the website URL
-        """
+
         log(f"Preparing to memorize {len(docs)} vectors")
 
         # classic embed
@@ -216,7 +289,38 @@ class RabbitHole:
         print(f"\n\nDone uploading {source}")
 
     def split_text(self, text, chunk_size, chunk_overlap):
-        # do something on the text before it is splitted
+        """Split text in overlapped chunks.
+
+        This method executes the `rabbithole_splits_text` to split the incoming text in overlapped
+        chunks of text. Other two hooks are available to edit the text before and after the split step.
+
+        Parameters
+        ----------
+        text : str
+            Content of the loaded file.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+
+        Returns
+        -------
+        docs : List[Document]
+            List of split Langchain `Document`.
+
+        Notes
+        -----
+        The default behavior only executes the `rabbithole_splits_text` hook. `before_rabbithole_splits_text` and
+        `after_rabbithole_splitted_text` hooks return the original input without any modification.
+
+        See Also
+        --------
+        before_rabbithole_splits_text
+        rabbithole_splits_text
+        after_rabbithole_splitted_text
+
+        """
+        # do something on the text before it is split
         text = self.cat.mad_hatter.execute_hook(
             "before_rabbithole_splits_text", text
         )
@@ -226,7 +330,7 @@ class RabbitHole:
             "rabbithole_splits_text", text, chunk_size, chunk_overlap
         )
 
-        # do something on the text after it is splitted
+        # do something on the text after it is split
         docs = self.cat.mad_hatter.execute_hook(
             "after_rabbithole_splitted_text", docs
         )

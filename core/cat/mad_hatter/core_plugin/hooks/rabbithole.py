@@ -21,19 +21,26 @@ def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
 
     Allows to edit and enhance a single `Document` before the *RabbitHole* add it to the declarative vector memory.
 
+    Parameters
+    ----------
+    doc : Document
+        Langchain `Document` to be inserted in memory.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    doc : Document
+        Langchain `Document` that is added in the declarative vector memory.
+
+    Notes
+    -----
     The `Document` has two properties::
 
         `page_content`: the string with the text to save in memory;
         `metadata`: a dictionary with at least two keys:
             `source`: where the text comes from;
             `when`: timestamp to track when it's been uploaded.
-
-    Args:
-        doc: langchain `Document` to be inserted in memory.
-        cat: Cheshire Cat instance.
-
-    Returns:
-        langchain `Document` that is added in the declarative vector memory.
 
     """
     return doc
@@ -48,12 +55,17 @@ def before_rabbithole_splits_text(doc: Document, cat) -> Document:
 
     For instance, the hook allows to change the text or edit/add metadata.
 
-    Args:
-        doc: langchain `Document` uploaded in the *RabbitHole* to be ingested.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    doc : Document
+        Langchain `Document` uploaded in the *RabbitHole* to be ingested.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        Edited langchain `Document`.
+    Returns
+    -------
+    doc : Document
+        Edited Langchain `Document`.
 
     """
     return doc
@@ -68,14 +80,21 @@ def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> Li
 
     This is applied when ingesting a documents and urls from a script, using an endpoint or from the GUI.
 
-    Args:
-        text: list of langchain `Document` to chunk.
-        chunk_size: length of every chunk in characters.
-        chunk_overlap: amount of overlap between consecutive chunks.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    text : List[Document]
+        List of langchain `Document` to chunk.
+    chunk_size : int
+        Length of every chunk in characters.
+    chunk_overlap : int
+        Amount of overlap between consecutive chunks.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        list of chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+    Returns
+    -------
+    docs : List[Document]
+        List of chunked langchain `Document` to be optionally summarized and stored in episodic memory.
 
     """
 
@@ -107,12 +126,17 @@ def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document
 
     Allows to edit the list of `Document` right after the *RabbitHole* chunked them in smaller ones.
 
-    Args:
-        chunks: list of langchain `Document`.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    chunks : List[Document]
+        List of Langchain `Document`.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        list of modified chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+    Returns
+    -------
+    chunks : List[Document]
+        List of modified chunked langchain `Document` to be optionally summarized and stored in episodic memory.
 
     """
 
@@ -130,12 +154,17 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
 
     For example, the hook allows to make the summarization optional or to apply another summarization technique.
 
-    Args:
-        docs: list of langchain `Document` to be summarized.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    docs : List[Document]
+        List of Langchain `Document` to be summarized.
+    cat: CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
-        list of langchain `Document` with text summaries of the original ones.
+    Returns
+    -------
+    all_summaries : List[Document]
+        List of Langchain `Document` with text summaries of the original ones.
 
     """
 

@@ -15,12 +15,12 @@ from cat.mad_hatter.decorators import hook
 def before_collection_created(vector_memory_collection: VectorMemoryCollection, cat):
     """Do something before a new collection is created in vectorDB
 
-    Args:
-        vector_memory_collection: instance of VectorMemoryCollection wrapping the actual db collection.
-        cat: Cheshire Car instance.
-
-    Returns:
-        None
+    Parameters
+    ----------
+    vector_memory_collection : VectorMemoryCollection
+        Instance of `VectorMemoryCollection` wrapping the actual db collection.
+    cat : CheshireCat
+        Cheshire Car instance.
     """
     pass
 
@@ -31,11 +31,11 @@ def before_collection_created(vector_memory_collection: VectorMemoryCollection, 
 def after_collection_created(vector_memory_collection: VectorMemoryCollection, cat):
     """Do something after a new collection is created in vectorDB
 
-    Args:
-        vector_memory_collection: instance of VectorMemoryCollection wrapping the actual db collection.
-        cat: Cheshire Car instance.
-
-    Returns:
-        None
+    Parameters
+    ----------
+    vector_memory_collection : VectorMemoryCollection
+        Instance of `VectorMemoryCollection` wrapping the actual db collection.
+    cat : CheshireCat
+        Cheshire Car instance.
     """
     pass

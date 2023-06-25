@@ -22,14 +22,20 @@ def get_language_model(cat) -> BaseLLM:
 
     Allows to modify how the Cat selects the LLM at bootstrap time.
 
-    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-    the memories, the *Agent Manager* and the *Rabbit Hole*.
+    Parameters
+    ----------
+    cat: CheshireCat
+        Cheshire Cat instance.
 
-    Args:
-        cat: Cheshire Cat instance.
+    Returns
+    -------
+    lll : BaseLLM
+        Langchain `BaseLLM` instance of the selected model.
 
-    Returns:
-        langchain `BaseLLM` instance for the selected model.
+    Notes
+    -----
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+    the *Agent Manager* and the *Rabbit Hole*.
 
     """
     selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
@@ -61,10 +67,14 @@ def get_language_embedder(cat):
     Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
     the memories, the *Agent Manager* and the *Rabbit Hole*.
 
-    Args:
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    cat: CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
+    Returns
+    -------
+    embedder : Embeddings
         Selected embedder model.
     """
     # Embedding LLM

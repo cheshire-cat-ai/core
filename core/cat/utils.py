@@ -3,8 +3,21 @@
 from datetime import timedelta
 
 
-def to_camel_case(text):
-    """Take in a string of words separated by either hyphens or underscores and returns a string of words in camel case."""
+def to_camel_case(text :str ) -> str:
+    """Format string to camel case.
+
+    Takes a string of words separated by either hyphens or underscores and returns a string of words in camel case.
+
+    Parameters
+    ----------
+    text : str
+        String of hyphens or underscores separated words.
+
+    Returns
+    -------
+    str
+        Camel case formatted string.
+    """
     s = text.replace("-", " ").replace("_", " ").capitalize()
     s = s.split()
     if len(text) == 0:
@@ -12,8 +25,32 @@ def to_camel_case(text):
     return s[0] + "".join(i.capitalize() for i in s[1:])
 
 
-def verbal_timedelta(td):
-    """Convert a timedelta in human form."""
+def verbal_timedelta(td: timedelta) -> str:
+    """Convert a timedelta in human form.
+
+    The function takes a timedelta and converts it to a human-readable string format.
+
+    Parameters
+    ----------
+    td : timedelta
+        Difference between two dates.
+
+    Returns
+    -------
+    str
+        Human-readable string of time difference.
+
+    Notes
+    -----
+    This method is used to give the Language Model information time information about the memories retrieved from
+    the vector database.
+
+    Examples
+    --------
+    >>> print(verbal_timedelta(timedelta(days=2, weeks=1))
+    'One week and two days ago'
+    """
+
     if td.days != 0:
         abs_days = abs(td.days)
         if abs_days > 7:
