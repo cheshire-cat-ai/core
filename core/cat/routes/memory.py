@@ -5,7 +5,7 @@ from fastapi import Query, Request, APIRouter
 router = APIRouter()
 
 
-# DELETE delete_memories
+# DELETE memories
 @router.delete("/point/{memory_id}/")
 async def delete_element_in_memory(memory_id: str) -> Dict:
     """Delete specific element in memory."""
@@ -13,7 +13,7 @@ async def delete_element_in_memory(memory_id: str) -> Dict:
     return {"error": "to be implemented"}
 
 
-# GET recall_memories
+# GET memories from recall
 @router.get("/recall/")
 async def recall_memories_from_text(
     request: Request,
