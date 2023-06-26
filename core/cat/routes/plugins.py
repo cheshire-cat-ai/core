@@ -1,5 +1,11 @@
-from fastapi import Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
+import mimetypes
+import tempfile
 from typing import Dict
+from zipfile import ZipFile
+from fastapi import Request, APIRouter, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+from cat.log import log
+
 
 router = APIRouter()
 
@@ -26,18 +32,48 @@ async def list_available_plugins(request: Request) -> Dict:
     }
 
 
-@router.post("/install/")
-async def install_plugin(
+@router.post("/upload/")
+async def upload_plugin(
     request: Request,
-    file: UploadFile,
-    background_tasks: BackgroundTasks
+    file: UploadFile
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
     # access cat instance
     ccat = request.app.state.ccat
 
-    return {"error": "to be implemented"}
+    # check if this is a zip file
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log(f"Uploaded {content_type} plugin", "ERROR")
+    if content_type != "application/zip":
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": f'MIME type `{file.content_type}` not supported. Please upload `application/zip` (a .zip file).'
+            },
+        )
+    
+    # Create temporary file (dunno how to extract from memory) #TODO: extract directly from memory
+    file_bytes = file.file.read()
+    temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
+    temp_name = temp_file.name
+    with open(temp_name, "wb") as temp_binary_file:
+        # Write bytes to file
+        temp_binary_file.write(file_bytes)
+
+    # Extracting into plugins folder
+    with ZipFile(temp_name, 'r') as z_object:  
+        z_object.extractall(path=ccat.get_plugin_path())
+
+    # align plugins (may need to embed tools)
+    ccat.bootstrap()
+
+    # reply to client
+    return {
+        "filename": file.filename,
+        "content-type": file.content_type,
+        "info": "Plugin has been uploaded but not activated.",
+    }
 
 
 @router.put("/toggle/{plugin_id}", status_code=200)

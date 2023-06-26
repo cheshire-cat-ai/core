@@ -1,10 +1,10 @@
 import mimetypes
-from typing import Dict
-
-from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from cat.log import log
 import requests
+from typing import Dict
+from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from fastapi.responses import JSONResponse
+
+from cat.log import log
 
 router = APIRouter()
 
