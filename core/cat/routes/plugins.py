@@ -62,18 +62,20 @@ async def upload_plugin(
         temp_binary_file.write(file_bytes)
 
     # Extract into plugins folder
-    shutil.unpack_archive(
-        temp_name, ccat.get_plugin_path(), "zip"
-    )
+    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), "zip")
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
+
+    plugins = ccat.mad_hatter.plugins
+    ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
+    found = next(plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', ' '))
 
     # reply to client
     return {
         "filename": file.filename,
         "content-type": file.content_type,
-        "info": "Plugin has been uploaded but not activated.",
+        "info": found
     }
 
 
@@ -96,7 +98,8 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     # plugins are managed by the MadHatter class
     plugins = ccat.mad_hatter.plugins
-    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
+    # there should be only one plugin with that id
+    found = next(plugin for plugin in plugins if plugin["id"] == plugin_id)
 
     if not found:
         raise HTTPException(status_code=404, detail="Item not found")
