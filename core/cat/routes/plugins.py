@@ -1,7 +1,7 @@
 import mimetypes
 import tempfile
 from typing import Dict
-from zipfile import ZipFile
+import shutil
 from fastapi import Request, APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from cat.log import log
@@ -61,9 +61,10 @@ async def upload_plugin(
         # Write bytes to file
         temp_binary_file.write(file_bytes)
 
-    # Extracting into plugins folder
-    with ZipFile(temp_name, 'r') as z_object:  
-        z_object.extractall(path=ccat.get_plugin_path())
+    # Extract into plugins folder
+    shutil.unpack_archive(
+        temp_name, ccat.get_plugin_path(), "zip"
+    )
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
