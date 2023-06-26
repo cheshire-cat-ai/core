@@ -69,13 +69,13 @@ async def upload_plugin(
 
     plugins = ccat.mad_hatter.plugins
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
-    found = next(plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', ' '))
+    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', ' ')]
 
     # reply to client
     return {
         "filename": file.filename,
         "content-type": file.content_type,
-        "info": found
+        "info": found[0]
     }
 
 
@@ -99,14 +99,14 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     # plugins are managed by the MadHatter class
     plugins = ccat.mad_hatter.plugins
     # there should be only one plugin with that id
-    found = next(plugin for plugin in plugins if plugin["id"] == plugin_id)
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
         raise HTTPException(status_code=404, detail="Item not found")
 
     return {
         "status": "success", 
-        "data": found
+        "data": found[0]
     }
 
 
