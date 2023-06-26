@@ -96,8 +96,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     # plugins are managed by the MadHatter class
     plugins = ccat.mad_hatter.plugins
-
-    found = next(plugin for plugin in plugins if plugin["id"] == plugin_id)
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -105,4 +104,29 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     return {
         "status": "success", 
         "data": found
+    }
+
+
+@router.delete("/{plugin_id}", status_code=200)
+async def delete_plugin(plugin_id: str, request: Request) -> Dict:
+    """Physically remove plugin."""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    plugins = ccat.mad_hatter.plugins
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
+
+    if not found:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # remove plugin folder
+    shutil.rmtree(ccat.get_plugin_path() + plugin_id)
+
+    # align plugins (update db and embed new tools)
+    ccat.bootstrap()
+
+    return {
+        "status": "success", 
+        "deleted": plugin_id
     }
