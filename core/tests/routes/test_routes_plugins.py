@@ -33,7 +33,7 @@ def test_get_plugin_id(client, keys):
 # TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
 def test_plugin_zip_upload(client):
 
-    # mock_plugin is not installed in the cat (check both via nedpoint and filesystem)
+    # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
     response = client.get("/plugins")
     installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
     assert "mock_plugin" not in installed_plugins_names
@@ -71,11 +71,15 @@ def test_plugin_zip_upload(client):
 
     # TODO: check whether new tools have been embedded
 
-    # delete created plugin, both from tests mock folder and from cat plugins
-    os.remove(zip_path)
-    shutil.rmtree("/app/cat/plugins/mock_plugin") # TODO: do this directly via DELETE endpoint!
+    # remove plugin via endpoint (will delete also folder in cat/plugins)
+    response = client.delete("/plugins/mock_plugin")
+    assert response.status_code == 200
 
+    # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
+    response = client.get("/plugins")
+    installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
+    assert "mock_plugin" not in installed_plugins_names
+    assert not os.path.exists("/app/cat/plugins/mock_plugin")
 
-
-
+    os.remove(zip_path) # delete zip from tests folder
 
