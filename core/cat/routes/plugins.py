@@ -65,7 +65,7 @@ async def upload_plugin(
     with ZipFile(temp_name, 'r') as z_object:  
         z_object.extractall(path=ccat.get_plugin_path())
 
-    # align plugins (may need to embed tools)
+    # align plugins (update db and embed new tools)
     ccat.bootstrap()
 
     # reply to client
