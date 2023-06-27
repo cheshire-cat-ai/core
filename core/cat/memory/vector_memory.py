@@ -2,10 +2,11 @@ import os
 import sys
 import socket
 import time
-from typing import Any, Callable
+from typing import Any
 
 from cat.log import log
 from qdrant_client import QdrantClient
+from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
@@ -39,7 +40,7 @@ class VectorMemory:
                 cat=cat,
                 client=self.vector_db,
                 collection_name=collection_name,
-                embedding_function=self.embedder.embed_query,
+                embeddings=self.embedder,
                 vector_size=self.embedder_size,
             )
 
@@ -75,9 +76,9 @@ class VectorMemory:
 
 class VectorMemoryCollection(Qdrant):
 
-    def __init__(self, cat, client: Any, collection_name: str, embedding_function: Callable, vector_size: int):
+    def __init__(self, cat, client: Any, collection_name: str, embeddings: Embeddings, vector_size: int):
 
-        super().__init__(client, collection_name, embedding_function)
+        super().__init__(client, collection_name, embeddings)
 
         # Get a Cat instance
         self.cat = cat
@@ -129,7 +130,7 @@ class VectorMemoryCollection(Qdrant):
         self.cat.mad_hatter.execute_hook('after_collection_created', self)
 
     # retrieve similar memories from text
-    def recall_memories_from_text(self, text, metadata=None, k=5, threshold=0.0):
+    def recall_memories_from_text(self, text, metadata=None, k=5, threshold=None):
         # embed the text
         query_embedding = self.embedding_function(text)
 
@@ -139,7 +140,7 @@ class VectorMemoryCollection(Qdrant):
         )
 
     # retrieve similar memories from embedding
-    def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=0.0):
+    def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=None):
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,
