@@ -52,7 +52,7 @@ async def upload_file(
     return {
         "filename": file.filename,
         "content-type": file.content_type,
-        "info": "File is being ingested asynchronously.",
+        "info": "File is being ingested asynchronously",
     }
 
 
@@ -89,7 +89,7 @@ async def upload_url(
         else:
             return {"url": url, "info": "Invalid URL"}
     except requests.exceptions.RequestException as e:
-        return {"url": url, "info": "Unable to reach the link."}
+        return {"url": url, "info": "Unable to reach the link"}
 
 
 @router.post("/memory/")

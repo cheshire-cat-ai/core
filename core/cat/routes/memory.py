@@ -1,5 +1,4 @@
 from typing import Dict
-
 from fastapi import Query, Request, APIRouter
 
 router = APIRouter()
@@ -10,6 +9,14 @@ router = APIRouter()
 async def delete_element_in_memory(memory_id: str) -> Dict:
     """Delete specific element in memory."""
     
+    # post-implemented response
+    '''
+    return {
+        "status": "success",
+        "deleted": memory_id
+    }
+    '''
+
     return {"error": "to be implemented"}
 
 
@@ -40,6 +47,7 @@ async def recall_memories_from_text(
         recalled[c] = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in memories]
     
     return {
+        "status": "success",
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
@@ -67,7 +75,7 @@ async def get_collections(request: Request) -> Dict:
         }]
 
     return {
-        "status": "success", 
+        "status": "success",
         "results": len(collections_metadata), 
         "collections": collections_metadata
     }
@@ -79,6 +87,7 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
     """Delete and recreate a collection"""
 
     to_return = {}
+
     if collection_id != "":
         ccat = request.app.state.ccat
         vector_memory = ccat.memory.vectors
@@ -88,7 +97,10 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
 
         ccat.bootstrap()  # recreate the long term memories
 
-    return to_return
+    return {
+        "status": "success",
+        "deleted": to_return,
+    }
 
 
 # DELETE all collections
@@ -109,7 +121,10 @@ async def wipe_collections(
 
     ccat.bootstrap()  # recreate the long term memories
 
-    return to_return
+    return {
+        "status": "success",
+        "deleted": to_return,
+    }
 
 #DELETE conversation history from working memory
 @router.delete("/working-memory/conversation-history/")
@@ -122,5 +137,6 @@ async def wipe_conversation_history(
     ccat.working_memory["history"] = []
 
     return {
+        "status": "success",
         "deleted": "true",
     }

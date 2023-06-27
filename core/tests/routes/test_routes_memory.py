@@ -1,12 +1,10 @@
 def test_get_collections(client):
     # prepare test data
     embedder_config = {"size": 128}
-    response = client.put("/settings/embedder/EmbedderFakeConfig",
-                          json=embedder_config)
+    response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
 
     # Act
-    response = client.get(
-        "/memory/collections")
+    response = client.get("/memory/collections")
 
     # Assert
     assert response.status_code == 200

@@ -44,7 +44,7 @@ async def upload_plugin(
 
     # check if this is a zip file
     content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} plugin", "ERROR")
+    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
     if content_type != "application/zip":
         return JSONResponse(
             status_code=422,
@@ -62,18 +62,22 @@ async def upload_plugin(
         temp_binary_file.write(file_bytes)
 
     # Extract into plugins folder
-    shutil.unpack_archive(
-        temp_name, ccat.get_plugin_path(), "zip"
-    )
+    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), "zip")
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
+
+    plugins = ccat.mad_hatter.plugins
+    ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
+    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', '')]
+
+    log(f"Successfully uploaded {found[0]['id']} plugin", "ERROR")
 
     # reply to client
     return {
         "filename": file.filename,
         "content-type": file.content_type,
-        "info": "Plugin has been uploaded but not activated.",
+        "info": found[0]
     }
 
 
@@ -96,6 +100,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     # plugins are managed by the MadHatter class
     plugins = ccat.mad_hatter.plugins
+    # there should be only one plugin with that id
     found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
@@ -103,7 +108,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     return {
         "status": "success", 
-        "data": found
+        "data": found[0]
     }
 
 

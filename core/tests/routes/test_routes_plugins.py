@@ -7,8 +7,7 @@ from tests.utils import key_in_json
 @pytest.mark.parametrize("key", ["status", "results", "installed", "registry"])
 def test_list_plugins(client, key):
     # Act
-    response = client.get(
-        "/plugins")
+    response = client.get("/plugins")
 
     response_json = response.json()
 
@@ -20,8 +19,7 @@ def test_list_plugins(client, key):
 @pytest.mark.parametrize("keys", ["status", "data"])
 def test_get_plugin_id(client, keys):
     # Act
-    response = client.get(
-        f"/plugins/core_plugin")
+    response = client.get("/plugins/core_plugin")
 
     response_json = response.json()
 
