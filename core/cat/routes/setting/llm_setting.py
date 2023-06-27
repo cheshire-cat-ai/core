@@ -20,7 +20,7 @@ LLM_SELECTED_CONFIGURATION = "llm_selected"
 
 # get configured LLMs and configuration schemas
 @router.get("/")
-def get_settings(db: Session = Depends(get_db_session)):
+def get_llm_settings(db: Session = Depends(get_db_session)):
     """Get the list of the Large Language Models"""
 
     return setting_utils.nlp_get_settings(
