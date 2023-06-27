@@ -44,7 +44,7 @@ async def upload_plugin(
 
     # check if this is a zip file
     content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} plugin", "ERROR")
+    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
     if content_type != "application/zip":
         return JSONResponse(
             status_code=422,
@@ -69,7 +69,9 @@ async def upload_plugin(
 
     plugins = ccat.mad_hatter.plugins
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
-    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', ' ')]
+    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', '')]
+
+    log(f"Successfully uploaded {found[0]['id']} plugin", "ERROR")
 
     # reply to client
     return {
