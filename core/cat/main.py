@@ -69,8 +69,8 @@ cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 # this cannot be done via fastapi.APIrouter:
 # https://github.com/tiangolo/fastapi/discussions/9070
 
-# admin (index file with dynamic configuration)
-admin.mount_admin_index(cheshire_cat_api)
+# admin single page app
+admin.mount_admin_spa(cheshire_cat_api)
 # admin (static build)
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)
