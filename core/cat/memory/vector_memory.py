@@ -121,7 +121,7 @@ class VectorMemoryCollection(Qdrant):
             quantization_config=ScalarQuantization(
                 scalar=ScalarQuantizationConfig(
                     type=ScalarType.INT8,
-                    quantile=0.99,
+                    quantile=0.75,
                     always_ram=False
                 )
             )
