@@ -2,19 +2,19 @@ from cat.memory.working_memory import WorkingMemory
 
 
 class WorkingMemoryList(dict):
-    """Cat's volatile memory.
+    """Cat's volatile memory list.
 
     Handy class that behaves like a `dict` to store temporary custom data.
 
     Returns
     -------
     dict[str, list]
-        Default instance is a dictionary with `history` key set to an empty list.
+        Default instance is a dictionary with `user` key set to a WorkingMemory instance.
 
     Notes
     -----
-    The constructor instantiates a dictionary with a `history` key set to an empty list that is further used to store
-    the conversation turns between the Human and the AI.
+    The constructor instantiates a dictionary with a `user` key set to a WorkingMemory instance that is further used to
+    reference the anonymous WorkingMemory.
     """
 
     def __init__(self):
