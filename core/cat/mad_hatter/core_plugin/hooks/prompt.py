@@ -35,6 +35,7 @@ def agent_prompt_prefix(cat) -> str:
     Notes
     -----
     The default prefix describe who the AI is and how it is expected to answer the Human.
+    With prompt_settings sent in the json you can change the prefix.
     The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     """
@@ -42,6 +43,12 @@ def agent_prompt_prefix(cat) -> str:
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human using tools and context.
 """
+
+    # check if custom prompt is sent in prompt settings
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
+
+    if prompt_settings["prefix"]:
+        prefix = prompt_settings["prefix"]
 
     return prefix
 
@@ -96,6 +103,12 @@ Thought: Do I need to use a tool? No
 {ai_prefix}: [your response here]
 ```"""
 
+    # Check if procedural memory is enabled
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
+
+    if prompt_settings["use_procedural_memory"]==False:
+        instructions=""
+
     return instructions
 
 
@@ -128,8 +141,8 @@ def agent_prompt_suffix(cat) -> str:
     - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     """
-    suffix = """# Context
-    
+    suffix = """# Context:
+
 {episodic_memory}
 
 {declarative_memory}

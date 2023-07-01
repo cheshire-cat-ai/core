@@ -4,7 +4,7 @@ from copy import copy
 from cat.log import log
 from langchain.agents import AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
-
+import re
 
 class AgentManager:
     """Manager of Langchain Agent.
@@ -67,6 +67,9 @@ class AgentManager:
             human_prefix="Human",
             input_variables=input_variables,
         )
+
+        # remove multiple empty lines from prompt
+        prompt.template = re.sub(r'\n\s*\n', '\n\n', prompt.template)
 
         log("Sending prompt", "INFO")
         log(prompt.template, "DEBUG")
