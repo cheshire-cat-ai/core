@@ -8,6 +8,7 @@ import time
 from typing import List, Dict
 from datetime import timedelta
 from langchain.docstore.document import Document
+from langchain.agents.conversational import prompt
 
 from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook
@@ -80,23 +81,9 @@ def agent_prompt_instructions(cat) -> str:
         - Observation: description of the result (which is the output of the @tool decorated function found in plugins).
 
     """
-    instructions = """To use a tool, use the following format:
 
-```
-Thought: Do I need to use a tool? Yes
-Action: the action to take /* should be one of [{tool_names}] */
-Action Input: the input to the action
-Observation: the result of the action
-```
-
-When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
-
-```
-Thought: Do I need to use a tool? No
-{ai_prefix}: [your response here]
-```"""
-
-    return instructions
+    # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
+    return prompt.FORMAT_INSTRUCTIONS
 
 
 @hook(priority=0)
