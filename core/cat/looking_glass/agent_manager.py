@@ -63,7 +63,6 @@ class AgentManager:
             prefix=prompt_prefix,
             format_instructions=prompt_format_instructions,
             suffix=prompt_suffix,
-            ai_prefix="AI",
             human_prefix="Human",
             input_variables=input_variables,
         )
