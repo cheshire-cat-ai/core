@@ -8,6 +8,7 @@ import time
 from typing import List, Dict
 from datetime import timedelta
 from langchain.docstore.document import Document
+from langchain.agents.conversational import prompt
 
 from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook
@@ -87,7 +88,6 @@ def agent_prompt_instructions(cat) -> str:
         - Observation: description of the result (which is the output of the @tool decorated function found in plugins).
 
     """
-    instructions = """To use a tool, use the following format:
 
 ```
 Thought: Do I need to use a tool? Yes
@@ -102,12 +102,6 @@ When you have a response to say to the Human, or if you do not need to use a too
 Thought: Do I need to use a tool? No
 {ai_prefix}: [your response here]
 ```"""
-
-    # Check if procedural memory is enabled
-    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
-
-    if prompt_settings["use_procedural_memory"]==False:
-        instructions=""
 
     return instructions
 
