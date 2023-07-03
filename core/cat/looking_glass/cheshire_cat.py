@@ -8,7 +8,7 @@ from cat.log import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemory
+from cat.memory.working_memory import WorkingMemory, WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
@@ -159,7 +159,12 @@ class CheshireCat:
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
-        self.working_memory = WorkingMemory()
+        
+        # List working memory per user
+        self.working_memory_list = WorkingMemoryList()
+        
+        # Load default shared working memory user
+        self.working_memory = self.working_memory_list.get_working_memory()
 
     def load_plugins(self):
         """Instantiate the plugins manager."""
@@ -334,6 +339,10 @@ class CheshireCat:
 
         """
         log(user_message_json, "INFO")
+
+        # Change working memory based on received user_id
+        user_id = user_message_json.get('user_id', 'user')
+        self.working_memory = self.working_memory_list.get_working_memory(user_id)
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
