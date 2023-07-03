@@ -40,9 +40,9 @@ class WorkingMemory(dict):
 
 
 class WorkingMemoryList(dict):
-    """Cat's volatile memory list.
+    """Cat's volatile memory (for all users).
 
-    Handy class that behaves like a `dict` to store temporary custom data.
+    Handy class that behaves like a `dict` to store temporary custom user data.
 
     Returns
     -------

@@ -159,8 +159,10 @@ class CheshireCat:
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
+        
         # List working memory per user
         self.working_memory_list = WorkingMemoryList()
+        
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
 
