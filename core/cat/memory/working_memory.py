@@ -18,6 +18,11 @@ class WorkingMemory(dict):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
         super().__init__(history=[])
 
+    def get_user_id(self):
+        """Get current user id."""
+        
+        return self["user_message_json"]["user_id"]
+
     def update_conversation_history(self, who, message):
         """Update the conversation history.
 

@@ -141,6 +141,7 @@ class VectorMemoryCollection(Qdrant):
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=None):
+
         # retrieve memories
         memories = self.client.search(
             collection_name=self.collection_name,
@@ -157,7 +158,8 @@ class VectorMemoryCollection(Qdrant):
                 )
             )
         )
-        return [
+
+        langchain_documents_from_points = [
             (
                 self._document_from_scored_point(
                     m, self.content_payload_key, self.metadata_payload_key),
@@ -166,3 +168,9 @@ class VectorMemoryCollection(Qdrant):
             )
             for m in memories
         ]
+
+        # we'll move out of langchain conventions soon and have our own cat Document
+        for doc, score, vector in langchain_documents_from_points:
+            doc.lc_kwargs = None
+
+        return langchain_documents_from_points

@@ -26,6 +26,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
+    user_id: str = Query(default="user", description="User id."),
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -43,9 +44,29 @@ async def recall_memories_from_text(
     collections = list(vector_memory.collections.keys())
     recalled = {}
     for c in collections:
-        memories = vector_memory.collections[c].recall_memories_from_embedding(query_embedding, k=k)
-        recalled[c] = [dict(m[0]) | {"score": float(m[1])} | {"vector": m[2]} for m in memories]
-    
+
+        # only episodic collection has users
+        if c == "episodic":
+            user_filter = {
+                'source': user_id
+            }
+        else:
+            user_filter = None
+            
+        memories = vector_memory.collections[c].recall_memories_from_embedding(
+            query_embedding,
+            k=k,
+            metadata=user_filter
+        )
+
+        recalled[c] = []
+        for metadata, score, vector in memories:
+            memory_dict = dict(metadata)
+            memory_dict.pop("lc_kwargs", None) # langchain stuff, not needed
+            memory_dict["score"] = float(score)
+            memory_dict["vector"] = vector
+            recalled[c].append(memory_dict)
+ 
     return {
         "status": "success",
         "query": query,

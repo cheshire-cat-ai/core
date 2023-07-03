@@ -125,6 +125,25 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
     return k, threshold
 
 
+# Called just before the cat recalls memories.
+@hook(priority=0)
+def after_cat_recalls_memories(query: str, cat) -> None:
+    """Hook after semantic search in memories.
+
+    The hook is executed just after the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    Parameters
+    ----------
+    query : str
+        Query used to retrieve memories.
+    cat : CheshireCat
+     Cheshire Cat instance.
+       
+    """
+    return None
+
+
 # What is the input to recall memories?
 # Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
 @hook(priority=0)

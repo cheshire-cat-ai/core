@@ -187,6 +187,7 @@ class CheshireCat:
         before_cat_recalls_memories
         before_cat_recalls_memories
         """
+        user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
@@ -204,7 +205,12 @@ class CheshireCat:
         if prompt_settings["use_episodic_memory"]:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k, threshold=threshold
+                embedding=memory_query_embedding,
+                k=k,
+                threshold=threshold,
+                metadata={
+                    "source": user_id
+                }
             )
         else:
             episodic_memories = []
@@ -222,7 +228,7 @@ class CheshireCat:
         self.working_memory["declarative_memories"] = declarative_memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", memory_query_text)
+        self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
 
     def format_agent_executor_input(self):
         """Format the input for the Agent.
@@ -342,6 +348,7 @@ class CheshireCat:
 
         # Change working memory based on received user_id
         user_id = user_message_json.get('user_id', 'user')
+        user_message_json['user_id'] = user_id
         self.working_memory = self.working_memory_list.get_working_memory(user_id)
 
         # hook to modify/enrich user input
@@ -416,7 +423,7 @@ class CheshireCat:
         #   (not raw dialog, but summarization)
         _ = self.memory.vectors.episodic.add_texts(
             [user_message],
-            [{"source": "user", "when": time.time()}],
+            [{"source": user_id, "when": time.time()}],
         )
 
         # build data structure for output (response and why with memories)
