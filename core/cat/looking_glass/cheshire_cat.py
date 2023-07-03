@@ -185,7 +185,7 @@ class CheshireCat:
         See Also
         --------
         before_cat_recalls_memories
-        before_cat_recalls_memories
+        after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
@@ -198,10 +198,11 @@ class CheshireCat:
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
         log(f'Recall query: "{memory_query_text}"')
 
-        # embed recall query
+        ##### embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
+        ##### Episodic memory
         if prompt_settings["use_episodic_memory"]:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
@@ -217,6 +218,7 @@ class CheshireCat:
 
         self.working_memory["episodic_memories"] = episodic_memories
 
+        ##### Declarative memory
         if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
@@ -226,6 +228,18 @@ class CheshireCat:
             declarative_memories = []
 
         self.working_memory["declarative_memories"] = declarative_memories
+
+        ##### Procedural memory
+        if prompt_settings["use_procedural_memory"]:
+            # recall relevant tools (procedural collection)
+            tools = self.memory.vectors.procedural.recall_memories_from_embedding(
+                embedding=memory_query_embedding, k=k, threshold=threshold
+            )
+        else:
+            tools = []
+
+        self.working_memory["procedural_memories"] = tools
+
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
@@ -429,6 +443,8 @@ class CheshireCat:
         # build data structure for output (response and why with memories)
         episodic_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["episodic_memories"]]
         declarative_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["declarative_memories"]]
+        procedural_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["procedural_memories"]]
+        
         final_output = {
             "error": False,
             "type": "chat",
@@ -439,6 +455,7 @@ class CheshireCat:
                 "memory": {
                     "episodic": episodic_report,
                     "declarative": declarative_report,
+                    "procedural": procedural_report,
                 },
             },
         }

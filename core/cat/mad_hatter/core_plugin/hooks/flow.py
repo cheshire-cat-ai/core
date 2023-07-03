@@ -121,7 +121,7 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
         Threshold to filter memories according their similarity score with the query.
     """
     k = 3
-    threshold = 0.8
+    threshold = 0.7
     return k, threshold
 
 
