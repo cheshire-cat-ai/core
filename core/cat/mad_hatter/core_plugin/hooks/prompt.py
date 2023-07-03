@@ -43,6 +43,11 @@ def agent_prompt_prefix(cat) -> str:
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human using tools and context.
 """
+    # check if custom prompt is sent in prompt settings
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
+
+    if prompt_settings["prefix"]:
+        prefix = prompt_settings["prefix"]
 
     return prefix
 
@@ -82,6 +87,11 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
+    # Check if procedural memory is disabled
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
+    if not prompt_settings["use_procedural_memory"]:
+        return ""
+
     # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
     return prompt.FORMAT_INSTRUCTIONS
 
@@ -116,7 +126,7 @@ def agent_prompt_suffix(cat) -> str:
 
     """
     suffix = """# Context
-    
+
 {episodic_memory}
 
 {declarative_memory}
@@ -124,9 +134,8 @@ def agent_prompt_suffix(cat) -> str:
 ## Conversation until now:{chat_history}
  - Human: {input}
 
-# What would the AI reply?
-
 {agent_scratchpad}"""
+
     return suffix
 
 
@@ -178,9 +187,10 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = "## Context of things the Human said in the past: " + memories_separator + memories_separator.join(memory_texts)
+    memory_content = "## Context of things the Human said in the past: " + \
+        memories_separator + memories_separator.join(memory_texts)
 
-    #if no data is retrieved from memory don't erite anithing in the prompt
+    # if no data is retrieved from memory don't erite anithing in the prompt
     if len(memory_texts) == 0:
         memory_content = ""
 
@@ -229,8 +239,9 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    
-    memory_content = "## Context of documents containing relevant information: " + memories_separator + memories_separator.join(memory_texts)
+
+    memory_content = "## Context of documents containing relevant information: " + \
+        memories_separator + memories_separator.join(memory_texts)
 
     # if no data is retrieved from memory don't erite anithing in the prompt
     if len(memory_texts) == 0:

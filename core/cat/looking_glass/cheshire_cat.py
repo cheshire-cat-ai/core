@@ -148,7 +148,7 @@ class CheshireCat:
 
         # set the default prompt settings
         self.default_prompt_settings = {
-            "prefix": self.mad_hatter.execute_hook("agent_prompt_prefix"),
+            "prefix": "",
             "use_episodic_memory": True,
             "use_declarative_memory": True,
             "use_procedural_memory": True,

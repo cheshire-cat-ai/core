@@ -38,17 +38,23 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
     # Embed the user's input to query the procedural memory with it
     query_embedding = cat.embedder.embed_query(user_input)
 
-    # Make semantic search in the procedural memory to retrieve the name of the most suitable tools
-    embedded_tools = cat.memory.vectors.procedural.recall_memories_from_embedding(
-        query_embedding, k=5, threshold=0.6
-    )
+    # Check if procedural memory is enabled
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
 
-    # Get the tools names only
-    tools_names = [t[0].metadata["name"] for t in embedded_tools]
+    if prompt_settings["use_procedural_memory"]:
+        # Make semantic search in the procedural memory to retrieve the name of the most suitable tools
+        embedded_tools = cat.memory.vectors.procedural.recall_memories_from_embedding(
+            query_embedding, k=5, threshold=0.6
+        )
+        # Get the tools names only
+        tools_names = [t[0].metadata["name"] for t in embedded_tools]
 
-    # Get the LangChain BaseTool by name
-    tools = [i for i in cat.mad_hatter.tools if i.name in tools_names]
+        # Get the LangChain BaseTool by name
+        tools = [i for i in cat.mad_hatter.tools if i.name in tools_names]
 
+    else:
+        tools=[]
+    
     # log(tools, "ERROR")
 
     # Add LangChain default tools
