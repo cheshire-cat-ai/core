@@ -36,7 +36,6 @@ def agent_prompt_prefix(cat) -> str:
     Notes
     -----
     The default prefix describe who the AI is and how it is expected to answer the Human.
-    With prompt_settings sent in the json you can change the prefix.
     The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     """
@@ -44,7 +43,6 @@ def agent_prompt_prefix(cat) -> str:
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human using tools and context.
 """
-
     # check if custom prompt is sent in prompt settings
     prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
 
@@ -89,21 +87,14 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
-```
-Thought: Do I need to use a tool? Yes
-Action: the action to take /* should be one of [{tool_names}] */
-Action Input: the input to the action
-Observation: the result of the action
-```
+    # Check if procedural memory is enabled
+    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
 
-When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+    if prompt_settings["use_procedural_memory"] == False:
+        return ""
 
-```
-Thought: Do I need to use a tool? No
-{ai_prefix}: [your response here]
-```"""
-
-    return instructions
+    # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
+    return prompt.FORMAT_INSTRUCTIONS
 
 
 @hook(priority=0)
@@ -135,8 +126,8 @@ def agent_prompt_suffix(cat) -> str:
     - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     """
-    suffix = """# Context:
-
+    suffix = """# Context
+    
 {episodic_memory}
 
 {declarative_memory}
@@ -198,9 +189,10 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    memory_content = "## Context of things the Human said in the past: " + memories_separator + memories_separator.join(memory_texts)
+    memory_content = "## Context of things the Human said in the past: " + \
+        memories_separator + memories_separator.join(memory_texts)
 
-    #if no data is retrieved from memory don't erite anithing in the prompt
+    # if no data is retrieved from memory don't erite anithing in the prompt
     if len(memory_texts) == 0:
         memory_content = ""
 
@@ -249,8 +241,9 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
 
     # Format the memories for the output
     memories_separator = "\n  - "
-    
-    memory_content = "## Context of documents containing relevant information: " + memories_separator + memories_separator.join(memory_texts)
+
+    memory_content = "## Context of documents containing relevant information: " + \
+        memories_separator + memories_separator.join(memory_texts)
 
     # if no data is retrieved from memory don't erite anithing in the prompt
     if len(memory_texts) == 0:
