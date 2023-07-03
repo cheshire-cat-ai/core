@@ -87,10 +87,9 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
-    # Check if procedural memory is enabled
+    # Check if procedural memory is disabled
     prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
-
-    if prompt_settings["use_procedural_memory"] == False:
+    if not prompt_settings["use_procedural_memory"]:
         return ""
 
     # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
@@ -135,9 +134,8 @@ def agent_prompt_suffix(cat) -> str:
 ## Conversation until now:{chat_history}
  - Human: {input}
 
-# What would the AI reply?
-
 {agent_scratchpad}"""
+
     return suffix
 
 
