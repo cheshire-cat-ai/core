@@ -127,7 +127,7 @@ def agent_prompt_suffix(cat) -> str:
 
     """
     suffix = """# Context
-    
+
 {episodic_memory}
 
 {declarative_memory}
