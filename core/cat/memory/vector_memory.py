@@ -170,7 +170,7 @@ class VectorMemoryCollection(Qdrant):
         ]
 
         # we'll move out of langchain conventions soon and have our own cat Document
-        for doc, score, vector in langchain_documents_from_points:
-            doc.lc_kwargs = None
+        #for doc, score, vector in langchain_documents_from_points:
+        #    doc.lc_kwargs = None
 
         return langchain_documents_from_points

@@ -11,6 +11,7 @@ import cat.factory.embedder as embedders
 from cat.db import crud
 from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
+from langchain.chat_models import ChatOpenAI
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
@@ -79,10 +80,8 @@ def get_language_embedder(cat):
     """
     # Embedding LLM
 
-    print("naked cat: ", cat.llm)
-
     # OpenAI embedder
-    if type(cat.llm) in [OpenAI, OpenAIChat]:
+    if type(cat.llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
         embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
             {
                 "openai_api_key": cat.llm.openai_api_key,

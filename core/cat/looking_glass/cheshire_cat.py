@@ -240,7 +240,6 @@ class CheshireCat:
 
         self.working_memory["procedural_memories"] = tools
 
-
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
 
