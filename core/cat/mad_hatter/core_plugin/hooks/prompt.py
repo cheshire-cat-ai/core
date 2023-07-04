@@ -133,8 +133,7 @@ def agent_prompt_suffix(cat) -> str:
 
 ## Conversation until now:{chat_history}
  - Human: {input}
-
-{agent_scratchpad}"""
+ - AI: """
 
     return suffix
 

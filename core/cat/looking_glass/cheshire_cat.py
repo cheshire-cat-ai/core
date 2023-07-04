@@ -243,7 +243,7 @@ class CheshireCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
 
-    def format_agent_executor_input(self):
+    def format_agent_input(self):
         """Format the input for the Agent.
 
         The method formats the strings of recalled memories and chat history that will be provided to the Langchain
@@ -286,7 +286,6 @@ class CheshireCat:
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
-            "ai_prefix": "AI",
         }
 
     def store_new_message_in_working_memory(self, user_message_json):
@@ -394,17 +393,13 @@ class CheshireCat:
                 "why": {},
             }
 
-        # prepare input to be passed to the agent executor.
+        # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
-        agent_executor_input = self.format_agent_executor_input()
-
-        # load agent (will rebuild both agent and agent_executor
-        #   based on context and plugins)
-        agent_executor = self.agent_manager.get_agent_executor()
+        agent_input = self.format_agent_input()
 
         # reply with agent
         try:
-            cat_message = agent_executor(agent_executor_input)
+            cat_message = self.agent_manager.execute_agent(agent_input)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -418,7 +413,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input": agent_executor_input["input"],
+                "input": agent_input["input"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }
@@ -450,7 +445,7 @@ class CheshireCat:
             "content": cat_message.get("output"),
             "why": {
                 "input": cat_message.get("input"),
-                "intermediate_steps": cat_message.get("intermediate_steps"),
+                #"intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
                     "episodic": episodic_report,
                     "declarative": declarative_report,
