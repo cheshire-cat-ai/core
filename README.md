@@ -33,6 +33,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 ## Docs and Resources
 - [Official Documentation](https://cheshire-cat-ai.github.io/docs/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
+- [Website](https://cheshirecat.ai/)
 - [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 
 ## Quickstart
