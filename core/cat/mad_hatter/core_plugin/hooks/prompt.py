@@ -41,7 +41,7 @@ def agent_prompt_prefix(cat) -> str:
     """
     prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
-You answer Human using tools and context.
+You answer Human with a focus on the following context.
 """
     # check if custom prompt is sent in prompt settings
     prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
@@ -125,7 +125,8 @@ def agent_prompt_suffix(cat) -> str:
     - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     """
-    suffix = """# Context
+    suffix = """
+# Context
 
 {episodic_memory}
 
