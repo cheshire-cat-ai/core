@@ -1,11 +1,18 @@
-
-h1 {
-    font-size: 100px;
+body {
+	display: flex;
+	flex-direction: column;
+	padding: 0.5rem;
+	height: 100vh;
+	max-height: 100vh;
+	min-height: 100vh;
 }
 
-.widget-container {
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    margin: 0 auto;
+.chat-title {
+	font-size: 3rem;
+	text-align: center;
+	font-weight: 800;
+}
+
+#cat-chat {
+	flex-grow: 1;
 }
