@@ -9,7 +9,6 @@ class LLMDefault(LLM):
         return ""
 
     def _call(self, prompt, stop=None):
-        # TODO: if AI prefix in the agent changes, this will break
         return "AI: You did not configure a Language Model. " \
                 "Do it in the settings!"
 

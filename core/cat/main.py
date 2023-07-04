@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,7 @@ from cat.routes import base, memory, plugins, upload, websocket
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes.setting import llm_setting, general_setting, embedder_setting
+from cat.routes.setting import llm_setting, general_setting, embedder_setting, prompt_setting
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -31,9 +32,15 @@ async def lifespan(app: FastAPI):
 
     yield
 
+def custom_generate_unique_id(route: APIRoute):
+    return f"{route.name}"
 
 # REST API
-cheshire_cat_api = FastAPI(lifespan=lifespan, dependencies=[Depends(check_api_key)])
+cheshire_cat_api = FastAPI(
+    lifespan=lifespan, 
+    dependencies=[Depends(check_api_key)],
+    generate_unique_id_function=custom_generate_unique_id
+)
 
 # Configures the CORS middleware for the FastAPI app
 cors_allowed_origins_str = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -49,11 +56,12 @@ cheshire_cat_api.add_middleware(
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(general_setting.router, tags=["Settings - General"], prefix="/settings")
+cheshire_cat_api.include_router(prompt_setting.router, tags=["Settings - Prompt"], prefix="/settings/prompt")
 cheshire_cat_api.include_router(llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm")
 cheshire_cat_api.include_router(embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole (file upload)"], prefix="/rabbithole")
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 
@@ -61,8 +69,8 @@ cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 # this cannot be done via fastapi.APIrouter:
 # https://github.com/tiangolo/fastapi/discussions/9070
 
-# admin (index file with dynamic configuration)
-admin.mount_admin_index(cheshire_cat_api)
+# admin single page app
+admin.mount_admin_spa(cheshire_cat_api)
 # admin (static build)
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)

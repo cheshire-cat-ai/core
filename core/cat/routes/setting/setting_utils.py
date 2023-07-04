@@ -91,4 +91,7 @@ def put_nlp_setting(
     selected_setting = models.Setting(**selected_setting)
     crud.create_setting(db, selected_setting)
 
-    return {"status": "success", "setting": final_setting}
+    return {
+        "status": "success", 
+        "setting": final_setting
+    }

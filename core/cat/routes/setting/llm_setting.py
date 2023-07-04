@@ -20,7 +20,9 @@ LLM_SELECTED_CONFIGURATION = "llm_selected"
 
 # get configured LLMs and configuration schemas
 @router.get("/")
-def get_settings(db: Session = Depends(get_db_session)):
+def get_llm_settings(db: Session = Depends(get_db_session)):
+    """Get the list of the Large Language Models"""
+
     return setting_utils.nlp_get_settings(
         db,
         setting_factory_category=LLM_DB_FACTORY_CATEGORY,
@@ -36,6 +38,8 @@ def upsert_llm_setting(
     payload: Dict = setting_utils.nlp_get_example_put_payload(),
     db: Session = Depends(get_db_session),
 ):
+    """Upsert the Large Language Model setting"""
+
     db_naming = {
         "setting_factory_category": LLM_DB_FACTORY_CATEGORY,
         "setting_selected_category": LLM_DB_GENERAL_CATEGORY,

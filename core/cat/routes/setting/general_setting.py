@@ -13,21 +13,33 @@ def get_settings(
     page: int = 1,
     search: str = "",
 ):
+    """Get the entire list of settings available in the database"""
+
     settings = crud.get_settings(db, limit=limit, page=page, search=search)
 
-    return {"status": "success", "results": len(settings), "settings": settings}
+    return {
+        "results": len(settings), 
+        "settings": settings
+    }
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_setting(payload: models.Setting, db: Session = Depends(get_db_session)):
+    """Create a new setting in the database"""
+
     new_setting = crud.create_setting(db, payload)
-    return {"status": "success", "setting": new_setting}
+    return {
+        "status": "success", 
+        "setting": new_setting
+    }
 
 
 @router.patch("/{settingId}")
 def update_setting(
     settingId: str, payload: models.Setting, db: Session = Depends(get_db_session)
 ):
+    """Update a specific setting in the database"""
+
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
 
@@ -42,11 +54,16 @@ def update_setting(
     )
     db.commit()
     db.refresh(setting)
-    return {"status": "success", "setting": setting}
+    return {
+        "status": "success", 
+        "setting": setting
+    }
 
 
 @router.get("/{settingId}")
 def get_setting(settingId: str, db: Session = Depends(get_db_session)):
+    """Get the a specific setting from the database"""
+
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
     if not setting:
@@ -54,11 +71,16 @@ def get_setting(settingId: str, db: Session = Depends(get_db_session)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No setting with this id: {id} found",
         )
-    return {"status": "success", "setting": setting}
+    return {
+        "status": "success", 
+        "setting": setting
+    }
 
 
 @router.delete("/{settingId}")
 def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
+    """Delete a specific setting in the database"""
+
     setting_query = crud.get_setting_by_id(db, settingId=settingId)
     setting = setting_query.first()
     if not setting:

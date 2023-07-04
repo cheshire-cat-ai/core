@@ -4,13 +4,34 @@ from copy import copy
 from cat.log import log
 from langchain.agents import AgentExecutor, ConversationalAgent
 from langchain.chains import LLMChain
-
+import re
 
 class AgentManager:
+    """Manager of Langchain Agent.
+
+    This class manages the Agent that uses the LLM. It takes care of formatting the prompt and filtering the tools
+    before feeding them to the Agent. It also instantiates the Langchain Agent.
+
+    Attributes
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    """
     def __init__(self, cat):
         self.cat = cat
 
-    def get_agent_executor(self):
+    def get_agent_executor(self) -> AgentExecutor:
+        """Instantiate the Agent with tools.
+
+        The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
+        from Langchain.
+
+        Returns
+        -------
+        agent_executor : AgentExecutor
+            Instance of the Agent provided with a set of tools.
+        """
         mad_hatter = self.cat.mad_hatter
 
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
@@ -36,16 +57,19 @@ class AgentManager:
 
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
         allowed_tools_names = [t.name for t in allowed_tools]
+        if len(allowed_tools) > 0: 
+            prompt_prefix += "\n\n# Tools:"
 
         prompt = ConversationalAgent.create_prompt(
             tools=allowed_tools,
             prefix=prompt_prefix,
             format_instructions=prompt_format_instructions,
             suffix=prompt_suffix,
-            ai_prefix="AI",
-            human_prefix="Human",
             input_variables=input_variables,
         )
+
+        # remove multiple empty lines from prompt
+        prompt.template = re.sub(r'\n\s*\n', '\n\n', prompt.template)
 
         log("Sending prompt", "INFO")
         log(prompt.template, "DEBUG")

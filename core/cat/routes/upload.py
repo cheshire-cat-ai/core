@@ -1,10 +1,10 @@
 import mimetypes
-from typing import Dict
-
-from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from cat.log import log
 import requests
+from typing import Dict
+from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
 from fastapi.responses import JSONResponse
+
+from cat.log import log
 
 router = APIRouter()
 
@@ -12,7 +12,7 @@ router = APIRouter()
 # receive files via http endpoint
 # TODO: should we receive files also via websocket?
 @router.post("/")
-async def rabbithole_file_upload(
+async def upload_file(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -52,12 +52,12 @@ async def rabbithole_file_upload(
     return {
         "filename": file.filename,
         "content-type": file.content_type,
-        "info": "File is being ingested asynchronously.",
+        "info": "File is being ingested asynchronously",
     }
 
 
 @router.post("/web/")
-async def rabbithole_url_upload(
+async def upload_url(
     request: Request,
     background_tasks: BackgroundTasks,
     url: str = Body(
@@ -69,6 +69,8 @@ async def rabbithole_url_upload(
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
 ):
+    """Upload a url. Website content will be extracted and segmented into chunks.
+    Chunks will be then vectorized and stored into documents memory."""
     # check that URL is valid
     try:
         # Send a HEAD request to the specified URL
@@ -87,16 +89,16 @@ async def rabbithole_url_upload(
         else:
             return {"url": url, "info": "Invalid URL"}
     except requests.exceptions.RequestException as e:
-        return {"url": url, "info": "Unable to reach the link."}
+        return {"url": url, "info": "Unable to reach the link"}
 
 
 @router.post("/memory/")
-async def rabbithole_memory_upload(
+async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks
 ) -> Dict:
-    """Upload a memory json file to the CCat memory"""
+    """Upload a memory json file to the cat memory"""
 
     # access cat instance
     ccat = request.app.state.ccat

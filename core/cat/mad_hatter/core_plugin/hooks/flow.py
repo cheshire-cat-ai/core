@@ -20,8 +20,10 @@ def before_cat_bootstrap(cat) -> None:
 
     This hook can be used to set or store variables to be propagated to subsequent loaded objects.
 
-    Args:
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
     """
     return None
 
@@ -39,8 +41,10 @@ def after_cat_bootstrap(cat) -> None:
 
     This can be used to set or store variables to be shared further in the pipeline.
 
-    Args:
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
     """
     return None
 
@@ -61,21 +65,29 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
             "text": message content
         }
 
-    Args:
-        user_message_json: JSON dictionary with the message received from the chat.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    user_message_json : dict
+        JSON dictionary with the message received from the chat.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
+
+    Returns
+    -------
+    user_message_json : dict
         Edited JSON dictionary that will be fed to the Cat.
 
-        For example::
+    Notes
+    -----
+    For example:
 
-            {
-                "text": "Hello Cheshire Cat!",
-                "custom_key": True
-            }
+        {
+            "text": "Hello Cheshire Cat!",
+            "custom_key": True
+        }
 
-        where "custom_key" is a newly added key to the dictionary to store any data.
+    where "custom_key" is a newly added key to the dictionary to store any data.
 
     """
     return user_message_json
@@ -83,7 +95,7 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def before_cat_recalls_memories(user_message: str, cat) -> None:
+def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -91,9 +103,43 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
     The hook is executed just before the Cat searches for the meaningful context in both memories
     and stores it in the *Working Memory*.
 
-    Args:
-        user_message: string with the text received from the user. This is used as a query to search into memories.
-        cat: Cheshire Cat instance.
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved)
+
+    Parameters
+    ----------
+    user_message : str
+        String with the text received from the user. This is used as a query to search into memories.
+    cat : CheshireCat
+     Cheshire Cat instance.
+
+    Returns
+    -------
+    k : int
+        Number of relevant memories to retrieve from the vector database.
+    threshold : float
+        Threshold to filter memories according their similarity score with the query.
+    """
+    k = 3
+    threshold = 0.7
+    return k, threshold
+
+
+# Called just before the cat recalls memories.
+@hook(priority=0)
+def after_cat_recalls_memories(query: str, cat) -> None:
+    """Hook after semantic search in memories.
+
+    The hook is executed just after the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    Parameters
+    ----------
+    query : str
+        Query used to retrieve memories.
+    cat : CheshireCat
+     Cheshire Cat instance.
+       
     """
     return None
 
@@ -104,20 +150,31 @@ def before_cat_recalls_memories(user_message: str, cat) -> None:
 def cat_recall_query(user_message: str, cat) -> str:
     """Hook the Hypothetical Document Embedding (HyDE) search query.
 
-    HyDE strategy exploits the user's message to generate a hypothetical answer. This is then applied to recall
-    the relevant context from the memory.
-
-    This hook allows to edit the user's message.
+    This hook allows to edit the user's message used as a query for HyDE.
     As a result, context retrieval can be conditioned enhancing such message.
 
-    Args:
-        user_message: string with the text received from the user.
-        cat: Cheshire Cat instance to exploit the Cat's methods.
+    Parameters
+    ----------
+    user_message : str
+        String with the text received from the user.
+    cat : CheshireCat
+        Cheshire Cat instance to exploit the Cat's methods.
 
-    Returns:
-        Edited string to be used for context retrieval in memory. The
-        returned string is further stored in the Working Memory at
-        `cat.working_memory["memory_query"]`
+    Returns
+    -------
+    Edited string to be used for context retrieval in memory. The returned string is further stored in the
+    Working Memory at `cat.working_memory["memory_query"]`.
+
+    Notes
+    -----
+    HyDE [1]_ strategy exploits the user's message to generate a hypothetical answer. This is then applied to recall
+    the relevant context from the memory.
+
+    References
+    ----------
+    .. [1] Gao, L., Ma, X., Lin, J., & Callan, J. (2022). Precise Zero-Shot Dense Retrieval without Relevance Labels.
+       arXiv preprint arXiv:2212.10496.
+
     """
     # example 1: HyDE embedding
     # return cat.hypothetis_chain.run(user_message)
@@ -141,9 +198,12 @@ def after_cat_recalled_memories(memory_query_text: str, cat) -> None:
     and `cat.working_memory["declarative_memories"]`. At this point,
     this hook is executed to edit the search query.
 
-    Args:
-        memory_query_text: string used to query both *episodic* and *declarative* memories.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    memory_query_text : str
+        String used to query both *episodic* and *declarative* memories.
+    cat : CheshireCat
+        Cheshire Cat instance.
     """
     return None
 
@@ -157,13 +217,21 @@ def before_cat_sends_message(message: dict, cat) -> dict:
 
     This hook can be used to edit the message sent to the user or to add keys to the dictionary.
 
-    Args:
-        message: JSON dictionary to be sent to the WebSocket client.
-        cat: Cheshire Cat instance.
+    Parameters
+    ----------
+    message : dict
+        JSON dictionary to be sent to the WebSocket client.
+    cat : CheshireCat
+        Cheshire Cat instance.
 
-    Returns:
+    Returns
+    -------
+    message : dict
         Edited JSON dictionary with the Cat's answer.
-        Default to::
+
+    Notes
+    -----
+    Default `message` is::
 
             {
                 "error": False,

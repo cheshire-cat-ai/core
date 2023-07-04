@@ -1,0 +1,21 @@
+{
+    "name": "cheshire-cat-core",
+    "customizations": {
+        "codespaces": {
+            "openFiles": [
+                "readme/CODESPACES.md"
+            ]
+        }
+    },
+    "postStartCommand": "cp .env.codespaces .env",
+    "forwardPorts": [
+        443
+    ],
+    "portsAttributes": {
+        "443": {
+            "label": "core",
+            "protocol": "http",
+            "onAutoForward": "ignore"
+        }
+    }
+}

@@ -1,19 +1,36 @@
 import time
+from copy import deepcopy
 import traceback
 
 import langchain
+import os
 from cat.log import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemory
+from cat.memory.working_memory import WorkingMemory, WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
 
 # main class
 class CheshireCat:
+    """The Cheshire Cat.
+
+    This is the main class that manages everything.
+
+    Attributes
+    ----------
+    web_socket_notifications : list
+        List of notifications to be sent to the frontend.
+
+    """
+
     def __init__(self):
+        """Cat initialization.
+
+        At init time the Cat loads the database and execute the bootstrap.
+        """
         # access to DB
         self.load_db()
 
@@ -25,10 +42,30 @@ class CheshireCat:
         self.web_socket_notifications = []
 
     def bootstrap(self):
-        """This method is called when the cat is instantiated and
-        has to be called whenever LLM, embedder,
-        agent or memory need to be reinstantiated
-        (for example an LLM change at runtime)
+        """Cat's bootstrap.
+
+        This method is called when the Cat is instantiated and whenever LLM, embedder, agent or memory need
+        to be reinstantiated (for example an LLM change at runtime).
+
+        Notes
+        -----
+        The pipeline of execution of the functions is important as some method rely on the previous ones.
+        Two hooks allows to intercept the pipeline before and after the bootstrap.
+        The pipeline is:
+
+            1. Load the plugins, i.e. the MadHatter.
+            2. Execute the `before_cat_bootstrap` hook.
+            3. Load Natural Language Processing related stuff, i.e. the Language Models, the prompts, etc.
+            4. Load the memories, i.e. the LongTermMemory and the WorkingMemory.
+            5. Embed the tools, i.e. insert the tools in the procedural memory.
+            6. Load the AgentManager.
+            7. Load the RabbitHole.
+            8. Execute the `after_cat_bootstrap` hook.
+
+        See Also
+        --------
+        before_cat_bootstrap
+        after_cat_bootstrap
         """
 
         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
@@ -56,6 +93,7 @@ class CheshireCat:
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
     def load_db(self):
+        """Load the SQl database."""
         # if there is no db, create it
         create_db_and_tables()
 
@@ -63,6 +101,30 @@ class CheshireCat:
         self.db = get_db_session
 
     def load_natural_language(self):
+        """Load Natural Language related objects.
+
+        The method exposes in the Cat all the NLP related stuff. Specifically, it sets the language models
+        (LLM and Embedder), the HyDE and summarization prompts and relative Langchain chains and the main prompt with
+        default settings.
+
+        Notes
+        -----
+        `use_episodic_memory`, `use_declarative_memory` and `use_procedural_memory` settings can be set from the admin
+        GUI and allows to prevent the Cat from using any of the three vector memories.
+
+        Warnings
+        --------
+        When using small Language Models it is suggested to turn off the memories and make the main prompt smaller
+        to prevent them to fail.
+
+        See Also
+        --------
+        get_language_model
+        get_language_embedder
+        hypothetical_embedding_prompt
+        summarization_prompt
+        agent_prompt_prefix
+         """
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
@@ -84,44 +146,127 @@ class CheshireCat:
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
 
+        # set the default prompt settings
+        self.default_prompt_settings = {
+            "prefix": "",
+            "use_episodic_memory": True,
+            "use_declarative_memory": True,
+            "use_procedural_memory": True,
+        }
+
     def load_memory(self):
+        """Load LongTerMemory and WorkingMemory."""
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
-        self.working_memory = WorkingMemory()
+        
+        # List working memory per user
+        self.working_memory_list = WorkingMemoryList()
+        
+        # Load default shared working memory user
+        self.working_memory = self.working_memory_list.get_working_memory()
 
     def load_plugins(self):
+        """Instantiate the plugins manager."""
         # Load plugin system
         self.mad_hatter = MadHatter(self)
 
-    def recall_relevant_memories_to_working_memory(self, user_message):
+    def recall_relevant_memories_to_working_memory(self):
+        """Retrieve context from memory.
+
+        The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
+        Recalled memories are stored in the working memory.
+
+        Notes
+        -----
+        The user's message is used as a query to make a similarity search in the Cat's vector memories.
+        Two hooks allow to customize the recall pipeline before and after it is done.
+
+        See Also
+        --------
+        before_cat_recalls_memories
+        after_cat_recalls_memories
+        """
+        user_id = self.working_memory.get_user_id()
+        user_message = self.working_memory["user_message_json"]["text"]
+        prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
+
         # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
         log(f'Recall query: "{memory_query_text}"')
 
-        # embed recall query
+        ##### embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        # recall relevant memories (episodic)
-        episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-            embedding=memory_query_embedding
-        )
+        ##### Episodic memory
+        if prompt_settings["use_episodic_memory"]:
+            # recall relevant memories (episodic)
+            episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
+                embedding=memory_query_embedding,
+                k=k,
+                threshold=threshold,
+                metadata={
+                    "source": user_id
+                }
+            )
+        else:
+            episodic_memories = []
+
         self.working_memory["episodic_memories"] = episodic_memories
 
-        # recall relevant memories (declarative)
-        declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-            embedding=memory_query_embedding
-        )
+        ##### Declarative memory
+        if prompt_settings["use_declarative_memory"]:
+            # recall relevant memories (declarative)
+            declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
+                embedding=memory_query_embedding, k=k, threshold=threshold
+            )
+        else:
+            declarative_memories = []
+
         self.working_memory["declarative_memories"] = declarative_memories
 
+        ##### Procedural memory
+        if prompt_settings["use_procedural_memory"]:
+            # recall relevant tools (procedural collection)
+            tools = self.memory.vectors.procedural.recall_memories_from_embedding(
+                embedding=memory_query_embedding, k=k, threshold=threshold
+            )
+        else:
+            tools = []
+
+        self.working_memory["procedural_memories"] = tools
+
+
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalled_memories", memory_query_text)
+        self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
 
     def format_agent_executor_input(self):
+        """Format the input for the Agent.
+
+        The method formats the strings of recalled memories and chat history that will be provided to the Langchain
+        Agent and inserted in the prompt.
+
+        Returns
+        -------
+        dict
+            Formatted output to be parsed by the Agent executor.
+
+        Notes
+        -----
+        The context of memories and conversation history is properly formatted before being parsed by the and, hence,
+        information are inserted in the main prompt.
+        All the formatting pipeline is hookable and memories can be edited.
+
+        See Also
+        --------
+        agent_prompt_episodic_memories
+        agent_prompt_declarative_memories
+        agent_prompt_chat_history
+        """
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.mad_hatter.execute_hook(
             "agent_prompt_episodic_memories",
@@ -145,22 +290,94 @@ class CheshireCat:
             "ai_prefix": "AI",
         }
 
+    def store_new_message_in_working_memory(self, user_message_json):
+        """Store message in working_memory and update the prompt settings.
+
+        The method update the working memory with the last user's message.
+        Also, the client sends the settings to turn on/off the vector memories.
+
+        Parameters
+        ----------
+        user_message_json : dict
+            Dictionary with the message received from the Websocket client
+
+        """
+
+        # store last message in working memory
+        self.working_memory["user_message_json"] = user_message_json
+
+        prompt_settings = deepcopy(self.default_prompt_settings)
+
+        # override current prompt_settings with prompt settings sent via websocket (if any)
+        prompt_settings.update(user_message_json.get("prompt_settings", {}))
+
+        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+
+    def get_base_url(self):
+        """Allows the Cat expose the base url."""
+        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+        if secure != '':
+            secure = 's'
+        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+
+    def get_base_path(self):
+        """Allows the Cat expose the base path."""
+        return os.path.join(os.getcwd(), "cat/")
+
+    def get_plugin_path(self):
+        """Allows the Cat expose the plugins path."""
+        return os.path.join(os.getcwd(), "cat/plugins/")
+
+    def get_static_url(self):
+        """Allows the Cat expose the static server url."""
+        return self.get_base_url() + "/static"
+    
+    def get_static_path(self):
+        """Allows the Cat expose the static files path."""
+        return os.path.join(os.getcwd(), "cat/static/")
+
     def __call__(self, user_message_json):
-        log(user_message_json, "DEBUG")
+        """Call the Cat instance.
+
+        This method is called on the user's message received from the client.
+
+        Parameters
+        ----------
+        user_message_json : dict
+            Dictionary received from the Websocket client.
+
+        Returns
+        -------
+        final_output : dict
+            Dictionary with the Cat's answer to be sent to the client.
+
+        Notes
+        -----
+        Here happens the main pipeline of the Cat. Namely, the Cat receives the user's input and recall the memories.
+        The retrieved context is formatted properly and given in input to the Agent that uses the LLM to produce the
+        answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
+
+        """
+        log(user_message_json, "INFO")
+
+        # Change working memory based on received user_id
+        user_id = user_message_json.get('user_id', 'user')
+        user_message_json['user_id'] = user_id
+        self.working_memory = self.working_memory_list.get_working_memory(user_id)
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
         # store user_message_json in working memory
-        self.working_memory["user_message_json"] = user_message_json
+        # it contains the new message, prompt settings and other info plugins may find useful
+        self.store_new_message_in_working_memory(user_message_json)
 
-        # extract actual user message text
-        user_message = user_message_json["text"]
+        # TODO another hook here?
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
         try:
-            self.recall_relevant_memories_to_working_memory(user_message)
+            self.recall_relevant_memories_to_working_memory()
         except Exception as e:
             log(e)
             traceback.print_exc(e)
@@ -192,18 +409,26 @@ class CheshireCat:
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
-            # We grab the LLM outptu here anyway, so small and
+            # We grab the LLM output here anyway, so small and
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
+            log("LLM does not respect prompt instructions", "ERROR")
+            log(error_description, "ERROR")
             if not "Could not parse LLM output: `" in error_description:
                 raise e
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
-            cat_message = {"output": unparsable_llm_output}
+            cat_message = {
+                "input": agent_executor_input["input"],
+                "intermediate_steps": [],
+                "output": unparsable_llm_output
+            }
 
+        log("cat_message:", "DEBUG")
         log(cat_message, "DEBUG")
 
         # update conversation history
+        user_message = self.working_memory["user_message_json"]["text"]
         self.working_memory.update_conversation_history(who="Human", message=user_message)
         self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
@@ -212,12 +437,14 @@ class CheshireCat:
         #   (not raw dialog, but summarization)
         _ = self.memory.vectors.episodic.add_texts(
             [user_message],
-            [{"source": "user", "when": time.time()}],
+            [{"source": user_id, "when": time.time()}],
         )
 
         # build data structure for output (response and why with memories)
         episodic_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["episodic_memories"]]
         declarative_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["declarative_memories"]]
+        procedural_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["procedural_memories"]]
+        
         final_output = {
             "error": False,
             "type": "chat",
@@ -226,10 +453,9 @@ class CheshireCat:
                 "input": cat_message.get("input"),
                 "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
-                    "vectors": {
-                        "episodic": episodic_report,
-                        "declarative": declarative_report,
-                    }
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
+                    "procedural": procedural_report,
                 },
             },
         }

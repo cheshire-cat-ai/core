@@ -16,10 +16,31 @@ def get_log_level():
 
 
 class CatLogEnine:
-    """The log engine."""
+    """The log engine.
+
+    Engine to filter the logs in the terminal according to the level of severity.
+
+    Attributes
+    ----------
+    LOG_LEVEL : str
+        Level of logging set in the `.env` file.
+
+    Notes
+    -----
+    The logging level set in the `.env` file will print all the logs from that level to above.
+    Available levels are:
+
+        - `DEBUG`
+        - `INFO`
+        - `WARNING`
+        - `ERROR`
+        - `CRITICAL`
+
+    Default to `WARNING`.
+
+    """
 
     def __init__(self):
-        """Initialize log for Cheshire Cat and the dependencies."""
         self.LOG_LEVEL = get_log_level()
         self.default_log()
 
@@ -28,11 +49,25 @@ class CatLogEnine:
         logging.getLogger("pdfminer").setLevel(logging.WARNING)
 
     def show_log_level(self, record):
-        """Allows to show stuff in the log based on the global setting."""
+        """Allows to show stuff in the log based on the global setting.
+
+        Parameters
+        ----------
+        record : dict
+
+        Returns
+        -------
+        bool
+
+        """
         return record["level"].no >= logger.level(self.LOG_LEVEL).no
 
     def default_log(self):
-        """Set the same debug level to all the project dependecies."""
+        """Set the same debug level to all the project dependencies.
+
+        Returns
+        -------
+        """
         log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> => <level>{message}</level>"
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
@@ -45,20 +80,33 @@ class CatLogEnine:
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
 
-            Copied from: https://gist.github.com/techtonik/2151727
+        Copied from: https://gist.github.com/techtonik/2151727
 
-              :arguments:
-            - skip (integer): Specifies how many levels of stack
-                              to skip while getting caller name.
-                              skip=1 means "who calls me",
-                              skip=2 "who calls my caller" etc.
-        :returns:
-            - package (string): caller package.
-            - module (string): caller module.
-            - klass (string): caller classname if one otherwise None.
-            - caller (string): caller function or method (if a class exist).
-            - line (int): the line of the call.
-            - An empty string is returned if skipped levels exceed stack height.
+        Parameters
+        ----------
+        skip :  int
+            Specifies how many levels of stack to skip while getting caller name.
+
+        Returns
+        -------
+        package : str
+            Caller package.
+        module : str
+            Caller module.
+        klass : str
+            Caller classname if one otherwise None.
+        caller : str
+            Caller function or method (if a class exist).
+        line : int
+            The line of the call.
+
+
+        Notes
+        -----
+        skip=1 means "who calls me",
+        skip=2 "who calls my caller" etc.
+
+        An empty string is returned if skipped levels exceed stack height.
         """
         stack = inspect.stack()
         start = 0 + skip
@@ -93,7 +141,14 @@ class CatLogEnine:
         return package, module, klass, caller, line
 
     def log(self, msg, level="DEBUG"):
-        """Add to log based on settings."""
+        """Add to log based on settings.
+
+        Parameters
+        ----------
+        msg :
+            Message to be logged.
+        level : str
+            Logging level."""
         global logger
         logger.remove()
 
@@ -153,14 +208,29 @@ logEngine = CatLogEnine()
 
 
 def log(msg, level="DEBUG"):
-    """Create function wrapper to class."""
+    """Create function wrapper to class.
+
+    Parameters
+    ----------
+    msg : str
+        Message to be logged.
+    level : str
+        Logging level.
+
+    Returns
+    -------
+    """
     global logEngine
     return logEngine.log(msg, level)
 
 
 def welcome():
+    """Welcome message in the terminal."""
+    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+    if secure != '':
+        secure = 's'
 
-    cat_address = f'http://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+    cat_address = f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
 
     with open("cat/welcome.txt", 'r') as f:
         print(f.read())

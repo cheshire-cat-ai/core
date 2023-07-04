@@ -1,51 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/public/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheshire Cat Chat</title>
+  <meta charset="UTF-8">
+  <link rel="icon" href="favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cheshire Cat Chat</title>
 
-    <script type="module" crossorigin
-        src="https://raw.githack.com/cheshire-cat-ai/widget-vue/main/example/widget.js"></script>
-    <link rel="stylesheet" href="https://raw.githack.com/cheshire-cat-ai/widget-vue/main/example/widget.css">
-    <link rel="stylesheet" href="/public/main.css">
+  <script type="module" crossorigin
+    src="https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.css">
+  <link rel="stylesheet" href="main.css">
 </head>
+<body data-theme="light">
+  <h1 class="chat-title">Cat ready to hack!</h1>
+  <cheshire-cat-chat id="cat-chat" auth="meow" callback="myCallback" timeout="5000" url="localhost" port="1865"
+    primary="#00ff00" />
 
-<body>
+  <script>
+    const catChat = document.querySelector("#cat-chat")
 
-    <h1>Cat ready to hack!</h1>
+    catChat.defaults = ['Is everything ok?', 'Who are you?', 'What time is it?', 'What\'s up?', 'Hello Cheshire Cat!']
+    catChat.features = ['record', 'web', 'file', 'reset']
+    catChat.files = ['text/plain', 'application/pdf', 'text/markdown']
 
-    <div class="widget-container">
-        <cheshire-cat-chat id="cat-chat" api="none" callback="myCallback" timeout="50000" url="localhost:1865"
-            primary="#00ff00" dark />
-    </div>
+    function myCallback(message) {
+      console.log("Callback called.")
+      return `Let's have a chat. ${message}`
+    }
 
-    <script>
-        const catChat = document.querySelector("#cat-chat")
+    catChat.addEventListener("message", ({ detail }) => {
+      console.log("Message:", detail.text)
+    })
 
-        catChat.defaults = ['How are you?', 'Who are you?', 'What time is it?']
-        catChat.features = ['web', 'reset']
-        catChat.files = ['text/plain', 'application/pdf']
+    catChat.addEventListener("upload", ({ detail }) => {
+      console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
+    })
 
-        function myCallback(message) {
-            console.log("Callback called.")
-            return `Let's have a chat. ${message}`
-        }
+    catChat.addEventListener("notification", ({ detail }) => {
+      console.log("Notification:", detail.text)
+    })
 
-        catChat.addEventListener("message", ({ detail }) => {
-            console.log("Message:", detail.text)
-        })
-
-        catChat.addEventListener("upload", ({ detail }) => {
-            console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
-        })
-
-        catChat.addEventListener("notification", ({ detail }) => {
-            console.log("Notification:", detail.text)
-        })
-    </script>
+    catChat.addEventListener("failed", () => {
+      console.log("Failed to connect WebSocket after 3 retries.")
+    })
+  </script>
 </body>
-
 </html>

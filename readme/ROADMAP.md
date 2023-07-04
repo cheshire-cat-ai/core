@@ -5,7 +5,7 @@
 	  * Language model provider ✅
 	  * Embedder
   * Plugins list ✅
-  * Reasoning
+  * Why in the admin ✅
   * Documentation ✅
   * Markdown support ✅
   * Static admin inside main container ✅
@@ -19,17 +19,23 @@
   * User management
     * User specific conversation and memory
   * Dissemination
-    * minimal website
+    * minimal website ✅
     * how to guides
     * use cases examples
   * QA / Test
     * End2End tests
+      * Setup ✅
+      * Essential coverage
     * Unit tests
+      * Setup
+      * Essential coverage
   * Admin
-    * import / export memories
+    * import memories
+    * export memeories ✅
     * filters for memory search
+    * better `why` UI
   * Agent
-    * Tool embeddings
+    * Tool embeddings ✅
     * Custom hookable agent 
   * Local LLM / embedder
     * CustomLLMConfig / CustomEmbedderConfig adapters
@@ -40,4 +46,5 @@
   * Plugin management
     * Install plugin dependencies ✅
     * Activate / deactivate plugins
-    * External plugin directory and customization
+    * External plugin directory
+    * Pugin manifesto (`plugin.json`) ✅
