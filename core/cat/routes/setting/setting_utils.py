@@ -1,8 +1,7 @@
 from typing import Dict
 
-from cat.db import crud, models
+from cat.db import crud
 from fastapi import Body, HTTPException
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 
@@ -58,38 +57,11 @@ def put_nlp_setting(
             status_code=400,
             detail=f"{modelName} not supported. Must be one of {allowed_configurations}",
         )
-
-    # upsert setting. TODO: move this in db.crud functions as crud.upsert_setting
-    # is the setting already present in DB?
-    old_setting = crud.get_setting_by_name(db, modelName)
-
-    if old_setting is None:
-        # prepare setting to be included in DB, adding category
-        setting = {
-            "name": modelName,
-            "value": payload,
-            "category": db_naming["setting_factory_category"],
-        }
-        setting = models.Setting(**setting)
-        final_setting = crud.create_setting(db, setting).dict()
-
-    else:
-        old_setting.value = payload
-        old_setting.updatedAt = func.now()
-        db.add(old_setting)
-        db.commit()
-        db.refresh(old_setting)
-        final_setting = old_setting.dict()
+    
+    final_setting =  crud.upsert_setting(db, name=modelName, category=db_naming["setting_factory_category"], payload=payload)
 
     # update selected model in DB
-    crud.delete_setting_by_name(db, db_naming["setting_selected_name"])
-    selected_setting = {
-        "name": db_naming["setting_selected_name"],
-        "value": {"name": modelName},
-        "category": db_naming["setting_selected_category"],
-    }
-    selected_setting = models.Setting(**selected_setting)
-    crud.create_setting(db, selected_setting)
+    crud.upsert_setting(db, name=db_naming["setting_selected_name"], category=db_naming["setting_selected_category"], payload={"name":modelName})
 
     return {
         "status": "success", 
