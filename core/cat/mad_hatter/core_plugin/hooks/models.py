@@ -54,7 +54,13 @@ def get_language_model(cat) -> BaseLLM:
         selected_llm_config = crud.get_setting_by_name(
             next(cat.db()), name=selected_llm_class
         )
-        llm = FactoryClass.get_llm_from_config(selected_llm_config.value)
+        try:
+            llm = FactoryClass.get_llm_from_config(selected_llm_config.value)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            llm = llms.LLMDefaultConfig.get_llm_from_config({})
+            
 
     return llm
 
