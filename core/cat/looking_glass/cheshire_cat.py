@@ -378,7 +378,7 @@ class CheshireCat:
         try:
             self.recall_relevant_memories_to_working_memory()
         except Exception as e:
-            log(e)
+            log(e, "ERROR")
             traceback.print_exc(e)
 
             err_message = (

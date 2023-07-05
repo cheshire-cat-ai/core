@@ -1,4 +1,5 @@
 import re
+import traceback
 from copy import copy
 
 from langchain.prompts import PromptTemplate
@@ -121,7 +122,9 @@ class AgentManager:
             try:
                 out = self.execute_tool_agent(agent_input, allowed_tools)
                 tools_are_enough = out["output"] != "?"
-            except:
+            except Exception as e:
+                log(e, "ERROR")
+                #traceback.print_exc(e) 
                 tools_are_enough = False
 
         # if tools were not enough, use memory # TODO: refine tool output?

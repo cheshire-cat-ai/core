@@ -104,7 +104,7 @@ class VectorMemoryCollection(Qdrant):
             self.client.get_collection(self.collection_name)
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
             
-            if (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size) and (len(self.client.get_collection_aliases(self.collection_name).aliases)>0) and (self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name):
+            if (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size):# and (len(self.client.get_collection_aliases(self.collection_name).aliases)>0) and (self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name):
                 log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
