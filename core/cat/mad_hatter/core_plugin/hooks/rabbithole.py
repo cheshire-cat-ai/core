@@ -168,6 +168,10 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
 
     """
 
+    # ATTENTION: deactivating summarization because people is uploading 100 pages pdf to the cat
+    # TODO: document how to re-enable upload summarization
+    return []
+
     if not docs:
         return []
 

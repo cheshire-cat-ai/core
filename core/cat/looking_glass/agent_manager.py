@@ -123,8 +123,8 @@ class AgentManager:
                 out = self.execute_tool_agent(agent_input, allowed_tools)
                 tools_are_enough = out["output"] != "?"
             except Exception as e:
-                log(e, "ERROR")
-                #traceback.print_exc(e) 
+                error_description = str(e)
+                log(error_description, "ERROR") 
                 tools_are_enough = False
 
         # if tools were not enough, use memory # TODO: refine tool output?
