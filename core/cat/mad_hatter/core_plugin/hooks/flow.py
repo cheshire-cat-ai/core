@@ -115,14 +115,18 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
 
     Returns
     -------
-    k : int
+    k_memory_type : int
         Number of relevant memories to retrieve from the vector database.
-    threshold : float
+    threshold_memory_type : float
         Threshold to filter memories according their similarity score with the query.
     """
-    k = 3
-    threshold = 0.7
-    return k, threshold
+    k_episodic = 3
+    threshold_episodic = 0.7
+    k_decalrative = 3
+    threshold_decalrative = 0.7
+    k_procedural = 3
+    threshold_procedural = 0.7
+    return k_episodic, threshold_episodic, k_decalrative, threshold_decalrative, k_procedural, threshold_procedural
 
 
 # Called just before the cat recalls memories.

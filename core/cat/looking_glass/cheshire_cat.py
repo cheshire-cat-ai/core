@@ -192,7 +192,8 @@ class CheshireCat:
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
         # hook to do something before recall begins
-        k, threshold = self.mad_hatter.execute_hook("before_cat_recalls_memories", user_message)
+        k_episodic, threshold_episodic, k_decalrative, threshold_decalrative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
+            "before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -207,8 +208,8 @@ class CheshireCat:
             # recall relevant memories (episodic)
             episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
                 embedding=memory_query_embedding,
-                k=k,
-                threshold=threshold,
+                k=k_episodic,
+                threshold=threshold_episodic,
                 metadata={
                     "source": user_id
                 }
@@ -222,7 +223,7 @@ class CheshireCat:
         if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k, threshold=threshold
+                embedding=memory_query_embedding, k=k_decalrative, threshold=threshold_decalrative
             )
         else:
             declarative_memories = []
@@ -233,7 +234,7 @@ class CheshireCat:
         if prompt_settings["use_procedural_memory"]:
             # recall relevant tools (procedural collection)
             tools = self.memory.vectors.procedural.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k, threshold=threshold
+                embedding=memory_query_embedding, k=k_procedural, threshold=threshold_procedural
             )
         else:
             tools = []
