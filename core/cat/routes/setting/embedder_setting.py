@@ -8,17 +8,17 @@ from cat.factory.embedder import EMBEDDER_SCHEMAS
 
 router = APIRouter()
 
-# general LLM settings are saved in settigns table under this category
+# general embedder settings are saved in settings table under this category
 EMBEDDER_DB_GENERAL_CATEGORY = "embedder"
 
-# llm type and config are saved in settings table under this category
+# embedder type and config are saved in settings table under this category
 EMBEDDER_DB_FACTORY_CATEGORY = "embedder_factory"
 
-# llm selected configuration is saved under this name
+# embedder selected configuration is saved under this name
 EMBEDDER_SELECTED_CONFIGURATION = "embedder_selected"
 
 
-# get configured LLMs and configuration schemas
+# get configured Embedders and configuration schemas
 @router.get("/")
 def get_embedder_settings(db: Session = Depends(get_db_session)):
     """Get the list of the Embedders"""
@@ -29,7 +29,6 @@ def get_embedder_settings(db: Session = Depends(get_db_session)):
         setting_selected_name=EMBEDDER_SELECTED_CONFIGURATION,
         schemas=EMBEDDER_SCHEMAS,
     )
-
 
 @router.put("/{languageEmbedderName}")
 def upsert_embedder_setting(
