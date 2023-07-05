@@ -9,8 +9,9 @@ from qdrant_client import QdrantClient
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from langchain.docstore.document import Document
-from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
-                                       ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams)
+from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
+                                       ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
+                                       CreateAliasOperation, CreateAlias)
 
 
 class VectorMemory:
@@ -83,6 +84,14 @@ class VectorMemoryCollection(Qdrant):
         # Get a Cat instance
         self.cat = cat
 
+        # Set embedder name for aliases
+        if hasattr(self.cat.embedder, 'model'):
+            self.embedder_name = self.cat.embedder.model
+        elif hasattr(self.cat.embedder, 'repo_id'):
+            self.embedder_name = self.cat.embedder.repo_id
+        else:
+            self.embedder_name = "default_embedder"
+
         # Set embedding size (may be changed at runtime)
         self.embedder_size = vector_size
 
@@ -94,10 +103,11 @@ class VectorMemoryCollection(Qdrant):
         try:
             self.client.get_collection(self.collection_name)
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
-            if self.client.get_collection(self.collection_name).config.params.vectors.size == self.embedder_size:
-                log(f'Collection "{self.collection_name}" has the same size of the embedder', "INFO")
+            
+            if (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size) and (len(self.client.get_collection_aliases(self.collection_name).aliases)>0) and (self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name):
+                log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
-                log(f'Collection "{self.collection_name}" has different size of the embedder', "WARNING")
+                log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # TODO: dump collection on disk before deleting, so it can be recovered
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
@@ -121,11 +131,21 @@ class VectorMemoryCollection(Qdrant):
             quantization_config=ScalarQuantization(
                 scalar=ScalarQuantizationConfig(
                     type=ScalarType.INT8,
-                    quantile=0.99,
+                    quantile=0.75,
                     always_ram=False
                 )
             )
         )
+        self.client.update_collection_aliases(
+            change_aliases_operations=[
+                CreateAliasOperation(
+                    create_alias=CreateAlias(
+                        collection_name=self.collection_name,
+                        alias_name=self.embedder_name
+            )
+        )
+    ]
+)
 
         self.cat.mad_hatter.execute_hook('after_collection_created', self)
 
@@ -154,7 +174,8 @@ class VectorMemoryCollection(Qdrant):
             search_params=SearchParams(
                 quantization=QuantizationSearchParams(
                     ignore=False,
-                    rescore=True
+                    rescore=True,
+                    # oversampling=1.5 # Available as of v1.3.0
                 )
             )
         )
