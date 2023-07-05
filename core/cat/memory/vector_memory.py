@@ -104,8 +104,16 @@ class VectorMemoryCollection(Qdrant):
             self.client.get_collection(self.collection_name)
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
             
-            if (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size):# and (len(self.client.get_collection_aliases(self.collection_name).aliases)>0) and (self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name):
-                log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
+            # having the same size does not necessarily imply being the same embedder
+            # having vectors with the same size but from diffent embedder in the same vector space is wrong
+            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
+                if len(self.client.get_collection_aliases(self.collection_name).aliases)>0 and self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name:
+                    log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
+                else:
+                    log(f'Collection "{self.collection_name}" has the same size but different embedder', "INFO")
+                    self.client.delete_collection(self.collection_name)
+                    log(f'Collection "{self.collection_name}" deleted', "WARNING")
+                    self.create_collection()
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # TODO: dump collection on disk before deleting, so it can be recovered
