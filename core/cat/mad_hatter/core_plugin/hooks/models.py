@@ -66,7 +66,7 @@ def get_language_model(cat) -> BaseLLM:
 
 
 @hook(priority=0)
-def get_language_embedder(cat):
+def get_language_embedder(cat) -> embedders.EmbedderSettings:
     """Hook into the  embedder selection.
 
     Allows to modify how the Cat selects the embedder at bootstrap time.
@@ -85,6 +85,25 @@ def get_language_embedder(cat):
         Selected embedder model.
     """
     # Embedding LLM
+
+    selected_embedder = crud.get_setting_by_name(next(cat.db()), name="embedder_selected")
+
+    if selected_embedder is not None:
+
+        # get Embedder factory class
+        selected_embedder_class = selected_embedder.value["name"]
+        FactoryClass = getattr(embedders, selected_embedder_class)
+
+        # obtain configuration and instantiate Embedder
+        selected_embedder_config = crud.get_setting_by_name(
+            next(cat.db()), name=selected_embedder_class
+        )
+        embedder = FactoryClass.get_embedder_from_config(selected_embedder_config.value)
+        
+        return embedder
+
+
+    print("naked cat: ", cat.llm)
 
     # OpenAI embedder
     if type(cat.llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
