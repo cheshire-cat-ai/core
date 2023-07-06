@@ -192,7 +192,7 @@ class CheshireCat:
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
         # hook to do something before recall begins
-        k_episodic, threshold_episodic, k_decalrative, threshold_decalrative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
+        k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
             "before_cat_recalls_memories", user_message)
 
         # We may want to search in memory
@@ -223,7 +223,7 @@ class CheshireCat:
         if prompt_settings["use_declarative_memory"]:
             # recall relevant memories (declarative)
             declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_decalrative, threshold=threshold_decalrative
+                embedding=memory_query_embedding, k=k_declarative, threshold=threshold_declarative
             )
         else:
             declarative_memories = []
