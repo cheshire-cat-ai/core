@@ -122,11 +122,11 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
     """
     k_episodic = 3
     threshold_episodic = 0.7
-    k_decalrative = 3
-    threshold_decalrative = 0.7
+    k_declarative = 3
+    threshold_declarative = 0.7
     k_procedural = 3
     threshold_procedural = 0.7
-    return k_episodic, threshold_episodic, k_decalrative, threshold_decalrative, k_procedural, threshold_procedural
+    return k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural
 
 
 # Called just before the cat recalls memories.
