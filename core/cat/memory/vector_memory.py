@@ -27,6 +27,7 @@ class VectorMemory:
         self.connect_to_vector_memory()
 
         # get current embedding size (langchain classes do not store it)
+        # TODO: move the embedder size in create collection
         self.embedder_size = len(cat.embedder.embed_query("hello world"))
 
         # Create vector collections
@@ -103,17 +104,14 @@ class VectorMemoryCollection(Qdrant):
         try:
             self.client.get_collection(self.collection_name)
             log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+            log(f'Collection alias: "{self.client.get_collection_aliases(self.collection_name).aliases}" ', "INFO")
             
             # having the same size does not necessarily imply being the same embedder
             # having vectors with the same size but from diffent embedder in the same vector space is wrong
-            if self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size:
-                if len(self.client.get_collection_aliases(self.collection_name).aliases)>0 and self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name==self.embedder_name:
-                    log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
-                else:
-                    log(f'Collection "{self.collection_name}" has the same size but different embedder', "INFO")
-                    self.client.delete_collection(self.collection_name)
-                    log(f'Collection "{self.collection_name}" deleted', "WARNING")
-                    self.create_collection()
+            same_size = (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size)
+            alias = self.embedder_name + "_" + self.collection_name
+            if alias==self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name and same_size:
+                log(f'Collection "{self.collection_name}" has the same embedder', "WARNING")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # TODO: dump collection on disk before deleting, so it can be recovered
@@ -149,12 +147,11 @@ class VectorMemoryCollection(Qdrant):
                 CreateAliasOperation(
                     create_alias=CreateAlias(
                         collection_name=self.collection_name,
-                        alias_name=self.embedder_name
-            )
+                        alias_name=self.embedder_name + "_" + self.collection_name
+                    )
+                )
+            ]
         )
-    ]
-)
-
         self.cat.mad_hatter.execute_hook('after_collection_created', self)
 
     # retrieve similar memories from text
@@ -197,6 +194,7 @@ class VectorMemoryCollection(Qdrant):
             )
             for m in memories
         ]
+
 
         # we'll move out of langchain conventions soon and have our own cat Document
         #for doc, score, vector in langchain_documents_from_points:
