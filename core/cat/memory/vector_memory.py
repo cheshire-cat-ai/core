@@ -111,7 +111,7 @@ class VectorMemoryCollection(Qdrant):
             same_size = (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size)
             alias = self.embedder_name + "_" + self.collection_name
             if alias==self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name and same_size:
-                log(f'Collection "{self.collection_name}" has the same embedder', "WARNING")
+                log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # TODO: dump collection on disk before deleting, so it can be recovered
