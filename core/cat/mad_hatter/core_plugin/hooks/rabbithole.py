@@ -153,6 +153,7 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
     Allows to modify how the list of `Document` is summarized before being inserted in the vector memory.
 
     For example, the hook allows to make the summarization optional or to apply another summarization technique.
+    Default is a one level group summarization.
 
     Parameters
     ----------
@@ -168,45 +169,26 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
 
     """
 
-    # ATTENTION: deactivating summarization because people is uploading 100 pages pdf to the cat
-    # TODO: document how to re-enable upload summarization
-    return []
-
     if not docs:
         return []
-
-    # service variable to store intermediate results
-    intermediate_summaries = docs
 
     # we will store iterative summaries all together in a list
     all_summaries: List[Document] = []
 
-    # loop until there are no groups to summarize
     group_size = 5
-    root_summary_flag = False
     separator = "\n --> "
-    while not root_summary_flag:
-        # make summaries of groups of docs
-        new_summaries = []
-        for i in range(0, len(intermediate_summaries), group_size):
-            group = intermediate_summaries[i : i + group_size]
-            group = list(map(lambda d: d.page_content, group))
+    # make summaries of groups of docs
+    for i in range(0, len(docs), group_size):
+        group = docs[i : i + group_size]
+        group = list(map(lambda d: d.page_content, group))
 
-            text_to_summarize = separator + separator.join(group)
-            summary = cat.summarization_chain.run(text_to_summarize)
-            summary = Document(page_content=summary)
-            summary.metadata["is_summary"] = True
-            new_summaries.append(summary)
+        text_to_summarize = separator + separator.join(group)
+        summary = cat.summarization_chain.run(text_to_summarize)
+        summary = Document(page_content=summary)
+        summary.metadata["is_summary"] = True
 
-        # update list of all summaries
-        all_summaries = new_summaries.copy() + all_summaries
-        intermediate_summaries = new_summaries
+        # add summary to list of all summaries
+        all_summaries.append(summary)
 
-        # did we reach root summary?
-        root_summary_flag = len(intermediate_summaries) == 1
-
-        #log(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.", "INFO")
-        print(f"Building summaries over {len(intermediate_summaries)} chunks. " "Please wait.")
-
-    # return root summary (first element) and all intermediate summaries
+    print(all_summaries)
     return all_summaries
