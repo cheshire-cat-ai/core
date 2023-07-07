@@ -17,20 +17,20 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
     """Hook before the agent starts.
 
     This hook is useful to shortcut the Cat response.
-    If you do not want the agent to run, return the final response from here and it will edn up in the chat without the agent being executed.
+    If you do not want the agent to run, return the final response from here and it will end up in the chat without the agent being executed.
 
     Parameters
     --------
-    agent_input: Dict
+    agent_input: dict
         Input that is about to be passed to the agent.
     cat : CheshireCat
         Cheshire Cat instance.
 
     Returns
     --------
-    response : Dict
+    response : Union[None, Dict]
         Cat response if you want to avoid using the agent, or None if you want the agent to be executed.
-        See hook's code for example of Cat response
+        See below for examples of Cat response
 
     Examples
     --------
