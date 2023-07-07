@@ -10,13 +10,16 @@ You can only reply using these tools:
 
 {tools}
 
-If no tool is useful, just reply "Final Answer: ?"
-If you want to use a tool, use the following format:
-
+If you want to use tools, use the following format:
 Action: the name of the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Action/Action Input/Observation can repeat N times)
+...
+Action: the name of the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+
+When you have a final answer respond with:
 Final Answer: the final answer to the original input question (or "?" if no tool is adapt)
 
 Begin!
@@ -38,7 +41,7 @@ class ToolPromptTemplate(StringPromptTemplate):
         thoughts = ""
         for action, observation in intermediate_steps:
             thoughts += action.log
-            thoughts += f"\nObservation: {observation}\nAction: "
+            thoughts += f"\nObservation: {observation}\n"
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
