@@ -1,9 +1,11 @@
+import mimetypes
+from fastapi import Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
+from cat.log import log
 from typing import Dict
 from tempfile import NamedTemporaryFile
 import shutil
-from fastapi import Request, APIRouter, HTTPException, UploadFile
-from cat.log import log
 
+from tempfile import NamedTemporaryFile
 
 router = APIRouter()
 
@@ -31,20 +33,19 @@ async def list_available_plugins(request: Request) -> Dict:
 
 
 @router.post("/upload/")
-async def upload_plugin(
-    request: Request,
-    file: UploadFile
+async def install_plugin(
+        request: Request,
+        file: UploadFile,
+        background_tasks: BackgroundTasks
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
     # access cat instance
     ccat = request.app.state.ccat
 
-    accepted_mime_types = ['application/zip', 'application/x-tar']
-
-    # check if file has an accepted mime type
-    log(f"Uploading {file.content_type} plugin {file.filename}", "INFO")
-    if file.content_type not in accepted_mime_types:
+    admitted_mime_types = ["application/zip", 'application/x-tar']
+    content_type = mimetypes.guess_type(file.filename)[0]
+    if content_type not in admitted_mime_types:
         raise HTTPException(
             status_code = 422,
             detail={
@@ -67,17 +68,19 @@ async def upload_plugin(
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
 
-    plugins = ccat.mad_hatter.plugins
-    ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
-    found = [plugin for plugin in plugins if plugin["id"] == file.filename.rsplit('.', 1)[0]]
+    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
+    temp = NamedTemporaryFile(delete=False)
+    contents = file.file.read()
+    with temp as f:
+        f.write(contents)
 
-    log(f"Successfully uploaded {found[0]['id']} plugin", "INFO")
+    background_tasks.add_task(
+        ccat.mad_hatter.install_plugin, temp.name
+    )
 
-    # reply to client
     return {
-        "filename": file.filename,
-        "content-type": file.content_type,
-        "info": found[0]
+        "status": "success",
+        "info": "Plugin is being installed asynchronously."
     }
 
 

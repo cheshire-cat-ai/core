@@ -8,6 +8,7 @@ from inspect import getmembers, isfunction  # , signature
 from cat.log import log
 from cat.utils import to_camel_case
 from cat.mad_hatter.decorators import CatTool, CatHooks
+from cat.infrastructure.zip import Zip
 
 
 # This class is responsible for plugins functionality:
@@ -25,6 +26,43 @@ class MadHatter:
         self.ccat = ccat
         self.hooks, self.tools, self.plugins = self.find_plugins()
 
+    def install_plugin(self, zip_plugin):
+        plugin_folder = self.ccat.get_plugin_path()
+        zip_obj = Zip(zip_plugin)
+        zip_obj.unzip(plugin_folder)
+        zip_name = zip_obj.get_name()
+
+        plugin_name = zip_name.replace(".zip", "")
+        plugin_folder = path.join(plugin_folder, plugin_name)
+        plugin, tool = self.find_plugin(plugin_folder)
+        if plugin:
+            self.plugins.append(plugin)
+        if tool:
+            self.tools += tool
+
+        self.ccat.bootstrap()
+
+    def find_plugin(self, folder):
+        py_files_path = path.join(folder, "**/*.py")
+        log(py_files_path)
+        py_files = glob.glob(py_files_path, recursive=True)
+
+        plugin = None
+        tool = None
+
+        # in order to consider it a plugin makes sure there are py files
+        #   inside the plugin directory
+        if len(py_files) > 0:
+            plugin = self.get_plugin_metadata(folder)
+
+            for py_file in py_files:
+                plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
+
+                plugin_module = importlib.import_module(plugin_name)
+                tool = getmembers(plugin_module, self.is_cat_tool)
+
+        return plugin, tool
+
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
         # plugins are found in the plugins folder,
@@ -37,23 +75,11 @@ class MadHatter:
         all_tools = []
 
         for folder in plugin_folders:
-            py_files_path = path.join(folder, "**/*.py")
-            log(py_files_path)
-            py_files = glob.glob(py_files_path, recursive=True)
-
-            # in order to consider it a plugin makes sure there are py files
-            #   inside the plugin directory
-            if len(py_files) > 0:
-                all_plugins.append(self.get_plugin_metadata(folder))
-
-                for py_file in py_files:
-                    plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
-
-                    plugin_module = importlib.import_module(plugin_name)
-                    # all_hooks[plugin_name] = dict(
-                    #     getmembers(plugin_module, self.is_cat_hook)
-                    # )
-                    all_tools += getmembers(plugin_module, self.is_cat_tool)
+            plugin, tool = self.find_plugin(folder)
+            if plugin:
+                all_plugins.append(plugin)
+            if tool:
+                all_tools += tool
 
         log("Plugins loading:", "INFO")
         for plugin in all_plugins:
