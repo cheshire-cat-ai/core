@@ -190,5 +190,4 @@ def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]
         # add summary to list of all summaries
         all_summaries.append(summary)
 
-    print(all_summaries)
     return all_summaries

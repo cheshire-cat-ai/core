@@ -21,6 +21,7 @@ async def upload_file(
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
+    summary: bool = Body(default=False, description="Enables call to summary hook for this file")
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -45,7 +46,7 @@ async def upload_file(
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
-        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap
+        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap, summary
     )
 
     # reply to client
@@ -68,6 +69,7 @@ async def upload_url(
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
     chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
+    summary: bool = Body(default=False, description="Enables call to summary hook for this website")
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -83,7 +85,7 @@ async def upload_url(
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap
+                ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap, summary
             )
             return {"url": url, "info": "Website is being ingested asynchronously"}
         else:
