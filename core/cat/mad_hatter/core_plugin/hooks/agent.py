@@ -34,10 +34,11 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
 
     Examples
     --------
-    
+
     Example 1: can't talk about this topic
     ```python
-    if "dog" in agent_input["input"]: # here you can use cat.llm to do topic evaluation
+    # here you could use cat.llm to do topic evaluation
+    if "dog" in agent_input["input"]:
         return {
             "output": "You went out of topic. Can't talk about dog."
         }
@@ -51,6 +52,7 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
         return {
            "output": "Sorry, I have no memories about that."
         }
+    ```
     """
 
     return None
