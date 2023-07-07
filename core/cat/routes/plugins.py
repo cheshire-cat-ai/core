@@ -71,7 +71,7 @@ async def upload_plugin(
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
     found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', '')]
 
-    log(f"Successfully uploaded {found[0]['id']} plugin", "ERROR")
+    log(f"Successfully uploaded {found[0]['id']} plugin", "INFO")
 
     # reply to client
     return {

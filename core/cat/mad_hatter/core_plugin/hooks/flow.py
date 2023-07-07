@@ -95,7 +95,7 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float]:
+def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float, int, float, int, float]:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
