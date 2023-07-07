@@ -4,12 +4,54 @@ Here is a collection of methods to hook into the *Agent* execution pipeline.
 
 """
 
-from typing import List
+from typing import List, Union, Dict
 
 from langchain.tools.base import BaseTool
 from langchain.agents import load_tools
 from cat.mad_hatter.decorators import hook
 from cat.log import log
+
+
+@hook(priority=0)
+def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
+    """Hook before the agent starts.
+
+    This hook is useful to shortcut the Cat response.
+    If you do not want the agent to run, return the final response from here and it will edn up in the chat without the agent being executed.
+
+    Parameters
+    ---------
+    agent_input: Dict
+        Input that is about to be passed to the agent.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    response : Dict
+        Cat response if you want to avoid using the agent, or None if you want the agent to be executed.
+        See hook's code for example of Cat response
+    """
+
+    # Example 1: can't talk about this topic
+    #if "dog" in agent_input["input"]: # here you can use cat.llm to do topic evaluation
+    #    return {
+    #        "input": agent_input["input"],
+    #        "intermediate_steps": [],
+    #        "output": "You went out of topic. Can't talk about dog."
+    #    }
+
+    # Example 2: don't remember (no uploaded documents about topic)
+    #num_declarative_memories = len( cat.working_memory["declarative_memories"] )
+    #log(num_declarative_memories, "ERROR")
+    #if num_declarative_memories == 0:
+    #    return {
+    #        "input": agent_input["input"],
+    #        "intermediate_steps": [],
+    #        "output": "Sorry, I have no memories about that."
+    #    }
+
+    return None
 
 
 @hook(priority=0)

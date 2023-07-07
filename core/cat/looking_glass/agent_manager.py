@@ -100,6 +100,11 @@ class AgentManager:
         """
         mad_hatter = self.cat.mad_hatter
 
+        # this hook allows to reply without executing the agent (for example canned responses, out-of-topic barriers etc.)
+        fast_reply = mad_hatter.execute_hook("before_agent_starts", agent_input)
+        if fast_reply:
+            return fast_reply
+
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
         #prompt_format_instructions = mad_hatter.execute_hook("agent_prompt_instructions")
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
@@ -114,6 +119,7 @@ class AgentManager:
 
         #input_variables = mad_hatter.execute_hook("before_agent_creates_prompt", input_variables,
          #                                         " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
+
 
         # Try to reply only with tools
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
