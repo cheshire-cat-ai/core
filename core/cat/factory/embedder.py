@@ -45,8 +45,8 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str
     openai_api_base: str
-    api_type: str
-    api_version: str
+    openai_api_type: str
+    openai_api_version: str
     deployment: str
 
     _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
