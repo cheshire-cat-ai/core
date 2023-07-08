@@ -1,9 +1,7 @@
-import mimetypes
-import tempfile
 from typing import Dict
+from tempfile import NamedTemporaryFile
 import shutil
 from fastapi import Request, APIRouter, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
 from cat.log import log
 
 
@@ -42,34 +40,36 @@ async def upload_plugin(
     # access cat instance
     ccat = request.app.state.ccat
 
-    # check if this is a zip file
-    content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
-    if content_type != "application/zip":
-        return JSONResponse(
+    accepted_mime_types = ['application/zip', 'application/x-tar']
+
+    # check if file has an accepted mime type
+    log(f"Uploading {file.content_type} plugin {file.filename}", "INFO")
+    if file.content_type not in accepted_mime_types:
+        raise HTTPException(
             status_code=422,
-            content={
-                "error": f'MIME type `{file.content_type}` not supported. Please upload `application/zip` (a .zip file).'
+            detail={
+                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' + 
+                    f'({", ".join([mime for mime in accepted_mime_types])}).'
             },
         )
     
     # Create temporary file (dunno how to extract from memory) #TODO: extract directly from memory
     file_bytes = file.file.read()
-    temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
+    temp_file = NamedTemporaryFile(dir="/tmp/", delete=False)
     temp_name = temp_file.name
     with open(temp_name, "wb") as temp_binary_file:
         # Write bytes to file
         temp_binary_file.write(file_bytes)
 
     # Extract into plugins folder
-    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), "zip")
+    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), file.filename.rsplit('.', 1)[1])
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
 
     plugins = ccat.mad_hatter.plugins
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
-    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', '')]
+    found = [plugin for plugin in plugins if plugin["id"] == file.filename.rsplit('.', 1)[0]]
 
     log(f"Successfully uploaded {found[0]['id']} plugin", "INFO")
 

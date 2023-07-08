@@ -66,7 +66,7 @@ async def recall_memories_from_text(
             memory_dict["score"] = float(score)
             memory_dict["vector"] = vector
             recalled[c].append(memory_dict)
- 
+
     return {
         "status": "success",
         "query": query,

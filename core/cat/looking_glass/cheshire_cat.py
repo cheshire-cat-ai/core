@@ -8,7 +8,7 @@ from cat.log import log
 from cat.db.database import get_db_session, create_db_and_tables
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemory, WorkingMemoryList
+from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
@@ -124,7 +124,7 @@ class CheshireCat:
         hypothetical_embedding_prompt
         summarization_prompt
         agent_prompt_prefix
-         """
+        """
         # LLM and embedder
         self.llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
