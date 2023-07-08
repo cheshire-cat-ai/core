@@ -1,8 +1,7 @@
 from typing import Dict
-import tempfile
+from tempfile import NamedTemporaryFile
 import shutil
 from fastapi import Request, APIRouter, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
 from cat.log import log
 
 
@@ -46,9 +45,9 @@ async def upload_plugin(
     # check if file has an accepted mime type
     log(f"Uploading {file.content_type} plugin {file.filename}", "INFO")
     if file.content_type not in accepted_mime_types:
-        return JSONResponse(
+        raise HTTPException(
             status_code=422,
-            content={
+            detail={
                 "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' + 
                     f'({", ".join([mime for mime in accepted_mime_types])}).'
             },
@@ -56,7 +55,7 @@ async def upload_plugin(
     
     # Create temporary file (dunno how to extract from memory) #TODO: extract directly from memory
     file_bytes = file.file.read()
-    temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
+    temp_file = NamedTemporaryFile(dir="/tmp/", delete=False)
     temp_name = temp_file.name
     with open(temp_name, "wb") as temp_binary_file:
         # Write bytes to file
