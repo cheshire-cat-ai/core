@@ -27,6 +27,7 @@ class RabbitHole:
         file: Union[str, UploadFile],
         chunk_size: int = 400,
         chunk_overlap: int = 100,
+        summary: bool = False,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -58,11 +59,12 @@ class RabbitHole:
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # get summaries
-        summaries = self.cat.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
+        # get summaries if summarization is requested
+        if summary:
+            summaries = self.cat.mad_hatter.execute_hook(
+                "rabbithole_summarizes_documents", docs
+            )
+            docs = summaries + docs
 
         # store in memory
         if isinstance(file, str):
@@ -76,6 +78,7 @@ class RabbitHole:
         url: str,
         chunk_size: int = 400,
         chunk_overlap: int = 100,
+        summary: bool = False,
     ):
         """Load a webpage in the Cat's declarative memory.
 
@@ -103,11 +106,12 @@ class RabbitHole:
             url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # get summaries
-        summaries = self.cat.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
+        # get summaries if summarization requested
+        if summary:
+            summaries = self.cat.mad_hatter.execute_hook(
+                "rabbithole_summarizes_documents", docs
+            )
+            docs = summaries + docs
 
         # store docs in memory
         self.store_documents(docs=docs, source=url)
