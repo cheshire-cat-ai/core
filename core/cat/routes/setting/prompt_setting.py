@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Request
-from sqlalchemy.orm import Session
-from cat.db.database import get_db_session
 
 router = APIRouter()
 

@@ -42,14 +42,17 @@ async def upload_plugin(
     # access cat instance
     ccat = request.app.state.ccat
 
+    accepted_mime_types = ['application/zip', 'application/x-tar', 'application/x-bzip', 'application/gzip']
+
     # check if this is a zip file
     content_type = mimetypes.guess_type(file.filename)[0]
     log(f"Uploading {content_type} plugin {file.filename}", "INFO")
-    if content_type != "application/zip":
+    if content_type not in accepted_mime_types:
         return JSONResponse(
             status_code=422,
             content={
-                "error": f'MIME type `{file.content_type}` not supported. Please upload `application/zip` (a .zip file).'
+                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type' + 
+                    f'({[mime.join(", ") for mime in accepted_mime_types]}).'
             },
         )
     
@@ -62,14 +65,14 @@ async def upload_plugin(
         temp_binary_file.write(file_bytes)
 
     # Extract into plugins folder
-    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), "zip")
+    shutil.unpack_archive(temp_name, ccat.get_plugin_path())
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
 
     plugins = ccat.mad_hatter.plugins
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
-    found = [plugin for plugin in plugins if plugin["id"] == file.filename.replace('.zip', '')]
+    found = [plugin for plugin in plugins if plugin["id"] == file.filename.rsplit('.', 1)[0]]
 
     log(f"Successfully uploaded {found[0]['id']} plugin", "INFO")
 
