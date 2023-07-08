@@ -1,6 +1,5 @@
-import mimetypes
-import tempfile
 from typing import Dict
+import tempfile
 import shutil
 from fastapi import Request, APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
@@ -42,17 +41,16 @@ async def upload_plugin(
     # access cat instance
     ccat = request.app.state.ccat
 
-    accepted_mime_types = ['application/zip', 'application/x-tar', 'application/x-bzip', 'application/gzip']
+    accepted_mime_types = ['application/zip', 'application/x-tar']
 
-    # check if this is a zip file
-    content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
-    if content_type not in accepted_mime_types:
+    # check if file has an accepted mime type
+    log(f"Uploading {file.content_type} plugin {file.filename}", "INFO")
+    if file.content_type not in accepted_mime_types:
         return JSONResponse(
             status_code=422,
             content={
-                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type' + 
-                    f'({[mime.join(", ") for mime in accepted_mime_types]}).'
+                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' + 
+                    f'({", ".join([mime for mime in accepted_mime_types])}).'
             },
         )
     
@@ -65,7 +63,7 @@ async def upload_plugin(
         temp_binary_file.write(file_bytes)
 
     # Extract into plugins folder
-    shutil.unpack_archive(temp_name, ccat.get_plugin_path())
+    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), file.filename.rsplit('.', 1)[1])
 
     # align plugins (update db and embed new tools)
     ccat.bootstrap()
