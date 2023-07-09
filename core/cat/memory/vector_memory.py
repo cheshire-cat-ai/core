@@ -16,7 +16,7 @@ from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
 
 class VectorMemory:
 
-    vector_db = None
+    local_vector_db = None
 
     def __init__(self, cat, verbose=False) -> None:
         self.verbose = verbose
@@ -43,7 +43,7 @@ class VectorMemory:
             # Instantiate collection
             collection = VectorMemoryCollection(
                 cat=cat,
-                client=VectorMemory.vector_db,
+                client=self.vector_db,
                 collection_name=collection_name,
                 embeddings=self.embedder,
                 vector_size=self.embedder_size,
@@ -66,8 +66,10 @@ class VectorMemory:
             # Qdrant local vector DB client
             
             # reconnect only if it's the first boot and not a reload
-            if VectorMemory.vector_db is None:
-                VectorMemory.vector_db = QdrantClient(path=db_path)
+            if VectorMemory.local_vector_db is None:
+                VectorMemory.local_vector_db = QdrantClient(path=db_path)
+                
+            self.vector_db = VectorMemory.local_vector_db
         else:
             qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
 
