@@ -6,12 +6,12 @@ services:
     build:
       context: ./core
     container_name: cheshire_cat_core
-    depends_on:
-      - cheshire-cat-vector-memory
     environment:
       - PYTHONUNBUFFERED=1
       - CORE_HOST=${CORE_HOST:-localhost}
       - CORE_PORT=${CORE_PORT:-1865}
+      - QDRANT_HOST=${QDRANT_HOST:-}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
       - CORE_USE_SECURE_PROTOCOLS=${CORE_USE_SECURE_PROTOCOLS:-}
       - API_KEY=${API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
@@ -32,13 +32,3 @@ services:
       - --reload-exclude
       - "tests/**/*.*"
     restart: unless-stopped
-
-  cheshire-cat-vector-memory:
-    image: qdrant/qdrant:v1.1.1
-    container_name: cheshire_cat_vector_memory
-    expose:
-      - 6333
-    volumes:
-      - ./long_term_memory/vector:/qdrant/storage
-    restart: unless-stopped
-
