@@ -10,7 +10,7 @@ core/venv
 .vscode
 
 # DBs
-long_term_memory
+/core/local_vector_memory
 *metadata.db
 *metadata-v*.db
 test_db.db
