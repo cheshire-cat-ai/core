@@ -216,3 +216,24 @@ class VectorMemoryCollection(Qdrant):
         #    doc.lc_kwargs = None
 
         return langchain_documents_from_points
+
+    # retrieve all the points in the collection
+    def get_all_points(self):
+
+        # counting points in the collection
+        points_count = self.client.count(
+            collection_name=self.collection_name, 
+            exact=True
+        )
+        points_count = points_count.count
+
+        log(f"{self.collection_name} memory points: {points_count}","INFO")
+
+        # retrieving the points
+        all_points, _ = self.client.scroll(
+            collection_name=self.collection_name,
+            with_vectors=True,
+            limit= points_count
+        )
+
+        return all_points
