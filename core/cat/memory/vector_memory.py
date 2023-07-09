@@ -15,6 +15,9 @@ from qdrant_client.http.models import (Distance, VectorParams,  SearchParams,
 
 
 class VectorMemory:
+
+    vector_db = None
+
     def __init__(self, cat, verbose=False) -> None:
         self.verbose = verbose
 
@@ -40,7 +43,7 @@ class VectorMemory:
             # Instantiate collection
             collection = VectorMemoryCollection(
                 cat=cat,
-                client=self.vector_db,
+                client=VectorMemory.vector_db,
                 collection_name=collection_name,
                 embeddings=self.embedder,
                 vector_size=self.embedder_size,
@@ -55,25 +58,37 @@ class VectorMemory:
             setattr(self, collection_name, collection)
 
     def connect_to_vector_memory(self) -> None:
-        qdrant_host = os.getenv("VECTOR_MEMORY_HOST",
-                                "cheshire_cat_vector_memory")
-        qdrant_port = int(os.getenv("VECTOR_MEMORY_PORT", 6333))
+        db_path = "local_vector_memory/"
+        qdrant_host = os.getenv("QDRANT_HOST", db_path)
 
-        try:
-            s = socket.socket()
-            s.connect((qdrant_host, qdrant_port))
-        except Exception:
-            log("QDrant does not respond to %s:%s" %
-                (qdrant_host, qdrant_port), "ERROR")
-            sys.exit()
-        finally:
-            s.close()
+        if len(qdrant_host) == 0 or qdrant_host == db_path:
+            log(f"Qdrant path: {db_path}","INFO")
+            # Qdrant local vector DB client
+            
+            # reconnect only if it's the first boot and not a reload
+            if VectorMemory.vector_db is None:
+                VectorMemory.vector_db = QdrantClient(path=db_path)
+        else:
+            qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
 
-        # Qdrant vector DB client
-        self.vector_db = QdrantClient(
-            host=qdrant_host,
-            port=qdrant_port,
-        )
+            log(f"Qdrant host: {qdrant_host}","INFO")
+            log(f"Qdrant port: {qdrant_port}","INFO")
+
+            try:
+                s = socket.socket()
+                s.connect((qdrant_host, qdrant_port))
+            except Exception:
+                log("QDrant does not respond to %s:%s" %
+                    (qdrant_host, qdrant_port), "ERROR")
+                sys.exit()
+            finally:
+                s.close()
+
+            # Qdrant vector DB client
+            self.vector_db = QdrantClient(
+                host=qdrant_host,
+                port=qdrant_port,
+            )
 
 
 class VectorMemoryCollection(Qdrant):
