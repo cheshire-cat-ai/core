@@ -32,10 +32,6 @@ dependencies = [
     "gunicorn==20.1.0",
     "uvicorn[standard]==0.20.0",
     "text_generation==0.6.0",
-]
-
-[project.optional-dependencies]
-dev = [
     "autopep8",
     "pylint",
     "perflint",
