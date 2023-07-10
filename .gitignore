@@ -1,6 +1,7 @@
 __pycache__
 .env
 *mypy_cache
+*.pytest_cache
 
 # python local dev
 venv
