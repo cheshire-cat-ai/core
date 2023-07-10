@@ -3,7 +3,7 @@ __pycache__
 *mypy_cache
 
 # python local dev
-core/venv
+venv
 
 .DS_Store
 .idea
