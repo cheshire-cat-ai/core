@@ -81,18 +81,15 @@ class MadHatter:
     def embed_tools(self):
 
         # retrieve from vectorDB all tool embeddings
-        vector_db = self.ccat.memory.vectors.vector_db
-        all_tools_points, _ = vector_db.scroll(
-            collection_name="procedural",
-            with_vectors=True,
-            limit=None,
-        )
+        all_tools_points = self.ccat.memory.vectors.procedural.get_all_points()
 
         # easy access to plugin tools
         plugins_tools_index = {t.description: t for t in self.tools}
         #log(plugins_tools_index, "WARNING")
 
         points_to_be_deleted = []
+        
+        vector_db = self.ccat.memory.vectors.vector_db
 
         # loop over vectors
         for record in all_tools_points:

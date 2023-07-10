@@ -12,6 +12,8 @@ services:
       - PYTHONUNBUFFERED=1
       - CORE_HOST=${CORE_HOST:-localhost}
       - CORE_PORT=${CORE_PORT:-1865}
+      - QDRANT_HOST=${QDRANT_HOST:-cheshire_cat_vector_memory}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
       - CORE_USE_SECURE_PROTOCOLS=${CORE_USE_SECURE_PROTOCOLS:-}
       - API_KEY=${API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
@@ -41,4 +43,3 @@ services:
     volumes:
       - ./long_term_memory/vector:/qdrant/storage
     restart: unless-stopped
-
