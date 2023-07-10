@@ -157,7 +157,7 @@ class VectorMemoryCollection(Qdrant):
     # retrieve similar memories from text
     def recall_memories_from_text(self, text, metadata=None, k=5, threshold=None):
         # embed the text
-        query_embedding = self.embedding_function(text)
+        query_embedding = self.cat.embedder.embed_query(text)
 
         # search nearest vectors
         return self.recall_memories_from_embedding(
