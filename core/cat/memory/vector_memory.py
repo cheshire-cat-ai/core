@@ -1,17 +1,15 @@
 import os
 import sys
 import socket
-import time
 from typing import Any
 
 from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
-from langchain.docstore.document import Document
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
-                                       ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
-                                       CreateAliasOperation, CreateAlias)
+                                    ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
+                                    CreateAliasOperation, CreateAlias, PointIdsList)
 
 
 class VectorMemory:
@@ -180,6 +178,17 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(
             query_embedding, metadata=metadata, k=k, threshold=threshold
         )
+    
+    # delete point in collection
+    def delete_point_in_collection(self, points=[]):
+        self.client.delete(
+            collection_name=self.collection_name,
+            wait=True,
+            ordering='strong',
+            points_selector=points,
+        )
+
+        return True
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=None):
@@ -207,7 +216,8 @@ class VectorMemoryCollection(Qdrant):
                 self._document_from_scored_point(
                     m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
-                m.vector
+                m.vector,
+                m.id
             )
             for m in memories
         ]
