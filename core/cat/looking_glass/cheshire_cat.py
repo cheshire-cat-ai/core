@@ -436,9 +436,9 @@ class CheshireCat:
         )
 
         # build data structure for output (response and why with memories)
-        episodic_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["episodic_memories"]]
-        declarative_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["declarative_memories"]]
-        procedural_report = [dict(d[0]) | {"score": float(d[1])} for d in self.working_memory["procedural_memories"]]
+        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["episodic_memories"]]
+        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
+        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
         
         final_output = {
             "error": False,

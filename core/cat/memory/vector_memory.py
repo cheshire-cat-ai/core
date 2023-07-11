@@ -1,17 +1,15 @@
 import os
 import sys
 import socket
-import time
 from typing import Any
 
 from cat.log import log
 from qdrant_client import QdrantClient
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
-from langchain.docstore.document import Document
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
-                                       ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
-                                       CreateAliasOperation, CreateAlias)
+                                    ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
+                                    CreateAliasOperation, CreateAlias)
 
 
 class VectorMemory:
@@ -207,7 +205,8 @@ class VectorMemoryCollection(Qdrant):
                 self._document_from_scored_point(
                     m, self.content_payload_key, self.metadata_payload_key),
                 m.score,
-                m.vector
+                m.vector,
+                m.id
             )
             for m in memories
         ]
