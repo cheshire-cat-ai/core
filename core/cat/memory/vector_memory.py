@@ -9,7 +9,7 @@ from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
                                     ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
-                                    CreateAliasOperation, CreateAlias, PointIdsList)
+                                    CreateAliasOperation, CreateAlias)
 
 
 class VectorMemory:
@@ -178,17 +178,6 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(
             query_embedding, metadata=metadata, k=k, threshold=threshold
         )
-    
-    # delete point in collection
-    def delete_point_in_collection(self, points=[]):
-        self.client.delete(
-            collection_name=self.collection_name,
-            wait=True,
-            ordering='strong',
-            points_selector=points,
-        )
-
-        return True
 
     # retrieve similar memories from embedding
     def recall_memories_from_embedding(self, embedding, metadata=None, k=5, threshold=None):
