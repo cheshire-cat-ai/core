@@ -180,12 +180,13 @@ class VectorMemoryCollection(Qdrant):
         )
     
     # delete point in collection
-    def delete_points_in_collection(self, points=[]):
+    def delete_points(self, points_ids):
+
         self.client.delete(
             collection_name=self.collection_name,
             wait=True,
-            ordering='strong',
-            points_selector=points,
+            #ordering='strong',
+            points_selector=points_ids,
         )
 
         return True

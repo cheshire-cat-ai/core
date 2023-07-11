@@ -17,29 +17,23 @@ async def delete_element_in_memory(
     vector_memory = ccat.memory.vectors
     
     collections = list(vector_memory.collections.keys())
-
     if collection_id not in collections:
         raise HTTPException(
             status_code=422,
-            detail={"message":"Collection does not exist."}
+            detail={"error": "Collection does not exist."}
         )
-
-    deleted = "false"
 
     try:
-        vector_memory.vector_db.retrieve(
-            collection_name=collection_id,
-            ids=[memory_id],
-        )
-        result = vector_memory.collections[collection_id].delete_points_in_collection([memory_id])
-        if result:
-            deleted = "true"
+        vector_memory.collections[collection_id].delete_points([memory_id])
     except Exception as e:
-        pass
+        raise HTTPException(
+            status_code=422,
+            detail={"error": "Point does not exist."}
+        )
 
     return {
         "status": "success",
-        "deleted": deleted
+        "deleted_point": memory_id
     }
 
 
