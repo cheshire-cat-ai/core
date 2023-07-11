@@ -1,23 +1,46 @@
 from typing import Dict
-from fastapi import Query, Request, APIRouter
+from fastapi import Query, Request, APIRouter, HTTPException
 
 router = APIRouter()
 
 
 # DELETE memories
-@router.delete("/point/{memory_id}/")
-async def delete_element_in_memory(memory_id: str) -> Dict:
+@router.delete("/point/{collection_id}/{memory_id}/")
+async def delete_element_in_memory(
+    request: Request,
+    collection_id: str,
+    memory_id: str
+) -> Dict:
     """Delete specific element in memory."""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
     
-    # post-implemented response
-    '''
+    collections = list(vector_memory.collections.keys())
+
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=422,
+            detail={"message":"Collection does not exist."}
+        )
+
+    deleted = "false"
+
+    try:
+        vector_memory.vector_db.retrieve(
+            collection_name=collection_id,
+            ids=[memory_id],
+        )
+        result = vector_memory.collections[collection_id].delete_points_in_collection([memory_id])
+        if result:
+            deleted = "true"
+    except Exception as e:
+        pass
+
     return {
         "status": "success",
-        "deleted": memory_id
+        "deleted": deleted
     }
-    '''
-
-    return {"error": "to be implemented"}
 
 
 # GET memories from recall
