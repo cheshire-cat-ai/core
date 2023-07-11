@@ -60,9 +60,10 @@ async def recall_memories_from_text(
         )
 
         recalled[c] = []
-        for metadata, score, vector in memories:
+        for metadata, score, vector, id in memories:
             memory_dict = dict(metadata)
             memory_dict.pop("lc_kwargs", None) # langchain stuff, not needed
+            memory_dict["id"] = id
             memory_dict["score"] = float(score)
             memory_dict["vector"] = vector
             recalled[c].append(memory_dict)
