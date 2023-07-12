@@ -15,7 +15,7 @@ def get_log_level():
     return os.getenv("LOG_LEVEL", "ERROR")
 
 
-class CatLogEnine:
+class CatLogEngine:
     """The log engine.
 
     Engine to filter the logs in the terminal according to the level of severity.
@@ -204,7 +204,7 @@ class CatLogEnine:
         self.default_log()
 
 
-logEngine = CatLogEnine()
+logEngine = CatLogEngine()
 
 
 def log(msg, level="DEBUG"):
@@ -234,7 +234,6 @@ def welcome():
 
     with open("cat/welcome.txt", 'r') as f:
         print(f.read())
-
 
     print('\n=============== ^._.^ ===============\n')
     print(f'Cat REST API:\t{cat_address}/docs')
