@@ -66,8 +66,9 @@ async def websocket_endpoint(websocket: WebSocket):
         # send error to specific user
         await manager.send_personal_message(
             {
-                "error": True,
-                "code": type(e).__name__,
+                "type": "error",
+                "name": type(e).__name__,
+                "description": str(e),
             },
             websocket
         )
