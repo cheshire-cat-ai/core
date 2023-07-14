@@ -1,7 +1,4 @@
-from cat.db import models
-from cat.db.database import Database
-from sqlmodel import col
-from sqlalchemy import func
+
 from typing import Dict
 from cat.db.database import Database
 from tinydb import Query

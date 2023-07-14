@@ -2,8 +2,7 @@ from typing import Dict
 
 import cat.factory.llm as llm_factory
 from fastapi import Depends, Request, APIRouter
-from sqlalchemy.orm import Session
-from cat.db.database import get_db_session
+from cat.db.database import Database
 from cat.routes.setting import setting_utils
 
 router = APIRouter()
