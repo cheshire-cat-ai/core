@@ -1,7 +1,7 @@
 import mimetypes
 import requests
 from typing import Dict
-from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
+from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
 
 from cat.log import log
@@ -37,11 +37,9 @@ async def upload_file(
 
     # check if MIME type of uploaded file is supported
     if content_type not in admitted_mime_types:
-        return JSONResponse(
-            status_code=422,
-            content={
-                "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
-            },
+        raise HTTPException(
+            status_code = 422,
+            detail = { "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}' }
         )
 
     # upload file to long term memory, in the background
@@ -89,9 +87,21 @@ async def upload_url(
             )
             return {"url": url, "info": "Website is being ingested asynchronously"}
         else:
-            return {"url": url, "info": "Invalid URL"}
-    except requests.exceptions.RequestException as e:
-        return {"url": url, "info": "Unable to reach the link"}
+            raise HTTPException(
+                status_code = 422,
+                detail = {
+                    "error": "Invalid URL",
+                    "url": url
+                },
+            )
+    except requests.exceptions.RequestException as _e:
+        raise HTTPException(
+            status_code = 422,
+            detail = {
+                "error": "Unable to reach the link",
+                "url": url
+            },
+        )
 
 
 @router.post("/memory/")
@@ -105,4 +115,9 @@ async def upload_memory(
     # access cat instance
     ccat = request.app.state.ccat
 
-    return {"error": "to be implemented"}
+    raise HTTPException(
+        status_code = 422,
+        detail = {
+            "error": "Unable to reach the link",
+        },
+    )

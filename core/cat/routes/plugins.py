@@ -23,8 +23,8 @@ async def list_available_plugins(request: Request) -> Dict:
     registry = []
 
     return {
-        "status": "success", 
-        "results": len(plugins) + len(registry), 
+        "status": "success",
+        "results": len(plugins) + len(registry),
         "installed": plugins,
         "registry": registry
     }
@@ -46,13 +46,13 @@ async def upload_plugin(
     log(f"Uploading {file.content_type} plugin {file.filename}", "INFO")
     if file.content_type not in accepted_mime_types:
         raise HTTPException(
-            status_code=422,
+            status_code = 422,
             detail={
-                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' + 
+                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' +
                     f'({", ".join([mime for mime in accepted_mime_types])}).'
             },
         )
-    
+
     # Create temporary file (dunno how to extract from memory) #TODO: extract directly from memory
     file_bytes = file.file.read()
     temp_file = NamedTemporaryFile(dir="/tmp/", delete=False)
@@ -88,7 +88,10 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    return {"error": "to be implemented"}
+    raise HTTPException(
+        status_code = 422,
+        detail = { "error": "to be implemented" }
+    )
 
 
 @router.get("/{plugin_id}", status_code=200)
@@ -104,10 +107,13 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Item not found" }
+        )
 
     return {
-        "status": "success", 
+        "status": "success",
         "data": found[0]
     }
 
@@ -123,8 +129,10 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
-        raise HTTPException(status_code=404, detail="Item not found")
-    
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Item not found" }
+        )
     # remove plugin folder
     shutil.rmtree(ccat.get_plugin_path() + plugin_id)
 
@@ -132,6 +140,6 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     ccat.bootstrap()
 
     return {
-        "status": "success", 
+        "status": "success",
         "deleted": plugin_id
     }

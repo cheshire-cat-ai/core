@@ -18,7 +18,7 @@ def get_settings(
     settings = crud.get_settings(db, limit=limit, page=page, search=search)
 
     return {
-        "results": len(settings), 
+        "results": len(settings),
         "settings": settings
     }
 
@@ -29,7 +29,7 @@ def create_setting(payload: models.Setting, db: Session = Depends(get_db_session
 
     new_setting = crud.create_setting(db, payload)
     return {
-        "status": "success", 
+        "status": "success",
         "setting": new_setting
     }
 
@@ -45,8 +45,10 @@ def update_setting(
 
     if not setting:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {settingId} found",
+            status_code = 404,
+            detail = {
+                "error": f"No setting with this id: {settingId} found",
+            },
         )
     update_data = payload.dict(exclude_unset=True)
     setting_query.filter(models.Setting.setting_id == settingId).update(
@@ -55,7 +57,7 @@ def update_setting(
     db.commit()
     db.refresh(setting)
     return {
-        "status": "success", 
+        "status": "success",
         "setting": setting
     }
 
@@ -68,11 +70,13 @@ def get_setting(settingId: str, db: Session = Depends(get_db_session)):
     setting = setting_query.first()
     if not setting:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {id} found",
+            status_code = 404,
+            detail = {
+                "error": f"No setting with this id: {id} found",
+            },
         )
     return {
-        "status": "success", 
+        "status": "success",
         "setting": setting
     }
 
@@ -85,8 +89,10 @@ def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
     setting = setting_query.first()
     if not setting:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No setting with this id: {id} found",
+            status_code = 404,
+            detail = {
+                "error": f"No setting with this id: {id} found",
+            },
         )
     setting_query.delete(synchronize_session=False)
     db.commit()
