@@ -244,13 +244,29 @@ class CheshireCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
 
-    def llm(self, prompt):
-        model_class = type(self._llm)
+    def llm(self, prompt: str) -> str:
+        """Generate a response using the LLM model.
 
-        if issubclass(model_class, langchain.llms.base.BaseLLM):
+        This method is useful for generating a response with both a chat and a completion model using the same syntax
+
+        Parameters
+        ----------
+        prompt : str
+            The prompt for generating the response.
+
+        Returns
+        -------
+        str
+            The generated response.
+
+        """
+        # Check if self._llm is a completion model and generate a response
+        if isinstance(self._llm, langchain.llms.base.BaseLLM):
             return self._llm(prompt)
-        elif isinstance(model_class, langchain.chat_models.base.BaseChatModel):
-            return self._llm.predict(prompt)
+
+        # Check if self._llm is a chat model and call it as a completion model
+        if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
+            return self._llm.call_as_llm(prompt)
 
     def format_agent_input(self):
         """Format the input for the Agent.

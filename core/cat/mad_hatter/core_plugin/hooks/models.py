@@ -12,13 +12,14 @@ from cat.db import crud
 from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
 from langchain.chat_models import ChatOpenAI
+from langchain.base_language import BaseLanguageModel
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def get_language_model(cat) -> BaseLLM:
+def get_language_model(cat) -> BaseLanguageModel:
     """Hook into the Large Language Model (LLM) selection.
 
     Allows to modify how the Cat selects the LLM at bootstrap time.
