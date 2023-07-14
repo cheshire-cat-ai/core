@@ -15,6 +15,7 @@ long_term_memory
 /core/local_vector_memory
 *metadata.db
 *metadata-v*.db
+*metadata.json
 test_db.db
 
 # old admin folder

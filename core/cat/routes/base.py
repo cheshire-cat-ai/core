@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from typing import Dict
+from cat.db.database import Database
 
 router = APIRouter()
 
@@ -8,4 +9,5 @@ router = APIRouter()
 @router.get("/")
 async def home() -> Dict:
     """Server status"""
-    return {"status": "We're all mad here, dear!"}
+    db = Database()
+    return {"status": db.all()}

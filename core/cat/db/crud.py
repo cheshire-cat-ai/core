@@ -1,47 +1,47 @@
 from cat.db import models
+from cat.db.database import Database
 from sqlmodel import col
-from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import Dict
+from cat.db.database import Database
+from tinydb import Query
 
 
-def get_settings(db: Session, limit: int = 10, page: int = 1, search: str = ""):
-    skip = (page - 1) * limit
+def get_settings(db: Database, limit: int = 10, page: int = 1, search: str = ""):
+    query = Query()
     return (
-        db.query(models.Setting)
-        .where(col(models.Setting.name).contains(search))
-        .limit(limit)
-        .offset(skip)
-        .all()
+        db.search(query.name.matches(search))[:limit]
     )
 
 
-def get_settings_by_category(db: Session, category: str):
-    return db.query(models.Setting).where(models.Setting.category == category).all()
+def get_settings_by_category(db: Database, category: str):
+    query = Query()
+    return db.search(query.category == category)
 
 
-def create_setting(db: Session, payload: models.Setting):
+def create_setting(db: Database, payload: models.Setting):
+    #TODO before inserting we need to fill some field
+    db.insert(payload.dict())
     db_setting = models.Setting(**payload.dict())
-    db.add(db_setting)
-    db.commit()
-    db.refresh(db_setting)
     return db_setting
 
 
-def get_setting_by_name(db: Session, name: str):
-    return db.query(models.Setting).filter(models.Setting.name == name).first()
+def get_setting_by_name(db: Database, name: str):
+    query = Query()
+    return db.search(query.name == name)
 
 
-def get_setting_by_id(db: Session, settingId: str):
+def get_setting_by_id(db: Database, settingId: str):
+    #TODO id is null by default
     return db.query(models.Setting).filter(models.Setting.setting_id == settingId)
 
 
-def delete_setting_by_name(db: Session, name: str) -> None:
+def delete_setting_by_name(db: Database, name: str) -> None:
     query = db.query(models.Setting).where(models.Setting.name == name)
     query.delete(synchronize_session=False)
     db.commit()
 
-def upsert_setting(db: Session,  name: str, category: str, payload: Dict) -> models.Setting:
+def upsert_setting(db: Database,  name: str, category: str, payload: Dict) -> models.Setting:
 
     old_setting = get_setting_by_name(db, name)
 

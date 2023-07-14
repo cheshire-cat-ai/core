@@ -1,13 +1,14 @@
 from typing import Dict
 
 from cat.db import crud
+from cat.db.database import Database
 from fastapi import Body, HTTPException
 from sqlalchemy.orm import Session
 
 
 # utility function to GET LLMs and embedders configuration (used from both /settings/llm/ and /settings/embedder/ endpoints)
 def nlp_get_settings(
-    db: Session,
+    db: Database,
     setting_factory_category: str,
     setting_selected_name: str,
     schemas: Dict,
@@ -44,7 +45,7 @@ def nlp_get_example_put_payload():
 
 # utility function to PUT LLMs and embedders configuration (used from both /settings/llm/ and /settings/embedder/ endpoints)
 def put_nlp_setting(
-    db: Session,
+    db: Database,
     modelName: str,
     payload: Dict,
     db_naming: Dict,
