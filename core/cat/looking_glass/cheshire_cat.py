@@ -5,7 +5,7 @@ import traceback
 import langchain
 import os
 from cat.log import log
-from cat.db.database import get_db_session, create_db_and_tables
+from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList
@@ -94,11 +94,8 @@ class CheshireCat:
 
     def load_db(self):
         """Load the SQl database."""
-        # if there is no db, create it
-        create_db_and_tables()
-
         # access db from instance
-        self.db = get_db_session
+        self.db = Database()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
