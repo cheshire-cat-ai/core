@@ -32,6 +32,7 @@ dependencies = [
     "gunicorn==20.1.0",
     "uvicorn[standard]==0.20.0",
     "text_generation==0.6.0",
+    "tinydb==4.8.0",
     "autopep8",
     "pylint",
     "perflint",
