@@ -5,7 +5,7 @@ from tinydb import TinyDB
 class Database:
     _instance = None
     def __new__(cls):
-        if not cls._istance:
+        if not cls._instance:
             cls._instance = super().__new__(cls)
             cls._instance.db = TinyDB("metadata.json")
         return cls._instance.db

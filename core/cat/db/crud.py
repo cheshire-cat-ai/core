@@ -1,44 +1,54 @@
 
 from typing import Dict
-from cat.db.database import Database
 from tinydb import Query
 
+from cat.db import models
+from cat.db.database import Database
+from cat.log import log
 
-def get_settings(db: Database, limit: int = 10, page: int = 1, search: str = ""):
+
+db = Database()
+
+
+def get_settings(search: str = ""):
     query = Query()
     return (
-        db.search(query.name.matches(search))[:limit]
+        db.search(query.name.matches(search))
     )
 
 
-def get_settings_by_category(db: Database, category: str):
+def get_settings_by_category(category: str):
     query = Query()
     return db.search(query.category == category)
 
 
-def create_setting(db: Database, payload: models.Setting):
+def create_setting(payload: models.Setting):
     #TODO before inserting we need to fill some field
     db.insert(payload.dict())
     db_setting = models.Setting(**payload.dict())
     return db_setting
 
 
-def get_setting_by_name(db: Database, name: str):
+def get_setting_by_name(name: str):
     query = Query()
-    return db.search(query.name == name)
+    result = db.search(query.name == name)
+    if len(result) > 0:
+        return result[0]
+    else:
+        return None 
 
 
-def get_setting_by_id(db: Database, settingId: str):
+def get_setting_by_id(settingId: str):
     #TODO id is null by default
     return db.query(models.Setting).filter(models.Setting.setting_id == settingId)
 
 
-def delete_setting_by_name(db: Database, name: str) -> None:
+def delete_setting_by_name(name: str) -> None:
     query = db.query(models.Setting).where(models.Setting.name == name)
     query.delete(synchronize_session=False)
     db.commit()
 
-def upsert_setting(db: Database,  name: str, category: str, payload: Dict) -> models.Setting:
+def upsert_setting(name: str, category: str, payload: Dict) -> models.Setting:
 
     old_setting = get_setting_by_name(db, name)
 

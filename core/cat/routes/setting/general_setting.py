@@ -1,21 +1,15 @@
-from cat.db import crud, models
 from fastapi import Depends, Response, APIRouter, HTTPException, status
-from sqlalchemy.orm import Session
-from cat.db.database import get_db_session
+from cat.db import models
+from cat.db import crud
+
 
 router = APIRouter()
 
-
 @router.get("/")
-def get_settings(
-    db: Session = Depends(get_db_session),
-    limit: int = 100,
-    page: int = 1,
-    search: str = "",
-):
+def get_settings(search: str = ""):
     """Get the entire list of settings available in the database"""
 
-    settings = crud.get_settings(db, limit=limit, page=page, search=search)
+    settings = crud.get_settings(search=search)
 
     return {
         "results": len(settings),
@@ -23,24 +17,22 @@ def get_settings(
     }
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_setting(payload: models.Setting, db: Session = Depends(get_db_session)):
+@router.post("/")
+def create_setting(payload: models.Setting):
     """Create a new setting in the database"""
 
-    new_setting = crud.create_setting(db, payload)
+    new_setting = crud.create_setting(payload)
     return {
         "status": "success",
         "setting": new_setting
     }
 
 
-@router.patch("/{settingId}")
-def update_setting(
-    settingId: str, payload: models.Setting, db: Session = Depends(get_db_session)
-):
+@router.put("/{settingId}")
+def update_setting(settingId: str, payload: models.Setting):
     """Update a specific setting in the database"""
 
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
+    setting_query = crud.get_setting_by_id(settingId=settingId)
     setting = setting_query.first()
 
     if not setting:
@@ -54,8 +46,8 @@ def update_setting(
     setting_query.filter(models.Setting.setting_id == settingId).update(
         update_data, synchronize_session=False
     )
-    db.commit()
-    db.refresh(setting)
+    #db.commit()
+    #db.refresh(setting)
     return {
         "status": "success",
         "setting": setting
@@ -63,10 +55,10 @@ def update_setting(
 
 
 @router.get("/{settingId}")
-def get_setting(settingId: str, db: Session = Depends(get_db_session)):
+def get_setting(settingId: str):
     """Get the a specific setting from the database"""
 
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
+    setting_query = crud.get_setting_by_id(settingId=settingId)
     setting = setting_query.first()
     if not setting:
         raise HTTPException(
@@ -82,10 +74,10 @@ def get_setting(settingId: str, db: Session = Depends(get_db_session)):
 
 
 @router.delete("/{settingId}")
-def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
+def delete_setting(settingId: str):
     """Delete a specific setting in the database"""
 
-    setting_query = crud.get_setting_by_id(db, settingId=settingId)
+    setting_query = crud.get_setting_by_id(settingId=settingId)
     setting = setting_query.first()
     if not setting:
         raise HTTPException(
@@ -95,5 +87,5 @@ def delete_setting(settingId: str, db: Session = Depends(get_db_session)):
             },
         )
     setting_query.delete(synchronize_session=False)
-    db.commit()
+    #db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

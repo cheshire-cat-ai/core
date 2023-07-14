@@ -39,7 +39,7 @@ def get_language_model(cat) -> BaseLLM:
     the *Agent Manager* and the *Rabbit Hole*.
 
     """
-    selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
+    selected_llm = crud.get_setting_by_name(name="llm_selected")
 
     if selected_llm is None:
         # return default LLM
@@ -51,9 +51,7 @@ def get_language_model(cat) -> BaseLLM:
         FactoryClass = getattr(llms, selected_llm_class)
 
         # obtain configuration and instantiate LLM
-        selected_llm_config = crud.get_setting_by_name(
-            next(cat.db()), name=selected_llm_class
-        )
+        selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
         try:
             llm = FactoryClass.get_llm_from_config(selected_llm_config.value)
         except Exception as e:
@@ -86,7 +84,7 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
     """
     # Embedding LLM
 
-    selected_embedder = crud.get_setting_by_name(next(cat.db()), name="embedder_selected")
+    selected_embedder = crud.get_setting_by_name(name="embedder_selected")
 
     if selected_embedder is not None:
 

@@ -12,7 +12,7 @@ from cat.routes import base, memory, plugins, upload, websocket
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes.setting import llm_setting, general_setting, embedder_setting, prompt_setting
+from cat.routes.setting import general_setting # , llm_setting, embedder_setting, prompt_setting
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 

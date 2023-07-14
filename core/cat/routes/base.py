@@ -10,4 +10,7 @@ router = APIRouter()
 async def home() -> Dict:
     """Server status"""
     db = Database()
-    return {"status": db.all()}
+    return {
+        "status": "We're all mad here, dear!",
+        "db": db.all()
+    }
