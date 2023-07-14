@@ -9,7 +9,6 @@ import os
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
-from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
 from langchain.chat_models import ChatOpenAI
 from langchain.base_language import BaseLanguageModel
@@ -31,8 +30,8 @@ def get_language_model(cat) -> BaseLanguageModel:
 
     Returns
     -------
-    lll : BaseLLM
-        Langchain `BaseLLM` instance of the selected model.
+    lll : BaseLanguageModel
+        Langchain `BaseLanguageModel` instance of the selected model.
 
     Notes
     -----
