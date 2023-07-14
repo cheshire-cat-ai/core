@@ -12,8 +12,6 @@ dependencies = [
     "fastapi==0.93.0",
     "fastapi-utils==0.2.1",
     "websockets==10.4",
-    "SQLAlchemy==1.4.41",
-    "sqlmodel==0.0.8",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
     "qdrant_client==1.1.2",
