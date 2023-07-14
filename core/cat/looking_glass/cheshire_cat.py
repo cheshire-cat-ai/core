@@ -126,7 +126,7 @@ class CheshireCat:
         agent_prompt_prefix
         """
         # LLM and embedder
-        self.llm = self.mad_hatter.execute_hook("get_language_model")
+        self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
 
         # HyDE chain
@@ -135,13 +135,13 @@ class CheshireCat:
             template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm)
+        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self._llm)
 
         self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
-            llm=self.llm,
+            llm=self._llm,
             verbose=False,
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
@@ -243,6 +243,14 @@ class CheshireCat:
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
+
+    def llm(self, prompt):
+        model_class = type(self._llm)
+
+        if issubclass(model_class, langchain.llms.base.BaseLLM):
+            return self._llm(prompt)
+        elif isinstance(model_class, langchain.chat_models.base.BaseChatModel):
+            return self._llm.predict(prompt)
 
     def format_agent_input(self):
         """Format the input for the Agent.
