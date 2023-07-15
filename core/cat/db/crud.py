@@ -12,9 +12,7 @@ db = Database()
 
 def get_settings(search: str = ""):
     query = Query()
-    return (
-        db.search(query.name.matches(search))
-    )
+    return db.search(query.name.matches(search))
 
 
 def get_settings_by_category(category: str):
@@ -22,14 +20,17 @@ def get_settings_by_category(category: str):
     return db.search(query.category == category)
 
 
-def create_setting(payload: models.Setting):
-    #TODO before inserting we need to fill some field
+def create_setting(payload: models.Setting) -> models.Setting:
+    
+    # Missing fields (setting_id, updated_at) are filled automatically by pydantic
     db.insert(payload.dict())
-    db_setting = models.Setting(**payload.dict())
-    return db_setting
+    
+    # retrieve the record we just created
+    new_record = get_setting_by_id(payload.setting_id)
+    return new_record 
 
 
-def get_setting_by_name(name: str):
+def get_setting_by_name(name: str) -> models.Setting:
     query = Query()
     result = db.search(query.name == name)
     if len(result) > 0:
@@ -38,36 +39,44 @@ def get_setting_by_name(name: str):
         return None 
 
 
-def get_setting_by_id(settingId: str):
-    #TODO id is null by default
-    return db.query(models.Setting).filter(models.Setting.setting_id == settingId)
-
-
-def delete_setting_by_name(name: str) -> None:
-    query = db.query(models.Setting).where(models.Setting.name == name)
-    query.delete(synchronize_session=False)
-    db.commit()
-
-def upsert_setting(name: str, category: str, payload: Dict) -> models.Setting:
-
-    old_setting = get_setting_by_name(db, name)
-
-    if old_setting is None:
-        # prepare setting to be included in DB, adding category
-        setting = {
-            "name": name,
-            "value": payload,
-            "category": category,
-        }
-        setting = models.Setting(**setting)
-        final_setting = create_setting(db, setting).dict()
-    
+def get_setting_by_id(setting_id: str) -> models.Setting:
+    query = Query()
+    result = db.search(query.setting_id == setting_id)
+    if len(result) > 0:
+        return result[0]
     else:
-        old_setting.value = payload
-        old_setting.updatedAt = func.now()
-        db.add(old_setting)
-        db.commit()
-        db.refresh(old_setting)
-        final_setting = old_setting.dict()
+        return None 
 
-    return final_setting
+
+def delete_setting_by_id(setting_id: str) -> None:
+    query = Query()
+    db.remove(query.setting_id == setting_id)    
+
+
+def upsert_setting_by_id(setting_id: str, payload: models.Setting) -> models.Setting:
+    
+    # let's ensure the payload does not contain a newly generated id
+    payload.setting_id = setting_id
+
+    old_setting = get_setting_by_id(setting_id)
+
+    if not old_setting:
+        create_setting(payload)
+    else:
+        query = Query()
+        db.update(payload, query.setting_id == setting_id)
+
+    return get_setting_by_id(setting_id)
+
+
+def upsert_setting_by_name(name: str, payload: models.Setting) -> models.Setting:
+
+    old_setting = get_setting_by_name(name)
+
+    if not old_setting:
+        create_setting(payload)
+    else:
+        query = Query()
+        db.update(payload, query.name == name)
+
+    return get_setting_by_name(name)

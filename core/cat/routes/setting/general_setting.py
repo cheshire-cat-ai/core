@@ -29,25 +29,11 @@ def create_setting(payload: models.Setting):
 
 
 @router.put("/{settingId}")
-def update_setting(settingId: str, payload: models.Setting):
-    """Update a specific setting in the database"""
+def upsert_setting(settingId: str, payload: models.Setting):
+    """Update a specific setting in the database or create it if does not exists"""
 
-    setting_query = crud.get_setting_by_id(settingId=settingId)
-    setting = setting_query.first()
-
-    if not setting:
-        raise HTTPException(
-            status_code = 404,
-            detail = {
-                "error": f"No setting with this id: {settingId} found",
-            },
-        )
-    update_data = payload.dict(exclude_unset=True)
-    setting_query.filter(models.Setting.setting_id == settingId).update(
-        update_data, synchronize_session=False
-    )
-    #db.commit()
-    #db.refresh(setting)
+    setting = crud.upsert_setting_by_id(settingId, payload=payload)
+    
     return {
         "status": "success",
         "setting": setting
@@ -58,13 +44,12 @@ def update_setting(settingId: str, payload: models.Setting):
 def get_setting(settingId: str):
     """Get the a specific setting from the database"""
 
-    setting_query = crud.get_setting_by_id(settingId=settingId)
-    setting = setting_query.first()
+    setting = crud.get_setting_by_id(settingId)
     if not setting:
         raise HTTPException(
             status_code = 404,
             detail = {
-                "error": f"No setting with this id: {id} found",
+                "error": f"No setting with this id: {settingId}",
             },
         )
     return {
@@ -77,15 +62,17 @@ def get_setting(settingId: str):
 def delete_setting(settingId: str):
     """Delete a specific setting in the database"""
 
-    setting_query = crud.get_setting_by_id(settingId=settingId)
-    setting = setting_query.first()
+    # does the setting exist?
+    setting = crud.get_setting_by_id(settingId)
     if not setting:
         raise HTTPException(
             status_code = 404,
             detail = {
-                "error": f"No setting with this id: {id} found",
+                "error": f"No setting with this id: {settingId}",
             },
         )
-    setting_query.delete(synchronize_session=False)
-    #db.commit()
+    
+    # delete
+    crud.delete_setting_by_id(settingId)
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
