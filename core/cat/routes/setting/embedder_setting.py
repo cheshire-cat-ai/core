@@ -26,7 +26,7 @@ def get_embedder_settings():
     if selected is None:
         selected_configuration = None
     else:
-        selected_configuration = selected.name
+        selected_configuration = selected["value"]["name"]
 
     allowed_configurations = list(EMBEDDER_SCHEMAS.keys())
 

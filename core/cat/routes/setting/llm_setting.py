@@ -27,7 +27,7 @@ def get_llm_settings():
     if selected is None:
         selected_configuration = None
     else:
-        selected_configuration = selected.name
+        selected_configuration = selected["value"]["name"]
 
     allowed_configurations = list(LLM_SCHEMAS.keys())
 

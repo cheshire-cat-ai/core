@@ -26,15 +26,14 @@ def app() -> Generator[FastAPI, Any, None]:
     # TODO: things to do before each testcase
     #Database._instance = None
     #Database.file_name = "metadata-test.json"
+    Database().truncate()
     _app = cheshire_cat_api
     yield _app
-    #Database().truncate()
+    Database().truncate()
     # TODO: things to do after each testcase
 
-
 @pytest.fixture(scope="function")
-def client(
-    app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
+def client(app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
     """
     Create a new FastAPI TestClient that mocks both Qdrant and TinyDB.
     """

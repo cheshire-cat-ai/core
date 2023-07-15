@@ -10,7 +10,5 @@ class Database:
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
-            from cat.log import log
-            log(f"Connecting to {cls.file_name}", "ERROR")
             cls._instance.db = TinyDB(cls.file_name)
         return cls._instance.db

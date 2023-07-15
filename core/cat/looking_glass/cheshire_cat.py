@@ -29,10 +29,9 @@ class CheshireCat:
     def __init__(self):
         """Cat initialization.
 
-        At init time the Cat loads the database and execute the bootstrap.
+        At init time the Cat executes the bootstrap.
         """
-        # access to DB
-        self.load_db()
+
 
         # bootstrap the cat!
         self.bootstrap()
@@ -92,10 +91,6 @@ class CheshireCat:
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
-    def load_db(self):
-        """Load the database."""
-        # access db from instance
-        self.db = Database()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
