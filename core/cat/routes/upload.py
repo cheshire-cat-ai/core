@@ -1,6 +1,10 @@
+import os
+import json
 import mimetypes
+import tempfile
 import requests
 from typing import Dict
+from qdrant_client.http import models
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -115,9 +119,81 @@ async def upload_memory(
     # access cat instance
     ccat = request.app.state.ccat
 
-    raise HTTPException(
-        status_code = 422,
-        detail = {
-            "error": "Unable to reach the link",
-        },
+    # Check file mime type
+    content_type = mimetypes.guess_type(file.filename)[0]
+
+    # check if MIME type of uploaded file is supported
+    if content_type != "application/json":
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": f'MIME type {file.content_type} not supported. Admitted types: application/json'}
+        )
+
+    # Create temporary file
+    temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
+    temp_name = temp_file.name
+
+    # Get file bytes
+    file_bytes = file.file.read()
+
+    # Save in temporary file
+    with open(temp_name, "wb") as temp_binary_file:
+        temp_binary_file.write(file_bytes)
+
+    # Recover the file as dict
+    with open(temp_name, "r") as memories_file:
+        memories = json.load(memories_file)
+
+    # Check the embedder used for the uploaded memories is the same the Cat is using now
+    upload_embedder = memories["embedder"]
+    cat_embedder = str(ccat.embedder.__class__.__name__)
+
+    if upload_embedder != cat_embedder:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": f'Embedder mismatch: uploaded file embedder {upload_embedder} is != from {ccat.embedder}'}
+        )
+
+    # Get Declarative memories in file
+    declarative_memories = memories["collections"]["declarative"]
+
+    # Store data to upload the memories with batch
+    ids = [i["id"] for i in declarative_memories]
+    payloads = [{
+        "page_content": p["page_content"],
+        "metadata": p["metadata"]
+    } for p in declarative_memories]
+    vectors = [v["vector"] for v in declarative_memories]
+
+    # Check embedding size is correct
+    embedder_size = ccat.memory.vectors.embedder_size
+    len_mismatch = [len(v) == embedder_size for v in vectors]
+
+    if not any(len_mismatch):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": f'Embedding size mismatch: vectors length should be {embedder_size}'}
+        )
+
+    # Upsert memories in batch mode
+    ccat.memory.vectors.vector_db.upsert(
+        collection_name="declarative",
+        points=models.Batch(
+            ids=ids,
+            payloads=payloads,
+            vectors=vectors
+        )
     )
+
+    # Remove temporary file
+    os.remove(temp_name)
+
+    # reply to client
+    return {
+        "error": False,
+        "filename": file.filename,
+        "content": f"Uploaded {len(ids)} memories in the Declarative memory"
+    }
