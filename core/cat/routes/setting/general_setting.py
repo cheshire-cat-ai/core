@@ -1,9 +1,11 @@
-from fastapi import Depends, Response, APIRouter, HTTPException, status
+from typing import Annotated
+from fastapi import Body, Response, APIRouter, HTTPException, status
 from cat.db import models
 from cat.db import crud
 
 
 router = APIRouter()
+
 
 @router.get("/")
 def get_settings(search: str = ""):
@@ -18,25 +20,18 @@ def get_settings(search: str = ""):
 
 
 @router.post("/")
-def create_setting(payload: models.Setting):
+def create_setting(payload: models.SettingBody):
     """Create a new setting in the database"""
 
+    # complete the payload with setting_id and updated_at
+    payload = models.Setting(**payload.dict())
+
+    # save to DB
     new_setting = crud.create_setting(payload)
+
     return {
         "status": "success",
         "setting": new_setting
-    }
-
-
-@router.put("/{settingId}")
-def upsert_setting(settingId: str, payload: models.Setting):
-    """Update a specific setting in the database or create it if does not exists"""
-
-    setting = crud.upsert_setting_by_id(settingId, payload=payload)
-    
-    return {
-        "status": "success",
-        "setting": setting
     }
 
 
@@ -55,6 +50,33 @@ def get_setting(settingId: str):
     return {
         "status": "success",
         "setting": setting
+    }
+
+
+@router.put("/{settingId}")
+def update_setting(settingId: str, payload: models.SettingBody):
+    """Update a specific setting in the database or create it if does not exists"""
+
+    # does the setting exist?
+    setting = crud.get_setting_by_id(settingId)
+    if not setting:
+        raise HTTPException(
+            status_code = 404,
+            detail = {
+                "error": f"No setting with this id: {settingId}",
+            },
+        )
+    
+    # complete the payload with setting_id and updated_at
+    payload = models.Setting(**payload.dict())
+    payload.setting_id = settingId # force this to be the setting_id
+
+    # save to DB
+    updated_setting = crud.update_setting_by_id(payload)
+    
+    return {
+        "status": "success",
+        "setting": updated_setting
     }
 
 

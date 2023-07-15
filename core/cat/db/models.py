@@ -12,9 +12,13 @@ def generate_timestamp():
     return int( datetime.now().timestamp() )
 
 
-class Setting(BaseModel):
-    setting_id: str = Field(default_factory=generate_uuid)
+# base class for setting, used to annotate fastAPI endpoints
+class SettingBody(BaseModel):
     name: str
     value: Dict
     category: Optional[str]
+
+# actual setting class, with additional auto generated id and update time
+class Setting(SettingBody):
+    setting_id: str = Field(default_factory=generate_uuid)
     updated_at: int = Field(default_factory=generate_timestamp)

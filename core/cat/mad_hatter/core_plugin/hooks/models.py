@@ -93,9 +93,7 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         FactoryClass = getattr(embedders, selected_embedder_class)
 
         # obtain configuration and instantiate Embedder
-        selected_embedder_config = crud.get_setting_by_name(
-            next(cat.db()), name=selected_embedder_class
-        )
+        selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
         embedder = FactoryClass.get_embedder_from_config(selected_embedder_config.value)
         
         return embedder
