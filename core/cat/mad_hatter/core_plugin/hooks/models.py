@@ -9,16 +9,16 @@ import os
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
-from langchain.llms.base import BaseLLM
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
 from langchain.chat_models import ChatOpenAI
+from langchain.base_language import BaseLanguageModel
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def get_language_model(cat) -> BaseLLM:
+def get_language_model(cat) -> BaseLanguageModel:
     """Hook into the Large Language Model (LLM) selection.
 
     Allows to modify how the Cat selects the LLM at bootstrap time.
@@ -30,8 +30,8 @@ def get_language_model(cat) -> BaseLLM:
 
     Returns
     -------
-    lll : BaseLLM
-        Langchain `BaseLLM` instance of the selected model.
+    lll : BaseLanguageModel
+        Langchain `BaseLanguageModel` instance of the selected model.
 
     Notes
     -----
@@ -103,28 +103,28 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         return embedder
 
 
-    print("naked cat: ", cat.llm)
+    print("naked cat: ", cat._llm)
 
     # OpenAI embedder
-    if type(cat.llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
+    if type(cat._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
         embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
             {
-                "openai_api_key": cat.llm.openai_api_key,
+                "openai_api_key": cat._llm.openai_api_key,
             }
         )
 
     # Azure
-    elif type(cat.llm) in [AzureOpenAI, AzureChatOpenAI]:
+    elif type(cat._llm) in [AzureOpenAI, AzureChatOpenAI]:
         embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
             {
-                "openai_api_key": cat.llm.openai_api_key,
+                "openai_api_key": cat._llm.openai_api_key,
                 "openai_api_type": "azure",
                 "model": "text-embedding-ada-002",
                 # Now the only model for embeddings is text-embedding-ada-002
                 # It is also possible to use the Azure "deployment" name that is user defined
                 # when the model is deployed to Azure.
                 # "deployment": "my-text-embedding-ada-002",
-                "openai_api_base": cat.llm.openai_api_base,
+                "openai_api_base": cat._llm.openai_api_base,
                 # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
                 # current supported versions 2022-12-01,2023-03-15-preview, 2023-05-15
                 # Don't mix api versions https://github.com/hwchase17/langchain/issues/4775
@@ -133,10 +133,10 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         )
 
     # Cohere
-    elif type(cat.llm) in [Cohere]:
+    elif type(cat._llm) in [Cohere]:
         embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
             {
-                "cohere_api_key": cat.llm.cohere_api_key,
+                "cohere_api_key": cat._llm.cohere_api_key,
                 "model": "embed-multilingual-v2.0",
                 # Now the best model for embeddings is embed-multilingual-v2.0
 
@@ -144,10 +144,10 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         )
 
     # HuggingFace
-    elif type(cat.llm) in [HuggingFaceHub]:
+    elif type(cat._llm) in [HuggingFaceHub]:
         embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
                 {
-                    "huggingfacehub_api_token": cat.llm.huggingfacehub_api_token,
+                    "huggingfacehub_api_token": cat._llm.huggingfacehub_api_token,
                     "repo_id": "sentence-transformers/all-mpnet-base-v2",
                 }
             )

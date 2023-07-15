@@ -126,7 +126,7 @@ class CheshireCat:
         agent_prompt_prefix
         """
         # LLM and embedder
-        self.llm = self.mad_hatter.execute_hook("get_language_model")
+        self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
 
         # HyDE chain
@@ -135,13 +135,13 @@ class CheshireCat:
             template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm)
+        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self._llm)
 
         self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
-            llm=self.llm,
+            llm=self._llm,
             verbose=False,
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
@@ -243,6 +243,30 @@ class CheshireCat:
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
+
+    def llm(self, prompt: str) -> str:
+        """Generate a response using the LLM model.
+
+        This method is useful for generating a response with both a chat and a completion model using the same syntax
+
+        Parameters
+        ----------
+        prompt : str
+            The prompt for generating the response.
+
+        Returns
+        -------
+        str
+            The generated response.
+
+        """
+        # Check if self._llm is a completion model and generate a response
+        if isinstance(self._llm, langchain.llms.base.BaseLLM):
+            return self._llm(prompt)
+
+        # Check if self._llm is a chat model and call it as a completion model
+        if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
+            return self._llm.call_as_llm(prompt)
 
     def format_agent_input(self):
         """Format the input for the Agent.

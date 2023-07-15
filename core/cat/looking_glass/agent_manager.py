@@ -40,7 +40,7 @@ class AgentManager:
         )
 
         # main chain
-        agent_chain = LLMChain(prompt=prompt, llm=self.cat.llm, verbose=True)
+        agent_chain = LLMChain(prompt=prompt, llm=self.cat._llm, verbose=True)
 
         # init agent
         agent = LLMSingleActionAgent(
@@ -78,7 +78,7 @@ class AgentManager:
 
         memory_chain = LLMChain(
             prompt=memory_prompt,
-            llm=self.cat.llm,
+            llm=self.cat._llm,
             verbose=True
         )
 
