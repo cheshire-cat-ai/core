@@ -55,7 +55,7 @@ def get_setting(settingId: str):
 
 @router.put("/{settingId}")
 def update_setting(settingId: str, payload: models.SettingBody):
-    """Update a specific setting in the database or create it if does not exists"""
+    """Update a specific setting in the database if it exists"""
 
     # does the setting exist?
     setting = crud.get_setting_by_id(settingId)
