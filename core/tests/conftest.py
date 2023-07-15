@@ -1,3 +1,4 @@
+
 from typing import Any
 from typing import Generator
 
@@ -22,11 +23,12 @@ def app() -> Generator[FastAPI, Any, None]:
     Create a new setup on each test case.
     """
     
-    # TODO: things to do after before each testcase
-    Database._instance = None
+    # TODO: things to do before each testcase
+    #Database._instance = None
+    #Database.file_name = "metadata-test.json"
     _app = cheshire_cat_api
     yield _app
-    Database._instance = None
+    #Database().truncate()
     # TODO: things to do after each testcase
 
 

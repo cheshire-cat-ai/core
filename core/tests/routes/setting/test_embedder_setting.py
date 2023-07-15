@@ -1,5 +1,10 @@
 
 def test_get_embedder_settings(client):
+
+
+    from cat.db.database import Database
+    from cat.log import log
+    log(Database.file_name, "WARNING")
     
     # act
     response = client.get("/settings/embedder/")

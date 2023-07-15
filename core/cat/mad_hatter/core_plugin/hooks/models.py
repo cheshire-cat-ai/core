@@ -94,7 +94,6 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
 
         # obtain configuration and instantiate Embedder
         selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
-        from cat.log import log; log(selected_embedder_config, "CRITICAL")
         embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
         
         return embedder

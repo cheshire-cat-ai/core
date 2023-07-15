@@ -93,7 +93,7 @@ class CheshireCat:
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
     def load_db(self):
-        """Load the SQl database."""
+        """Load the database."""
         # access db from instance
         self.db = Database()
 

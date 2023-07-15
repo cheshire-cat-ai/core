@@ -2,7 +2,6 @@ from typing import Dict
 
 from fastapi import Request, APIRouter, Body, HTTPException
 from cat.db import crud, models
-from cat.db.database import Database
 from cat.factory.embedder import EMBEDDER_SCHEMAS
 
 router = APIRouter()
