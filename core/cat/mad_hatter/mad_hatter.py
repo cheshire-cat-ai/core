@@ -8,7 +8,7 @@ from inspect import getmembers, isfunction  # , signature
 from cat.log import log
 from cat.utils import to_camel_case
 from cat.mad_hatter.decorators import CatTool, CatHooks
-from cat.infrastructure.zip import Zip
+from cat.infrastructure.package import Package
 
 
 # This class is responsible for plugins functionality:
@@ -26,11 +26,11 @@ class MadHatter:
         self.ccat = ccat
         self.hooks, self.tools, self.plugins = self.find_plugins()
 
-    def install_plugin(self, zip_plugin):
+    def install_plugin(self, package_plugin):
         plugin_folder = self.ccat.get_plugin_path()
-        zip_obj = Zip(zip_plugin)
-        zip_obj.unzip(plugin_folder)
-        zip_name = zip_obj.get_name()
+        pkg_obj = Package(package_plugin)
+        pkg_obj.unpackage(plugin_folder)
+        zip_name = pkg_obj.get_name()
 
         plugin_name = zip_name.replace(".zip", "")
         plugin_folder = path.join(plugin_folder, plugin_name)

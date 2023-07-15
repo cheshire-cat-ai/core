@@ -2,7 +2,6 @@ import mimetypes
 from fastapi import Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
 from typing import Dict
-from tempfile import NamedTemporaryFile
 import shutil
 
 from tempfile import NamedTemporaryFile
@@ -50,26 +49,12 @@ async def install_plugin(
             status_code = 422,
             detail={
                 "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' +
-                    f'({", ".join([mime for mime in accepted_mime_types])}).'
+                    f'({", ".join([mime for mime in admitted_mime_types])}).'
             },
         )
 
-    # Create temporary file (dunno how to extract from memory) #TODO: extract directly from memory
-    file_bytes = file.file.read()
-    temp_file = NamedTemporaryFile(dir="/tmp/", delete=False)
-    temp_name = temp_file.name
-    with open(temp_name, "wb") as temp_binary_file:
-        # Write bytes to file
-        temp_binary_file.write(file_bytes)
-
-    # Extract into plugins folder
-    shutil.unpack_archive(temp_name, ccat.get_plugin_path(), file.filename.rsplit('.', 1)[1])
-
-    # align plugins (update db and embed new tools)
-    ccat.bootstrap()
-
     log(f"Uploading {content_type} plugin {file.filename}", "INFO")
-    temp = NamedTemporaryFile(delete=False)
+    temp = NamedTemporaryFile(delete=False, suffix=file.filename)
     contents = file.file.read()
     with temp as f:
         f.write(contents)
@@ -80,7 +65,8 @@ async def install_plugin(
 
     return {
         "status": "success",
-        "info": "Plugin is being installed asynchronously."
+        "info": "Plugin is being installed asynchronously.",
+        "filename": file.filename
     }
 
 
