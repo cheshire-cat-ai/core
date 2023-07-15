@@ -18,7 +18,7 @@ def test_upsert_embedder_settings(client):
     # prepare embedder config
     invented_key = "some-key"
     embedder_config = {
-        "model_name": "text-embedding-ada-002",
+        "model": "text-embedding-ada-002",
         "openai_api_key": invented_key
     }
 
@@ -29,7 +29,7 @@ def test_upsert_embedder_settings(client):
     # verify success
     assert response.status_code == 200
     assert json["status"] == "success"
-    assert json["setting"]["value"]["model_name"] == embedder_config["model_name"]
+    assert json["setting"]["value"]["model"] == embedder_config["model"]
 
 
     # retrieve data to check if it was saved in DB

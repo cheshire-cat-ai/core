@@ -1,5 +1,5 @@
 
-from typing import Dict
+from typing import Dict, List
 from tinydb import Query
 
 from cat.db import models
@@ -10,28 +10,28 @@ from cat.log import log
 db = Database()
 
 
-def get_settings(search: str = ""):
+def get_settings(search: str = "") -> List[Dict]:
     query = Query()
     return db.search(query.name.matches(search))
 
 
-def get_settings_by_category(category: str):
+def get_settings_by_category(category: str) -> List[Dict]:
     query = Query()
     return db.search(query.category == category)
 
 
-def create_setting(payload: models.Setting) -> models.Setting:
+def create_setting(payload: models.Setting) -> Dict:
     
     # Missing fields (setting_id, updated_at) are filled automatically by pydantic
     db.insert(payload.dict())
     
     # retrieve the record we just created
     new_record = get_setting_by_id(payload.setting_id)
-    log(new_record, "WARNING")
+
     return new_record 
 
 
-def get_setting_by_name(name: str) -> models.Setting:
+def get_setting_by_name(name: str) -> Dict:
     query = Query()
     result = db.search(query.name == name)
     if len(result) > 0:
@@ -40,7 +40,7 @@ def get_setting_by_name(name: str) -> models.Setting:
         return None 
 
 
-def get_setting_by_id(setting_id: str) -> models.Setting:
+def get_setting_by_id(setting_id: str) -> Dict:
     query = Query()
     result = db.search(query.setting_id == setting_id)
     if len(result) > 0:
@@ -54,7 +54,7 @@ def delete_setting_by_id(setting_id: str) -> None:
     db.remove(query.setting_id == setting_id)    
 
 
-def update_setting_by_id(payload: models.Setting) -> models.Setting:
+def update_setting_by_id(payload: models.Setting) -> Dict:
     
     query = Query()
     db.update(payload, query.setting_id == payload.setting_id)

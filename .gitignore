@@ -16,6 +16,7 @@ long_term_memory
 *metadata.db
 *metadata-v*.db
 *metadata.json
+*metadata-test.json
 test_db.db
 
 # old admin folder

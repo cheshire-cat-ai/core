@@ -23,10 +23,10 @@ def app() -> Generator[FastAPI, Any, None]:
     """
     
     # TODO: things to do after before each testcase
-    
+    Database._instance = None
     _app = cheshire_cat_api
     yield _app
-
+    Database._instance = None
     # TODO: things to do after each testcase
 
 

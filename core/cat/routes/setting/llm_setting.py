@@ -3,7 +3,6 @@ from typing import Dict
 from cat.factory.llm import LLM_SCHEMAS
 from cat.db import crud, models
 from fastapi import Request, APIRouter, Body, HTTPException
-from cat.routes.setting import setting_utils
 
 router = APIRouter()
 
