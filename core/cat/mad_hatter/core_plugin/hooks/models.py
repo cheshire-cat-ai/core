@@ -39,7 +39,7 @@ def get_language_model(cat) -> BaseLanguageModel:
     the *Agent Manager* and the *Rabbit Hole*.
 
     """
-    selected_llm = crud.get_setting_by_name(next(cat.db()), name="llm_selected")
+    selected_llm = crud.get_setting_by_name(name="llm_selected")
 
     if selected_llm is None:
         # return default LLM
@@ -47,15 +47,13 @@ def get_language_model(cat) -> BaseLanguageModel:
 
     else:
         # get LLM factory class
-        selected_llm_class = selected_llm.value["name"]
+        selected_llm_class = selected_llm["value"]["name"]
         FactoryClass = getattr(llms, selected_llm_class)
 
         # obtain configuration and instantiate LLM
-        selected_llm_config = crud.get_setting_by_name(
-            next(cat.db()), name=selected_llm_class
-        )
+        selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
         try:
-            llm = FactoryClass.get_llm_from_config(selected_llm_config.value)
+            llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -86,19 +84,17 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
     """
     # Embedding LLM
 
-    selected_embedder = crud.get_setting_by_name(next(cat.db()), name="embedder_selected")
+    selected_embedder = crud.get_setting_by_name(name="embedder_selected")
 
     if selected_embedder is not None:
 
         # get Embedder factory class
-        selected_embedder_class = selected_embedder.value["name"]
+        selected_embedder_class = selected_embedder["value"]["name"]
         FactoryClass = getattr(embedders, selected_embedder_class)
 
         # obtain configuration and instantiate Embedder
-        selected_embedder_config = crud.get_setting_by_name(
-            next(cat.db()), name=selected_embedder_class
-        )
-        embedder = FactoryClass.get_embedder_from_config(selected_embedder_config.value)
+        selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
+        embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
         
         return embedder
 

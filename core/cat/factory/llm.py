@@ -62,7 +62,6 @@ class LLMCustomConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    #_pyclass: PyObject = langchain.llms.OpenAIChat
     _pyclass: PyObject = langchain.chat_models.ChatOpenAI
 
     class Config:

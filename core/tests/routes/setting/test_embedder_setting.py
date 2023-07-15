@@ -1,6 +1,6 @@
 
 def test_get_embedder_settings(client):
-    
+
     # act
     response = client.get("/settings/embedder/")
     json = response.json()
@@ -15,21 +15,17 @@ def test_get_embedder_settings(client):
 
 def test_upsert_embedder_settings(client):
     
-    # prepare embedder config
-    invented_key = "some-key"
+    # set a different embedder from default one (same class different size # TODO: have another fake/test embedder class)
     embedder_config = {
-        "model_name": "text-embedding-ada-002",
-        "openai_api_key": invented_key
+        "size": 64
     }
-
-    # set embedder
-    response = client.put("/settings/embedder/EmbedderOpenAIConfig", json=embedder_config)
+    response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
     json = response.json()
 
     # verify success
     assert response.status_code == 200
     assert json["status"] == "success"
-    assert json["setting"]["value"]["model_name"] == embedder_config["model_name"]
+    assert json["setting"]["value"]["size"] == embedder_config["size"]
 
 
     # retrieve data to check if it was saved in DB
@@ -38,6 +34,6 @@ def test_upsert_embedder_settings(client):
 
     # assert
     assert response.status_code == 200
-    assert json["selected_configuration"] == 'EmbedderOpenAIConfig'
-    assert json["settings"][0]["value"]["openai_api_key"] == invented_key
+    assert json["selected_configuration"] == 'EmbedderFakeConfig'
+    assert json["settings"][0]["value"]["size"] == 64
 

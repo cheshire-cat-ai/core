@@ -5,7 +5,7 @@ import traceback
 import langchain
 import os
 from cat.log import log
-from cat.db.database import get_db_session, create_db_and_tables
+from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList
@@ -29,10 +29,9 @@ class CheshireCat:
     def __init__(self):
         """Cat initialization.
 
-        At init time the Cat loads the database and execute the bootstrap.
+        At init time the Cat executes the bootstrap.
         """
-        # access to DB
-        self.load_db()
+
 
         # bootstrap the cat!
         self.bootstrap()
@@ -92,13 +91,6 @@ class CheshireCat:
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
-    def load_db(self):
-        """Load the SQl database."""
-        # if there is no db, create it
-        create_db_and_tables()
-
-        # access db from instance
-        self.db = get_db_session
 
     def load_natural_language(self):
         """Load Natural Language related objects.
