@@ -153,7 +153,7 @@ async def upload_memory(
         raise HTTPException(
             status_code=422,
             detail={
-                "error": f'Embedder mismatch: uploaded file embedder {upload_embedder} is != from {ccat.embedder}'}
+                "error": f'Embedder mismatch: uploaded file embedder {upload_embedder} is different from {ccat.embedder}'}
         )
 
     # Get Declarative memories in file
