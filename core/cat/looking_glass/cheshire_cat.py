@@ -462,7 +462,7 @@ class CheshireCat:
             "content": cat_message.get("output"),
             "why": {
                 "input": cat_message.get("input"),
-                #"intermediate_steps": cat_message.get("intermediate_steps"),
+                "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
                     "episodic": episodic_report,
                     "declarative": declarative_report,
