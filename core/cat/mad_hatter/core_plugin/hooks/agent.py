@@ -59,6 +59,36 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
 
 
 @hook(priority=0)
+def after_tool_used(tool, cat):
+    """Hook after a tool is used.
+
+    This hook is useful to modify the working memory after a tool is used.
+
+    Parameters
+    --------
+    tool: BaseTool
+        Tool that was just used.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
+    None
+
+    Examples
+    --------
+
+    Example 1: add a procedural memory after a tool is used
+    ```python
+    if tool.name == "tool_name":
+        cat.working_memory["procedural_memories"].append( (tool, "tool_name") )
+    ```
+    """
+
+    pass
+
+
+@hook(priority=0)
 def agent_allowed_tools(cat) -> List[BaseTool]:
     """Hook the allowed tools.
 

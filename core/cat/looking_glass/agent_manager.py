@@ -41,11 +41,10 @@ class AgentManager:
 
         # main chain
         agent_chain = LLMChain(prompt=prompt, llm=self.cat._llm, verbose=True)
-
         # init agent
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
-            output_parser=ToolOutputParser(),
+            output_parser=ToolOutputParser(self.cat.mad_hatter),
             stop=["\nObservation:"],
             allowed_tools=allowed_tools_names,
             verbose=True

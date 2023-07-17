@@ -1,14 +1,24 @@
 import re
+from pydantic import BaseModel
+from cat.mad_hatter.mad_hatter import MadHatter
 from langchain.agents import AgentOutputParser
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
 from typing import List, Union
 
 
-class ToolOutputParser(AgentOutputParser):
+class ToolOutputParser(AgentOutputParser, BaseModel):
+
+    class Config:
+        extra = "allow"  # Allow extra attributes
+
+    def __init__(self, mad_hatter: MadHatter, **data):
+        super().__init__(**data)
+        self.mad_hatter = mad_hatter
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
         if "Final Answer:" in llm_output:
+            
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
@@ -23,4 +33,5 @@ class ToolOutputParser(AgentOutputParser):
         action = match.group(1).strip()
         action_input = match.group(2)
         # Return the action and action input
+        self.mad_hatter.execute_hook("after_tool_used", action)
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
