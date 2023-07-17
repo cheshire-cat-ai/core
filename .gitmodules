@@ -1,0 +1,3 @@
+[submodule "core/cat/plugins"]
+	path = core/cat/plugins
+	url = git@github.com:HomeCube/plugins.git
