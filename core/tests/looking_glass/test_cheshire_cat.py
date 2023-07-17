@@ -1,6 +1,7 @@
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 def test_get_base_url():
+    # TODO: this instantiation makes the production app reload
     cat = CheshireCat()
     assert cat.get_base_url() == "http://localhost:1865"
 

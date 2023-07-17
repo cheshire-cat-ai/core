@@ -29,6 +29,7 @@ def test_get_plugin_id(client, keys):
 
 
 # TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
+# TODO: mock the plugin folder, otherwise uploading a plugin from here will make the production app reload
 def test_plugin_zip_upload(client):
 
     # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
