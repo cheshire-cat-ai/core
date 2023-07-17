@@ -1,3 +1,4 @@
 [submodule "core/cat/plugins"]
 	path = core/cat/plugins
 	url = https://github.com/HomeCube/plugins
+	branch = master
