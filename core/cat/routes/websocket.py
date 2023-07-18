@@ -3,8 +3,7 @@ import asyncio
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from cat.log import log
-from cat.looking_glass.cheshire_cat import CheshireCat
-from starlette.concurrency import run_in_threadpool
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter()
 
