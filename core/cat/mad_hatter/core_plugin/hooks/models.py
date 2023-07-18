@@ -98,9 +98,6 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         
         return embedder
 
-
-    print("naked cat: ", cat._llm)
-
     # OpenAI embedder
     if type(cat._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
         embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
