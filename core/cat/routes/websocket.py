@@ -1,14 +1,16 @@
 import traceback
 import asyncio
-
+from queue import Queue
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from cat.log import log
-
+from cat.looking_glass.OutFlow import abnormal
 router = APIRouter()
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
+        self.normal_flow = True
+        self.msg_queue = Queue()   
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -20,11 +22,19 @@ class ConnectionManager:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_json(message)
 
+    async def send_via_ws(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_json(message)    
+
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             await connection.send_json(message)
 
+    async def receive_personal_message(self, websocket: WebSocket):
+        return await websocket.receive_json()        
+
 manager = ConnectionManager()
+
 
 # main loop via websocket
 @router.websocket_route("/ws")
@@ -34,15 +44,21 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
 
     async def receive_message():
-        while True:
+        while (True):
             # message received from specific user
             user_message = await websocket.receive_json()
+            manager.msg_queue.put(user_message)
 
             # get response from the cat
-            cat_message = ccat(user_message)
+            if(manager.normal_flow):
+                msg = manager.msg_queue.get()
+                cat_message = ccat(msg)
 
             # send output to specific user
-            await manager.send_personal_message(cat_message, websocket)
+                await manager.send_personal_message(cat_message, websocket)
+
+            else:
+                abnormal.execute() 
 
     async def check_notification():
         while True:
