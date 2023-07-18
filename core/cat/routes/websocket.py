@@ -11,6 +11,7 @@ class ConnectionManager:
         self.active_connections: list[WebSocket] = []
         self.normal_flow = True
         self.msg_queue = Queue()   
+        self.plugin_id = -1
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()

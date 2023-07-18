@@ -1,6 +1,7 @@
 import asyncio
 import nest_asyncio
 import cat.plugins.test.openai_test as chatgpt
+from cat.plugins.Layer2LLM import delivery_agent
 
 class AbnormalF():
     def __init__(self):
@@ -9,15 +10,38 @@ class AbnormalF():
 
     def execute(self):
         nest_asyncio.apply()
-        loop = asyncio.new_event_loop()
+        self.loop = asyncio.new_event_loop()
         from cat.routes.websocket import manager
         self.manager = manager
         self.manager.normal_flow = False
         print("\n\n\n chat gpt~~~~~~~~~~~~~~~~")
 
         self.msg = self.manager.msg_queue.get()
-        reply = chatgpt.run_chatgpt(self.msg["text"])
-        final_output = {
+
+        reply = delivery_agent.predict(self.msg["text"])
+        
+        final_output = self.gen_msg(reply)
+
+        print("\n\n\n")
+        print(reply)
+        print("\n\n\n")
+        
+        # print(self.msg)
+        # print(f"Plugin ID: {self.manager.plugin_id}")
+        self.loop.run_until_complete(manager.send_via_ws(final_output))
+
+        
+
+        if(delivery_agent.is_completed()):
+            self.close()
+
+        #loop.close()
+        # self.manager.normal_flow = False
+        #return self.msg 
+        # 
+    
+    def gen_msg(self, reply):
+        msg = {
             "error": False,
             "type": "chat",
             "content": reply,
@@ -31,12 +55,15 @@ class AbnormalF():
                 },
             },
         }
-        print(self.msg)
-        loop.run_until_complete(manager.send_via_ws(final_output))
-        loop.close()
-        manager.normal_flow = False
-        #return self.msg 
-        # 
+
+        return msg
+
+    def close(self):
+        self.loop.close()
+        self.manager.normal_flow = True
+        self.manager.plugin_id = -1
+    
+
 abnormal = AbnormalF()        
         #    
 
