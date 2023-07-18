@@ -34,7 +34,7 @@ class AbnormalF():
         print(self.msg)
         loop.run_until_complete(manager.send_via_ws(final_output))
         loop.close()
-        manager.normal_flow = True
+        manager.normal_flow = False
         #return self.msg 
         # 
 abnormal = AbnormalF()        
