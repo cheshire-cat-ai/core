@@ -1,5 +1,6 @@
 import asyncio
 import nest_asyncio
+import cat.plugins.test.openai_test as chatgpt
 
 class AbnormalF():
     def __init__(self):
@@ -12,11 +13,14 @@ class AbnormalF():
         from cat.routes.websocket import manager
         self.manager = manager
         self.manager.normal_flow = False
+        print("\n\n\n chat gpt~~~~~~~~~~~~~~~~")
+
         self.msg = self.manager.msg_queue.get()
+        reply = chatgpt.run_chatgpt(self.msg["text"])
         final_output = {
             "error": False,
             "type": "chat",
-            "content": self.msg["text"],
+            "content": reply,
             "why": {
                 "input": "a",
                 #"intermediate_steps": cat_message.get("intermediate_steps"),
