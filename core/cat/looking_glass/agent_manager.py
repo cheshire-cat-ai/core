@@ -128,7 +128,7 @@ class AgentManager:
         if len(allowed_tools) > 0:
             try:
                 out = self.execute_tool_agent(agent_input, allowed_tools)
-                tools_are_enough = out["output"] != "?"
+                tools_are_enough = out["output"] != None
             except Exception as e:
                 error_description = str(e)
                 log(error_description, "ERROR") 
@@ -137,7 +137,7 @@ class AgentManager:
         # if tools were not enough, use memory # TODO: refine tool output?
         if not tools_are_enough:
             out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
-
-        out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), out["intermediate_steps"]))
+        else:
+            out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), out["intermediate_steps"]))
 
         return out
