@@ -37,7 +37,7 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
 
     Example 1: can't talk about this topic
     ```python
-    # here you could use cat.llm to do topic evaluation
+    # here you could use cat._llm to do topic evaluation
     if "dog" in agent_input["input"]:
         return {
             "output": "You went out of topic. Can't talk about dog."
@@ -65,7 +65,7 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
     Allows to decide which tools end up in the *Agent* prompt.
 
     To decide, you can filter the list of loaded tools, but you can also check the context in `cat.working_memory`
-    and launch custom chains with `cat.llm`.
+    and launch custom chains with `cat._llm`.
 
     Parameters
     ---------

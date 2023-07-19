@@ -5,7 +5,7 @@ import traceback
 import langchain
 import os
 from cat.log import log
-from cat.db.database import get_db_session, create_db_and_tables
+from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList
@@ -29,10 +29,9 @@ class CheshireCat:
     def __init__(self):
         """Cat initialization.
 
-        At init time the Cat loads the database and execute the bootstrap.
+        At init time the Cat executes the bootstrap.
         """
-        # access to DB
-        self.load_db()
+
 
         # bootstrap the cat!
         self.bootstrap()
@@ -92,13 +91,6 @@ class CheshireCat:
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
-    def load_db(self):
-        """Load the SQl database."""
-        # if there is no db, create it
-        create_db_and_tables()
-
-        # access db from instance
-        self.db = get_db_session
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -126,7 +118,7 @@ class CheshireCat:
         agent_prompt_prefix
         """
         # LLM and embedder
-        self.llm = self.mad_hatter.execute_hook("get_language_model")
+        self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
 
         # HyDE chain
@@ -135,13 +127,13 @@ class CheshireCat:
             template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
         )
 
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self.llm)
+        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self._llm)
 
         self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
 
         # custom summarization chain
         self.summarization_chain = langchain.chains.LLMChain(
-            llm=self.llm,
+            llm=self._llm,
             verbose=False,
             prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
         )
@@ -243,6 +235,30 @@ class CheshireCat:
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
+
+    def llm(self, prompt: str) -> str:
+        """Generate a response using the LLM model.
+
+        This method is useful for generating a response with both a chat and a completion model using the same syntax
+
+        Parameters
+        ----------
+        prompt : str
+            The prompt for generating the response.
+
+        Returns
+        -------
+        str
+            The generated response.
+
+        """
+        # Check if self._llm is a completion model and generate a response
+        if isinstance(self._llm, langchain.llms.base.BaseLLM):
+            return self._llm(prompt)
+
+        # Check if self._llm is a chat model and call it as a completion model
+        if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
+            return self._llm.call_as_llm(prompt)
 
     def format_agent_input(self):
         """Format the input for the Agent.
@@ -446,7 +462,7 @@ class CheshireCat:
             "content": cat_message.get("output"),
             "why": {
                 "input": cat_message.get("input"),
-                #"intermediate_steps": cat_message.get("intermediate_steps"),
+                "intermediate_steps": cat_message.get("intermediate_steps"),
                 "memory": {
                     "episodic": episodic_report,
                     "declarative": declarative_report,
