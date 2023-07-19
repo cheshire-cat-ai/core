@@ -95,7 +95,44 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float, int, float, int, float]:
+def before_cat_recalls_episodic_memories(user_message: str, user_id, cat) -> dict:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved)
+
+    Parameters
+    ----------
+    user_message : str
+        String with the text received from the user. This is used as a query to search into memories.
+    user_id
+    cat : CheshireCat
+     Cheshire Cat instance.
+
+    Returns
+    -------
+    k_memory_type : int
+        Number of relevant memories to retrieve from the vector database.
+    threshold_memory_type : float
+        Threshold to filter memories according their similarity score with the query.
+    """
+    parameters = {
+        'embedding': None,
+        'k': 3,
+        'threshold': 0.7,
+        'metadata': {'source': user_id}
+    }
+
+    return parameters
+
+
+@hook(priority=0)
+def before_cat_recalls_declarative_memories(user_message: str, cat) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -120,13 +157,51 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float, int
     threshold_memory_type : float
         Threshold to filter memories according their similarity score with the query.
     """
-    k_episodic = 3
-    threshold_episodic = 0.7
-    k_declarative = 3
-    threshold_declarative = 0.7
-    k_procedural = 3
-    threshold_procedural = 0.7
-    return k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural
+    parameters = {
+        'embedding': None,
+        'k': 3,
+        'threshold': 0.7,
+        'metadata': None,
+    }
+
+    return parameters
+
+
+@hook(priority=0)
+def before_cat_recalls_procedural_memories(user_message: str, cat) -> dict:
+    """Hook into semantic search in procedural memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved)
+
+    Parameters
+    ----------
+    user_message : str
+        String with the text received from the user. This is used as a query to search into memories.
+    cat : CheshireCat
+     Cheshire Cat instance.
+
+    Returns
+    -------
+    k_memory_type : int
+        Number of relevant memories to retrieve from the vector database.
+    threshold_memory_type : float
+        Threshold to filter memories according their similarity score with the query.
+    """
+    parameters = {
+        'embedding': None,
+        'k': 3,
+        'threshold': 0.7,
+        'metadata': None,
+    }
+
+    return parameters
+
 
 
 # Called just before the cat recalls memories.

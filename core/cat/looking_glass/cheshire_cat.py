@@ -183,9 +183,13 @@ class CheshireCat:
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
-        # hook to do something before recall begins
-        k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
-            "before_cat_recalls_memories", user_message)
+        # hooks to do something before recall begins
+        memory_parameters = [
+            self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", user_message, user_id),
+            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", user_message),
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", user_message)]
+
+        memory_types = ('episodic', 'declarative', 'procedural')
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -195,43 +199,22 @@ class CheshireCat:
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        ##### Episodic memory
-        if prompt_settings["use_episodic_memory"]:
-            # recall relevant memories (episodic)
-            episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding,
-                k=k_episodic,
-                threshold=threshold_episodic,
-                metadata={
-                    "source": user_id
-                }
-            )
-        else:
-            episodic_memories = []
+        for parameters, memory_type in zip(memory_parameters, memory_types):
+            setting = f"use_{memory_type}_memory"
+            memory_key = f"{memory_type}_memories"
 
-        self.working_memory["episodic_memories"] = episodic_memories
+            if parameters["embedding"] is None:
+                parameters["embedding"] = memory_query_embedding
 
-        ##### Declarative memory
-        if prompt_settings["use_declarative_memory"]:
-            # recall relevant memories (declarative)
-            declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_declarative, threshold=threshold_declarative
-            )
-        else:
-            declarative_memories = []
+            if prompt_settings[setting]:
+                # recall relevant memories
+                vector_memory = getattr(self.memory.vectors, memory_type)
+                memories = vector_memory.recall_memories_from_embedding(**parameters)
 
-        self.working_memory["declarative_memories"] = declarative_memories
+            else:
+                memories = []
 
-        ##### Procedural memory
-        if prompt_settings["use_procedural_memory"]:
-            # recall relevant tools (procedural collection)
-            tools = self.memory.vectors.procedural.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_procedural, threshold=threshold_procedural
-            )
-        else:
-            tools = []
-
-        self.working_memory["procedural_memories"] = tools
+            self.working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
