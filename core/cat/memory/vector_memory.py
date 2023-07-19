@@ -114,6 +114,7 @@ class VectorMemoryCollection(Qdrant):
         # Check if memory collection exists, otherwise create it
         self.create_collection_if_not_exists()
 
+
     def create_collection_if_not_exists(self):
         # create collection if it does not exist
         try:
@@ -130,6 +131,7 @@ class VectorMemoryCollection(Qdrant):
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # TODO: dump collection on disk before deleting, so it can be recovered
+
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
                 self.create_collection()
@@ -155,8 +157,10 @@ class VectorMemoryCollection(Qdrant):
                     quantile=0.75,
                     always_ram=False
                 )
-            )
+            ),
+            shard_number=3,
         )
+        
         self.client.update_collection_aliases(
             change_aliases_operations=[
                 CreateAliasOperation(
