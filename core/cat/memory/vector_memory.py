@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 from typing import Any
+import requests
 
 from cat.log import log
 from qdrant_client import QdrantClient
@@ -90,6 +91,7 @@ class VectorMemory:
                 port=qdrant_port,
             )
 
+            print(qdrant_host, qdrant_port)
 
 class VectorMemoryCollection(Qdrant):
 
@@ -130,7 +132,19 @@ class VectorMemoryCollection(Qdrant):
                 log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
-                # TODO: dump collection on disk before deleting, so it can be recovered
+                # dump collection on disk before deleting, so it can be recovered
+                # TODO: it needs a code refactoring
+
+                self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
+                # TODO: parametrize cat host and port
+                snapshot_url_in = "http://cheshire_cat_vector_memory:6333/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
+                snapshot_url_out = "dormouse/" + self.snapshot_info.name
+
+                response = requests.get(snapshot_url_in)
+                open(snapshot_url_out, "wb").write(response.content)
+                for s in self.client.list_snapshots(self.collection_name):
+                    self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
+                # dump complete
 
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
