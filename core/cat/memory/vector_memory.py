@@ -9,7 +9,7 @@ from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
                                     ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
-                                    CreateAliasOperation, CreateAlias)
+                                    CreateAliasOperation, CreateAlias, OptimizersConfigDiff)
 
 
 class VectorMemory:
@@ -151,6 +151,7 @@ class VectorMemoryCollection(Qdrant):
             collection_name=self.collection_name,
             vectors_config=VectorParams(
                 size=self.embedder_size, distance=Distance.COSINE),
+            optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
             quantization_config=ScalarQuantization(
                 scalar=ScalarQuantizationConfig(
                     type=ScalarType.INT8,
