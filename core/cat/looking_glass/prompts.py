@@ -9,6 +9,7 @@ DEFAULT_TOOL_TEMPLATE = """Answer the following question: `{input}`
 You can only reply using these tools:
 
 {tools}
+none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
 
 If you want to use tools, use the following format:
 Action: the name of the action to take, should be one of [{tool_names}]
