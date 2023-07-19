@@ -1,12 +1,15 @@
 import asyncio
 import nest_asyncio
 import cat.plugins.test.openai_test as chatgpt
-from cat.plugins.Layer2LLM import delivery_agent
+# from cat.plugins.Layer2LLM import delivery_agent
+from cat.plugins.layer2_plugins import restaurant_agent
 
 class AbnormalF():
     def __init__(self):
         self.msg = None
         self.manager = None
+        self.cur_agent = None
+        self.is_first = True
 
     def execute(self):
         nest_asyncio.apply()
@@ -17,23 +20,28 @@ class AbnormalF():
         print("\n\n\n chat gpt~~~~~~~~~~~~~~~~")
 
         self.msg = self.manager.msg_queue.get()
+        match self.manager.plugin_id:
+            case 1:
+                cur_agent = restaurant_agent
+        if(self.is_first is True):
+            cur_agent = restaurant_agent.initialize(self.msg)
+            reply = cur_agent.predict(self.msg["text"])
+            self.is_first = False
 
-        reply = delivery_agent.predict(self.msg["text"])
+        reply = cur_agent.predict(self.msg["text"])
+
         
         final_output = self.gen_msg(reply)
-
         print("\n\n\n")
         print(reply)
-        print("\n\n\n")
-        
+        print("\n\n\n")        
         # print(self.msg)
         # print(f"Plugin ID: {self.manager.plugin_id}")
         self.loop.run_until_complete(manager.send_via_ws(final_output))
 
-        
-
-        if(delivery_agent.is_completed()):
+        if(cur_agent.is_completed()):
             self.close()
+            self.is_first = True
 
         #loop.close()
         # self.manager.normal_flow = False
