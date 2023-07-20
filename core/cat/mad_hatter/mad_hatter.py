@@ -186,18 +186,20 @@ class MadHatter:
     # Tries to save the plugin settings of the provided plugin id
     def save_plugin_settings(self, plugin_id: str, settings: Dict):
         settings_file_path = path.join("cat/plugins", plugin_id, "settings.json")
+        updated_settings = settings
 
         try:
-            json_file = open(settings_file_path, "w+")
+            json_file = open(settings_file_path, 'r+')
             current_settings = json.load(json_file)
-            updated_settings = dict(**current_settings, **settings)
-            json_file.write(updated_settings)
-            json_file.flush()
+            json_file.close()
+            updated_settings = { **current_settings, **settings }
+            json_file = open(settings_file_path, 'w')
+            json.dump(updated_settings, json_file, indent=4)
             json_file.close()
         except Exception:
             log(f"Unable to save plugin {plugin_id} settings", "INFO")
     
-        return settings
+        return updated_settings
 
     # a plugin function has to be decorated with @hook
     # (which returns a function named "cat_function_wrapper")

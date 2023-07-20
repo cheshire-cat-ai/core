@@ -1,7 +1,7 @@
 from typing import Dict
 from tempfile import NamedTemporaryFile
 import shutil
-from fastapi import Request, APIRouter, HTTPException, UploadFile
+from fastapi import Request, APIRouter, HTTPException, UploadFile, Body
 from cat.log import log
 
 
@@ -109,7 +109,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     if not found:
         raise HTTPException(
             status_code = 404,
-            detail = { "error": "Item not found" }
+            detail = { "error": "Plugin not found" }
         )
 
     return {
@@ -119,11 +119,22 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
 
 @router.get("/settings/{plugin_id}", status_code=200)
-async def get_plugin_settings(plugin_id: str, request: Request) -> Dict:
+async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     """Returns the settings of a specific plugin"""
 
     # access cat instance
     ccat = request.app.state.ccat
+
+    # plugins are managed by the MadHatter class
+    plugins = ccat.mad_hatter.plugins
+    # there should be only one plugin with that id
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
+
+    if not found:
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
 
     # plugins are managed by the MadHatter class
     settings = ccat.mad_hatter.get_plugin_settings(plugin_id)
@@ -136,16 +147,33 @@ async def get_plugin_settings(plugin_id: str, request: Request) -> Dict:
 
 
 @router.put("/settings/{plugin_id}", status_code=200)
-async def upsert_plugin_settings(plugin_id: str, request: Request) -> Dict:
+async def upsert_plugin_settings(
+    request: Request,
+    plugin_id: str,
+    payload: Dict = Body(example={"active": False}),
+) -> Dict:
     """Updates the settings of a specific plugin"""
 
     # access cat instance
     ccat = request.app.state.ccat
 
-    raise HTTPException(
-        status_code = 422,
-        detail = { "error": "to be implemented" }
-    )
+    # plugins are managed by the MadHatter class
+    plugins = ccat.mad_hatter.plugins
+    # there should be only one plugin with that id
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
+
+    if not found:
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
+    
+    final_settings = ccat.mad_hatter.save_plugin_settings(plugin_id, payload)
+
+    return {
+        "status": "success", 
+        "settings": final_settings
+    }
 
 
 @router.delete("/{plugin_id}", status_code=200)
