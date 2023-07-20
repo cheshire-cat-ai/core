@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Union, Callable
 from inspect import signature
-from pydantic import BaseModel
 from langchain.tools import BaseTool
 from langchain.agents import Tool
 
@@ -31,8 +30,6 @@ def settings(_func=None) -> Any:
 
         if func.__name__ == 'plugin_settings_schema':
             CatPluginSchemas.add_schema(func.__module__.split('.')[2], plugin_settings_wrapper())
-        else:
-            plugin_settings_wrapper()
 
     if _func is None:
         return decorator

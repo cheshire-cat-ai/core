@@ -29,6 +29,8 @@ services:
       - --port
       - "80"
       - --reload # take away in prod
+      - --reload-include
+      - "plugin.json"
       - --reload-exclude
       - "tests/**/*.*"
     restart: unless-stopped

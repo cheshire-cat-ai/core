@@ -3,7 +3,7 @@ import json
 import importlib
 import time
 from os import path
-from inspect import getmembers, isfunction # , signature
+from inspect import getmembers, isfunction  # , signature
 from typing import Dict
 
 from cat.log import log
