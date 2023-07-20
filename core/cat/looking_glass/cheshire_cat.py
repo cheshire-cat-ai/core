@@ -68,7 +68,7 @@ class CheshireCat:
         """
 
         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
-        self.load_plugins()
+        self.mad_hatter = MadHatter(self)
 
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap")
@@ -90,7 +90,6 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
-
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -157,11 +156,6 @@ class CheshireCat:
         
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
-
-    def load_plugins(self):
-        """Instantiate the plugins manager."""
-        # Load plugin system
-        self.mad_hatter = MadHatter(self)
 
     def recall_relevant_memories_to_working_memory(self):
         """Retrieve context from memory.
