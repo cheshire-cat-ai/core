@@ -40,8 +40,6 @@ class MadHatter:
         if tool:
             self.tools += tool
 
-        self.ccat.bootstrap()
-
     def find_plugin(self, folder):
         py_files_path = path.join(folder, "**/*.py")
         log(py_files_path)
