@@ -91,8 +91,6 @@ class VectorMemory:
                 port=qdrant_port,
             )
 
-            print(qdrant_host, qdrant_port)
-
 class VectorMemoryCollection(Qdrant):
 
     def __init__(self, cat, client: Any, collection_name: str, embeddings: Embeddings, vector_size: int):
