@@ -118,6 +118,36 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     }
 
 
+@router.get("/settings/{plugin_id}", status_code=200)
+async def get_plugin_settings(plugin_id: str, request: Request) -> Dict:
+    """Returns the settings of a specific plugin"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    # plugins are managed by the MadHatter class
+    settings = ccat.mad_hatter.get_plugin_settings(plugin_id)
+
+    return {
+        "status": "success",
+        "settings": settings,
+        "schema": {}
+    }
+
+
+@router.put("/settings/{plugin_id}", status_code=200)
+async def upsert_plugin_settings(plugin_id: str, request: Request) -> Dict:
+    """Updates the settings of a specific plugin"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    raise HTTPException(
+        status_code = 422,
+        detail = { "error": "to be implemented" }
+    )
+
+
 @router.delete("/{plugin_id}", status_code=200)
 async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     """Physically remove plugin."""

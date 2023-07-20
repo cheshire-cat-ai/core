@@ -3,7 +3,8 @@ import json
 import importlib
 import time
 from os import path
-from inspect import getmembers, isfunction  # , signature
+from inspect import getmembers, isfunction # , signature
+from typing import Dict
 
 from cat.log import log
 from cat.utils import to_camel_case
@@ -137,14 +138,14 @@ class MadHatter:
     # Tries to load the plugin metadata from the provided plugin folder
     def get_plugin_metadata(self, plugin_folder: str):
         plugin_id = path.basename(plugin_folder)
-        plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
-        meta = {"id": plugin_id}
+        metadata_file_name = "plugin.json"
+        metadata_file_path = path.join(plugin_folder, metadata_file_name)
+        meta = { "id": plugin_id }
         json_file_data = {}
 
-        if path.isfile(plugin_json_metadata_file_path):
+        if path.isfile(metadata_file_path):
             try:
-                json_file = open(plugin_json_metadata_file_path)
+                json_file = open(metadata_file_path)
                 json_file_data = json.load(json_file)
                 json_file.close()
             except Exception:
@@ -153,7 +154,7 @@ class MadHatter:
         meta["name"] = json_file_data.get("name", to_camel_case(plugin_id))
         meta["description"] = json_file_data.get("description", (
             "Description not found for this plugin. "
-            f"Please create a `{plugin_json_metadata_file_name}`"
+            f"Please create a `{metadata_file_name}`"
             " in the plugin folder."
         ))
         meta["author_name"] = json_file_data.get("author_name", "Unknown author")
@@ -164,6 +165,39 @@ class MadHatter:
         meta["version"] = json_file_data.get("version", "0.0.1")
 
         return meta
+    
+    # Tries to get the plugin settings from the provided plugin id
+    def get_plugin_settings(self, plugin_id: str):
+        settings_file_path = path.join("cat/plugins", plugin_id, "settings.json")
+        settings = { "active": False }
+
+        if path.isfile(settings_file_path):
+            try:
+                json_file = open(settings_file_path)
+                settings = json.load(json_file)
+                if "active" not in settings:
+                    settings["active"] = False
+                json_file.close()
+            except Exception:
+                log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
+    
+        return settings
+    
+    # Tries to save the plugin settings of the provided plugin id
+    def save_plugin_settings(self, plugin_id: str, settings: Dict):
+        settings_file_path = path.join("cat/plugins", plugin_id, "settings.json")
+
+        try:
+            json_file = open(settings_file_path, "w+")
+            current_settings = json.load(json_file)
+            updated_settings = dict(**current_settings, **settings)
+            json_file.write(updated_settings)
+            json_file.flush()
+            json_file.close()
+        except Exception:
+            log(f"Unable to save plugin {plugin_id} settings", "INFO")
+    
+        return settings
 
     # a plugin function has to be decorated with @hook
     # (which returns a function named "cat_function_wrapper")
