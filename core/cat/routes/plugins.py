@@ -142,7 +142,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     return {
         "status": "success",
         "settings": settings,
-        "schema": schemas
+        "schema": schemas[plugin_id]
     }
 
 
