@@ -132,6 +132,7 @@ class VectorMemoryCollection(Qdrant):
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
                 # dump collection on disk before deleting
                 self.save_dump()
+                log(f'Dump "{self.collection_name}" completed', "INFO")
 
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
@@ -264,5 +265,4 @@ class VectorMemoryCollection(Qdrant):
         os.rename(snapshot_url_out, new_name)
         for s in self.client.list_snapshots(self.collection_name):
             self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
-        log(f'Dump"{new_name}" completed', "WARNING")
         # dump complete
