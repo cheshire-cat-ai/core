@@ -32,7 +32,6 @@ class CheshireCat:
         At init time the Cat executes the bootstrap.
         """
 
-
         # bootstrap the cat!
         self.bootstrap()
 
@@ -90,7 +89,6 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
-
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -172,44 +170,69 @@ class CheshireCat:
         Notes
         -----
         The user's message is used as a query to make a similarity search in the Cat's vector memories.
-        Two hooks allow to customize the recall pipeline before and after it is done.
+        Five hooks allow to customize the recall pipeline before and after it is done.
 
         See Also
         --------
         before_cat_recalls_memories
+        before_cat_recalls_episodic_memories
+        before_cat_recalls_declarative_memories
+        before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
-        # hooks to do something before recall begins
-        memory_parameters = [
-            self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", user_message, user_id),
-            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", user_message),
-            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", user_message)]
-
-        memory_types = ('episodic', 'declarative', 'procedural')
-
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
         log(f'Recall query: "{memory_query_text}"')
 
-        ##### embed recall query
+        # Embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        for parameters, memory_type in zip(memory_parameters, memory_types):
+        # hook to do something before recall begins
+        self.mad_hatter.execute_hook("before_cat_recalls_memories")
+
+        # Setting default recall configs for each memory
+        default_episodic_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": {"source": user_id},
+        }
+
+        default_declarative_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
+
+        default_procedural_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
+
+        # hooks to change recall configs for each memory
+        recall_configs = [
+            self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", default_episodic_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_procedural_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)]
+
+        memory_types = ("episodic", "declarative", "procedural")
+
+        for config, memory_type in zip(recall_configs, memory_types):
             setting = f"use_{memory_type}_memory"
             memory_key = f"{memory_type}_memories"
-
-            if parameters["embedding"] is None:
-                parameters["embedding"] = memory_query_embedding
 
             if prompt_settings[setting]:
                 # recall relevant memories
                 vector_memory = getattr(self.memory.vectors, memory_type)
-                memories = vector_memory.recall_memories_from_embedding(**parameters)
+                memories = vector_memory.recall_memories_from_embedding(**config)
 
             else:
                 memories = []

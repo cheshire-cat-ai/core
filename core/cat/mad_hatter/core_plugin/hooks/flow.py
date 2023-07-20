@@ -95,7 +95,54 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def before_cat_recalls_episodic_memories(user_message: str, user_id, cat) -> dict:
+def before_cat_recalls_memories(cat) -> None:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    Parameters
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    """
+    return None
+
+
+@hook(priority=0)
+def before_cat_recalls_episodic_memories(episodic_recall_config: dict, cat) -> dict:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved).
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
+
+    Parameters
+    ----------
+    episodic_recall_config : dict
+        Dictionary with data needed to recall episodic memories
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    episodic_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
+
+    """
+    return episodic_recall_config
+
+
+@hook(priority=0)
+def before_cat_recalls_declarative_memories(declarative_recall_config: dict, cat) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -105,34 +152,26 @@ def before_cat_recalls_episodic_memories(user_message: str, user_id, cat) -> dic
 
     The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
     to the query in the vector memory (items with score under threshold are not retrieved)
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
 
     Parameters
     ----------
-    user_message : str
-        String with the text received from the user. This is used as a query to search into memories.
-    user_id
+    declarative_recall_config: dict
+        Dictionary with data needed to recall declarative memories
     cat : CheshireCat
-     Cheshire Cat instance.
+        Cheshire Cat instance.
 
     Returns
     -------
-    k_memory_type : int
-        Number of relevant memories to retrieve from the vector database.
-    threshold_memory_type : float
-        Threshold to filter memories according their similarity score with the query.
-    """
-    parameters = {
-        'embedding': None,
-        'k': 3,
-        'threshold': 0.7,
-        'metadata': {'source': user_id}
-    }
+    declarative_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
 
-    return parameters
+    """
+    return declarative_recall_config
 
 
 @hook(priority=0)
-def before_cat_recalls_declarative_memories(user_message: str, cat) -> dict:
+def before_cat_recalls_procedural_memories(procedural_recall_config: dict, cat) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -142,66 +181,22 @@ def before_cat_recalls_declarative_memories(user_message: str, cat) -> dict:
 
     The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
     to the query in the vector memory (items with score under threshold are not retrieved)
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
 
     Parameters
     ----------
-    user_message : str
-        String with the text received from the user. This is used as a query to search into memories.
+    procedural_recall_config: dict
+        Dictionary with data needed to recall tools from procedural memory
     cat : CheshireCat
-     Cheshire Cat instance.
+        Cheshire Cat instance.
 
     Returns
     -------
-    k_memory_type : int
-        Number of relevant memories to retrieve from the vector database.
-    threshold_memory_type : float
-        Threshold to filter memories according their similarity score with the query.
+    procedural_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
+
     """
-    parameters = {
-        'embedding': None,
-        'k': 3,
-        'threshold': 0.7,
-        'metadata': None,
-    }
-
-    return parameters
-
-
-@hook(priority=0)
-def before_cat_recalls_procedural_memories(user_message: str, cat) -> dict:
-    """Hook into semantic search in procedural memories.
-
-    Allows to intercept when the Cat queries the memories using the embedded user's input.
-
-    The hook is executed just before the Cat searches for the meaningful context in both memories
-    and stores it in the *Working Memory*.
-
-    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
-    to the query in the vector memory (items with score under threshold are not retrieved)
-
-    Parameters
-    ----------
-    user_message : str
-        String with the text received from the user. This is used as a query to search into memories.
-    cat : CheshireCat
-     Cheshire Cat instance.
-
-    Returns
-    -------
-    k_memory_type : int
-        Number of relevant memories to retrieve from the vector database.
-    threshold_memory_type : float
-        Threshold to filter memories according their similarity score with the query.
-    """
-    parameters = {
-        'embedding': None,
-        'k': 3,
-        'threshold': 0.7,
-        'metadata': None,
-    }
-
-    return parameters
-
+    return procedural_recall_config
 
 
 # Called just before the cat recalls memories.
@@ -217,8 +212,8 @@ def after_cat_recalls_memories(query: str, cat) -> None:
     query : str
         Query used to retrieve memories.
     cat : CheshireCat
-     Cheshire Cat instance.
-       
+        Cheshire Cat instance.
+
     """
     return None
 
