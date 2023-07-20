@@ -1,8 +1,43 @@
-from typing import Any, List, Union, Callable
+from typing import Any, Dict, List, Union, Callable
 from inspect import signature
-
+from pydantic import BaseModel
 from langchain.tools import BaseTool
 from langchain.agents import Tool
+
+# Cat plugins settings schemas manager
+class CatPluginSchemas:
+    __schemas: Dict = {}
+
+    @classmethod
+    def reset_schemas_list(cls):
+        CatPluginSchemas.__schemas = {}
+
+    # append a schema
+    @classmethod
+    def add_schema(cls, plugin: str, schema: Dict):
+        CatPluginSchemas.__schemas[plugin] = schema
+
+    # get schema list
+    @classmethod
+    def get_schema_list(cls):
+        return CatPluginSchemas.__schemas
+
+
+# @settings decorator. Any function in a plugin decorated by @settings is used by the Cat
+def settings(_func=None) -> Any:
+    def decorator(func):
+        def plugin_settings_wrapper(*args, **kargs):
+            return func(*args, **kargs)
+
+        if func.__name__ == 'plugin_settings_schema':
+            CatPluginSchemas.add_schema(func.__module__.split('.')[2], plugin_settings_wrapper())
+        else:
+            plugin_settings_wrapper()
+
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
 
 
 # Cat hooks manager

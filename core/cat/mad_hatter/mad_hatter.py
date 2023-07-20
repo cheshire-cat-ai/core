@@ -8,7 +8,7 @@ from typing import Dict
 
 from cat.log import log
 from cat.utils import to_camel_case
-from cat.mad_hatter.decorators import CatTool, CatHooks
+from cat.mad_hatter.decorators import CatTool, CatHooks, CatPluginSchemas
 
 
 # This class is responsible for plugins functionality:
@@ -24,7 +24,7 @@ class MadHatter:
 
     def __init__(self, ccat):
         self.ccat = ccat
-        self.hooks, self.tools, self.plugins = self.find_plugins()
+        self.hooks, self.tools, self.plugins, self.schemas = self.find_plugins()
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
@@ -43,7 +43,7 @@ class MadHatter:
             py_files = glob.glob(py_files_path, recursive=True)
 
             # in order to consider it a plugin makes sure there are py files
-            #   inside the plugin directory
+            # inside the plugin directory
             if len(py_files) > 0:
                 all_plugins.append(self.get_plugin_metadata(folder))
 
@@ -58,12 +58,17 @@ class MadHatter:
 
         log("Plugins loading:", "INFO")
         for plugin in all_plugins:
-            log("> " + plugin["name"], "DEBUG")
+            log(f"> {plugin['name']}", "DEBUG")
+
+        log("Plugin schemas loading", "INFO")
+        all_schemas = CatPluginSchemas.get_schema_list()
+        for schema in all_schemas.keys():
+            log(f"> {schema} schemas", "DEBUG")
 
         log("Hooks loading", "INFO")
         all_hooks = CatHooks.sort_hooks()
         for hook in all_hooks:
-            log("> " + hook["hook_name"])
+            log(f"> {hook['hook_name']}")
 
         log("Tools loading")
         all_tools_fixed = []
@@ -76,7 +81,7 @@ class MadHatter:
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed, "INFO")
 
-        return all_hooks, all_tools_fixed, all_plugins
+        return all_hooks, all_tools_fixed, all_plugins, all_schemas
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
@@ -200,6 +205,11 @@ class MadHatter:
             log(f"Unable to save plugin {plugin_id} settings", "INFO")
     
         return updated_settings
+    
+    # a plugin function has to be decorated with @settings
+    # (which returns a function named "plugin_settings_wrapper")
+    def is_plugin_settings(self, obj):
+        return isfunction(obj) and obj.__name__ == "plugin_settings_wrapper"
 
     # a plugin function has to be decorated with @hook
     # (which returns a function named "cat_function_wrapper")
