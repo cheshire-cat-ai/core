@@ -135,6 +135,12 @@ class VectorMemoryCollection(Qdrant):
                 # dump collection on disk before deleting, so it can be recovered
                 # TODO: it needs a code refactoring
 
+                #dormouse = "dormouse/"
+                if os.path.isdir("dormouse/"):
+                    log(f'Directory dormouse exists', "INFO")
+                else:
+                    os.mkdir("dormouse/")
+
                 self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
                 # TODO: parametrize cat host and port
                 snapshot_url_in = "http://cheshire_cat_vector_memory:6333/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
@@ -142,6 +148,8 @@ class VectorMemoryCollection(Qdrant):
 
                 response = requests.get(snapshot_url_in)
                 open(snapshot_url_out, "wb").write(response.content)
+                new_name = "dormouse/" + alias.replace('/', '-') + ".snapshot"
+                os.rename(snapshot_url_out, new_name)
                 for s in self.client.list_snapshots(self.collection_name):
                     self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
                 # dump complete
