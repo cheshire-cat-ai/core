@@ -71,6 +71,6 @@ def upsert_embedder_setting(
 
     # reload the cat at runtime
     ccat = request.app.state.ccat
-    ccat.bootstrap()
+    ccat.load_natural_language()
 
     return status

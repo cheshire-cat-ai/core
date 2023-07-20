@@ -65,7 +65,8 @@ async def upload_plugin(
     shutil.unpack_archive(temp_name, ccat.get_plugin_path(), file.filename.rsplit('.', 1)[1])
 
     # align plugins (update db and embed new tools)
-    ccat.bootstrap()
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     plugins = ccat.mad_hatter.plugins
     ## TODO: get the plugin_id from the extracted folder, not the name of the zipped file
@@ -137,7 +138,8 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     shutil.rmtree(ccat.get_plugin_path() + plugin_id)
 
     # align plugins (update db and embed new tools)
-    ccat.bootstrap()
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
