@@ -88,14 +88,3 @@ def upsert_llm_setting(
     ccat.bootstrap()
 
     return status
-
-
-def validate_presences(required: list, payload: dict):
-    missing_fields = [req for req in required if req not in payload]
-    if missing_fields:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error": f"The following fields are required: {', '.join(missing_fields)}"
-            }
-        )
