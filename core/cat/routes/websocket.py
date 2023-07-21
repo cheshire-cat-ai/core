@@ -31,9 +31,6 @@ manager = ConnectionManager()
 @router.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     ccat = websocket.app.state.ccat
-    print("-"*100)
-    print(ccat)
-    print("-"*100)
 
     await manager.connect(websocket)
 
@@ -57,7 +54,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 await manager.send_personal_message(notification, websocket)
 
             await asyncio.sleep(1)  # wait for 1 seconds before checking again
-
 
     try:
         await asyncio.gather(receive_message(), check_notification())
