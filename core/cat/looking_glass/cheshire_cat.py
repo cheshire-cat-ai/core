@@ -32,7 +32,6 @@ class CheshireCat:
         At init time the Cat executes the bootstrap.
         """
 
-
         # bootstrap the cat!
         self.bootstrap()
 
@@ -90,7 +89,6 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
-
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -172,66 +170,74 @@ class CheshireCat:
         Notes
         -----
         The user's message is used as a query to make a similarity search in the Cat's vector memories.
-        Two hooks allow to customize the recall pipeline before and after it is done.
+        Five hooks allow to customize the recall pipeline before and after it is done.
 
         See Also
         --------
         before_cat_recalls_memories
+        before_cat_recalls_episodic_memories
+        before_cat_recalls_declarative_memories
+        before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
-        # hook to do something before recall begins
-        k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
-            "before_cat_recalls_memories", user_message)
-
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
         log(f'Recall query: "{memory_query_text}"')
 
-        ##### embed recall query
+        # Embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        ##### Episodic memory
-        if prompt_settings["use_episodic_memory"]:
-            # recall relevant memories (episodic)
-            episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding,
-                k=k_episodic,
-                threshold=threshold_episodic,
-                metadata={
-                    "source": user_id
-                }
-            )
-        else:
-            episodic_memories = []
+        # hook to do something before recall begins
+        self.mad_hatter.execute_hook("before_cat_recalls_memories")
 
-        self.working_memory["episodic_memories"] = episodic_memories
+        # Setting default recall configs for each memory
+        default_episodic_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": {"source": user_id},
+        }
 
-        ##### Declarative memory
-        if prompt_settings["use_declarative_memory"]:
-            # recall relevant memories (declarative)
-            declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_declarative, threshold=threshold_declarative
-            )
-        else:
-            declarative_memories = []
+        default_declarative_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
 
-        self.working_memory["declarative_memories"] = declarative_memories
+        default_procedural_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
 
-        ##### Procedural memory
-        if prompt_settings["use_procedural_memory"]:
-            # recall relevant tools (procedural collection)
-            tools = self.memory.vectors.procedural.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_procedural, threshold=threshold_procedural
-            )
-        else:
-            tools = []
+        # hooks to change recall configs for each memory
+        recall_configs = [
+            self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", default_episodic_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_procedural_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)]
 
-        self.working_memory["procedural_memories"] = tools
+        memory_types = ("episodic", "declarative", "procedural")
+
+        for config, memory_type in zip(recall_configs, memory_types):
+            setting = f"use_{memory_type}_memory"
+            memory_key = f"{memory_type}_memories"
+
+            if prompt_settings[setting]:
+                # recall relevant memories
+                vector_memory = getattr(self.memory.vectors, memory_type)
+                memories = vector_memory.recall_memories_from_embedding(**config)
+
+            else:
+                memories = []
+
+            self.working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
