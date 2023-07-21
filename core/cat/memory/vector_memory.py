@@ -151,7 +151,7 @@ class VectorMemoryCollection(Qdrant):
             collection_name=self.collection_name,
             vectors_config=VectorParams(
                 size=self.embedder_size, distance=Distance.COSINE),
-            optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
+            #optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
             quantization_config=ScalarQuantization(
                 scalar=ScalarQuantizationConfig(
                     type=ScalarType.INT8,
@@ -159,7 +159,7 @@ class VectorMemoryCollection(Qdrant):
                     always_ram=False
                 )
             ),
-            shard_number=3,
+            #shard_number=3,
         )
         
         self.client.update_collection_aliases(
