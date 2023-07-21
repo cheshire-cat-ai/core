@@ -1,3 +1,5 @@
+import os
+import shutil
 
 
 # utility function to communicate with the cat via websocket
@@ -31,3 +33,11 @@ def send_n_websocket_messages(num_messages, client):
 def key_in_json(key, json):
     return key in json.keys()
 
+
+def create_mock_plugin_zip():
+    return shutil.make_archive(
+        "tests/mocks/mock_plugin",
+        "zip",
+        root_dir="tests/mocks/",
+        base_dir="mock_plugin"
+    )
