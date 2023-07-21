@@ -4,6 +4,7 @@ import importlib
 import time
 import os
 from inspect import getmembers, isfunction  # , signature
+from typing import Dict
 
 from cat.log import log
 from cat.utils import to_camel_case
@@ -195,6 +196,41 @@ class MadHatter:
         meta["version"] = json_file_data.get("version", "0.0.1")
 
         return meta
+    
+    # Tries to get the plugin settings from the provided plugin id
+    def get_plugin_settings(self, plugin_id: str):
+        settings_file_path = path.join("cat/plugins", plugin_id, "settings.json")
+        settings = { "active": False }
+
+        if path.isfile(settings_file_path):
+            try:
+                json_file = open(settings_file_path)
+                settings = json.load(json_file)
+                if "active" not in settings:
+                    settings["active"] = False
+                json_file.close()
+            except Exception:
+                log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
+    
+        return settings
+    
+    # Tries to save the plugin settings of the provided plugin id
+    def save_plugin_settings(self, plugin_id: str, settings: Dict):
+        settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
+        updated_settings = settings
+
+        try:
+            json_file = open(settings_file_path, 'r+')
+            current_settings = json.load(json_file)
+            json_file.close()
+            updated_settings = { **current_settings, **settings }
+            json_file = open(settings_file_path, 'w')
+            json.dump(updated_settings, json_file, indent=4)
+            json_file.close()
+        except Exception:
+            log(f"Unable to save plugin {plugin_id} settings", "INFO")
+    
+        return updated_settings
 
     # a plugin function has to be decorated with @hook
     # (which returns a function named "cat_function_wrapper")
