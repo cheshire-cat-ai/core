@@ -1,5 +1,5 @@
 import mimetypes
-from fastapi import Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
+from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
 from typing import Dict
 import shutil
@@ -90,20 +90,65 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    # plugins are managed by the MadHatter class
-    plugins = ccat.mad_hatter.plugins
-    # there should be only one plugin with that id
-    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
-
-    if not found:
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
         raise HTTPException(
             status_code = 404,
-            detail = { "error": "Item not found" }
+            detail = { "error": "Plugin not found" }
         )
+
+    plugin_info = [plugin for plugin in ccat.mad_hatter.plugins if plugin["id"] == plugin_id]
 
     return {
         "status": "success",
-        "data": found[0]
+        "data": plugin_info[0]
+    }
+
+
+@router.get("/settings/{plugin_id}", status_code=200)
+async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
+    """Returns the settings of a specific plugin"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
+
+    # plugins are managed by the MadHatter class
+    settings = ccat.mad_hatter.get_plugin_settings(plugin_id)
+
+    return {
+        "status": "success",
+        "settings": settings,
+        "schema": {}
+    }
+
+
+@router.put("/settings/{plugin_id}", status_code=200)
+async def upsert_plugin_settings(
+    request: Request,
+    plugin_id: str,
+    payload: Dict = Body(example={"active": False}),
+) -> Dict:
+    """Updates the settings of a specific plugin"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
+    
+    final_settings = ccat.mad_hatter.save_plugin_settings(plugin_id, payload)
+
+    return {
+        "status": "success", 
+        "settings": final_settings
     }
 
 
@@ -114,14 +159,12 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    plugins = ccat.mad_hatter.plugins
-    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
-
-    if not found:
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
         raise HTTPException(
             status_code = 404,
             detail = { "error": "Item not found" }
         )
+    
     # remove plugin folder
     shutil.rmtree(ccat.get_plugin_path() + plugin_id)
 

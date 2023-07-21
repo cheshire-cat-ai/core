@@ -5,16 +5,6 @@ import shutil
 from tests.utils import key_in_json, create_mock_plugin_zip
 
 
-# utility to retrieve embedded tools from endpoint
-def get_embedded_tools(client):
-    params = {
-        "text": "random"
-    }
-    response = client.get(f"/memory/recall/", params=params)
-    json = response.json()
-    return json["vectors"]["collections"]["procedural"]
-    
-
 @pytest.mark.parametrize("key", ["status", "results", "installed", "registry"])
 def test_list_plugins(client, key):
     # Act
@@ -37,6 +27,16 @@ def test_get_plugin_id(client, keys):
     assert key_in_json(keys, response_json)
     assert response_json["status"] == "success"
     assert response_json["data"] is not None
+    assert response_json["data"]["id"] == "core_plugin"
+
+
+def test_get_non_existent_plugin(client):
+    
+    response = client.get("/plugins/no_plugin")
+    response_json = response.json()
+
+    assert response.status_code == 404
+    assert response_json["detail"]["error"] == "Plugin not found"
 
 
 # TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
@@ -101,3 +101,11 @@ def test_plugin_zip_upload(client):
     os.remove(zip_path) # delete zip from tests folder
 
 
+# utility to retrieve embedded tools from endpoint
+def get_embedded_tools(client):
+    params = {
+        "text": "random"
+    }
+    response = client.get(f"/memory/recall/", params=params)
+    json = response.json()
+    return json["vectors"]["collections"]["procedural"]
