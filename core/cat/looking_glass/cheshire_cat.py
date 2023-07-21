@@ -33,41 +33,8 @@ class CheshireCat:
         """
 
         # bootstrap the cat!
-        self.bootstrap()
-
-        # queue of cat messages not directly related to last user input
-        # i.e. finished uploading a file
-        self.web_socket_notifications = []
-
-    def bootstrap(self):
-        """Cat's bootstrap.
-
-        This method is called when the Cat is instantiated and whenever LLM, embedder, agent or memory need
-        to be reinstantiated (for example an LLM change at runtime).
-
-        Notes
-        -----
-        The pipeline of execution of the functions is important as some method rely on the previous ones.
-        Two hooks allows to intercept the pipeline before and after the bootstrap.
-        The pipeline is:
-
-            1. Load the plugins, i.e. the MadHatter.
-            2. Execute the `before_cat_bootstrap` hook.
-            3. Load Natural Language Processing related stuff, i.e. the Language Models, the prompts, etc.
-            4. Load the memories, i.e. the LongTermMemory and the WorkingMemory.
-            5. Embed the tools, i.e. insert the tools in the procedural memory.
-            6. Load the AgentManager.
-            7. Load the RabbitHole.
-            8. Execute the `after_cat_bootstrap` hook.
-
-        See Also
-        --------
-        before_cat_bootstrap
-        after_cat_bootstrap
-        """
-
-        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
-        self.load_plugins()
+         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
+        self.mad_hatter = MadHatter(self)
 
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap")
@@ -89,6 +56,10 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
+
+        # queue of cat messages not directly related to last user input
+        # i.e. finished uploading a file
+        self.web_socket_notifications = []      
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -155,11 +126,6 @@ class CheshireCat:
         
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
-
-    def load_plugins(self):
-        """Instantiate the plugins manager."""
-        # Load plugin system
-        self.mad_hatter = MadHatter(self)
 
     def recall_relevant_memories_to_working_memory(self):
         """Retrieve context from memory.

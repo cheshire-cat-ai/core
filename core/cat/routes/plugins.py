@@ -169,7 +169,8 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     shutil.rmtree(ccat.get_plugin_path() + plugin_id)
 
     # align plugins (update db and embed new tools)
-    ccat.bootstrap()
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
