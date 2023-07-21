@@ -72,6 +72,9 @@ def upsert_embedder_setting(
     ccat = request.app.state.ccat
     # reload llm and embedder of the cat
     ccat.load_natural_language()
+    
+    # crete new collections
+    ccat.load_memory()
 
     # reload and create tools embeddings
     ccat.mad_hatter.embed_tools()
