@@ -43,7 +43,7 @@ def get_embedder_settings():
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
-    payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
+    payload: Dict = Body(..., example={"openai_api_key": "your-key-here"})
 ):
     """Upsert the Embedder setting"""
     
@@ -54,7 +54,16 @@ def upsert_embedder_setting(
             status_code=400,
             detail=f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}",
         )
-    
+
+    if crud.validate_presences(EMBEDDER_SCHEMAS[languageEmbedderName]['required'], payload):
+        raise HTTPException(
+            status_code=405,
+            detail={
+                "error": f"The following fields are required: {', '.join(LLM_SCHEMAS[languageModelName]['required'])}"
+            }
+        )
+
+
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
         models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=payload)
