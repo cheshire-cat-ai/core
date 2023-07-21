@@ -45,7 +45,7 @@ def get_llm_settings():
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,
-    payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
+    payload: Dict = Body(..., example={"openai_api_key": "your-key-here"})
 ):
     """Upsert the Large Language Model setting"""
 
@@ -54,9 +54,21 @@ def upsert_llm_setting(
     if languageModelName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageModelName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
+            }
         )
-    
+
+    # validate configuration
+    if crud.validate_presences(LLM_SCHEMAS[languageModelName]['required'], payload):
+        raise HTTPException(
+            status_code=405,
+            detail={
+                "error": f"The following fields are required: {', '.join(LLM_SCHEMAS[languageModelName]['required'])}"
+            }
+        )
+
+
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
         models.Setting(name=languageModelName, category=LLM_CATEGORY, value=payload)
@@ -76,3 +88,14 @@ def upsert_llm_setting(
     ccat.bootstrap()
 
     return status
+
+
+def validate_presences(required: list, payload: dict):
+    missing_fields = [req for req in required if req not in payload]
+    if missing_fields:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": f"The following fields are required: {', '.join(missing_fields)}"
+            }
+        )

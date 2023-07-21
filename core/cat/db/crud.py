@@ -70,3 +70,6 @@ def upsert_setting_by_name(payload: models.Setting) -> models.Setting:
         get_db().update(payload, query.name == payload.name)
 
     return get_setting_by_name(payload.name)
+
+def validate_presences(required: list, payload: dict):
+    return len([req for req in required if req not in payload]) > 0
