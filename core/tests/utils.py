@@ -42,6 +42,3 @@ def create_zip(zip_path):
         base_dir="mock_plugin"
     )
     return zip_path
-
-def delete_zip(zip_path):
-    os.remove(zip_path)

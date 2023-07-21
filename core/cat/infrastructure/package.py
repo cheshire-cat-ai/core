@@ -4,7 +4,9 @@ import mimetypes
 
 
 class Package:
+    
     admitted_mime_types = ['application/zip', 'application/x-tar']
+
     def __init__(self, path):
         content_type = mimetypes.guess_type(path)[0]
         if content_type == 'application/x-tar':

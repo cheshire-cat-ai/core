@@ -2,7 +2,7 @@ import os
 
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass.cheshire_cat import CheshireCat
-from tests.utils import create_zip, delete_zip
+from tests.utils import create_zip
 
 from unittest.mock import MagicMock
 from unittest.mock import patch
@@ -20,7 +20,7 @@ def test_install_plugin():
         ccat.get_plugin_path.assert_called_once()
         ccat.bootstrap.assert_called_once()
 
-    delete_zip("tests/mocks/mock_plugin.zip")
+    os.remove("tests/mocks/mock_plugin.zip")
 
     # cleanup folder
     os.remove("./tests/mad_hatter/plugin_folder/mock_plugin/mock_tool.py")
