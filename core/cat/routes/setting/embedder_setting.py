@@ -55,7 +55,8 @@ def upsert_embedder_setting(
             detail=f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}",
         )
 
-    if crud.validate_presences(EMBEDDER_SCHEMAS[languageEmbedderName]['required'], payload):
+    required = EMBEDDER_SCHEMAS[languageEmbedderName]['required']
+    if crud.validate_presences(required, payload):
         raise HTTPException(
             status_code=405,
             detail={

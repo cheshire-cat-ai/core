@@ -60,7 +60,8 @@ def upsert_llm_setting(
         )
 
     # validate configuration
-    if crud.validate_presences(LLM_SCHEMAS[languageModelName]['required'], payload):
+    required = LLM_SCHEMAS[languageModelName]['required']
+    if crud.validate_presences(required, payload):
         raise HTTPException(
             status_code=405,
             detail={
