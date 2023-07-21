@@ -126,14 +126,14 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     ccat = request.app.state.ccat
 
     # plugins are managed by the MadHatter class
-    schemas = ccat.mad_hatter.schemas
+    plugins = ccat.mad_hatter.plugins
     # there should be only one plugin with that id
-    found = [plugin for plugin in schemas.keys() if plugin == plugin_id]
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
         raise HTTPException(
             status_code = 404,
-            detail = { "error": "Plugin settings not found" }
+            detail = { "error": "Plugin not found" }
         )
 
     # plugins are managed by the MadHatter class
@@ -142,7 +142,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     return {
         "status": "success",
         "settings": settings,
-        "schema": schemas[plugin_id]
+        "schema": {}
     }
 
 
@@ -158,14 +158,14 @@ async def upsert_plugin_settings(
     ccat = request.app.state.ccat
 
     # plugins are managed by the MadHatter class
-    schemas = ccat.mad_hatter.schemas
+    plugins = ccat.mad_hatter.plugins
     # there should be only one plugin with that id
-    found = [plugin for plugin in schemas.keys() if plugin == plugin_id]
+    found = [plugin for plugin in plugins if plugin["id"] == plugin_id]
 
     if not found:
         raise HTTPException(
             status_code = 404,
-            detail = { "error": "Plugin settings not found" }
+            detail = { "error": "Plugin not found" }
         )
     
     final_settings = ccat.mad_hatter.save_plugin_settings(plugin_id, payload)
