@@ -108,6 +108,14 @@ class MadHatter:
         log(all_tools_fixed, "INFO")
 
         return all_hooks, all_tools_fixed, all_plugins
+    
+    # check if plugin exists
+    def plugin_exists(self, plugin_id):
+
+        # there should be only one plugin with that id
+        found = [plugin for plugin in self.plugins if plugin["id"] == plugin_id]
+        return len(found) > 0
+
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
@@ -199,10 +207,10 @@ class MadHatter:
     
     # Tries to get the plugin settings from the provided plugin id
     def get_plugin_settings(self, plugin_id: str):
-        settings_file_path = path.join("cat/plugins", plugin_id, "settings.json")
+        settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
         settings = { "active": False }
 
-        if path.isfile(settings_file_path):
+        if os.path.isfile(settings_file_path):
             try:
                 json_file = open(settings_file_path)
                 settings = json.load(json_file)
