@@ -26,7 +26,7 @@ def test_memory_collections_created(client):
     # check correct number of default points
     collections_n_points = { c["name"]: c["vectors_count"] for c in json["collections"]}
     # there is at least an embedded tool in procedural collection
-    assert collections_n_points["procedural"] > 0
+    assert collections_n_points["procedural"] > 0 # TODO: after we mock the plugin folder, this should be == 1
     # all other collections should be empty
     assert collections_n_points["episodic"] == 0
     assert collections_n_points["declarative"] == 0
