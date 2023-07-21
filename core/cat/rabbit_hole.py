@@ -1,11 +1,13 @@
 import os
 import time
+import json
 import tempfile
 import mimetypes
 from typing import List, Union
 
 from cat.log import log
 from starlette.datastructures import UploadFile
+from fastapi import HTTPException
 from langchain.document_loaders import (
     PDFMinerLoader,
     UnstructuredURLLoader,
@@ -13,21 +15,106 @@ from langchain.document_loaders import (
     UnstructuredMarkdownLoader,
 )
 from langchain.docstore.document import Document
+from qdrant_client.http import models
 
 
 class RabbitHole:
     """
 
     """
+
     def __init__(self, cat):
         self.cat = cat
 
+    @staticmethod
+    def check_mime_type(file: UploadFile, admitted_types: list):
+
+        # Get file mime type
+        content_type = mimetypes.guess_type(file.filename)[0]
+        log(f"Uploaded {content_type} down the rabbit hole", "INFO")
+
+        # check if MIME type of uploaded file is supported
+        if content_type not in admitted_types:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'}
+            )
+
+    def ingest_memory(self, file: UploadFile):
+
+        # Create temporary file
+        temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
+        temp_name = temp_file.name
+
+        # Get file bytes
+        file_bytes = file.file.read()
+
+        # Save in temporary file
+        with open(temp_name, "wb") as temp_binary_file:
+            temp_binary_file.write(file_bytes)
+
+        # Recover the file as dict
+        with open(temp_name, "rb") as memories_file:
+            content = memories_file.read().decode("latin1")
+            memories = json.loads(content, strict=False)
+
+        log(file_bytes, "ERROR")
+
+        # Remove temp file
+        os.remove(temp_name)
+
+        # Check the embedder used for the uploaded memories is the same the Cat is using now
+        upload_embedder = memories["embedder"]
+        cat_embedder = str(self.cat.embedder.__class__.__name__)
+
+        if upload_embedder != cat_embedder:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": f'Embedder mismatch: uploaded file embedder {upload_embedder} is different from {ccat.embedder}'}
+            )
+
+        # Get Declarative memories in file
+        declarative_memories = memories["collections"]["declarative"]
+
+        # Store data to upload the memories in batch
+        ids = [i["id"] for i in declarative_memories]
+        payloads = [{
+            "page_content": p["page_content"],
+            "metadata": p["metadata"]
+        } for p in declarative_memories]
+        vectors = [v["vector"] for v in declarative_memories]
+
+        log(f"Preparing to load {len(vectors)} vector memories", "ERROR")
+
+        # Check embedding size is correct
+        embedder_size = self.cat.memory.vectors.embedder_size
+        len_mismatch = [len(v) == embedder_size for v in vectors]
+
+        if not any(len_mismatch):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": f'Embedding size mismatch: vectors length should be {embedder_size}'}
+            )
+
+        # Upsert memories in batch mode
+        self.cat.memory.vectors.vector_db.upsert(
+            collection_name="declarative",
+            points=models.Batch(
+                ids=ids,
+                payloads=payloads,
+                vectors=vectors
+            )
+        )
+
     def ingest_file(
-        self,
-        file: Union[str, UploadFile],
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-        summary: bool = False,
+            self,
+            file: Union[str, UploadFile],
+            chunk_size: int = 400,
+            chunk_overlap: int = 100,
+            summary: bool = False,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -74,11 +161,11 @@ class RabbitHole:
         self.store_documents(docs=docs, source=filename)
 
     def ingest_url(
-        self,
-        url: str,
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-        summary: bool = False,
+            self,
+            url: str,
+            chunk_size: int = 400,
+            chunk_overlap: int = 100,
+            summary: bool = False,
     ):
         """Load a webpage in the Cat's declarative memory.
 
@@ -117,10 +204,10 @@ class RabbitHole:
         self.store_documents(docs=docs, source=url)
 
     def url_to_docs(
-        self,
-        url: str,
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
+            self,
+            url: str,
+            chunk_size: int = 400,
+            chunk_overlap: int = 100,
     ) -> List[Document]:
         """Converts an url to Langchain `Document`.
 
@@ -152,10 +239,10 @@ class RabbitHole:
         return docs
 
     def file_to_docs(
-        self,
-        file: Union[str, UploadFile],
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
+            self,
+            file: Union[str, UploadFile],
+            chunk_size: int = 400,
+            chunk_overlap: int = 100,
     ) -> List[Document]:
 
         """Load and convert files to Langchain `Document`.
@@ -270,7 +357,7 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                #log(f"Inserted into memory({inserting_info})", "INFO")
+                # log(f"Inserted into memory({inserting_info})", "INFO")
                 print(f"Inserted into memory({inserting_info})")
             else:
                 log(f"Skipped memory insertion of empty doc ({inserting_info})", "INFO")
@@ -280,7 +367,7 @@ class RabbitHole:
 
         # notify client
         finished_reading_message = f"Finished reading {source}, " \
-            f"I made {len(docs)} thoughts on it."
+                                   f"I made {len(docs)} thoughts on it."
         self.cat.web_socket_notifications.append(
             {
                 "error": False,
