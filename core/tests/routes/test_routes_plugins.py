@@ -1,8 +1,19 @@
 import os
+import time
 import pytest
 import shutil
-from tests.utils import key_in_json
+from tests.utils import key_in_json, create_mock_plugin_zip
 
+
+# utility to retrieve embedded tools from endpoint
+def get_embedded_tools(client):
+    params = {
+        "text": "random"
+    }
+    response = client.get(f"/memory/recall/", params=params)
+    json = response.json()
+    return json["vectors"]["collections"]["procedural"]
+    
 
 @pytest.mark.parametrize("key", ["status", "results", "installed", "registry"])
 def test_list_plugins(client, key):
@@ -39,14 +50,8 @@ def test_plugin_zip_upload(client):
     assert not os.path.exists("/app/cat/plugins/mock_plugin")
 
     # create zip file with a plugin
-    zip_file_name = "mock_plugin.zip"
-    zip_path = f"tests/mocks/{zip_file_name}"
-    shutil.make_archive(
-        zip_path,
-        "zip",
-        root_dir="tests/mocks/",
-        base_dir="mock_plugin"
-    )
+    zip_path = create_mock_plugin_zip()
+    zip_file_name = zip_path.split("/")[-1] # mock_plugin.zip in tests/mocks folder
 
     # upload plugin via endpoint
     with open(zip_path, "rb") as f:
@@ -59,16 +64,24 @@ def test_plugin_zip_upload(client):
 
     # request was processed
     assert response.status_code == 200
+    assert response.json()["status"] == "success"
     assert response.json()["filename"] == zip_file_name
+
+    # wait for mad hatter discovery and tool embedding
+    time.sleep(5)
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
     installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
+    print(installed_plugins_names)
     assert "mock_plugin" in installed_plugins_names
     # plugin has been actually extracted in plugins folder
     assert os.path.exists("/app/cat/plugins/mock_plugin")
 
-    # TODO: check whether new tools have been embedded
+    # check whether new tools have been embedded
+    tools = get_embedded_tools(client)
+    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
+    assert "random_idea" in tool_names
 
     # remove plugin via endpoint (will delete also folder in cat/plugins)
     response = client.delete("/plugins/mock_plugin")
@@ -80,5 +93,11 @@ def test_plugin_zip_upload(client):
     assert "mock_plugin" not in installed_plugins_names
     assert not os.path.exists("/app/cat/plugins/mock_plugin")
 
+    # plugin tool disappeared
+    tools = get_embedded_tools(client)
+    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
+    assert "random_idea" not in tool_names
+
     os.remove(zip_path) # delete zip from tests folder
+
 

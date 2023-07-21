@@ -30,15 +30,17 @@ class MadHatter:
         plugin_folder = self.ccat.get_plugin_path()
         pkg_obj = Package(package_plugin)
         pkg_obj.unpackage(plugin_folder)
-        zip_name = pkg_obj.get_name()
-
-        plugin_name = zip_name.replace(".zip", "")
-        plugin_folder = path.join(plugin_folder, plugin_name)
-        plugin, tool = self.find_plugin(plugin_folder)
-        if plugin:
-            self.plugins.append(plugin)
-        if tool:
-            self.tools += tool
+        
+        
+        #zip_name = pkg_obj.get_name()
+        #plugin_name = zip_name.replace(".zip", "")
+        #plugin_folder = path.join(plugin_folder, plugin_name)
+        #plugin, tool = self.find_plugin(plugin_folder)
+        #if plugin:
+        #    self.plugins.append(plugin)
+        #if tool:
+        #    self.tools += tool
+        self.ccat.bootstrap()
 
     def find_plugin(self, folder):
         py_files_path = path.join(folder, "**/*.py")
@@ -67,7 +69,7 @@ class MadHatter:
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
         core_folder = "cat/mad_hatter/core_plugin"
-        plugin_folders = [core_folder] + glob.glob("cat/plugins/*")
+        plugin_folders = [core_folder] + glob.glob("cat/plugins/*") # TODO: use cat.get_plugin_path()
 
         all_plugins = []
         all_tools = []
