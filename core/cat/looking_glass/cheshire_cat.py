@@ -221,9 +221,10 @@ class CheshireCat:
         recall_configs = [
             self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", default_episodic_recall_config),
             self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_procedural_recall_config),
-            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)]
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)
+        ]
 
-        memory_types = ("episodic", "declarative", "procedural")
+        memory_types = self.memory.vectors.collections.keys()
 
         for config, memory_type in zip(recall_configs, memory_types):
             setting = f"use_{memory_type}_memory"
