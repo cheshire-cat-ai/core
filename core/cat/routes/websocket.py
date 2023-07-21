@@ -3,6 +3,7 @@ import asyncio
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from cat.log import log
+from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter()
 
@@ -39,7 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
             user_message = await websocket.receive_json()
 
             # get response from the cat
-            cat_message = ccat(user_message)
+            cat_message = await run_in_threadpool(ccat, user_message)
 
             # send output to specific user
             await manager.send_personal_message(cat_message, websocket)
