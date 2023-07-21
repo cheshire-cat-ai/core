@@ -60,7 +60,7 @@ def upsert_embedder_setting(
         raise HTTPException(
             status_code=405,
             detail={
-                "error": f"The following fields are required: {', '.join(EMBEDDER_SCHEMAS[languageEmbedderName]['required'])}"
+                "error": f"The following fields are required: {', '.join(required)}"
             }
         )
 

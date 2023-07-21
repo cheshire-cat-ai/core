@@ -65,7 +65,7 @@ def upsert_llm_setting(
         raise HTTPException(
             status_code=405,
             detail={
-                "error": f"The following fields are required: {', '.join(LLM_SCHEMAS[languageModelName]['required'])}"
+                "error": f"The following fields are required: {', '.join(required)}"
             }
         )
 
