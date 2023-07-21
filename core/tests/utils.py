@@ -34,11 +34,10 @@ def key_in_json(key, json):
     return key in json.keys()
 
 
-def create_zip(zip_path):
-    shutil.make_archive(
-        zip_path,
+def create_mock_plugin_zip():
+    return shutil.make_archive(
+        "tests/mocks/mock_plugin",
         "zip",
         root_dir="tests/mocks/",
         base_dir="mock_plugin"
     )
-    return zip_path
