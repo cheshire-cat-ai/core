@@ -42,7 +42,7 @@ def test_plugin_zip_upload(client):
     zip_file_name = "mock_plugin.zip"
     zip_path = f"tests/mocks/{zip_file_name}"
     shutil.make_archive(
-        zip_path.replace(".zip", ""),
+        zip_path,
         "zip",
         root_dir="tests/mocks/",
         base_dir="mock_plugin"
