@@ -37,3 +37,15 @@ def test_upsert_llm_settings_success(client):
     assert response.status_code == 200
     assert json["selected_configuration"] == 'LLMCustomConfig'
     assert json["settings"][0]["value"]["url"] == invented_url
+
+def test_upsert_llm_settings_error(client):
+
+    # set a different LLM
+    invented_url = "https://example.com"
+    payload = {}
+    response = client.put("/settings/llm/LLMCustomConfig", json=payload)
+    json = response.json()
+
+    # check immediate response
+    assert response.status_code == 405
+    assert json["detail"]["error"] == "The following fields are required: url"
