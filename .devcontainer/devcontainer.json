@@ -7,7 +7,13 @@
             ]
         }
     },
-    "postStartCommand": "cp .env.codespaces .env",
+    "postStartCommand": [
+        "cp .env.codespaces .env",
+        "pip install pycryptodome",
+        "pip install --force-reinstall requests-toolbelt==0.10.1",
+        "pip install --upgrade requests",
+        "pip install --force-reinstall urllib3==1.26.16"
+    ],
     "forwardPorts": [
         443
     ],

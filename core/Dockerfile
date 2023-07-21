@@ -21,8 +21,11 @@ WORKDIR /app
 RUN pip install -U pip && \
     pip install --no-cache-dir . &&\
     python3 -c "import nltk; nltk.download('punkt')" &&\
-    python3 install_plugin_dependencies.py
-
+    python3 install_plugin_dependencies.py &&\
+    pip install pycryptodome &&\
+    pip install --force-reinstall requests-toolbelt==0.10.1 &&\
+    pip install --upgrade requests &&\
+    pip install --force-reinstall urllib3==1.26.16
 
 ### FINISH ###
 # ready to go (docker-compose up)
