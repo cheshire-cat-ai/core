@@ -2,7 +2,7 @@ import glob
 import json
 import importlib
 import time
-from os import path
+import os
 from inspect import getmembers, isfunction  # , signature
 
 from cat.log import log
@@ -27,14 +27,16 @@ class MadHatter:
         self.hooks, self.tools, self.plugins = self.find_plugins()
 
     def install_plugin(self, package_plugin):
+
+        # extract zip/tar file into plugin folder
         plugin_folder = self.ccat.get_plugin_path()
         pkg_obj = Package(package_plugin)
         pkg_obj.unpackage(plugin_folder)
         
-        
+        # TODO: avoid doing bootstrap
         #zip_name = pkg_obj.get_name()
         #plugin_name = zip_name.replace(".zip", "")
-        #plugin_folder = path.join(plugin_folder, plugin_name)
+        #plugin_folder = os.path.join(plugin_folder, plugin_name)
         #plugin, tool = self.find_plugin(plugin_folder)
         #if plugin:
         #    self.plugins.append(plugin)
@@ -43,43 +45,46 @@ class MadHatter:
         self.ccat.bootstrap()
 
     def find_plugin(self, folder):
-        py_files_path = path.join(folder, "**/*.py")
-        log(py_files_path)
+
+        # search for .py
+        py_files_path = os.path.join(folder, "**/*.py")
         py_files = glob.glob(py_files_path, recursive=True)
 
-        plugin = None
-        tool = None
+        plugin_info = None
+        plugin_tools = []
 
         # in order to consider it a plugin makes sure there are py files
         #   inside the plugin directory
         if len(py_files) > 0:
-            plugin = self.get_plugin_metadata(folder)
+            plugin_info = self.get_plugin_metadata(folder)
 
             for py_file in py_files:
                 plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
                 plugin_module = importlib.import_module(plugin_name)
-                tool = getmembers(plugin_module, self.is_cat_tool)
+                plugin_tools += getmembers(plugin_module, self.is_cat_tool)
 
-        return plugin, tool
+
+        return plugin_info, plugin_tools
 
     # find all functions in plugin folder decorated with @hook or @tool
     def find_plugins(self):
         # plugins are found in the plugins folder,
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
-        core_folder = "cat/mad_hatter/core_plugin"
-        plugin_folders = [core_folder] + glob.glob("cat/plugins/*") # TODO: use cat.get_plugin_path()
+        core_folder = "cat/mad_hatter/core_plugin/"
+        plugin_folders = [core_folder] + glob.glob("cat/plugins/*/")
+        # TODO: use cat.get_plugin_path() so it can be mocked from tests
 
         all_plugins = []
         all_tools = []
 
         for folder in plugin_folders:
-            plugin, tool = self.find_plugin(folder)
-            if plugin:
-                all_plugins.append(plugin)
-            if tool:
-                all_tools += tool
+            plugin_info, plugin_tools = self.find_plugin(folder)
+            if plugin_info:
+                all_plugins.append(plugin_info)
+            if plugin_tools:
+                all_tools += plugin_tools
 
         log("Plugins loading:", "INFO")
         for plugin in all_plugins:
@@ -162,13 +167,13 @@ class MadHatter:
 
     # Tries to load the plugin metadata from the provided plugin folder
     def get_plugin_metadata(self, plugin_folder: str):
-        plugin_id = path.basename(plugin_folder)
+        plugin_id = os.path.basename(os.path.normpath(plugin_folder))
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = path.join(plugin_folder, plugin_json_metadata_file_name)
+        plugin_json_metadata_file_path = os.path.join(plugin_folder, plugin_json_metadata_file_name)
         meta = {"id": plugin_id}
         json_file_data = {}
 
-        if path.isfile(plugin_json_metadata_file_path):
+        if os.path.isfile(plugin_json_metadata_file_path):
             try:
                 json_file = open(plugin_json_metadata_file_path)
                 json_file_data = json.load(json_file)

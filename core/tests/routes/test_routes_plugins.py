@@ -97,7 +97,7 @@ def test_plugin_zip_upload(client):
     tools = get_embedded_tools(client)
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "random_idea" not in tool_names
-
+    
     os.remove(zip_path) # delete zip from tests folder
 
 
