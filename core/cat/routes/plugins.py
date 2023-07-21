@@ -1,10 +1,8 @@
 import mimetypes
+from typing import Dict
+from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
-from typing import Dict
-import shutil
-
-from tempfile import NamedTemporaryFile
 
 router = APIRouter()
 
@@ -165,12 +163,8 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
             detail = { "error": "Item not found" }
         )
     
-    # remove plugin folder
-    shutil.rmtree(ccat.get_plugin_path() + plugin_id)
-
-    # align plugins (update db and embed new tools)
-    ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
+    # remove folder, hooks and tools
+    ccat.mad_hatter.uninstall_plugin(plugin_id)
 
     return {
         "status": "success",

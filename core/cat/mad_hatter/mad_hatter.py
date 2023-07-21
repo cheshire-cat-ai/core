@@ -2,6 +2,7 @@ import glob
 import json
 import importlib
 import time
+import shutil
 import os
 from inspect import getmembers, isfunction  # , signature
 from typing import Dict
@@ -27,6 +28,7 @@ class MadHatter:
         self.ccat = ccat
         self.hooks, self.tools, self.plugins = self.find_plugins()
 
+
     def install_plugin(self, package_plugin):
 
         # extract zip/tar file into plugin folder
@@ -34,16 +36,24 @@ class MadHatter:
         pkg_obj = Package(package_plugin)
         pkg_obj.unpackage(plugin_folder)
         
-        # TODO: avoid doing bootstrap
-        #zip_name = pkg_obj.get_name()
-        #plugin_name = zip_name.replace(".zip", "")
-        #plugin_folder = os.path.join(plugin_folder, plugin_name)
-        #plugin, tool = self.find_plugin(plugin_folder)
-        #if plugin:
-        #    self.plugins.append(plugin)
-        #if tool:
-        #    self.tools += tool
-        self.ccat.bootstrap()
+        # re-discover and reorder hooks
+        # TODO: this can be optimized by only discovering the new plugin
+        #   and having a method to re-sort hooks
+        self.hooks, self.tools, self.plugins = self.find_plugins()
+        # keep tools in sync (embed new tools)
+        self.embed_tools()
+
+    def uninstall_plugin(self, plugin_id):
+
+        # remove plugin folder
+        shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+
+        # re-discover and reorder hooks
+        # TODO: this can be optimized by only discovering the new plugin
+        #   and having a method to re-sort hooks
+        self.hooks, self.tools, self.plugins = self.find_plugins()
+        # keep tools in sync (embed new tools)
+        self.embed_tools()
 
     def find_plugin(self, folder):
 

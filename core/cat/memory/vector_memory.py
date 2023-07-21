@@ -238,7 +238,7 @@ class VectorMemoryCollection(Qdrant):
         all_points, _ = self.client.scroll(
             collection_name=self.collection_name,
             with_vectors=True,
-            limit=None
+            limit=10000 # yeah, good for now dear :*
         )
 
         return all_points
