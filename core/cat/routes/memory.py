@@ -40,7 +40,7 @@ async def delete_element_in_memory(
 
     return {
         "status": "success",
-        "deleted_point": memory_id
+        "deleted": memory_id
     }
 
 
@@ -184,5 +184,5 @@ async def wipe_conversation_history(
 
     return {
         "status": "success",
-        "deleted": "true",
+        "deleted": True,
     }

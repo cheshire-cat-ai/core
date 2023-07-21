@@ -48,8 +48,7 @@ async def install_plugin(
         raise HTTPException(
             status_code = 422,
             detail={
-                "error": f'MIME type `{file.content_type}` not supported. Please upload a file of type ' +
-                    f'({", ".join([mime for mime in admitted_mime_types])}).'
+                "error": f'MIME type `{file.content_type}` not supported. Admitted types: {", ".join(admitted_mime_types)}'
             },
         )
 
@@ -65,8 +64,9 @@ async def install_plugin(
 
     return {
         "status": "success",
-        "info": "Plugin is being installed asynchronously.",
-        "filename": file.filename
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "info": "Plugin is being installed asynchronously"
     }
 
 

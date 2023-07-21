@@ -39,7 +39,9 @@ async def upload_file(
     if content_type not in admitted_mime_types:
         raise HTTPException(
             status_code = 422,
-            detail = { "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}' }
+            detail = { 
+                "error": f'MIME type {file.content_type} not supported. Admitted types: {", ".join(admitted_mime_types)}' 
+            }
         )
 
     # upload file to long term memory, in the background
@@ -49,8 +51,9 @@ async def upload_file(
 
     # reply to client
     return {
+        "status": "success",
         "filename": file.filename,
-        "content-type": file.content_type,
+        "content_type": file.content_type,
         "info": "File is being ingested asynchronously",
     }
 
