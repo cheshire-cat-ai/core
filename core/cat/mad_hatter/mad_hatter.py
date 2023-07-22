@@ -26,8 +26,7 @@ class MadHatter:
 
     def __init__(self, ccat):
         self.ccat = ccat
-        self.hooks, self.tools, self.plugins = self.find_plugins()
-
+        self.find_plugins()
 
     def install_plugin(self, package_plugin):
 
@@ -39,7 +38,7 @@ class MadHatter:
         # re-discover and reorder hooks
         # TODO: this can be optimized by only discovering the new plugin
         #   and having a method to re-sort hooks
-        self.hooks, self.tools, self.plugins = self.find_plugins()
+        self.find_plugins()
         # keep tools in sync (embed new tools)
         self.embed_tools()
 
@@ -51,7 +50,7 @@ class MadHatter:
         # re-discover and reorder hooks
         # TODO: this can be optimized by only discovering the new plugin
         #   and having a method to re-sort hooks
-        self.hooks, self.tools, self.plugins = self.find_plugins()
+        self.find_plugins()
         # keep tools in sync (embed new tools)
         self.embed_tools()
 
@@ -117,7 +116,7 @@ class MadHatter:
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed, "INFO")
 
-        return all_hooks, all_tools_fixed, all_plugins
+        self.hooks, self.tools, self.plugins = all_hooks, all_tools_fixed, all_plugins
     
     # check if plugin exists
     def plugin_exists(self, plugin_id):
@@ -135,7 +134,6 @@ class MadHatter:
 
         # easy access to plugin tools
         plugins_tools_index = {t.description: t for t in self.tools}
-        #log(plugins_tools_index, "WARNING")
 
         points_to_be_deleted = []
         

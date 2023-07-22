@@ -75,6 +75,7 @@ def upsert_embedder_setting(
     # crete new collections (different embedder!)
     ccat.load_memory()
     # recreate tools embeddings
+    ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()
 
     return status
