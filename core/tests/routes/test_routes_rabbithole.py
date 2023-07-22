@@ -31,7 +31,7 @@ def test_rabbithole_upload_txt(client):
     assert response.status_code == 200
     json = response.json()
     assert json["filename"] == file_name
-    assert json["content-type"] == content_type
+    assert json["content_type"] == content_type
     assert "File is being ingested" in json["info"]
 
     # check memory contents
@@ -60,7 +60,7 @@ def test_rabbithole_upload_pdf(client):
     assert response.status_code == 200
     json = response.json()
     assert json["filename"] == file_name
-    assert json["content-type"] == content_type
+    assert json["content_type"] == content_type
     assert "File is being ingested" in json["info"]
 
     # check memory contents
