@@ -36,4 +36,3 @@ def test_upsert_embedder_settings(client):
     assert response.status_code == 200
     assert json["selected_configuration"] == 'EmbedderFakeConfig'
     assert json["settings"][0]["value"]["size"] == 64
-

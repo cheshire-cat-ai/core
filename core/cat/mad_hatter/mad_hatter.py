@@ -2,6 +2,7 @@ import glob
 import json
 import importlib
 import time
+import shutil
 import os
 from inspect import getmembers, isfunction  # , signature
 from typing import Dict
@@ -25,7 +26,7 @@ class MadHatter:
 
     def __init__(self, ccat):
         self.ccat = ccat
-        self.hooks, self.tools, self.plugins = self.find_plugins()
+        self.find_plugins()
 
     def install_plugin(self, package_plugin):
 
@@ -34,16 +35,24 @@ class MadHatter:
         pkg_obj = Package(package_plugin)
         pkg_obj.unpackage(plugin_folder)
         
-        # TODO: avoid doing bootstrap
-        #zip_name = pkg_obj.get_name()
-        #plugin_name = zip_name.replace(".zip", "")
-        #plugin_folder = os.path.join(plugin_folder, plugin_name)
-        #plugin, tool = self.find_plugin(plugin_folder)
-        #if plugin:
-        #    self.plugins.append(plugin)
-        #if tool:
-        #    self.tools += tool
-        self.ccat.bootstrap()
+        # re-discover and reorder hooks
+        # TODO: this can be optimized by only discovering the new plugin
+        #   and having a method to re-sort hooks
+        self.find_plugins()
+        # keep tools in sync (embed new tools)
+        self.embed_tools()
+
+    def uninstall_plugin(self, plugin_id):
+
+        # remove plugin folder
+        shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+
+        # re-discover and reorder hooks
+        # TODO: this can be optimized by only discovering the new plugin
+        #   and having a method to re-sort hooks
+        self.find_plugins()
+        # keep tools in sync (embed new tools)
+        self.embed_tools()
 
     def find_plugin(self, folder):
 
@@ -107,7 +116,7 @@ class MadHatter:
             all_tools_fixed.append(t_fix)
         log(all_tools_fixed, "INFO")
 
-        return all_hooks, all_tools_fixed, all_plugins
+        self.hooks, self.tools, self.plugins = all_hooks, all_tools_fixed, all_plugins
     
     # check if plugin exists
     def plugin_exists(self, plugin_id):
@@ -125,7 +134,6 @@ class MadHatter:
 
         # easy access to plugin tools
         plugins_tools_index = {t.description: t for t in self.tools}
-        #log(plugins_tools_index, "WARNING")
 
         points_to_be_deleted = []
         

@@ -71,8 +71,15 @@ def upsert_llm_setting(
         "setting": final_setting
     }
 
-    # reload the cat at runtime
     ccat = request.app.state.ccat
-    ccat.bootstrap()
+    # reload llm and embedder of the cat
+    ccat.load_natural_language()
+    # crete new collections
+    # (in case embedder is not configured, it will be changed automatically and aligned to vendor)
+    # TODO: should we take this feature away?
+    ccat.load_memory()
+    # recreate tools embeddings
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return status

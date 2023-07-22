@@ -69,8 +69,13 @@ def upsert_embedder_setting(
         "setting": final_setting
     }
 
-    # reload the cat at runtime
     ccat = request.app.state.ccat
-    ccat.bootstrap()
+    # reload llm and embedder of the cat
+    ccat.load_natural_language()
+    # crete new collections (different embedder!)
+    ccat.load_memory()
+    # recreate tools embeddings
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return status
