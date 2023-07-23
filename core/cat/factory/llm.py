@@ -173,6 +173,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
 class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
+    task: str = "text2text-generation"
     _pyclass: PyObject = langchain.llms.HuggingFaceEndpoint
 
     class Config:
