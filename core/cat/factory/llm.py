@@ -8,7 +8,6 @@ from cat.factory.custom_llm import LLMDefault, LLMCustom
 
 # Base class to manage LLM configuration.
 class LLMSettings(BaseSettings):
-    task: str = "text2text-generation"
     # class instantiating the model
     _pyclass: None
 
@@ -162,6 +161,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     # }
     repo_id: str
     huggingfacehub_api_token: str
+    task: str = "text2text-generation"
     _pyclass: PyObject = langchain.llms.HuggingFaceHub
 
     class Config:
