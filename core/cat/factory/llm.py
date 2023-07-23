@@ -161,6 +161,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     # }
     repo_id: str
     huggingfacehub_api_token: str
+    task: str = "text2text-generation"
     _pyclass: PyObject = langchain.llms.HuggingFaceHub
 
     class Config:
