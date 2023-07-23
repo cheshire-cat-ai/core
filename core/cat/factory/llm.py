@@ -8,6 +8,7 @@ from cat.factory.custom_llm import LLMDefault, LLMCustom
 
 # Base class to manage LLM configuration.
 class LLMSettings(BaseSettings):
+    task: str = "text2text-generation"
     # class instantiating the model
     _pyclass: None
 
