@@ -57,6 +57,10 @@ class MadHatter:
         #   and stored in a dictionary plugin_id -> plugin_obj
         self.plugins = {}
 
+        # here we keep a cache of found tools and hooks
+        self.hooks = []
+        self.tools = []
+
         # plugins are found in the plugins folder,
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
@@ -70,23 +74,16 @@ class MadHatter:
             # if plugin is valid, keep a reference
             if plugin is not None:
                 self.plugins[folder] = plugin
+                self.hooks += plugin.hooks
+                self.tools += plugin.tools
 
-        log("Plugins found:", "WARNING")
-        for plugin_folder, plugin_obj in self.plugins.items():
-            log(plugin_folder, "WARNING")
+        # sort hooks by priority
+        self.hooks.sort(key=lambda x: x.priority, reverse=True)
 
-        # plugin objects store tools and hooks, but the mad_hatter keeps a cache
-        #   to avoid looping each time over all plugins
-        self.update_hooks_cache()
-        self.update_tools_cache()
-
-    # reload and sort hooks
-    def update_hooks_cache(self):
-        self.hooks = []
-
-    # reload tools
-    def update_tools_cache(self):
-        self.tools = []
+        # fix tools so they have an instance of the cat # TODO: make the cat a singleton
+        for t in self.tools:
+            # Prepare the tool to be used in the Cat (setting the cat instance, adding properties)
+            t.augment_tool(self.ccat)
 
 
     # check if plugin exists
@@ -158,9 +155,8 @@ class MadHatter:
     # execute requested hook
     def execute_hook(self, hook_name, *args):
         for h in self.hooks:
-            if hook_name == h["hook_name"]:
-                hook = h["hook_function"]
-                return hook(*args, cat=self.ccat)
+            if hook_name == h.name:
+                return h.function(*args, cat=self.ccat)
 
         # every hook must have a default in core_plugin
         raise Exception(f"Hook {hook_name} not present in any plugin")

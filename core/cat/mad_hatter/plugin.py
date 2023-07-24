@@ -27,13 +27,13 @@ class Plugin:
         self.active: bool = False
 
         # plugin manifest (name, decription, thumb, etc.)
-        self.manifest = self.load_manifest()
+        self.load_manifest()
 
         # plugin settings
-        self.settings = self.load_settings()
+        self.load_settings()
 
         # lists of hooks and tools
-        self.hooks, self.tools = self.load_hooks_and_tools()
+        self.load_hooks_and_tools()
 
 
     # load contents of plugin.json (if exists)
@@ -65,7 +65,7 @@ class Plugin:
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
 
-        return meta
+        self.manifest = meta
 
     # load plugin settings
     def get_settings_schema(self):
@@ -118,51 +118,22 @@ class Plugin:
         log(py_files_path, "WARNING")
         py_files = glob.glob(py_files_path, recursive=True)
 
-        hooks = []
-        tools = []
+        self.hooks = []
+        self.tools = []
 
         for py_file in py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
             # save a reference to decorated functions
             plugin_module = importlib.import_module(py_filename)
-            hooks += getmembers(plugin_module, self.is_cat_hook)
-            tools += getmembers(plugin_module, self.is_cat_tool)
+            self.hooks += getmembers(plugin_module, self.is_cat_hook)
+            self.tools += getmembers(plugin_module, self.is_cat_tool)
 
         # clean unnecessary tuples
-        hooks = list(map(lambda h: h[1], hooks))
-        tools = list(map(lambda t: t[1], tools))
-
-        for h in hooks:
-            log(h, "ERROR")
-            log('-'*50, "ERROR")
-
-        for t in tools:
-            log(t, "ERROR")
-            log('-'*50, "ERROR")
-
-        return hooks, tools
-
-    '''
-        log("Hooks loading", "INFO")
-        all_hooks = CatHooks.sort_hooks()
-        for hook in all_hooks:
-            log("> " + hook["hook_name"])
-
-        log("Tools loading")
-        all_tools_fixed = []
-        for t in all_tools:
-            t_fix = t[1]  # it was a tuple, the Tool is the second element
-
-            # Prepare the tool to be used in the Cat (setting the cat instanca, adding properties)
-            t_fix.augment_tool(self.ccat)
-
-            all_tools_fixed.append(t_fix)
-        log(all_tools_fixed, "INFO")
-
-        self.hooks, self.tools, self.plugins = all_hooks, all_tools_fixed, all_plugins
-    '''
-
+        self.hooks = list(map(lambda h: h[1], self.hooks))
+        self.tools = list(map(lambda t: t[1], self.tools))
+  
+  
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
     def is_cat_hook(self, obj):
