@@ -1,48 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <link rel="icon" href="favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cheshire Cat Chat</title>
-
-  <script type="module" crossorigin
-    src="https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.css">
-  <link rel="stylesheet" href="main.css">
-</head>
-<body data-theme="light">
-  <h1 class="chat-title">Cat ready to hack!</h1>
-  <cheshire-cat-chat id="cat-chat" auth="meow" callback="myCallback" timeout="5000" url="localhost" port="1865"
-    primary="#00ff00" />
-
-  <script>
-    const catChat = document.querySelector("#cat-chat")
-
-    catChat.defaults = ['Is everything ok?', 'Who are you?', 'What time is it?', 'What\'s up?', 'Hello Cheshire Cat!']
-    catChat.features = ['record', 'web', 'file', 'reset']
-    catChat.files = ['text/plain', 'application/pdf', 'text/markdown']
-
-    function myCallback(message) {
-      console.log("Callback called.")
-      return `Let's have a chat. ${message}`
-    }
-
-    catChat.addEventListener("message", ({ detail }) => {
-      console.log("Message:", detail.text)
-    })
-
-    catChat.addEventListener("upload", ({ detail }) => {
-      console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
-    })
-
-    catChat.addEventListener("notification", ({ detail }) => {
-      console.log("Notification:", detail.text)
-    })
-
-    catChat.addEventListener("failed", () => {
-      console.log("Failed to connect WebSocket after 3 retries.")
-    })
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheshire Cat Chat</title>
+    <link rel="stylesheet" href="widget.css">
+    <link rel="stylesheet" href="main.css">
+    <script type="module" crossorigin src="widget.js"></script>
+  </head>
+  <body>
+    <h1 class="chat-title">Cat ready to hack!</h1>
+    <cheshire-cat-chat id="cat-chat" />
+    <script src="settings.js"></script>
+  </body>
 </html>
