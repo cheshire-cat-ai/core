@@ -82,11 +82,12 @@ class MadHatter:
 
     # reload and sort hooks
     def update_hooks_cache(self):
-        pass
+        self.hooks = []
 
     # reload tools
     def update_tools_cache(self):
-        pass
+        self.tools = []
+
 
     # check if plugin exists
     def plugin_exists(self, plugin_id):

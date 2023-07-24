@@ -129,9 +129,16 @@ class Plugin:
             hooks += getmembers(plugin_module, self.is_cat_hook)
             tools += getmembers(plugin_module, self.is_cat_tool)
 
+        # clean unnecessary tuples
+        hooks = list(map(lambda h: h[1], hooks))
+        tools = list(map(lambda t: t[1], tools))
+
         for h in hooks:
-            log(h[0], "ERROR")
-            log(h[1].priority, "ERROR")
+            log(h, "ERROR")
+            log('-'*50, "ERROR")
+
+        for t in tools:
+            log(t, "ERROR")
             log('-'*50, "ERROR")
 
         return hooks, tools
