@@ -4,7 +4,7 @@ from cat.mad_hatter.decorators import hook
 
 from cat.log import log
 
-@hook
+@hook(priority=0)
 def plugin_settings_get_schema():
     # This hook tells the cat how plugin settings are defined, required vs optional, default values, etc.
     # the standard used is JSON SCHEMA (so a client can auto-generate html forms)
@@ -23,7 +23,7 @@ def plugin_settings_get_schema():
     return None
 
 
-@hook
+@hook(priority=0)
 def plugin_settings_save(settings):
     # this hook passes the plugin settings as sent to the http endpoint (via admin, or any client)
     # the settings to save are validated according to the json schema given above
@@ -37,7 +37,7 @@ def plugin_settings_save(settings):
     pass
 
 
-@hook
+@hook(priority=0)
 def plugin_settings_load():
     # how to load saved settings for the plugin.
     # default: loads the settings.json in current folder

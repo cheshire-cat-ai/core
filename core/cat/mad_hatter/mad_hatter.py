@@ -1,17 +1,13 @@
 import glob
 import json
-import importlib
 import time
 import shutil
 import os
-from inspect import getmembers, isfunction  # , signature
 from typing import Dict
 
 from cat.log import log
-from cat.utils import to_camel_case
-from cat.mad_hatter.decorators import CatTool, CatHooks
 from cat.infrastructure.package import Package
-
+from cat.mad_hatter.plugin import Plugin
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -54,31 +50,13 @@ class MadHatter:
         # keep tools in sync (embed new tools)
         self.embed_tools()
 
-    def find_plugin(self, folder):
-
-        # search for .py
-        py_files_path = os.path.join(folder, "**/*.py")
-        py_files = glob.glob(py_files_path, recursive=True)
-
-        plugin_info = None
-        plugin_tools = []
-
-        # in order to consider it a plugin makes sure there are py files
-        #   inside the plugin directory
-        if len(py_files) > 0:
-            plugin_info = self.get_plugin_metadata(folder)
-
-            for py_file in py_files:
-                plugin_name = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
-
-                plugin_module = importlib.import_module(plugin_name)
-                plugin_tools += getmembers(plugin_module, self.is_cat_tool)
-
-
-        return plugin_info, plugin_tools
-
-    # find all functions in plugin folder decorated with @hook or @tool
+    # discover all plugins
     def find_plugins(self):
+
+        # plugins will be discovered from disk
+        #   and stored in a dictionary plugin_id -> plugin_obj
+        self.plugins = {}
+
         # plugins are found in the plugins folder,
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
@@ -86,44 +64,33 @@ class MadHatter:
         plugin_folders = [core_folder] + glob.glob("cat/plugins/*/")
         # TODO: use cat.get_plugin_path() so it can be mocked from tests
 
-        all_plugins = []
-        all_tools = []
-
+        # discover plugins, folder by folder
         for folder in plugin_folders:
-            plugin_info, plugin_tools = self.find_plugin(folder)
-            if plugin_info:
-                all_plugins.append(plugin_info)
-            if plugin_tools:
-                all_tools += plugin_tools
+            plugin = Plugin(folder)
+            # if plugin is valid, keep a reference
+            if plugin is not None:
+                self.plugins[folder] = plugin
 
-        log("Plugins loading:", "INFO")
-        for plugin in all_plugins:
-            log("> " + plugin["name"], "DEBUG")
+        log("Plugins found:", "WARNING")
+        for plugin_folder, plugin_obj in self.plugins.items():
+            log(plugin_folder, "WARNING")
 
-        log("Hooks loading", "INFO")
-        all_hooks = CatHooks.sort_hooks()
-        for hook in all_hooks:
-            log("> " + hook["hook_name"])
+        # plugin objects store tools and hooks, but the mad_hatter keeps a cache
+        #   to avoid looping each time over all plugins
+        self.update_hooks_cache()
+        self.update_tools_cache()
 
-        log("Tools loading")
-        all_tools_fixed = []
-        for t in all_tools:
-            t_fix = t[1]  # it was a tuple, the Tool is the second element
+    # reload and sort hooks
+    def update_hooks_cache(self):
+        pass
 
-            # Prepare the tool to be used in the Cat (setting the cat instanca, adding properties)
-            t_fix.augment_tool(self.ccat)
+    # reload tools
+    def update_tools_cache(self):
+        pass
 
-            all_tools_fixed.append(t_fix)
-        log(all_tools_fixed, "INFO")
-
-        self.hooks, self.tools, self.plugins = all_hooks, all_tools_fixed, all_plugins
-    
     # check if plugin exists
     def plugin_exists(self, plugin_id):
-
-        # there should be only one plugin with that id
-        found = [plugin for plugin in self.plugins if plugin["id"] == plugin_id]
-        return len(found) > 0
+        return plugin_id in self.plugins.keys()
 
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
@@ -182,86 +149,10 @@ class MadHatter:
 
                 log(f"Newly embedded tool: {tool.description}", "WARNING")
 
-    # Tries to load the plugin metadata from the provided plugin folder
-    def get_plugin_metadata(self, plugin_folder: str):
-        plugin_id = os.path.basename(os.path.normpath(plugin_folder))
-        plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = os.path.join(plugin_folder, plugin_json_metadata_file_name)
-        meta = {"id": plugin_id}
-        json_file_data = {}
-
-        if os.path.isfile(plugin_json_metadata_file_path):
-            try:
-                json_file = open(plugin_json_metadata_file_path)
-                json_file_data = json.load(json_file)
-                json_file.close()
-            except Exception:
-                log(f"Loading plugin {plugin_folder} metadata, defaulting to generated values", "INFO")
-
-        meta["name"] = json_file_data.get("name", to_camel_case(plugin_id))
-        meta["description"] = json_file_data.get("description", (
-            "Description not found for this plugin. "
-            f"Please create a `{plugin_json_metadata_file_name}`"
-            " in the plugin folder."
-        ))
-        meta["author_name"] = json_file_data.get("author_name", "Unknown author")
-        meta["author_url"] = json_file_data.get("author_url", "")
-        meta["plugin_url"] = json_file_data.get("plugin_url", "")
-        meta["tags"] = json_file_data.get("tags", "unknown")
-        meta["thumb"] = json_file_data.get("thumb", "")
-        meta["version"] = json_file_data.get("version", "0.0.1")
-
-        return meta
-    
     # activate / deactivate plugin
-    def toggle_plugin(plugin_id):
-        log(f"toggle plugin {plugin_id}")
+    def toggle_plugin(self, plugin_id):
+        log(f"toggle plugin {plugin_id}", "WARNING")
         return
-    
-    # Tries to get the plugin settings from the provided plugin id
-    def get_plugin_settings(self, plugin_id: str):
-        settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        settings = { "active": False }
-
-        if os.path.isfile(settings_file_path):
-            try:
-                json_file = open(settings_file_path)
-                settings = json.load(json_file)
-                if "active" not in settings:
-                    settings["active"] = False
-                json_file.close()
-            except Exception:
-                log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
-    
-        return settings
-    
-    # Tries to save the plugin settings of the provided plugin id
-    def save_plugin_settings(self, plugin_id: str, settings: Dict):
-        settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        updated_settings = settings
-
-        try:
-            json_file = open(settings_file_path, 'r+')
-            current_settings = json.load(json_file)
-            json_file.close()
-            updated_settings = { **current_settings, **settings }
-            json_file = open(settings_file_path, 'w')
-            json.dump(updated_settings, json_file, indent=4)
-            json_file.close()
-        except Exception:
-            log(f"Unable to save plugin {plugin_id} settings", "INFO")
-    
-        return updated_settings
-
-    # a plugin function has to be decorated with @hook
-    # (which returns a function named "cat_function_wrapper")
-    def is_cat_hook(self, obj):
-        return isfunction(obj) and obj.__name__ == "cat_hook_wrapper"
-
-    # a plugin tool function has to be decorated with @tool
-    # (which returns an instance of langchain.agents.Tool)
-    def is_cat_tool(self, obj):
-        return isinstance(obj, CatTool)
 
     # execute requested hook
     def execute_hook(self, hook_name, *args):
