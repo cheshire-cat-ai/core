@@ -75,10 +75,20 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    raise HTTPException(
-        status_code = 422,
-        detail = { "error": "to be implemented" }
-    )
+    # check if plugin exists
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
+    
+    # toggle plugin
+    ccat.mad_hatter.toggle_plugin(plugin_id)
+
+    return {
+        "status": "success",
+        "info": f"Plugin {plugin_id} toggled"
+    }
 
 
 @router.get("/{plugin_id}", status_code=200)
