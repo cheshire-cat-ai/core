@@ -213,6 +213,11 @@ class MadHatter:
 
         return meta
     
+    # activate / deactivate plugin
+    def toggle_plugin(plugin_id):
+        log(f"toggle plugin {plugin_id}")
+        return
+    
     # Tries to get the plugin settings from the provided plugin id
     def get_plugin_settings(self, plugin_id: str):
         settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
