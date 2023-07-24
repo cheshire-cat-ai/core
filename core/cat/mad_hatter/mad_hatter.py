@@ -72,8 +72,9 @@ class MadHatter:
         for folder in plugin_folders:
             plugin = Plugin(folder)
             # if plugin is valid, keep a reference
-            if plugin is not None:
-                self.plugins[folder] = plugin
+            plugin_is_valid = (len(plugin.tools) > 0) or (len(plugin.hooks) > 0)
+            if plugin_is_valid:
+                self.plugins[plugin.id] = plugin
                 self.hooks += plugin.hooks
                 self.tools += plugin.tools
 
@@ -150,7 +151,10 @@ class MadHatter:
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
-        return
+        if self.plugin_exists(plugin_id):
+            self.plugins[plugin_id].toggle()
+
+        # TODO: sync should happen
 
     # execute requested hook
     def execute_hook(self, hook_name, *args):

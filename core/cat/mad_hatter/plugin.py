@@ -16,7 +16,7 @@ from cat.log import log
 class Plugin:
 
     def __init__(self, plugin_absolute_path):
-
+        
         # where the plugin is on disk
         self.path: str = plugin_absolute_path
 
@@ -133,7 +133,11 @@ class Plugin:
         self.hooks = list(map(lambda h: h[1], self.hooks))
         self.tools = list(map(lambda t: t[1], self.tools))
   
-  
+
+    def toggle(self):
+        self.active = not self.active
+        
+
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
     def is_cat_hook(self, obj):

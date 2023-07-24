@@ -15,8 +15,10 @@ async def list_available_plugins(request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    # plugins are managed by the MadHatter class a = b if b else val
-    plugins = ccat.mad_hatter.plugins or []
+    # plugins are managed by the MadHatter class
+    plugins = []
+    for p in ccat.mad_hatter.plugins.values():
+        plugins.append(p.manifest)
 
     # retrieve plugins from official repo
     registry = []
@@ -97,18 +99,18 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     # access cat instance
     ccat = request.app.state.ccat
-
+    
     if not ccat.mad_hatter.plugin_exists(plugin_id):
         raise HTTPException(
             status_code = 404,
             detail = { "error": "Plugin not found" }
         )
 
-    plugin_info = [plugin for plugin in ccat.mad_hatter.plugins if plugin["id"] == plugin_id]
+    plugin_info = ccat.mad_hatter.plugins[plugin_id].manifest
 
     return {
         "status": "success",
-        "data": plugin_info[0]
+        "data": plugin_info
     }
 
 
