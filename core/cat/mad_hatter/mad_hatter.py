@@ -31,11 +31,7 @@ class MadHatter:
         pkg_obj = Package(package_plugin)
         pkg_obj.unpackage(plugin_folder)
         
-        # re-discover and reorder hooks
-        # TODO: this can be optimized by only discovering the new plugin
-        #   and having a method to re-sort hooks
         self.find_plugins()
-        # keep tools in sync (embed new tools)
         self.embed_tools()
 
     def uninstall_plugin(self, plugin_id):
@@ -43,11 +39,8 @@ class MadHatter:
         # remove plugin folder
         shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
 
-        # re-discover and reorder hooks
-        # TODO: this can be optimized by only discovering the new plugin
-        #   and having a method to re-sort hooks
+     
         self.find_plugins()
-        # keep tools in sync (embed new tools)
         self.embed_tools()
 
     # discover all plugins

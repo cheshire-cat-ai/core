@@ -115,7 +115,6 @@ class Plugin:
 
         # search for .py files in folder
         py_files_path = os.path.join(self.path, "**/*.py")
-        log(py_files_path, "WARNING")
         py_files = glob.glob(py_files_path, recursive=True)
 
         self.hooks = []
@@ -136,7 +135,7 @@ class Plugin:
 
     def toggle(self):
         self.active = not self.active
-        
+
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
