@@ -25,7 +25,9 @@ RUN pip install -U pip && \
     pip install pycryptodome &&\
     pip install --force-reinstall requests-toolbelt==0.10.1 &&\
     pip install --upgrade requests &&\
-    pip install --force-reinstall urllib3==1.26.16
+    pip install --force-reinstall urllib3==1.26.16 &&\
+    pip install asyncio &&\
+    pip install nest_asyncio
 
 ### FINISH ###
 # ready to go (docker-compose up)
