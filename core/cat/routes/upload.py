@@ -1,7 +1,10 @@
+import mimetypes
 import requests
 from typing import Dict
 
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
+
+from cat.log import log
 
 router = APIRouter()
 
@@ -27,8 +30,19 @@ async def upload_file(
     ccat = request.app.state.ccat
 
     # Check the file format is supported
-    admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
-    ccat.rabbit_hole.check_mime_type(file, admitted_mime_types)
+    admitted_types = ccat.rabbit_hole.file_handlers.keys()
+
+    # Get file mime type
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
+
+    # check if MIME type of uploaded file is supported
+    if content_type not in admitted_types:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'}
+        )
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
@@ -71,7 +85,7 @@ async def upload_url(
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap, summary
+                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap, summary
             )
             return {"url": url, "info": "Website is being ingested asynchronously"}
         else:
@@ -103,9 +117,15 @@ async def upload_memory(
     # access cat instance
     ccat = request.app.state.ccat
 
-    # Check the file format is supported
-    admitted_mime_types = ["application/json"]
-    ccat.rabbit_hole.check_mime_type(file, admitted_mime_types)
+    # Get file mime type
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
+    if content_type != "application/json":
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": f"MIME type {content_type} not supported. Admitted types: 'application/json'"
+            })
 
     # Ingest memories in background and notify client
     background_tasks.add_task(ccat.rabbit_hole.ingest_memory, file)
