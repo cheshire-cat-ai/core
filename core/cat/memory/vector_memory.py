@@ -142,7 +142,6 @@ class VectorMemoryCollection(Qdrant):
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
                 self.create_collection()
-                # self.recover_dump_if_exists(dump=alias.replace('/', '-'), collection=self.collection_name)
         except:
             self.create_collection()
 
@@ -262,6 +261,7 @@ class VectorMemoryCollection(Qdrant):
         self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
         snapshot_url_in = "http://"+ str(self.client.host) + ":" + str(self.client.port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
         snapshot_url_out = folder + self.snapshot_info.name
+        # rename snapshots for a easyer restore in the future
         alias = self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name
         response = requests.get(snapshot_url_in)
         open(snapshot_url_out, "wb").write(response.content)
@@ -271,30 +271,3 @@ class VectorMemoryCollection(Qdrant):
             self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
         log(f'Dump"{new_name}" completed', "WARNING")
         # dump complete
-    
-    # recovering
-    # def recover_dump_if_exists(self, dump, collection, folder="dormouse/"):
-    #     self.cat.mad_hatter.execute_hook('before_collection_created', self)
-    #     url = folder + dump + ".snapshot"
-    #     print("url per restore: ", url)
-    #     if os.path.isfile(url):
-    #         print("sei qui")
-    #         url = "file:///" + url
-    #         self.client.recover_snapshot(collection, url)
-    #         print(collection)
-    #         print("recovered")
-    #         self.client.update_collection_aliases(
-    #             change_aliases_operations=[
-    #                 CreateAliasOperation(
-    #                     create_alias=CreateAlias(
-    #                         collection_name=self.collection_name,
-    #                         alias_name=self.embedder_name + "_" + self.collection_name
-    #                     )
-    #                 )
-    #             ]
-    #         )
-    #         self.cat.mad_hatter.execute_hook('after_collection_created', self)
-    #         log(f'Dump "{dump}" recovered', "WARNING")
-    #     else:
-    #         print("sei in else")
-    #         self.create_collection()
