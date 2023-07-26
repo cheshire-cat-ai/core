@@ -21,7 +21,7 @@ Action Input: the input to the action
 Observation: the result of the action
 
 When you have a final answer respond with:
-Final Answer: the final answer to the original input question (or "?" if no tool is adapt)
+Final Answer: the final answer to the original input question
 
 Begin!
 
