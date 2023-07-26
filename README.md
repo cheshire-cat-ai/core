@@ -129,9 +129,9 @@ Whilst for the current progress of development, take a look at the [projects](ht
 
 ## Contributing
 
-Here is a [full guide to contributing](./readme/CONTRIBUTING.md).
+Send your pull request to the `develop` branch. Here is a [full guide to contributing](./readme/CONTRIBUTING.md).
 
-You can start by:
+To get started you can:
 - Trying out the Cat
 - Sharing on social media
 - Join our [community on Discord](https://discord.gg/bHX5sNFCYU)
