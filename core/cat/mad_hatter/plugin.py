@@ -128,10 +128,21 @@ class Plugin:
             self.hooks += getmembers(plugin_module, self.is_cat_hook)
             self.tools += getmembers(plugin_module, self.is_cat_tool)
 
-        # clean unnecessary tuples
-        self.hooks = list(map(lambda h: h[1], self.hooks))
-        self.tools = list(map(lambda t: t[1], self.tools))
-  
+        # clean and enrich instances
+        self.hooks = list(map(self.clean_hook, self.hooks))
+        self.tools = list(map(self.clean_tool, self.tools))
+
+    def clean_hook(self, hook):
+        # getmembers returns a tuple
+        h = hook[1]
+        h.plugin_id = self.id
+        return h
+
+    def clean_tool(self, tool):
+        # getmembers returns a tuple
+        t = tool[1]
+        t.plugin_id = self.id
+        return t
 
     def toggle(self):
         # TODO: save in metadata.json

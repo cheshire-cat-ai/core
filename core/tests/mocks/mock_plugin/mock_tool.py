@@ -1,4 +1,4 @@
-from cat.mad_hatter.decorators import hook, tool
+from cat.mad_hatter.decorators import tool
 
 
 @tool(return_direct=True)

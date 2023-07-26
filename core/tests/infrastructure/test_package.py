@@ -1,4 +1,5 @@
 import os
+import shutil
 from tests.utils import create_mock_plugin_zip
 from cat.infrastructure.package import Package
 
@@ -12,8 +13,7 @@ def test_unpackage():
     assert os.path.exists("tests/infrastructure/mock_plugin/mock_tool.py")
     
     os.remove(zip_path)
-    os.remove("tests/infrastructure/mock_plugin/mock_tool.py")
-    os.rmdir("tests/infrastructure/mock_plugin")
+    shutil.rmtree("tests/infrastructure/mock_plugin")
 
 
 def test_get_name_and_extension():

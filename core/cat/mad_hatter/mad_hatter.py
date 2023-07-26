@@ -36,12 +36,14 @@ class MadHatter:
 
     def uninstall_plugin(self, plugin_id):
 
-        # remove plugin folder
-        shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+        if self.plugin_exists(plugin_id):
 
-     
-        self.find_plugins()
-        self.embed_tools()
+            # remove plugin folder
+            shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+
+            # update cache and embeddings        
+            self.find_plugins()
+            self.embed_tools()
 
     # discover all plugins
     def find_plugins(self):
