@@ -2,18 +2,21 @@ import os
 import time
 import pytest
 import shutil
-from tests.utils import create_mock_plugin_zip
+from tests.utils import create_mock_plugin_zip, get_embedded_tools
 
 
 # TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
 # TODO: mock the plugin folder, otherwise uploading a plugin from here will make the production app reload
 def test_plugin_zip_upload(client):
 
+    # during tests, the cat uses a different folder for plugins
+    mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
+
     # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
     response = client.get("/plugins")
     installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
     assert "mock_plugin" not in installed_plugins_names
-    assert not os.path.exists("/app/cat/plugins/mock_plugin")
+    assert not os.path.exists(mock_plugin_final_folder)
 
     # create zip file with a plugin
     zip_path = create_mock_plugin_zip()
@@ -41,8 +44,8 @@ def test_plugin_zip_upload(client):
     installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
     print(installed_plugins_names)
     assert "mock_plugin" in installed_plugins_names
-    # plugin has been actually extracted in plugins folder
-    assert os.path.exists("/app/cat/plugins/mock_plugin")
+    # plugin has been actually extracted in (mock) plugins folder
+    assert os.path.exists(mock_plugin_final_folder)
 
     # check whether new tools have been embedded
     tools = get_embedded_tools(client)
@@ -57,7 +60,7 @@ def test_plugin_zip_upload(client):
     response = client.get("/plugins")
     installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
     assert "mock_plugin" not in installed_plugins_names
-    assert not os.path.exists("/app/cat/plugins/mock_plugin")
+    assert not os.path.exists(mock_plugin_final_folder)
 
     # plugin tool disappeared
     tools = get_embedded_tools(client)
@@ -67,11 +70,3 @@ def test_plugin_zip_upload(client):
     os.remove(zip_path) # delete zip from tests folder
 
 
-# utility to retrieve embedded tools from endpoint
-def get_embedded_tools(client):
-    params = {
-        "text": "random"
-    }
-    response = client.get(f"/memory/recall/", params=params)
-    json = response.json()
-    return json["vectors"]["collections"]["procedural"]

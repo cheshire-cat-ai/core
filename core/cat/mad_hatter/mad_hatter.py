@@ -58,11 +58,12 @@ class MadHatter:
         #   plus the default core plugin
         #   (where default hooks and tools are defined)
         core_folder = "cat/mad_hatter/core_plugin/"
-        plugin_folders = [core_folder] + glob.glob("cat/plugins/*/")
-        # TODO: use cat.get_plugin_path() so it can be mocked from tests
+        # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
+        plugin_folder = self.ccat.get_plugin_path().replace("/app/", "") # using realtive path for imports
+        all_plugin_folders = [core_folder] + glob.glob(f"{plugin_folder}*/")
 
         # discover plugins, folder by folder
-        for folder in plugin_folders:
+        for folder in all_plugin_folders:
             plugin = Plugin(folder)
             # if plugin is valid, keep a reference
             plugin_is_valid = (len(plugin.tools) > 0) or (len(plugin.hooks) > 0)

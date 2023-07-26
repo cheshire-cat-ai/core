@@ -134,6 +134,7 @@ class Plugin:
   
 
     def toggle(self):
+        # TODO: save in metadata.json
         self.active = not self.active
 
 

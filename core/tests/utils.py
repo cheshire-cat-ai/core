@@ -41,3 +41,13 @@ def create_mock_plugin_zip():
         root_dir="tests/mocks/",
         base_dir="mock_plugin"
     )
+
+
+# utility to retrieve embedded tools from endpoint
+def get_embedded_tools(client):
+    params = {
+        "text": "random"
+    }
+    response = client.get(f"/memory/recall/", params=params)
+    json = response.json()
+    return json["vectors"]["collections"]["procedural"]

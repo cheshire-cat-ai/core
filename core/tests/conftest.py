@@ -11,6 +11,7 @@ from cat.db import models
 from cat.db.database import Database
 from cat.log import log
 
+from cat.looking_glass.cheshire_cat import CheshireCat
 from qdrant_client import QdrantClient
 from cat.memory.vector_memory import VectorMemory
 
@@ -21,7 +22,12 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     """
     Create a new setup on each test case, with new mocks for both Qdrant and TinyDB
     """
-    
+
+    # Use mock plugin folder
+    def mock_plugin_folder(self, *args, **kwargs):
+        return "tests/mocks/mock_plugin_folder/"
+    monkeypatch.setattr(CheshireCat, "get_plugin_path", mock_plugin_folder)
+
     # Use in memory vector db
     def mock_connect_to_vector_memory(self, *args, **kwargs):
         self.vector_db = QdrantClient(":memory:")
