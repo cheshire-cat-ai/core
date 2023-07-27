@@ -34,6 +34,7 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
+
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
 
@@ -218,9 +219,7 @@ class RabbitHole:
                     mimetype=content_type,
                     source=source).from_data(data=file_bytes,
                                              mime_type=content_type)
-
-        # Get parsers
-
+        
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
