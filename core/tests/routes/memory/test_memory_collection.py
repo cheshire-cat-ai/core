@@ -1,14 +1,4 @@
-from tests.utils import send_websocket_message
-
-
-# utility to get collections and point count from `GET /memory/collections` in a simpler format
-def get_collections_names_and_point_count(client):
-
-    response = client.get("/memory/collections/")
-    json = response.json()
-    assert response.status_code == 200
-    collections_n_points = { c["name"]: c["vectors_count"] for c in json["collections"]}
-    return collections_n_points
+from tests.utils import send_websocket_message, get_collections_names_and_point_count
 
 
 def test_memory_collections_created(client):

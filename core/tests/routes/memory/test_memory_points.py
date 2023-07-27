@@ -20,12 +20,12 @@ def test_point_deleted(client):
 
     # delete point (wrong collection)
     res = client.delete(f"/memory/point/wrong_collection/{memory['id']}/")
-    assert res.status_code == 422
+    assert res.status_code == 400
     assert res.json()["detail"]["error"] == "Collection does not exist."
 
     # delete point (wrong id)
     res = client.delete(f"/memory/point/episodic/wrong_id/")
-    assert res.status_code == 422
+    assert res.status_code == 400
     assert res.json()["detail"]["error"] == "Point does not exist."
 
     # delete point (all riiiiight)

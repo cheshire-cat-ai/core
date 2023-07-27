@@ -46,7 +46,7 @@ async def install_plugin(
     content_type = mimetypes.guess_type(file.filename)[0]
     if content_type not in admitted_mime_types:
         raise HTTPException(
-            status_code = 422,
+            status_code = 400,
             detail={
                 "error": f'MIME type `{file.content_type}` not supported. Admitted types: {", ".join(admitted_mime_types)}'
             },

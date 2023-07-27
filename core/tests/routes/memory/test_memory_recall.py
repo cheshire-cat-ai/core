@@ -34,7 +34,7 @@ def test_memory_recall_without_query_error(client):
 
     response = client.get(f"/memory/recall/")
     json = response.json()
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 # search with query

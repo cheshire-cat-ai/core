@@ -83,7 +83,7 @@ public.mount(cheshire_cat_api)
 @cheshire_cat_api.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     return JSONResponse(
-        status_code=422,
+        status_code=400,
         content={"error": exc.errors()},
     )
 

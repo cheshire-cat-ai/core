@@ -39,7 +39,7 @@ async def upload_file(
     # check if MIME type of uploaded file is supported
     if content_type not in admitted_types:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail={
                 "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'}
         )
@@ -91,7 +91,7 @@ async def upload_url(
             return {"url": url, "info": "Website is being ingested asynchronously"}
         else:
             raise HTTPException(
-                status_code=422,
+                status_code=400,
                 detail={
                     "error": "Invalid URL",
                     "url": url
@@ -99,7 +99,7 @@ async def upload_url(
             )
     except requests.exceptions.RequestException as _e:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail={
                 "error": "Unable to reach the link",
                 "url": url
@@ -123,7 +123,7 @@ async def upload_memory(
     log(f"Uploaded {content_type} down the rabbit hole", "INFO")
     if content_type != "application/json":
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail={
                 "error": f"MIME type {content_type} not supported. Admitted types: 'application/json'"
             })
@@ -133,7 +133,8 @@ async def upload_memory(
 
     # reply to client
     return {
-        "error": False,
+        "status": "success",
         "filename": file.filename,
-        "content": "Memory is being ingested asynchronously"
+        "content_type": file.content_type,
+        "info": "Memory is being ingested asynchronously"
     }
