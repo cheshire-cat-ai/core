@@ -142,6 +142,8 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
         to_return[collection_id] = ret
 
         ccat.load_memory()  # recreate the long term memories
+        ccat.mad_hatter.find_plugins()
+        ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
@@ -166,6 +168,8 @@ async def wipe_collections(
         to_return[c] = ret
 
     ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
