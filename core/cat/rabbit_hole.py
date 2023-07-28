@@ -20,8 +20,7 @@ from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
 
 class RabbitHole:
-    """
-
+    """Manages content ingestion. I'm late... I'm late!
     """
 
     def __init__(self, cat):
@@ -77,7 +76,7 @@ class RabbitHole:
         } for p in declarative_memories]
         vectors = [v["vector"] for v in declarative_memories]
 
-        log(f"Preparing to load {len(vectors)} vector memories", "ERROR")
+        log(f"Preparing to load {len(vectors)} vector memories", "INFO")
 
         # Check embedding size is correct
         embedder_size = self.cat.memory.vectors.embedder_size
@@ -87,7 +86,7 @@ class RabbitHole:
             message = f'Embedding size mismatch: vectors length should be {embedder_size}'
             raise Exception(message)
 
-        # Upsert memories in batch mode
+        # Upsert memories in batch mode # TODO: make a method for batch inserting inside vector memory
         self.cat.memory.vectors.vector_db.upsert(
             collection_name="declarative",
             points=models.Batch(
