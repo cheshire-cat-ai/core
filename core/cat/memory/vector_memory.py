@@ -2,6 +2,7 @@ import os
 import sys
 import socket
 from typing import Any
+import requests
 
 from cat.log import log
 from qdrant_client import QdrantClient
@@ -89,6 +90,10 @@ class VectorMemory:
                 host=qdrant_host,
                 port=qdrant_port,
             )
+            
+            # if don't explicit Qdrant doesn't return these attributes
+            self.vector_db.host = qdrant_host
+            self.vector_db.port = qdrant_port
 
 
 class VectorMemoryCollection(Qdrant):
@@ -130,7 +135,9 @@ class VectorMemoryCollection(Qdrant):
                 log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
-                # TODO: dump collection on disk before deleting, so it can be recovered
+                # dump collection on disk before deleting
+                self.save_dump()
+                log(f'Dump "{self.collection_name}" completed', "INFO")
 
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
@@ -242,3 +249,25 @@ class VectorMemoryCollection(Qdrant):
         )
 
         return all_points
+    
+    # dump collection on disk before deleting
+    def save_dump(self, folder="dormouse/"):
+        if os.path.isdir(folder):
+            log(f'Directory dormouse exists', "WARNING")
+        else:
+            log(f'Directory dormouse NOT exists', "WARNING")
+            os.mkdir(folder)
+        
+        self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
+        snapshot_url_in = "http://"+ str(self.client.host) + ":" + str(self.client.port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
+        snapshot_url_out = folder + self.snapshot_info.name
+        # rename snapshots for a easyer restore in the future
+        alias = self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name
+        response = requests.get(snapshot_url_in)
+        open(snapshot_url_out, "wb").write(response.content)
+        new_name = folder + alias.replace('/', '-') + ".snapshot"
+        os.rename(snapshot_url_out, new_name)
+        for s in self.client.list_snapshots(self.collection_name):
+            self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
+        log(f'Dump"{new_name}" completed', "WARNING")
+        # dump complete
