@@ -3,9 +3,11 @@ on:
   pull_request:
     branches:
       - "main"
+      - "develop"
   push:
     branches:
-      - "master"
+      - "main"
+      - "develop"
 
 jobs:
   pylint:
@@ -30,3 +32,16 @@ jobs:
         run: pip install .[dev]
       - name: Pylint
         run: pylint -f actions ./
+
+  test:
+    needs: [ pylint ]
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cat up
+        run: docker-compose up -d
+      - name: Test
+        run: docker exec cheshire_cat_core python -m pytest --color=yes .
+      - name: Cat down
+        run: docker-compose down
