@@ -90,10 +90,6 @@ class VectorMemory:
                 host=qdrant_host,
                 port=qdrant_port,
             )
-            
-            # if don't explicit Qdrant doesn't return these attributes
-            self.vector_db.host = qdrant_host
-            self.vector_db.port = qdrant_port
 
 
 class VectorMemoryCollection(Qdrant):
@@ -259,7 +255,7 @@ class VectorMemoryCollection(Qdrant):
             os.mkdir(folder)
         
         self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
-        snapshot_url_in = "http://"+ str(self.client.host) + ":" + str(self.client.port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
+        snapshot_url_in = "http://"+ str(self.client._client._host) + ":" + str(self.client._client._port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
         snapshot_url_out = folder + self.snapshot_info.name
         # rename snapshots for a easyer restore in the future
         alias = self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name
