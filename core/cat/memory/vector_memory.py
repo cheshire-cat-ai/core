@@ -6,6 +6,7 @@ import requests
 
 from cat.log import log
 from qdrant_client import QdrantClient
+from qdrant_client.qdrant_remote import QdrantRemote
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
@@ -72,9 +73,6 @@ class VectorMemory:
         else:
             qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
 
-            log(f"Qdrant host: {qdrant_host}","INFO")
-            log(f"Qdrant port: {qdrant_port}","INFO")
-
             try:
                 s = socket.socket()
                 s.connect((qdrant_host, qdrant_port))
@@ -91,10 +89,6 @@ class VectorMemory:
                 port=qdrant_port,
             )
             
-            # if don't explicit Qdrant doesn't return these attributes
-            self.vector_db.host = qdrant_host
-            self.vector_db.port = qdrant_port
-
 
 class VectorMemoryCollection(Qdrant):
 
@@ -142,7 +136,8 @@ class VectorMemoryCollection(Qdrant):
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
                 self.create_collection()
-        except:
+        except Exception as e:
+            log(e, "ERROR")
             self.create_collection()
 
         log(f"Collection {self.collection_name}:", "INFO")
@@ -250,16 +245,29 @@ class VectorMemoryCollection(Qdrant):
 
         return all_points
     
+
+    def db_is_remote(self):
+        return isinstance(self.client._client, QdrantRemote)
+
+    
     # dump collection on disk before deleting
     def save_dump(self, folder="dormouse/"):
+        
+        # only do snapshotting if using remote Qdrant
+        if not self.db_is_remote():
+            return
+
+        host = self.client._client._host
+        port = self.client._client._port
+
         if os.path.isdir(folder):
-            log(f'Directory dormouse exists', "WARNING")
+            log(f'Directory dormouse exists', "INFO")
         else:
-            log(f'Directory dormouse NOT exists', "WARNING")
+            log(f'Directory dormouse NOT exists, creating it.', "WARNING")
             os.mkdir(folder)
         
         self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
-        snapshot_url_in = "http://"+ str(self.client.host) + ":" + str(self.client.port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
+        snapshot_url_in = "http://"+ str(host) + ":" + str(port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
         snapshot_url_out = folder + self.snapshot_info.name
         # rename snapshots for a easyer restore in the future
         alias = self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name
@@ -269,5 +277,5 @@ class VectorMemoryCollection(Qdrant):
         os.rename(snapshot_url_out, new_name)
         for s in self.client.list_snapshots(self.collection_name):
             self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
-        log(f'Dump"{new_name}" completed', "WARNING")
+        log(f'Dump "{new_name}" completed', "WARNING")
         # dump complete
