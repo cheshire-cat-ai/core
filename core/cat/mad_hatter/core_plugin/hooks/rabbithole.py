@@ -94,7 +94,7 @@ def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> Li
     Returns
     -------
     docs : List[Document]
-        List of chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+        List of chunked langchain documents to be stored in the episodic memory.
 
     """
 
@@ -136,58 +136,38 @@ def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document
     Returns
     -------
     chunks : List[Document]
-        List of modified chunked langchain `Document` to be optionally summarized and stored in episodic memory.
+        List of modified chunked langchain documents to be stored in the episodic memory.
 
     """
 
     return chunks
 
 
-# Hook called when a list of Document is summarized from the rabbit hole.
-# Should return a list of summaries (each is a langchain Document)
-# To deactivate summaries, override this hook and just return an empty list
+# Hook called when a list of Document is going to be inserted in memory from the rabbit hole.
+# Here you can edit/summarize the documents before inserting them in memory
+# Should return a list of documents (each is a langchain Document)
 @hook(priority=0)
-def rabbithole_summarizes_documents(docs: List[Document], cat) -> List[Document]:
-    """Hook into the summarization pipeline.
+def before_rabbithole_stores_documents(docs: List[Document], cat) -> List[Document]:
+    """Hook into the memory insertion pipeline.
 
-    Allows to modify how the list of `Document` is summarized before being inserted in the vector memory.
+    Allows to modify how the list of `Document` is inserted in the vector memory.
 
-    For example, the hook allows to make the summarization optional or to apply another summarization technique.
-    Default is a one level group summarization.
+    For example, this hook is a good point to summarize the incoming documents and save both original and
+    summarized contents.
+    An official plugin is available to test this procedure.
 
     Parameters
     ----------
     docs : List[Document]
-        List of Langchain `Document` to be summarized.
+        List of Langchain `Document` to be edited.
     cat: CheshireCat
         Cheshire Cat instance.
 
     Returns
     -------
-    all_summaries : List[Document]
-        List of Langchain `Document` with text summaries of the original ones.
+    docs : List[Document]
+        List of edited Langchain documents.
 
     """
 
-    if not docs:
-        return []
-
-    # we will store iterative summaries all together in a list
-    all_summaries: List[Document] = []
-
-    group_size = 5
-    separator = "\n --> "
-    # make summaries of groups of docs
-    for i in range(0, len(docs), group_size):
-        group = docs[i : i + group_size]
-        group = list(map(lambda d: d.page_content, group))
-
-        text_to_summarize = separator + separator.join(group)
-        summary = cat.summarization_chain.run(text_to_summarize)
-        summary = Document(page_content=summary)
-        summary.metadata["is_summary"] = True
-
-        # add summary to list of all summaries
-        all_summaries.append(summary)
-
-    return all_summaries
+    return docs
