@@ -3,12 +3,12 @@ import time
 import json
 import mimetypes
 from typing import List, Union
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.parse import urlparse
+from urllib.error import HTTPError
 
 from cat.log import log
 from starlette.datastructures import UploadFile
-from fastapi import HTTPException
 from langchain.docstore.document import Document
 from qdrant_client.http import models
 
@@ -188,9 +188,15 @@ class RabbitHole:
                 content_type = "text/html"
                 source = file
 
-                # Get binary content of url
-                with urlopen(file) as response:
-                    file_bytes = response.read()
+                # Make a request with a fake browser name
+                request = Request(file, headers={'User-Agent': "Magic Browser"})
+
+                try:
+                    # Get binary content of url
+                    with urlopen(request) as response:
+                        file_bytes = response.read()
+                except HTTPError as e:
+                    log(e, "ERROR")
             else:
 
                 # Get mime type from file extension and source
