@@ -2,7 +2,7 @@
 from datetime import datetime
 from uuid import uuid4
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Union
+from typing import Optional, Dict, Union, List
 
 
 def generate_uuid():
@@ -15,7 +15,7 @@ def generate_timestamp():
 # base class for setting, used to annotate fastAPI endpoints
 class SettingBody(BaseModel):
     name: str
-    value: Dict
+    value: Union[Dict, List]
     category: Optional[str]
 
 # actual setting class, with additional auto generated id and update time

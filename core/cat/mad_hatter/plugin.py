@@ -15,7 +15,7 @@ from cat.log import log
 
 class Plugin:
 
-    def __init__(self, plugin_absolute_path):
+    def __init__(self, plugin_absolute_path: str, active: bool):
         
         # where the plugin is on disk
         self.path: str = plugin_absolute_path
@@ -23,19 +23,15 @@ class Plugin:
         # plugin id is just the folder name
         self.id: str = os.path.basename(os.path.normpath(plugin_absolute_path))
 
-        # all plugins start inactive
-        self.active: bool = False
-
         # plugin manifest (name, decription, thumb, etc.)
         self.load_manifest()
 
-        # plugin settings
-        self.load_settings()
-
-        # lists of hooks and tools
-        self.load_hooks_and_tools()
-
-
+        # all plugins start inactive, they are activated from endpoints (see self.toggle)
+        if active:
+            self.activate()
+        else:
+            self.deactivate()
+    
     # load contents of plugin.json (if exists)
     def load_manifest(self):
 
@@ -66,6 +62,29 @@ class Plugin:
         meta["version"] = json_file_data.get("version", "0.0.1")
 
         self.manifest = meta
+        
+    def activate(self):
+        
+        self.active = True
+
+        # plugin settings
+        self.load_settings()
+
+        # lists of hooks and tools
+        self.load_hooks_and_tools()
+
+    def deactivate(self):
+        self.active = False
+        self.settings = {}
+        self.hooks = []
+        self.tools = []
+    
+    def toggle(self):
+
+        if self.active:
+            self.deactivate()
+        else:
+            self.activate()
 
     # load plugin settings
     def get_settings_schema(self):
@@ -143,11 +162,6 @@ class Plugin:
         t = tool[1]
         t.plugin_id = self.id
         return t
-
-    def toggle(self):
-        # TODO: save in metadata.json
-        self.active = not self.active
-
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)

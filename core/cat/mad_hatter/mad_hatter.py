@@ -6,6 +6,8 @@ import os
 from typing import Dict
 
 from cat.log import log
+from cat.db import crud
+from cat.db.models import Setting
 from cat.infrastructure.package import Package
 from cat.mad_hatter.plugin import Plugin
 
@@ -63,14 +65,28 @@ class MadHatter:
         # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
         plugin_folder = self.ccat.get_plugin_path().replace("/app/", "") # using realtive path for imports
         all_plugin_folders = [core_folder] + glob.glob(f"{plugin_folder}*/")
+        
+        # db contains the list of active plugins
+        active_plugins = self.load_active_plugins_from_db()
+
+        log("ACTIVE PLUGINS:", "INFO")
+        log(active_plugins, "INFO")
 
         # discover plugins, folder by folder
         for folder in all_plugin_folders:
-            plugin = Plugin(folder)
+
+            # is the plugin active?
+            folder_base = os.path.basename(os.path.normpath(folder))
+            is_active = folder_base in active_plugins
+
+            # Instantiate plugin.
+            #   If the plugin is inactive, only manifest will be loaded
+            #   If active, also settings, tools and hooks
+            plugin = Plugin(folder, active=is_active)
+            
             # if plugin is valid, keep a reference
-            plugin_is_valid = (len(plugin.tools) > 0) or (len(plugin.hooks) > 0)
-            if plugin_is_valid:
-                self.plugins[plugin.id] = plugin
+            self.plugins[plugin.id] = plugin
+            if plugin.active:
                 self.hooks += plugin.hooks
                 self.tools += plugin.tools
 
@@ -86,7 +102,28 @@ class MadHatter:
     # check if plugin exists
     def plugin_exists(self, plugin_id):
         return plugin_id in self.plugins.keys()
+    
+    def load_active_plugins_from_db(self):
+        
+        active_plugins = crud.get_setting_by_name("active_plugins")
+        
+        if active_plugins is None:
+            active_plugins = []
+        else:
+            active_plugins = active_plugins["value"]
+        
+        if "core_plugin" not in active_plugins:
+            active_plugins += ["core_plugin"]
+        
+        return active_plugins
 
+    def save_active_plugins_to_db(self, active_plugins):
+        new_setting = {
+            "name": "active_plugins",
+            "value": active_plugins
+        }
+        new_setting = Setting(**new_setting)
+        crud.upsert_setting_by_name(new_setting)
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
@@ -148,9 +185,25 @@ class MadHatter:
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
         if self.plugin_exists(plugin_id):
+            
             self.plugins[plugin_id].toggle()
+            # update active plugin in db
+            active_plugins = self.load_active_plugins_from_db()
+            if self.plugins[plugin_id].active:
+                active_plugins.append(plugin_id)
+            else:
+                active_plugins.remove(plugin_id)
 
-        # TODO: sync should happen
+            # update DB with list of active plugins
+            self.save_active_plugins_to_db(active_plugins)
+
+            # update cache and embeddings        
+            self.find_plugins()
+            self.embed_tools()
+
+        else:
+            raise Exception("Plugin {plugin_id} not present in plugins folder")
+        
 
     # execute requested hook
     def execute_hook(self, hook_name, *args):
