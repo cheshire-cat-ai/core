@@ -74,6 +74,7 @@ class AgentManager:
                 "chat_history",
                 "episodic_memory",
                 "declarative_memory",
+                "tools_output"
             ]
         )
 
@@ -122,22 +123,30 @@ class AgentManager:
          #                                         " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
 
 
-        # Try to reply only with tools
+        # Try to get information from tools if there is some allowed
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
-        tools_are_enough = False
+        tools_result = None
         if len(allowed_tools) > 0:
             try:
-                out = self.execute_tool_agent(agent_input, allowed_tools)
-                tools_are_enough = out["output"] != None
+                tools_result = self.execute_tool_agent(agent_input, allowed_tools)
             except Exception as e:
                 error_description = str(e)
-                log(error_description, "ERROR") 
-                tools_are_enough = False
+                log(error_description, "ERROR")
 
-        # if tools were not enough, use memory # TODO: refine tool output?
-        if not tools_are_enough:
+        #Adding the tools_output key in agent input, needed by the memory chain
+        if tools_result != None:
+            # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
+            # so no relevant information has been obtained from the tools.
+            agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
+
+            # Execute the memory chain
             out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
+
+            # If some tools are used the intermediate step are added to the agent output
+            out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
         else:
-            out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), out["intermediate_steps"]))
+            agent_input["tools_output"] = ""
+            # Execute the memory chain
+            out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
 
         return out
