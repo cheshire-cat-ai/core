@@ -6,7 +6,6 @@ from tests.utils import create_mock_plugin_zip, get_embedded_tools
 
 
 # TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
-# TODO: mock the plugin folder, otherwise uploading a plugin from here will make the production app reload
 def test_plugin_zip_upload(client):
 
     # during tests, the cat uses a different folder for plugins
