@@ -130,11 +130,6 @@ class RabbitHole:
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # hook the docs before they are stored in the vector memory
-        docs = self.cat.mad_hatter.execute_hook(
-            "before_rabbithole_stores_documents", docs
-        )
-
         # store in memory
         if isinstance(file, str):
             filename = file
@@ -247,6 +242,11 @@ class RabbitHole:
         """
 
         log(f"Preparing to memorize {len(docs)} vectors")
+
+        # hook the docs before they are stored in the vector memory
+        docs = self.cat.mad_hatter.execute_hook(
+            "before_rabbithole_stores_documents", docs
+        )
 
         # classic embed
         for d, doc in enumerate(docs):

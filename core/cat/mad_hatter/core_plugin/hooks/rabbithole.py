@@ -111,10 +111,6 @@ def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> Li
     # remove short texts (page numbers, isolated words, etc.)
     docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
-    # add metadata, these docs are not summaries
-    for doc in docs:
-        doc.metadata["is_summary"] = False
-
     return docs
 
 
