@@ -86,7 +86,7 @@ async def upload_url(
             background_tasks.add_task(
                 ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap
             )
-            return {"url": url, "info": "Website is being ingested asynchronously"}
+            return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
             raise HTTPException(
                 status_code=400,
@@ -99,7 +99,7 @@ async def upload_url(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": "Unable to reach the link",
+                "error": "Unable to reach the URL",
                 "url": url
             },
         )

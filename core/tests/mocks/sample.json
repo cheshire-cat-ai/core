@@ -147,7 +147,6 @@
       {
         "page_content": "I like both dogs and cats, but I like more cats.",
         "metadata": {
-          "is_summary": false,
           "source": "short.txt",
           "when": 1690472688.3655574
         },
