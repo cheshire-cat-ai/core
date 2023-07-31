@@ -20,8 +20,7 @@ async def upload_file(
             default=400,
             description="Maximum length of each chunk after the document is split (in characters)",
         ),
-        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-        summary: bool = Body(default=False, description="Enables call to summary hook for this file")
+        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -46,7 +45,7 @@ async def upload_file(
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
-        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap, summary
+        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap
     )
 
     # reply to client
@@ -69,8 +68,7 @@ async def upload_url(
             default=400,
             description="Maximum length of each chunk after the document is split (in characters)",
         ),
-        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
-        summary: bool = Body(default=False, description="Enables call to summary hook for this website")
+        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -86,9 +84,9 @@ async def upload_url(
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap, summary
+                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap
             )
-            return {"url": url, "info": "Website is being ingested asynchronously"}
+            return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
             raise HTTPException(
                 status_code=400,
@@ -101,7 +99,7 @@ async def upload_url(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": "Unable to reach the link",
+                "error": "Unable to reach the URL",
                 "url": url
             },
         )

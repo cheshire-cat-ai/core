@@ -35,7 +35,7 @@ class VectorMemory:
 
         # Create vector collections
         # - Episodic memory will contain user and eventually cat utterances
-        # - Declarative memory will contain uploaded documents' content (and summaries)
+        # - Declarative memory will contain uploaded documents' content
         # - Procedural memory will contain tools and knowledge on how to do things
         self.collections = {}
         for collection_name in ["episodic", "declarative", "procedural"]:

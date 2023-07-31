@@ -65,8 +65,7 @@ class CheshireCat:
         """Load Natural Language related objects.
 
         The method exposes in the Cat all the NLP related stuff. Specifically, it sets the language models
-        (LLM and Embedder), the HyDE and summarization prompts and relative Langchain chains and the main prompt with
-        default settings.
+        (LLM and Embedder) and the main prompt with default settings.
 
         Notes
         -----
@@ -82,30 +81,11 @@ class CheshireCat:
         --------
         get_language_model
         get_language_embedder
-        hypothetical_embedding_prompt
-        summarization_prompt
         agent_prompt_prefix
         """
         # LLM and embedder
         self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
-
-        # HyDE chain
-        hypothesis_prompt = langchain.PromptTemplate(
-            input_variables=["input"],
-            template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
-        )
-
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self._llm)
-
-        self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
-
-        # custom summarization chain
-        self.summarization_chain = langchain.chains.LLMChain(
-            llm=self._llm,
-            verbose=False,
-            prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
-        )
 
         # set the default prompt settings
         self.default_prompt_settings = {

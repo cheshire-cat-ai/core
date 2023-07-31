@@ -33,7 +33,6 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
 
@@ -100,14 +99,12 @@ class RabbitHole:
             self,
             file: Union[str, UploadFile],
             chunk_size: int = 400,
-            chunk_overlap: int = 100,
-            summary: bool = False,
+            chunk_overlap: int = 100
     ):
         """Load a file in the Cat's declarative memory.
 
         The method splits and converts the file in Langchain `Document`. Then, it stores the `Document` in the Cat's
-        memory. Optionally, the document can be summarized and summaries are saved along with the original
-        content.
+        memory.
 
         Parameters
         ----------
@@ -125,20 +122,13 @@ class RabbitHole:
 
         See Also
         ----------
-        rabbithole_summarizes_documents
+        before_rabbithole_stores_documents
         """
 
         # split file into a list of docs
         docs = self.file_to_docs(
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
-
-        # get summaries if summarization is requested
-        if summary:
-            summaries = self.cat.mad_hatter.execute_hook(
-                "rabbithole_summarizes_documents", docs
-            )
-            docs = summaries + docs
 
         # store in memory
         if isinstance(file, str):
@@ -218,7 +208,7 @@ class RabbitHole:
                     mimetype=content_type,
                     source=source).from_data(data=file_bytes,
                                              mime_type=content_type)
-        
+
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
@@ -252,6 +242,11 @@ class RabbitHole:
         """
 
         log(f"Preparing to memorize {len(docs)} vectors")
+
+        # hook the docs before they are stored in the vector memory
+        docs = self.cat.mad_hatter.execute_hook(
+            "before_rabbithole_stores_documents", docs
+        )
 
         # classic embed
         for d, doc in enumerate(docs):
