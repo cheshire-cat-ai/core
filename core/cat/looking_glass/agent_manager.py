@@ -86,6 +86,7 @@ class AgentManager:
 
         out = memory_chain(agent_input)
         out["output"] = out["text"]
+        del out["text"]
         return out
 
 
