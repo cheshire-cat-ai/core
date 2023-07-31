@@ -132,6 +132,8 @@ def agent_prompt_suffix(cat) -> str:
 
 {declarative_memory}
 
+{tools_output}
+
 ## Conversation until now:{chat_history}
  - Human: {input}
  - AI: """
