@@ -1,8 +1,13 @@
 import mimetypes
-from typing import Dict
+import os
+from typing import Dict, Annotated
 from tempfile import NamedTemporaryFile
+
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
+import httpx
+import requests
+from urllib.parse import urlparse
 
 router = APIRouter()
 
@@ -21,7 +26,7 @@ async def list_available_plugins(request: Request) -> Dict:
         plugins.append(p.manifest)
 
     # retrieve plugins from official repo
-    registry = []
+    registry = [] #await get_registry_list()
 
     return {
         "status": "success",
@@ -182,3 +187,42 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
         "status": "success",
         "deleted": plugin_id
     }
+
+async def get_registry_list():
+    response = httpx.get("http://192.168.1.120:8000/plugins?page=1&page_size=7000")
+    if response.status_code == 200:
+        return response.json()["plugins"]
+    else: 
+        return []
+
+@router.post("/upload/wa")
+async def download_plugin_from_registry(request: Request,background_tasks: BackgroundTasks,url_repo: Dict = Body(example={"url": "https://example.com/file.zip"})):
+    """Install a new plugin from external repository"""
+    
+    #Get name of file
+    url_path = urlparse(url_repo["url"]).path.split("/")
+    url_path.reverse()
+    plugin_name = str(url_path[2]) + ".zip"
+    
+    
+    with requests.get(url_repo["url"], stream=True) as response:
+        response.raise_for_status()
+        with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+            log(f"Uploading plugin {plugin_name}", "INFO")
+            
+            #access cat instance
+            ccat = request.app.state.ccat
+
+            background_tasks.add_task(
+                ccat.mad_hatter.install_plugin, file.name
+            )
+            
+            return {
+                "status": "success",
+                "filename": file.name,
+                "content_type": mimetypes.guess_type(plugin_name)[0],
+                "info": "Plugin is being installed asynchronously"
+            }
+    
