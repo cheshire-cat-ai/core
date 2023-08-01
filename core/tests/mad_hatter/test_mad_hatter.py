@@ -72,7 +72,13 @@ def test_plugin_install(mad_hatter: MadHatter):
     assert list(mad_hatter.plugins.keys()) == ["core_plugin", "mock_plugin"]
     assert isinstance(mad_hatter.plugins["mock_plugin"], Plugin)
 
-    # new plugin contains hook and tool
+    # plugin is not activated by default, so no new hooks and tools
+    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 0
+    assert len(mad_hatter.plugins["mock_plugin"].tools) == 0
+    
+    # activate plugin
+    mad_hatter.toggle_plugin("mock_plugin")
+    
     assert len(mad_hatter.plugins["mock_plugin"].hooks) == 1
     assert len(mad_hatter.plugins["mock_plugin"].tools) == 1
     new_hook = mad_hatter.plugins["mock_plugin"].hooks[0]

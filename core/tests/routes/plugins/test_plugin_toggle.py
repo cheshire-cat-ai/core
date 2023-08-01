@@ -49,7 +49,7 @@ def test_toggle_non_existent_plugin(client, just_installed_plugin):
     assert response_json["detail"]["error"] == "Plugin not found"
 
 
-def test_toggle_active_plugin(client, just_installed_plugin):
+def test_activate_plugin(client, just_installed_plugin):
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
@@ -60,10 +60,10 @@ def test_toggle_active_plugin(client, just_installed_plugin):
     # check whether new tools have been embedded
     tools = get_embedded_tools(client)
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "random_idea" in tool_names
+    assert "random_idea" not in tool_names
     
 
-def test_toggle_inactive_plugin(client, just_installed_plugin):
+def test_deactivate_plugin(client, just_installed_plugin):
     
     # TODO
     pass

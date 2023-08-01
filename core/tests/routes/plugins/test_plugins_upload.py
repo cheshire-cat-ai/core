@@ -35,8 +35,7 @@ def test_plugin_zip_upload(client):
     assert response.json()["status"] == "success"
     assert response.json()["filename"] == zip_file_name
 
-    # wait for mad hatter discovery and tool embedding
-    time.sleep(5)
+    #### PLUGIN IS NOT YET ACTIVE
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
@@ -45,6 +44,20 @@ def test_plugin_zip_upload(client):
     assert "mock_plugin" in installed_plugins_names
     # plugin has been actually extracted in (mock) plugins folder
     assert os.path.exists(mock_plugin_final_folder)
+
+    # new tool has not been embedded
+    tools = get_embedded_tools(client)
+    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
+    assert "random_idea" not in tool_names
+
+
+    #### ACTIVATE PLUGIN
+
+    response = client.put("/plugins/toggle/mock_plugin")
+    assert response.status_code == 200
+
+
+    #### PLUGIN IS NOW ACTIVE
 
     # check whether new tools have been embedded
     tools = get_embedded_tools(client)
