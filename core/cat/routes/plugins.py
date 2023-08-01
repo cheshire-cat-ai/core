@@ -212,24 +212,24 @@ async def download_plugin_from_registry(request: Request,background_tasks: Backg
         plugin_name = str(url_path[0])
     
     print(plugin_name)
-    # with requests.get(url_repo["url"], stream=True) as response:
-    #     response.raise_for_status()
-    #     with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
-    #         for chunk in response.iter_content(chunk_size=8192):
-    #             file.write(chunk)
-    #         log(f"Uploading plugin {plugin_name}", "INFO")
-    #         
-    #         #access cat instance
-    #         ccat = request.app.state.ccat
-    # 
-    #         background_tasks.add_task(
-    #             ccat.mad_hatter.install_plugin, file.name
-    #         )
-    #         
-    #         return {
-    #             "status": "success",
-    #             "filename": file.name,
-    #             "content_type": mimetypes.guess_type(plugin_name)[0],
-    #             "info": "Plugin is being installed asynchronously"
-    #         }
+    with requests.get(url_repo["url"], stream=True) as response:
+        response.raise_for_status()
+        with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+            log(f"Uploading plugin {plugin_name}", "INFO")
+
+            #access cat instance
+            ccat = request.app.state.ccat
+
+            background_tasks.add_task(
+                ccat.mad_hatter.install_plugin, file.name
+            )
+
+            return {
+                "status": "success",
+                "filename": file.name,
+                "content_type": mimetypes.guess_type(plugin_name)[0],
+                "info": "Plugin is being installed asynchronously"
+            }
     
