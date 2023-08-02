@@ -12,7 +12,7 @@ def test_get_plugin_settings(client, just_installed_plugin):
     assert response_json["status"] == "success"
     assert response_json["settings"] == {}
     assert response_json["schema"]['properties'] == {}
-    assert response_json["schema"]['title'] == 'BasePluginSettings'
+    assert response_json["schema"]['title'] == 'BaseModel'
     assert response_json["schema"]['type'] == 'object'
 
 

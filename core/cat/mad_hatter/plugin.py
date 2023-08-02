@@ -17,7 +17,7 @@ from cat.log import log
 class Plugin:
 
     def __init__(self, plugin_absolute_path: str, active: bool):
-        
+
         # where the plugin is on disk
         self.path: str = plugin_absolute_path
 
@@ -25,9 +25,15 @@ class Plugin:
         self.id: str = os.path.basename(os.path.normpath(plugin_absolute_path))
 
         # plugin manifest (name, decription, thumb, etc.)
-        self.load_manifest()
+        self.manifest = self.load_manifest()
 
-        # all plugins start inactive, they are activated from endpoints (see self.toggle)
+        # list of tools and hooks contained in the plugin.
+        #   The MadHatter will cache them for easier access,
+        #   but they are created and stored in each plugin instance
+        self.hooks = []
+        self.tools = []
+
+        # all plugins start active, they can be deactivated/reactivated from endpoint (see self.toggle)
         if active:
             self.activate()
         else:
@@ -62,7 +68,7 @@ class Plugin:
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
 
-        self.manifest = meta
+        return meta
         
     def activate(self):
         
@@ -87,15 +93,24 @@ class Plugin:
         else:
             self.activate()
 
-    # load plugin settings
+    # get plugin settings JSON schema
     def get_settings_schema(self):
 
-        class BasePluginSettings(BaseModel):
-            pass
-        return BasePluginSettings.schema()
+        # is "plugin_settings_get_schema" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_get_schema":
+                return h.function()
+
+        # default schema (empty)
+        return BaseModel.schema()
 
     # load plugin settings
     def load_settings(self):
+
+        # is "plugin_settings_load" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_load":
+                return h.function()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -117,6 +132,11 @@ class Plugin:
     
     # save plugin settings
     def save_settings(self, settings: Dict):
+
+        # is "plugin_settings_save" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_save":
+                return h.function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
