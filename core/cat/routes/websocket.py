@@ -21,6 +21,7 @@ class ConnectionManager:
         self.active_connections: list[WebSocket] = []
         self.is_flow_diverted = False
         self.lock = True
+        self.previous_bounded_flow = None
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -50,10 +51,16 @@ class ConnectionManager:
     def divert_flow(self, function: Callable[[str, WebSocket], None]) -> None:
         self.is_flow_diverted = True
         self.binded_flow = function
+        self.previous_bounded_flow = function
     
     def revert_flow(self) -> None:
         self.is_flow_diverted = False
         self.binded_flow = None
+        self.previous_bounded_flow = None
+    
+    def is_new_binding(self) -> bool:
+        return self.binded_flow != self.previous_bounded_flow
+
 
 manager = ConnectionManager()
 
@@ -78,7 +85,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 if manager.is_flow_diverted:
                     # Custom logic
                     manager.lock = False
+
+                    binded_flow = manager.binded_flow
+
                     await manager.binded_flow(user_message, websocket)
+
+                    manager.previous_bounded_flow = binded_flow
                 else:
                     # get response from the cat
                     cat_message = await run_in_threadpool(ccat, user_message)
