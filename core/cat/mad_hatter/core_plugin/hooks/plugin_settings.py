@@ -5,6 +5,13 @@ from cat.mad_hatter.decorators import hook
 from cat.log import log
 
 
+# this class represents settings for the core plugin (at the moment empty)
+class CorePluginSettings(BaseModel):
+        pass
+    #    length: int  # required field, type int
+    #    description: str = "my fav cat" # optional field, type str, with a default
+
+
 @hook(priority=0)
 def plugin_settings_get_schema():
     """
@@ -25,13 +32,8 @@ def plugin_settings_get_schema():
         JSON schema of the settings.
     """
 
-    # In core_plugin we pass an empty JSON schema
-    class PluginSettings(BaseModel):
-        pass
-    #    length: int  # required field, type int
-    #    description: str = "my fav cat" # optional field, type str, with a default
-    
-    return PluginSettings.schema()
+    # In core_plugin we pass an empty JSON schema    
+    return CorePluginSettings.schema()
 
 
 @hook(priority=0)
