@@ -19,20 +19,22 @@ def test_get_plugin_settings(client, just_installed_plugin):
 # endpoint to save settings
 def test_save_plugin_settings(client, just_installed_plugin):
 
-    # save settings
-    fake_settings = {"fake_setting": 42}
-    response = client.put("/plugins/settings/mock_plugin", json=fake_settings)
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["status"] == "success"
-    assert response_json["settings"]["fake_setting"] == fake_settings["fake_setting"]
+    # write a new setting, and then ovewrite it 
+    for fake_value in ["a", "b"]:
+        # save settings
+        fake_settings = {"fake_setting": fake_value}
+        response = client.put("/plugins/settings/mock_plugin", json=fake_settings)
+        assert response.status_code == 200
+        response_json = response.json()
+        assert response_json["status"] == "success"
+        assert response_json["settings"]["fake_setting"] == fake_value
 
-    # get settings back
-    response = client.get("/plugins/settings/mock_plugin")
-    response_json = response.json()
-    assert response.status_code == 200
-    assert response_json["status"] == "success"
-    assert response_json["settings"]["fake_setting"] == fake_settings["fake_setting"]
+        # get settings back
+        response = client.get("/plugins/settings/mock_plugin")
+        response_json = response.json()
+        assert response.status_code == 200
+        assert response_json["status"] == "success"
+        assert response_json["settings"]["fake_setting"] == fake_value
 
 
     
