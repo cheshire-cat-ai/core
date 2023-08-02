@@ -51,7 +51,7 @@ def plugin_settings_load():
         Settings.
     """
     
-    # In core_plugin we do nothing
+    # In core_plugin we do nothing (for now).
     return {}
 
 
@@ -76,5 +76,5 @@ def plugin_settings_save(settings):
         Saved settings.
     """
 
-    # In core_plugin we do nothing.
+    # In core_plugin we do nothing (for now).
     return settings

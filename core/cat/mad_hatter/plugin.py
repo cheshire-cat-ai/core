@@ -82,7 +82,6 @@ class Plugin:
 
     def deactivate(self):
         self.active = False
-        self.settings = {}
         self.hooks = []
         self.tools = []
     
