@@ -128,12 +128,13 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
         )
 
     # plugins are managed by the MadHatter class
-    settings = ccat.mad_hatter.get_plugin_settings(plugin_id)
+    settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
+    schema = ccat.mad_hatter.plugins[plugin_id].get_settings_schema()
 
     return {
         "status": "success",
         "settings": settings,
-        "schema": {}
+        "schema": schema
     }
 
 
@@ -141,7 +142,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
 async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
-    payload: Dict = Body(example={"active": False}),
+    payload: Dict = Body(example={"setting_a": "some value", "setting_b": "another value"}),
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
@@ -154,7 +155,7 @@ async def upsert_plugin_settings(
             detail = { "error": "Plugin not found" }
         )
     
-    final_settings = ccat.mad_hatter.save_plugin_settings(plugin_id, payload)
+    final_settings = ccat.mad_hatter.plugins[plugin_id].save_settings(payload)
 
     return {
         "status": "success", 

@@ -4,6 +4,7 @@ import glob
 import importlib
 from typing import Dict
 from inspect import getmembers, isfunction  # , signature
+from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook
 from cat.utils import to_camel_case
@@ -88,46 +89,54 @@ class Plugin:
 
     # load plugin settings
     def get_settings_schema(self):
-        return None
+
+        class BasePluginSettings(BaseModel):
+            pass
+        return BasePluginSettings.schema()
 
     # load plugin settings
     def load_settings(self):
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #settings = { "active": False }
 
-        #if os.path.isfile(settings_file_path):
-        #    try:
-        #        json_file = open(settings_file_path)
-        #        settings = json.load(json_file)
-        #        if "active" not in settings:
-        #            settings["active"] = False
-        #        json_file.close()
-        #    except Exception:
-        #        log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
-    
-        #return settings
-        return {}
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self.path, "settings.json")
+
+        # default settings is an empty dictionary
+        settings = {}
+
+        # load settings.json if exists
+        if os.path.isfile(settings_file_path):
+            try:
+                with open(settings_file_path, "r") as json_file:
+                    settings = json.load(json_file)
+            except Exception as e:
+                log(f"Unable to load plugin {self.id} settings", "ERROR")
+                log(e, "ERROR")
+
+        return settings
     
     # save plugin settings
     def save_settings(self, settings: Dict):
 
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #updated_settings = settings
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self.path, "settings.json")
+        
+        # load already saved settings
+        old_settings = self.load_settings()
+        
+        # overwrite settings over old ones
+        updated_settings = { **old_settings, **settings }
 
-        #try:
-        #    json_file = open(settings_file_path, 'r+')
-        #    current_settings = json.load(json_file)
-        #    json_file.close()
-        #    updated_settings = { **current_settings, **settings }
-        #    json_file = open(settings_file_path, 'w')
-        #    json.dump(updated_settings, json_file, indent=4)
-        #    json_file.close()
-        #except Exception:
-        #    log(f"Unable to save plugin {plugin_id} settings", "INFO")
+        # write settings.json in plugin folder
+        try:
+            with open(settings_file_path, "w") as json_file:
+                json.dump(updated_settings, json_file, indent=4)
+        except Exception:
+            log(f"Unable to save plugin {self.id} settings", "ERROR")
+            return {}
     
-        #return updated_settings
-        return {}
-
+        return updated_settings
 
     # lists of hooks and tools
     def load_hooks_and_tools(self):

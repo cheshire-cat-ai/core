@@ -1,43 +1,6 @@
-import time
-import os
-import pytest
-from tests.utils import create_mock_plugin_zip, get_embedded_tools
 
-
-# this fixture wraps any test function having `just_installed_plugin` as an argument
-@pytest.fixture()
-def just_installed_plugin(client):
-
-    ### executed before each test function
-
-    # create zip file with a plugin
-    zip_path = create_mock_plugin_zip()
-    zip_file_name = zip_path.split("/")[-1] # mock_plugin.zip in tests/mocks folder
-
-    # upload plugin via endpoint
-    with open(zip_path, "rb") as f:
-        response = client.post(
-            "/plugins/upload/",
-            files={
-                "file": (zip_file_name, f, "application/zip")
-            }
-        )
-
-    # request was processed
-    assert response.status_code == 200
-    assert response.json()["status"] == "success"
-    assert response.json()["filename"] == zip_file_name
-
-    ### each test function below is run here
-    yield
-    ###
-
-    ### executed after each test function
-    # delete zip from tests folder
-    os.remove(zip_path)
-    # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
-    response = client.delete("/plugins/mock_plugin")
-    assert response.status_code == 200
+from tests.utils import get_embedded_tools
+from fixture_just_installed_plugin import just_installed_plugin
 
 
 def test_toggle_non_existent_plugin(client, just_installed_plugin):
