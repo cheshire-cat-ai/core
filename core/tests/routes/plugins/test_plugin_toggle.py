@@ -23,6 +23,10 @@ def test_deactivate_plugin(client, just_installed_plugin):
     mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
     assert len(mock_plugin) == 1 # plugin installed
     assert not mock_plugin[0]["active"] # plugin NOT active
+
+    # GET plugin info, plugin is not active
+    response = client.get("/plugins/mock_plugin")
+    assert not response.json()["data"]["active"]
             
     # tool has been taken away
     tools = get_embedded_tools(client)
@@ -44,7 +48,11 @@ def test_reactivate_plugin(client, just_installed_plugin):
     mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
     assert len(mock_plugin) == 1 # plugin installed
     assert mock_plugin[0]["active"] # plugin active
-            
+
+    # GET plugin info, plugin is active
+    response = client.get("/plugins/mock_plugin")
+    assert response.json()["data"]["active"]
+
     # tool has been re-embedded
     tools = get_embedded_tools(client)
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
