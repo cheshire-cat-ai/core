@@ -16,13 +16,13 @@ from cat.log import log
 
 class Plugin:
 
-    def __init__(self, plugin_absolute_path: str, active: bool):
+    def __init__(self, plugin_path: str, active: bool):
 
         # where the plugin is on disk
-        self.path: str = plugin_absolute_path
+        self.path: str = plugin_path
 
         # plugin id is just the folder name
-        self.id: str = os.path.basename(os.path.normpath(plugin_absolute_path))
+        self.id: str = os.path.basename(os.path.normpath(plugin_path))
 
         # plugin manifest (name, decription, thumb, etc.)
         self.manifest = self.load_manifest()
