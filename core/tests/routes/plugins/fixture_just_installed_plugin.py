@@ -1,5 +1,6 @@
 import time
 import os
+import shutil
 import pytest
 from tests.utils import create_mock_plugin_zip
 
@@ -36,5 +37,7 @@ def just_installed_plugin(client):
     ### executed after each test function
     # delete zip from tests folder
     os.remove(zip_path)
-    # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
-    response = client.delete("/plugins/mock_plugin")
+    # remove plugin folder in mock_plugin_folder
+    mock_plugin_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
+    if os.path.exists(mock_plugin_folder):
+        shutil.rmtree(mock_plugin_folder)
