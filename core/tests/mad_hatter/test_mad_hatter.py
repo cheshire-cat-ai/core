@@ -12,18 +12,14 @@ from tests.utils import create_mock_plugin_zip
 
 # this function will be run before each test function
 @pytest.fixture
-def mad_hatter(client): # client here injects the momnkypatched version of the cat
+def mad_hatter(client): # client here injects the monkeypatched version of the cat
 
     # setup before each unit
     cat = CheshireCat()
-    mh = MadHatter(cat)
+    mh = MadHatter(cat) # trygin out a fresh instance of the mad_hatter
 
     # each test is given a brand new instance
     yield mh
-
-    # tear down after each unit test
-    del mh  # TODO: is this necessary?
-    del cat # TODO: is this necessary?
 
 
 def test_instantiation_discovery(mad_hatter):
