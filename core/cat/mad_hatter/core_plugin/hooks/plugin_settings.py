@@ -13,7 +13,7 @@ class CorePluginSettings(BaseModel):
 
 
 @hook(priority=0)
-def plugin_settings_get_schema():
+def plugin_settings_schema():
     """
     This hook tells the cat how plugin settings are defined, required vs optional, default values, etc.
     The standard used is JSON SCHEMA, so a client can auto-generate html forms (see https://json-schema.org/ ).
@@ -59,7 +59,7 @@ def plugin_settings_load():
 def plugin_settings_save(settings):
     """
     This hook passes the plugin settings as sent to the http endpoint (via admin, or any client), in order to let the plugin save them as desired.
-    The settings to save should be validated according to the json schema given in the `plugin_settings_get_schema` hook.
+    The settings to save should be validated according to the json schema given in the `plugin_settings_schema` hook.
     
     Default behavior for this hook is defined in:
        `cat.mad_hatter.plugin.Plugin::save_settings`

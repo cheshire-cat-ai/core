@@ -90,9 +90,9 @@ class Plugin:
     # get plugin settings JSON schema
     def get_settings_schema(self):
 
-        # is "plugin_settings_get_schema" hook defined in the plugin?
+        # is "plugin_settings_schema" hook defined in the plugin?
         for h in self.hooks:
-            if h.name == "plugin_settings_get_schema":
+            if h.name == "plugin_settings_schema":
                 return h.function()
 
         # default schema (empty)
