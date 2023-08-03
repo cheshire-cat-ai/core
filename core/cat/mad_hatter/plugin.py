@@ -4,6 +4,7 @@ import glob
 import importlib
 from typing import Dict
 from inspect import getmembers, isfunction  # , signature
+from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook
 from cat.utils import to_camel_case
@@ -15,27 +16,29 @@ from cat.log import log
 
 class Plugin:
 
-    def __init__(self, plugin_absolute_path):
-        
+    def __init__(self, plugin_path: str, active: bool):
+
         # where the plugin is on disk
-        self.path: str = plugin_absolute_path
+        self.path: str = plugin_path
 
         # plugin id is just the folder name
-        self.id: str = os.path.basename(os.path.normpath(plugin_absolute_path))
-
-        # all plugins start inactive
-        self.active: bool = False
+        self.id: str = os.path.basename(os.path.normpath(plugin_path))
 
         # plugin manifest (name, decription, thumb, etc.)
-        self.load_manifest()
+        self.manifest = self.load_manifest()
 
-        # plugin settings
-        self.load_settings()
+        # list of tools and hooks contained in the plugin.
+        #   The MadHatter will cache them for easier access,
+        #   but they are created and stored in each plugin instance
+        self.hooks = []
+        self.tools = []
 
-        # lists of hooks and tools
-        self.load_hooks_and_tools()
-
-
+        # all plugins start active, they can be deactivated/reactivated from endpoint (see self.toggle)
+        if active:
+            self.activate()
+        else:
+            self.deactivate()
+    
     # load contents of plugin.json (if exists)
     def load_manifest(self):
 
@@ -65,50 +68,89 @@ class Plugin:
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
 
-        self.manifest = meta
+        return meta
+        
+    def activate(self):
+        self.active = True
+        # lists of hooks and tools
+        self.load_hooks_and_tools()
 
-    # load plugin settings
+    def deactivate(self):
+        self.active = False
+        self.hooks = []
+        self.tools = []
+    
+    def toggle(self):
+
+        if self.active:
+            self.deactivate()
+        else:
+            self.activate()
+
+    # get plugin settings JSON schema
     def get_settings_schema(self):
-        return None
+
+        # is "plugin_settings_schema" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_schema":
+                return h.function()
+
+        # default schema (empty)
+        return BaseModel.schema()
 
     # load plugin settings
     def load_settings(self):
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #settings = { "active": False }
 
-        #if os.path.isfile(settings_file_path):
-        #    try:
-        #        json_file = open(settings_file_path)
-        #        settings = json.load(json_file)
-        #        if "active" not in settings:
-        #            settings["active"] = False
-        #        json_file.close()
-        #    except Exception:
-        #        log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
-    
-        #return settings
-        return {}
+        # is "plugin_settings_load" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_load":
+                return h.function()
+
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self.path, "settings.json")
+
+        # default settings is an empty dictionary
+        settings = {}
+
+        # load settings.json if exists
+        if os.path.isfile(settings_file_path):
+            try:
+                with open(settings_file_path, "r") as json_file:
+                    settings = json.load(json_file)
+            except Exception as e:
+                log(f"Unable to load plugin {self.id} settings", "ERROR")
+                log(e, "ERROR")
+
+        return settings
     
     # save plugin settings
     def save_settings(self, settings: Dict):
 
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #updated_settings = settings
+        # is "plugin_settings_save" hook defined in the plugin?
+        for h in self.hooks:
+            if h.name == "plugin_settings_save":
+                return h.function(settings)
 
-        #try:
-        #    json_file = open(settings_file_path, 'r+')
-        #    current_settings = json.load(json_file)
-        #    json_file.close()
-        #    updated_settings = { **current_settings, **settings }
-        #    json_file = open(settings_file_path, 'w')
-        #    json.dump(updated_settings, json_file, indent=4)
-        #    json_file.close()
-        #except Exception:
-        #    log(f"Unable to save plugin {plugin_id} settings", "INFO")
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self.path, "settings.json")
+        
+        # load already saved settings
+        old_settings = self.load_settings()
+        
+        # overwrite settings over old ones
+        updated_settings = { **old_settings, **settings }
+
+        # write settings.json in plugin folder
+        try:
+            with open(settings_file_path, "w") as json_file:
+                json.dump(updated_settings, json_file, indent=4)
+        except Exception:
+            log(f"Unable to save plugin {self.id} settings", "ERROR")
+            return {}
     
-        #return updated_settings
-        return {}
-
+        return updated_settings
 
     # lists of hooks and tools
     def load_hooks_and_tools(self):
@@ -143,11 +185,6 @@ class Plugin:
         t = tool[1]
         t.plugin_id = self.id
         return t
-
-    def toggle(self):
-        # TODO: save in metadata.json
-        self.active = not self.active
-
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
