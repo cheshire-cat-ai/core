@@ -48,6 +48,7 @@ class MadHatter:
 
         # create plugin obj
         self.load_plugin(plugin_id, active=False)
+        
         # activate it
         self.toggle_plugin(plugin_id)
         

@@ -33,6 +33,7 @@ def test_instantiation_discovery(mad_hatter):
     # Mad Hatter finds core_plugin
     assert list(mad_hatter.plugins.keys()) == ["core_plugin"]
     assert isinstance(mad_hatter.plugins["core_plugin"], Plugin)
+    assert mad_hatter.plugins["core_plugin"].active
 
     # finds hooks
     assert len(mad_hatter.hooks) > 0
@@ -71,6 +72,7 @@ def test_plugin_install(mad_hatter: MadHatter):
     # plugins list updated
     assert list(mad_hatter.plugins.keys()) == ["core_plugin", "mock_plugin"]
     assert isinstance(mad_hatter.plugins["mock_plugin"], Plugin)
+    assert mad_hatter.plugins["mock_plugin"].active # plugin starts active
 
     # plugin is not activated by default, so no new hooks and tools
     assert len(mad_hatter.plugins["mock_plugin"].hooks) == 0
