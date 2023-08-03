@@ -55,10 +55,12 @@ class MadHatter:
         
     def uninstall_plugin(self, plugin_id):
 
+        active_plugins = self.load_active_plugins_from_db()
+
         if self.plugin_exists(plugin_id):
 
             # deactivate plugin if it is active (will sync cache)
-            if self.plugins[plugin_id].active:
+            if plugin_id in active_plugins:
                 self.toggle_plugin(plugin_id)
 
             # remove plugin
@@ -116,9 +118,11 @@ class MadHatter:
         self.hooks = []
         self.tools = []
 
+        active_plugins = self.load_active_plugins_from_db()
+
         for _, plugin in self.plugins.items():
             # load hooks and tools
-            if plugin.active:
+            if plugin.id in active_plugins:
 
                 # fix tools so they have an instance of the cat # TODO: make the cat a singleton
                 for t in plugin.tools:
@@ -217,26 +221,32 @@ class MadHatter:
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
-        log(self.plugins[plugin_id].active, "WARNING")
 
         if self.plugin_exists(plugin_id):
             
             # get active plugins from db
             active_plugins = self.load_active_plugins_from_db()
 
+            plugin_is_active = plugin_id in active_plugins
+
+            log(plugin_is_active, "WARNING")
+
             # update list of active plugins
-            if self.plugins[plugin_id].active:
+            if plugin_is_active:
+                # Deactivate the plugin
+                self.plugins[plugin_id].deactivate()
+                # Remove the plugin from the list of active plugins
                 active_plugins.remove(plugin_id)
             else:
+                # Activate the plugin
+                self.plugins[plugin_id].activate()
+                # Ass the plugin in the list of active plugins
                 active_plugins.append(plugin_id)
+
+            log(plugin_is_active, "WARNING")
 
             # update DB with list of active plugins, delete duplicate plugins
             self.save_active_plugins_to_db(list(set(active_plugins)))
-            
-            ### toggle plugin!
-            log(self.plugins[plugin_id].active, "WARNING")
-            self.plugins[plugin_id].toggle()
-            log(self.plugins[plugin_id].active, "WARNING")
 
             # update cache and embeddings     
             self.sync_hook_and_tools()
