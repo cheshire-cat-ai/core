@@ -33,22 +33,38 @@ class MadHatter:
 
         # extract zip/tar file into plugin folder
         plugin_folder = self.ccat.get_plugin_path()
-        pkg_obj = Package(package_plugin)
-        pkg_obj.unpackage(plugin_folder)
+        archive = Package(package_plugin)
+        extracted_contents = archive.unpackage(plugin_folder)
         
-        self.find_plugins()
-        self.embed_tools()
+        # there should be a method to check for plugin integrity
+        if len(extracted_contents) != 1:
+            raise Exception("A plugin should consist in one folder, found many contents in compressed archive.")
+        
+        plugin_id = extracted_contents[0]
+        plugin_path = os.path.join(plugin_folder, plugin_id)
+        
+        if not os.path.isdir(plugin_path):
+            raise Exception("A plugin should contain a folder, found a file")
 
+        # create plugin obj
+        self.load_plugin(plugin_id, active=False)
+        # activate it
+        self.toggle_plugin(plugin_id)
+        
     def uninstall_plugin(self, plugin_id):
 
         if self.plugin_exists(plugin_id):
+
+            # deactivate plugin if it is active (will sync cache)
+            if self.plugins[plugin_id].active:
+                self.toggle_plugin(plugin_id)
 
             # remove plugin folder
             shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
 
             # update cache and embeddings        
-            self.find_plugins()
-            self.embed_tools()
+            #self.find_plugins()
+            #self.embed_tools()
 
     # discover all plugins
     def find_plugins(self):
@@ -127,6 +143,7 @@ class MadHatter:
         else:
             active_plugins = active_plugins["value"]
         
+        # core_plugin is always active
         if "core_plugin" not in active_plugins:
             active_plugins += ["core_plugin"]
         
@@ -142,8 +159,6 @@ class MadHatter:
 
     # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
-
-        log("EMBEDD TOOLS", "ERROR")
 
         # retrieve from vectorDB all tool embeddings
         all_tools_points = self.ccat.memory.vectors.procedural.get_all_points()
@@ -203,12 +218,14 @@ class MadHatter:
         log(f"toggle plugin {plugin_id}", "WARNING")
 
         if self.plugin_exists(plugin_id):
-
+            
+            # toggle plugin
             self.plugins[plugin_id].toggle()
 
-            # update active plugin in db
+            # get active plugins from db
             active_plugins = self.load_active_plugins_from_db()
 
+            # update list of active plugins
             if self.plugins[plugin_id].active:
                 active_plugins.append(plugin_id)
             else:
