@@ -10,6 +10,7 @@ router = APIRouter()
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
+        self.ccat = None
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -17,6 +18,7 @@ class ConnectionManager:
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
+        self.ccat.working_memory["history"] = []
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_json(message)
@@ -33,6 +35,7 @@ async def websocket_endpoint(websocket: WebSocket):
     ccat = websocket.app.state.ccat
 
     await manager.connect(websocket)
+    manager.ccat = ccat
 
     async def receive_message():
         while True:
