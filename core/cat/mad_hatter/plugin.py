@@ -71,21 +71,12 @@ class Plugin:
         return meta
         
     def activate(self):
-        self.active = True
         # lists of hooks and tools
         self.load_hooks_and_tools()
 
     def deactivate(self):
-        self.active = False
         self.hooks = []
         self.tools = []
-    
-    def toggle(self):
-
-        if self.active:
-            self.deactivate()
-        else:
-            self.activate()
 
     # get plugin settings JSON schema
     def get_settings_schema(self):
@@ -191,21 +182,8 @@ class Plugin:
     def is_cat_hook(self, obj):
         return isinstance(obj, CatHook)
 
-
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
     def is_cat_tool(self, obj):
         return isinstance(obj, CatTool)
-    
-
-
-
-
-
-
-
-
-
-
-
     
