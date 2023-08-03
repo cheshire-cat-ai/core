@@ -24,47 +24,64 @@ class MadHatter:
 
     def __init__(self, ccat):
         self.ccat = ccat
+        self.plugins = {} # plugins dictionary
+        self.hooks = [] # list of active plugins hooks 
+        self.tools = [] # list of active plugins tools 
         self.find_plugins()
 
     def install_plugin(self, package_plugin):
 
         # extract zip/tar file into plugin folder
         plugin_folder = self.ccat.get_plugin_path()
-        pkg_obj = Package(package_plugin)
-        pkg_obj.unpackage(plugin_folder)
+        archive = Package(package_plugin)
+        extracted_contents = archive.unpackage(plugin_folder)
         
-        self.find_plugins()
-        self.embed_tools()
+        # there should be a method to check for plugin integrity
+        if len(extracted_contents) != 1:
+            raise Exception("A plugin should consist in one new folder: "
+                            "found many contents in compressed archive or plugin already present.")
+        
+        plugin_id = extracted_contents[0]
+        plugin_path = os.path.join(plugin_folder, plugin_id)
+        
+        if not os.path.isdir(plugin_path):
+            raise Exception("A plugin should contain a folder, found a file")
 
+        # create plugin obj
+        self.load_plugin(plugin_path, active=False)
+
+        # activate it
+        self.toggle_plugin(plugin_id)
+        
     def uninstall_plugin(self, plugin_id):
 
         if self.plugin_exists(plugin_id):
 
+            # deactivate plugin if it is active (will sync cache)
+            if self.plugins[plugin_id].active:
+                self.toggle_plugin(plugin_id)
+
+            # remove plugin
+            del self.plugins[plugin_id]
+
             # remove plugin folder
             shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
-
-            # update cache and embeddings        
-            self.find_plugins()
-            self.embed_tools()
 
     # discover all plugins
     def find_plugins(self):
 
-        # plugins will be discovered from disk
-        #   and stored in a dictionary plugin_id -> plugin_obj
+        # emptying plugin dictionary, plugins will be discovered from disk
+        # and stored in a dictionary plugin_id -> plugin_obj
         self.plugins = {}
 
-        # here we keep a cache of found tools and hooks
-        self.hooks = []
-        self.tools = []
-
         # plugins are found in the plugins folder,
-        #   plus the default core plugin
-        #   (where default hooks and tools are defined)
-        core_folder = "cat/mad_hatter/core_plugin/"
-        # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
-        plugin_folder = self.ccat.get_plugin_path().replace("/app/", "") # using realtive path for imports
-        all_plugin_folders = [core_folder] + glob.glob(f"{plugin_folder}*/")
+        # plus the default core plugin s(where default hooks and tools are defined)
+        core_plugin_folder = "cat/mad_hatter/core_plugin/"
+
+         # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
+        plugins_folder = self.ccat.get_plugin_path().replace("/app/", "") # using realtive path for imports
+
+        all_plugin_folders = [core_plugin_folder] + glob.glob(f"{plugins_folder}*/")
         
         # db contains the list of active plugins
         active_plugins = self.load_active_plugins_from_db()
@@ -79,26 +96,41 @@ class MadHatter:
             folder_base = os.path.basename(os.path.normpath(folder))
             is_active = folder_base in active_plugins
 
-            # Instantiate plugin.
-            #   If the plugin is inactive, only manifest will be loaded
-            #   If active, also settings, tools and hooks
-            plugin = Plugin(folder, active=is_active)
-            
-            # if plugin is valid, keep a reference
-            self.plugins[plugin.id] = plugin
+            self.load_plugin(folder, is_active)
+
+        self.sync_hook_and_tools()
+
+    def load_plugin(self, plugin_path, active):
+        # Instantiate plugin.
+        #   If the plugin is inactive, only manifest will be loaded
+        #   If active, also settings, tools and hooks
+        plugin = Plugin(plugin_path, active=active)
+        
+        # if plugin is valid, keep a reference
+        self.plugins[plugin.id] = plugin
+
+    # Load hooks and tools of the active plugins into MadHatter 
+    def sync_hook_and_tools(self):
+
+        # emptying tools and hooks
+        self.hooks = []
+        self.tools = []
+
+        for _, plugin in self.plugins.items():
+            # load hooks and tools
             if plugin.active:
+
+                # fix tools so they have an instance of the cat # TODO: make the cat a singleton
+                for t in plugin.tools:
+                    # Prepare the tool to be used in the Cat (setting the cat instance, adding properties)
+                    t.augment_tool(self.ccat)
+
                 self.hooks += plugin.hooks
                 self.tools += plugin.tools
 
         # sort hooks by priority
         self.hooks.sort(key=lambda x: x.priority, reverse=True)
-
-        # fix tools so they have an instance of the cat # TODO: make the cat a singleton
-        for t in self.tools:
-            # Prepare the tool to be used in the Cat (setting the cat instance, adding properties)
-            t.augment_tool(self.ccat)
-
-
+                
     # check if plugin exists
     def plugin_exists(self, plugin_id):
         return plugin_id in self.plugins.keys()
@@ -112,6 +144,7 @@ class MadHatter:
         else:
             active_plugins = active_plugins["value"]
         
+        # core_plugin is always active
         if "core_plugin" not in active_plugins:
             active_plugins += ["core_plugin"]
         
@@ -184,27 +217,34 @@ class MadHatter:
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
+        log(self.plugins[plugin_id].active, "WARNING")
+
         if self.plugin_exists(plugin_id):
             
-            self.plugins[plugin_id].toggle()
-            # update active plugin in db
+            # get active plugins from db
             active_plugins = self.load_active_plugins_from_db()
+
+            # update list of active plugins
             if self.plugins[plugin_id].active:
-                active_plugins.append(plugin_id)
-            else:
                 active_plugins.remove(plugin_id)
+            else:
+                active_plugins.append(plugin_id)
 
-            # update DB with list of active plugins
-            self.save_active_plugins_to_db(active_plugins)
+            # update DB with list of active plugins, delete duplicate plugins
+            self.save_active_plugins_to_db(list(set(active_plugins)))
+            
+            ### toggle plugin!
+            log(self.plugins[plugin_id].active, "WARNING")
+            self.plugins[plugin_id].toggle()
+            log(self.plugins[plugin_id].active, "WARNING")
 
-            # update cache and embeddings        
-            self.find_plugins()
+            # update cache and embeddings     
+            self.sync_hook_and_tools()
             self.embed_tools()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
         
-
     # execute requested hook
     def execute_hook(self, hook_name, *args):
         for h in self.hooks:

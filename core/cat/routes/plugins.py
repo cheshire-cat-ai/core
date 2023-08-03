@@ -1,4 +1,5 @@
 import mimetypes
+from copy import deepcopy
 from typing import Dict
 from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
@@ -18,7 +19,9 @@ async def list_available_plugins(request: Request) -> Dict:
     # plugins are managed by the MadHatter class
     plugins = []
     for p in ccat.mad_hatter.plugins.values():
-        plugins.append(p.manifest)
+        manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
+        manifest["active"] = p.active # pass along if plugin is active or not
+        plugins.append(manifest)
 
     # retrieve plugins from official repo
     registry = []
@@ -106,7 +109,9 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
             detail = { "error": "Plugin not found" }
         )
 
-    plugin_info = ccat.mad_hatter.plugins[plugin_id].manifest
+    # get manifest and active True/False. We make a copy to avoid modifying the original obj
+    plugin_info = deepcopy(ccat.mad_hatter.plugins[plugin_id].manifest)
+    plugin_info["active"] = ccat.mad_hatter.plugins[plugin_id].active
 
     return {
         "status": "success",

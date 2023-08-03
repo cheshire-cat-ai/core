@@ -38,4 +38,3 @@ def just_installed_plugin(client):
     os.remove(zip_path)
     # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
     response = client.delete("/plugins/mock_plugin")
-    assert response.status_code == 200

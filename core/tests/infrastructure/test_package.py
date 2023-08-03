@@ -8,7 +8,9 @@ def test_unpackage():
     
     zip_path = create_mock_plugin_zip()
     zip = Package(zip_path)
-    zip.unpackage("tests/infrastructure/")
+    extracted = zip.unpackage("tests/infrastructure/")
+    assert len(extracted) == 1
+    assert extracted[0] == "mock_plugin"
     assert os.path.exists("tests/infrastructure/mock_plugin")
     assert os.path.exists("tests/infrastructure/mock_plugin/mock_tool.py")
     
