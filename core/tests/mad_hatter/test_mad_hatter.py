@@ -57,6 +57,11 @@ def test_instantiation_discovery(mad_hatter):
     assert tool.return_direct == False
     assert tool.embedding is None # not embedded yet
 
+    # list of active plugins in DB is correct
+    active_plugins = mad_hatter.load_active_plugins_from_db()
+    assert len(active_plugins) == 1
+    assert active_plugins[0] == "core_plugin"
+
 
 def test_plugin_install(mad_hatter: MadHatter):
 
@@ -74,13 +79,7 @@ def test_plugin_install(mad_hatter: MadHatter):
     assert isinstance(mad_hatter.plugins["mock_plugin"], Plugin)
     assert mad_hatter.plugins["mock_plugin"].active # plugin starts active
 
-    # plugin is not activated by default, so no new hooks and tools
-    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 0
-    assert len(mad_hatter.plugins["mock_plugin"].tools) == 0
-    
-    # activate plugin
-    mad_hatter.toggle_plugin("mock_plugin")
-    
+    # plugin is activated by default
     assert len(mad_hatter.plugins["mock_plugin"].hooks) == 1
     assert len(mad_hatter.plugins["mock_plugin"].tools) == 1
     new_hook = mad_hatter.plugins["mock_plugin"].hooks[0]
@@ -103,6 +102,12 @@ def test_plugin_install(mad_hatter: MadHatter):
     assert len(new_tool.embedding) == 128 # fake embedder
     assert type(new_tool.embedding[0]) == float
 
+    # list of active plugins in DB is correct
+    active_plugins = mad_hatter.load_active_plugins_from_db()
+    assert len(active_plugins) == 2
+    assert "core_plugin" in active_plugins
+    assert "mock_plugin" in active_plugins
+
     # remove plugin files (both zip and extracted)
     os.remove(new_plugin_zip_path)
     shutil.rmtree( os.path.join( mad_hatter.ccat.get_plugin_path(), "mock_plugin") )
@@ -114,6 +119,11 @@ def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
     assert len(mad_hatter.plugins) == 1 # core_plugin
     mad_hatter.uninstall_plugin("wrong_plugin")
     assert len(mad_hatter.plugins) == 1
+
+    # list of active plugins in DB is correct
+    active_plugins = mad_hatter.load_active_plugins_from_db()
+    assert len(active_plugins) == 1
+    assert active_plugins[0] == "core_plugin"
 
 
 def test_plugin_uninstall(mad_hatter: MadHatter):
@@ -136,6 +146,11 @@ def test_plugin_uninstall(mad_hatter: MadHatter):
     assert len(mad_hatter.tools) == 1 # default tool
     for h in mad_hatter.hooks:
         assert h.plugin_id == "core_plugin"
+
+    # list of active plugins in DB is correct
+    active_plugins = mad_hatter.load_active_plugins_from_db()
+    assert len(active_plugins) == 1
+    assert active_plugins[0] == "core_plugin"
 
     # remove also original zip file
     os.remove(new_plugin_zip_path)

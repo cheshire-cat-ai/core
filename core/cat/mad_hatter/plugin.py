@@ -71,9 +71,7 @@ class Plugin:
         return meta
         
     def activate(self):
-        
         self.active = True
-
         # lists of hooks and tools
         self.load_hooks_and_tools()
 

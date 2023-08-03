@@ -38,7 +38,8 @@ class MadHatter:
         
         # there should be a method to check for plugin integrity
         if len(extracted_contents) != 1:
-            raise Exception("A plugin should consist in one folder, found many contents in compressed archive.")
+            raise Exception("A plugin should consist in one new folder: "
+                            "found many contents in compressed archive or plugin already present.")
         
         plugin_id = extracted_contents[0]
         plugin_path = os.path.join(plugin_folder, plugin_id)
@@ -47,8 +48,8 @@ class MadHatter:
             raise Exception("A plugin should contain a folder, found a file")
 
         # create plugin obj
-        self.load_plugin(plugin_id, active=False)
-        
+        self.load_plugin(plugin_path, active=False)
+
         # activate it
         self.toggle_plugin(plugin_id)
         
@@ -60,12 +61,11 @@ class MadHatter:
             if self.plugins[plugin_id].active:
                 self.toggle_plugin(plugin_id)
 
+            # remove plugin
+            del self.plugins[plugin_id]
+
             # remove plugin folder
             shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
-
-            # update cache and embeddings        
-            #self.find_plugins()
-            #self.embed_tools()
 
     # discover all plugins
     def find_plugins(self):
@@ -217,23 +217,26 @@ class MadHatter:
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
+        log(self.plugins[plugin_id].active, "WARNING")
 
         if self.plugin_exists(plugin_id):
             
-            # toggle plugin
-            self.plugins[plugin_id].toggle()
-
             # get active plugins from db
             active_plugins = self.load_active_plugins_from_db()
 
             # update list of active plugins
             if self.plugins[plugin_id].active:
-                active_plugins.append(plugin_id)
-            else:
                 active_plugins.remove(plugin_id)
+            else:
+                active_plugins.append(plugin_id)
 
             # update DB with list of active plugins, delete duplicate plugins
             self.save_active_plugins_to_db(list(set(active_plugins)))
+            
+            ### toggle plugin!
+            log(self.plugins[plugin_id].active, "WARNING")
+            self.plugins[plugin_id].toggle()
+            log(self.plugins[plugin_id].active, "WARNING")
 
             # update cache and embeddings     
             self.sync_hook_and_tools()
