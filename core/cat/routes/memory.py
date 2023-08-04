@@ -155,12 +155,12 @@ async def wipe_conversation_history(
 
 # DELETE memories
 @router.delete("/{collection_id}/point/{memory_id}/")
-async def delete_element_in_memory(
+async def wipe_memory_point(
     request: Request,
     collection_id: str,
     memory_id: str
 ) -> Dict:
-    """Delete specific element in memory."""
+    """Delete a specific point in memory"""
 
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
