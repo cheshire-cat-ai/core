@@ -30,8 +30,10 @@ def test_deactivate_plugin(client, just_installed_plugin):
             
     # tool has been taken away
     tools = get_embedded_tools(client)
+    assert len(tools) == 1
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert not "mock_tool" in tool_names
+    assert "mock_tool" not in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
     
 
 def test_reactivate_plugin(client, just_installed_plugin):
@@ -55,5 +57,7 @@ def test_reactivate_plugin(client, just_installed_plugin):
 
     # tool has been re-embedded
     tools = get_embedded_tools(client)
+    assert len(tools) == 2
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
