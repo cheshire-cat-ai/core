@@ -2,9 +2,11 @@ import os
 import sys
 import socket
 from typing import Any
+import requests
 
 from cat.log import log
 from qdrant_client import QdrantClient
+from qdrant_client.qdrant_remote import QdrantRemote
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
@@ -33,7 +35,7 @@ class VectorMemory:
 
         # Create vector collections
         # - Episodic memory will contain user and eventually cat utterances
-        # - Declarative memory will contain uploaded documents' content (and summaries)
+        # - Declarative memory will contain uploaded documents' content
         # - Procedural memory will contain tools and knowledge on how to do things
         self.collections = {}
         for collection_name in ["episodic", "declarative", "procedural"]:
@@ -71,9 +73,6 @@ class VectorMemory:
         else:
             qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
 
-            log(f"Qdrant host: {qdrant_host}","INFO")
-            log(f"Qdrant port: {qdrant_port}","INFO")
-
             try:
                 s = socket.socket()
                 s.connect((qdrant_host, qdrant_port))
@@ -89,7 +88,7 @@ class VectorMemory:
                 host=qdrant_host,
                 port=qdrant_port,
             )
-
+            
 
 class VectorMemoryCollection(Qdrant):
 
@@ -130,12 +129,15 @@ class VectorMemoryCollection(Qdrant):
                 log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
             else:
                 log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
-                # TODO: dump collection on disk before deleting, so it can be recovered
+                # dump collection on disk before deleting
+                self.save_dump()
+                log(f'Dump "{self.collection_name}" completed', "INFO")
 
                 self.client.delete_collection(self.collection_name)
                 log(f'Collection "{self.collection_name}" deleted', "WARNING")
                 self.create_collection()
-        except:
+        except Exception as e:
+            log(e, "ERROR")
             self.create_collection()
 
         log(f"Collection {self.collection_name}:", "INFO")
@@ -242,3 +244,38 @@ class VectorMemoryCollection(Qdrant):
         )
 
         return all_points
+    
+
+    def db_is_remote(self):
+        return isinstance(self.client._client, QdrantRemote)
+
+    
+    # dump collection on disk before deleting
+    def save_dump(self, folder="dormouse/"):
+        
+        # only do snapshotting if using remote Qdrant
+        if not self.db_is_remote():
+            return
+
+        host = self.client._client._host
+        port = self.client._client._port
+
+        if os.path.isdir(folder):
+            log(f'Directory dormouse exists', "INFO")
+        else:
+            log(f'Directory dormouse NOT exists, creating it.', "WARNING")
+            os.mkdir(folder)
+        
+        self.snapshot_info = self.client.create_snapshot(collection_name=self.collection_name)
+        snapshot_url_in = "http://"+ str(host) + ":" + str(port) + "/collections/" + self.collection_name + "/snapshots/"+ self.snapshot_info.name
+        snapshot_url_out = folder + self.snapshot_info.name
+        # rename snapshots for a easyer restore in the future
+        alias = self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name
+        response = requests.get(snapshot_url_in)
+        open(snapshot_url_out, "wb").write(response.content)
+        new_name = folder + alias.replace('/', '-') + ".snapshot"
+        os.rename(snapshot_url_out, new_name)
+        for s in self.client.list_snapshots(self.collection_name):
+            self.client.delete_snapshot(collection_name=self.collection_name, snapshot_name=s.name)
+        log(f'Dump "{new_name}" completed', "WARNING")
+        # dump complete

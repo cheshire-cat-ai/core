@@ -20,7 +20,7 @@ async def delete_element_in_memory(
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail={"error": "Collection does not exist."}
         )
 
@@ -31,7 +31,7 @@ async def delete_element_in_memory(
     )
     if points == []:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail={"error": "Point does not exist."}
         )
 
@@ -142,6 +142,8 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
         to_return[collection_id] = ret
 
         ccat.load_memory()  # recreate the long term memories
+        ccat.mad_hatter.find_plugins()
+        ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
@@ -166,6 +168,8 @@ async def wipe_collections(
         to_return[c] = ret
 
     ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",

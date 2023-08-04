@@ -1,42 +1,4 @@
-EXCERPT FROM CHAPTER VIII - The Queen's Croquet-Ground
-
-She was looking about for some way of escape, and wondering whether she could get away without being seen, when she noticed a curious appearance in the air: it puzzled her very much at first, but, after watching it a minute or two, she made it out to be a grin, and she said to herself 'It's the Cheshire Cat: now I shall have somebody to talk to.'
-
-'How are you getting on?' said the Cat, as soon as there was mouth enough for it to speak with.
-
-Alice waited till the eyes appeared, and then nodded. 'It's no use speaking to it,' she thought, 'till its ears have come, or at least one of them.' In another minute the whole head appeared, and then Alice put down her flamingo, and began an account of the game, feeling very glad she had someone to listen to her. The Cat seemed to think that there was enough of it now in sight, and no more of it appeared.
-
-'I don't think they play at all fairly,' Alice began, in rather a complaining tone, 'and they all quarrel so dreadfully one can't hear oneself speak--and they don't seem to have any rules in particular; at least, if there are, nobody attends to them--and you've no idea how confusing it is all the things being alive; for instance, there's the arch I've got to go through next walking about at the other end of the ground--and I should have croqueted the Queen's hedgehog just now, only it ran away when it saw mine coming!'
-
-'How do you like the Queen?' said the Cat in a low voice.
-
-'Not at all,' said Alice: 'she's so extremely--' Just then she noticed that the Queen was close behind her, listening: so she went on, '--likely to win, that it's hardly worth while finishing the game.'
-
-The Queen smiled and passed on.
-
-'Who are you talking to?' said the King, going up to Alice, and looking at the Cat's head with great curiosity.
-
-'It's a friend of mine--a Cheshire Cat,' said Alice: 'allow me to introduce it.'
-
-'I don't like the look of it at all,' said the King: 'however, it may kiss my hand if it likes.'
-
-'I'd rather not,' the Cat remarked.
-
-'Don't be impertinent,' said the King, 'and don't look at me like that!' He got behind Alice as he spoke.
-
-'A cat may look at a king,' said Alice. 'I've read that in some book, but I don't remember where.'
-
-'Well, it must be removed,' said the King very decidedly, and he called the Queen, who was passing at the moment, 'My dear! I wish you would have this cat removed!'
-
-The Queen had only one way of settling all difficulties, great or small. 'Off with his head!' she said, without even looking round.
-
-'I'll fetch the executioner myself,' said the King eagerly, and he hurried off.
-
-Alice thought she might as well go back, and see how the game was going on, as she heard the Queen's voice in the distance, screaming with passion. She had already heard her sentence three of the players to be executed for having missed their turns, and she did not like the look of things at all, as the game was in such confusion that she never knew whether it was her turn or not. So she went in search of her hedgehog.
-
-The hedgehog was engaged in a fight with another hedgehog, which seemed to Alice an excellent opportunity for croqueting one of them with the other: the only difficulty was, that her flamingo was gone across to the other side of the garden, where Alice could see it trying in a helpless sort of way to fly up into a tree.
-
-By the time she had caught the flamingo and brought it back, the fight was over, and both the hedgehogs were out of sight: 'but it doesn't matter much,' thought Alice, 'as all the arches are gone from this side of the ground.' So she tucked it away under her arm, that it might not escape again, and went back for a little more conversation with her friend.
+﻿EXCERPT FROM CHAPTER VIII - The Queen's Croquet-Ground
 
 When she got back to the Cheshire Cat, she was surprised to find quite a large crowd collected round it: there was a dispute going on between the executioner, the King, and the Queen, who were all talking at once, while all the rest were quite silent, and looked very uncomfortable.
 
@@ -52,4 +14,4 @@ Alice could think of nothing else to say but 'It belongs to the Duchess: you'd b
 
 'She's in prison,' the Queen said to the executioner: 'fetch her here.' And the executioner went off like an arrow.
 
-The Cat's head began fading away the moment he was gone, and, by the time he had come back with the Duchess, it had entirely disappeared; so the King and the executioner ran wildly up and down looking for it, while the rest of the party went back to the game.
+The Cat's head began fading away the moment he was gone, and, by the time he had come back with the Duchess, it had entirely disappeared.

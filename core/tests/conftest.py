@@ -1,3 +1,5 @@
+import os
+import shutil
 
 from typing import Any
 from typing import Generator
@@ -17,6 +19,23 @@ from cat.memory.vector_memory import VectorMemory
 
 from cat.main import cheshire_cat_api
 
+
+def clean_up_mocks():
+    # clean up service files and mocks
+    to_be_removed = [
+        "cat/metadata-test.json", # legacy position, now moved into mocks folder
+        "tests/mocks/metadata-test.json",
+        "tests/mocks/mock_plugin.zip",
+        "tests/mocks/mock_plugin_folder/mock_plugin",
+    ]
+    for tbr in to_be_removed:
+        if os.path.exists(tbr):
+            if os.path.isdir(tbr):
+                shutil.rmtree(tbr)
+            else:
+                os.remove(tbr)
+
+
 @pytest.fixture(scope="function")
 def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     """
@@ -35,13 +54,16 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
 
     # Use a different json settings db
     def mock_get_file_name(self, *args, **kwargs):
-        return "metadata-test.json"
+        return "tests/mocks/metadata-test.json"
     monkeypatch.setattr(Database, "get_file_name", mock_get_file_name)
-    
+
+    # clean up service files and mocks
+    clean_up_mocks()
     Database._instance = None
+    
     _app = cheshire_cat_api
     yield _app
-    Database._instance.db.truncate()
+    
     
 @pytest.fixture(scope="function")
 def client(app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
