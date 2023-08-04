@@ -167,39 +167,17 @@ class MadHatter:
     def embed_tools(self):
 
         # retrieve from vectorDB all tool embeddings
-        all_tools_points = self.ccat.memory.vectors.procedural.get_all_points()
+        embedded_tools = self.ccat.memory.vectors.procedural.get_all_points()
 
-        # easy access to plugin tools
-        plugins_tools_index = {t.description: t for t in self.tools}
-
-        points_to_be_deleted = []
-        
-        vector_db = self.ccat.memory.vectors.vector_db
-
-        # loop over vectors
-        for record in all_tools_points:
-            # if the tools is active in plugins, assign embedding
-            try:
-                tool_description = record.payload["page_content"]
-                plugins_tools_index[tool_description].embedding = record.vector
-                # log(plugins_tools_index[tool_description], "WARNING")
-            # else delete it
-            except Exception as e:
-                log(f"Deleting embedded tool: {record.payload['page_content']}", "WARNING")
-                points_to_be_deleted.append(record.id)
-
-        if len(points_to_be_deleted) > 0:
-            vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
-            )
+        # easy acces to (point_id, tool_description)
+        embedded_tools_description = [(t.id, t.payload["page_content"]) for t in embedded_tools]
 
         # loop over tools
         for tool in self.tools:
-            # if there is no embedding, create it
-            if not tool.embedding:
+            # if the tool is not embedded 
+            if tool.description not in embedded_tools_description:
                 # save it to DB
-                ids_inserted = self.ccat.memory.vectors.procedural.add_texts(
+                self.ccat.memory.vectors.procedural.add_texts(
                     [tool.description],
                     [{
                         "source": "tool",
@@ -209,15 +187,25 @@ class MadHatter:
                     }],
                 )
 
-                # retrieve saved point and assign embedding to the Tool
-                records_inserted = vector_db.retrieve(
-                    collection_name="procedural",
-                    ids=ids_inserted,
-                    with_vectors=True
-                )
-                tool.embedding = records_inserted[0].vector
-
                 log(f"Newly embedded tool: {tool.description}", "WARNING")
+        
+        points_to_be_deleted = []
+
+        tools_description = [t.description for t in self.tools]
+
+        # loop over embedded tools
+        for tool_embedded_description in embedded_tools_description:
+            # if the tool is not active, it inserts it in the list of points to be delete
+            if tool_embedded_description[1] not in tools_description:
+                log(f"Deleted embedded tool: {tool_embedded_description[1]}", "WARNING")
+                points_to_be_deleted.append(tool_embedded_description[0])
+
+        # delete not active tools
+        if len(points_to_be_deleted) > 0:
+            self.ccat.memory.vectors.vector_db.delete(
+                collection_name="procedural",
+                points_selector=points_to_be_deleted
+            )
 
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
