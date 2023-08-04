@@ -126,10 +126,10 @@ async def get_plugins_settings(request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
-    # plugins are managed by the MadHatter class
     settings = []
     schema = {}
 
+    # plugins are managed by the MadHatter class
     for plugin in ccat.mad_hatter.plugins.values():
         plugin_settings = plugin.load_settings()
         plugin_schema = plugin.get_settings_schema()
