@@ -26,7 +26,7 @@ async def list_available_plugins(request: Request) -> Dict:
         plugins.append(manifest)
 
     # retrieve plugins from official repo
-    registry = []
+    registry = await get_registry_list()
 
     return {
         "status": "success",
@@ -192,3 +192,50 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
         "status": "success",
         "deleted": plugin_id
     }
+
+async def get_registry_list():
+    response = requests.get("http://192.168.1.120:8000/plugins?page=1&page_size=7000")
+    if response.status_code == 200:
+        return response.json()["plugins"]
+    else:
+        return []
+
+@router.post("/upload/registry")
+async def download_plugin_from_registry(request: Request,background_tasks: BackgroundTasks,url_repo: Dict = Body(example={"url": "https://example.com/file.zip"})):
+    """Install a new plugin from external repository"""
+
+    #Get name of file
+    url = urlparse(url_repo["url"] + "/archive/master.zip")
+    url_path = url.path.split("/")
+    url_path.reverse()
+    if "github" in url.netloc:
+
+        plugin_name = str(url_path[2]) + ".zip"
+
+
+
+    with requests.get(url_repo["url"], stream=True) as response:
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code = 400,
+                detail = { "error": "" }
+            )
+        with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+            log(f"Uploading plugin {plugin_name}", "INFO")
+
+            #access cat instance
+            ccat = request.app.state.ccat
+
+            background_tasks.add_task(
+                ccat.mad_hatter.install_plugin, file.name
+            )
+
+            return {
+                "status": "success",
+                "filename": file.name,
+                "content_type": mimetypes.guess_type(plugin_name)[0],
+                "info": "Plugin is being installed asynchronously"
+            }
+    
