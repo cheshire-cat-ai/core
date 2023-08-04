@@ -58,7 +58,6 @@ def get_language_model(cat) -> BaseLanguageModel:
             import traceback
             traceback.print_exc()
             llm = llms.LLMDefaultConfig.get_llm_from_config({})
-            
 
     return llm
 
@@ -87,7 +86,6 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
     selected_embedder = crud.get_setting_by_name(name="embedder_selected")
 
     if selected_embedder is not None:
-
         # get Embedder factory class
         selected_embedder_class = selected_embedder["value"]["name"]
         FactoryClass = getattr(embedders, selected_embedder_class)
@@ -95,7 +93,7 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         # obtain configuration and instantiate Embedder
         selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
         embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
-        
+
         return embedder
 
     # OpenAI embedder
@@ -139,29 +137,13 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
     # HuggingFace
     elif type(cat._llm) in [HuggingFaceHub]:
         embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-                {
-                    "huggingfacehub_api_token": cat._llm.huggingfacehub_api_token,
-                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
-                }
-            )
-    # elif "HF_TOKEN" in os.environ:
-      #   if "HF_EMBEDDER" in os.environ:
-        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-        #         {
-        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-        #             "repo_id": os.environ["HF_EMBEDDER"],
-        #         }
-        #     )
-        # else:
-        #     embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-        #         {
-        #             "huggingfacehub_api_token": os.environ["HF_TOKEN"],
-        #             # repo_id: "..." TODO: at the moment use default
-        #         }
-        #     )
-    else:
-        embedder = embedders.EmbedderFakeConfig.get_embedder_from_config(
-            {"size": 128}  # mock openai embedding size
+            {
+                "huggingfacehub_api_token": cat._llm.huggingfacehub_api_token,
+                "repo_id": "sentence-transformers/all-mpnet-base-v2",
+            }
         )
+
+    else:
+        embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
 
     return embedder
