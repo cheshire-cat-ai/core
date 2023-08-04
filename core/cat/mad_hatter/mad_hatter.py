@@ -170,13 +170,14 @@ class MadHatter:
         embedded_tools = self.ccat.memory.vectors.procedural.get_all_points()
 
         # easy acces to (point_id, tool_description)
-        embedded_tools_description = [(t.id, t.payload["page_content"]) for t in embedded_tools]
+        embedded_tools_ids = [t.id for t in embedded_tools]
+        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
 
-        # loop over tools
+        # loop over mad_hatter tools
         for tool in self.tools:
             # if the tool is not embedded 
-            if tool.description not in embedded_tools_description:
-                # save it to DB
+            if tool.description not in embedded_tools_descriptions:
+                # embed the tool and save it to DB
                 self.ccat.memory.vectors.procedural.add_texts(
                     [tool.description],
                     [{
@@ -189,16 +190,16 @@ class MadHatter:
 
                 log(f"Newly embedded tool: {tool.description}", "WARNING")
         
+        # easy access to mad hatter tools (found in plugins)
+        mad_hatter_tools_descriptions = [t.description for t in self.tools]
+
+        # loop over embedded tools and delete the ones not present in active plugins
         points_to_be_deleted = []
-
-        tools_description = [t.description for t in self.tools]
-
-        # loop over embedded tools
-        for tool_embedded_description in embedded_tools_description:
-            # if the tool is not active, it inserts it in the list of points to be delete
-            if tool_embedded_description[1] not in tools_description:
-                log(f"Deleted embedded tool: {tool_embedded_description[1]}", "WARNING")
-                points_to_be_deleted.append(tool_embedded_description[0])
+        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
+            # if the tool is not active, it inserts it in the list of points to be deleted
+            if descr not in mad_hatter_tools_descriptions:
+                log(f"Deleting embedded tool: {descr}", "WARNING")
+                points_to_be_deleted.append(id)
 
         # delete not active tools
         if len(points_to_be_deleted) > 0:
