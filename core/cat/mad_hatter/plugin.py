@@ -33,7 +33,7 @@ class Plugin:
         self.hooks = []
         self.tools = []
 
-        # all plugins start active, they can be deactivated/reactivated from endpoint (see self.toggle)
+        # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
             self.activate()
         else:

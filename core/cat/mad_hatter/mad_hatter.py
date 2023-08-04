@@ -63,11 +63,12 @@ class MadHatter:
             if plugin_id in active_plugins:
                 self.toggle_plugin(plugin_id)
 
-            # remove plugin
+            # remove plugin from cache
+            plugin_path = self.plugins[plugin_id].path
             del self.plugins[plugin_id]
 
             # remove plugin folder
-            shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+            shutil.rmtree(plugin_path)
 
     # discover all plugins
     def find_plugins(self):
@@ -100,7 +101,7 @@ class MadHatter:
 
             self.load_plugin(folder, is_active)
 
-        self.sync_hook_and_tools()
+        self.sync_hooks_and_tools()
 
     def load_plugin(self, plugin_path, active):
         # Instantiate plugin.
@@ -112,7 +113,7 @@ class MadHatter:
         self.plugins[plugin.id] = plugin
 
     # Load hooks and tools of the active plugins into MadHatter 
-    def sync_hook_and_tools(self):
+    def sync_hooks_and_tools(self):
 
         # emptying tools and hooks
         self.hooks = []
@@ -229,8 +230,6 @@ class MadHatter:
 
             plugin_is_active = plugin_id in active_plugins
 
-            log(plugin_is_active, "WARNING")
-
             # update list of active plugins
             if plugin_is_active:
                 # Deactivate the plugin
@@ -243,13 +242,11 @@ class MadHatter:
                 # Ass the plugin in the list of active plugins
                 active_plugins.append(plugin_id)
 
-            log(plugin_is_active, "WARNING")
-
             # update DB with list of active plugins, delete duplicate plugins
             self.save_active_plugins_to_db(list(set(active_plugins)))
 
             # update cache and embeddings     
-            self.sync_hook_and_tools()
+            self.sync_hooks_and_tools()
             self.embed_tools()
 
         else:

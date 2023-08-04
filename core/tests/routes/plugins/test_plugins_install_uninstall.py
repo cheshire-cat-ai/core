@@ -21,7 +21,7 @@ def test_plugin_install_upload_zip(client, just_installed_plugin):
     assert "mock_plugin" in installed_plugins_names
     # both core_plugin and mock_plugin are active
     for p in installed_plugins:
-        assert p["active"]
+        assert p["active"] == True
 
     # plugin has been actually extracted in (mock) plugins folder
     assert os.path.exists(mock_plugin_final_folder)
