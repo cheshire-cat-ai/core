@@ -1,6 +1,8 @@
 import langchain
 from pydantic import PyObject, BaseSettings
 
+from cat.factory.dumb_embedder import DumbEmbedder
+
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseSettings):
@@ -25,6 +27,17 @@ class EmbedderFakeConfig(EmbedderSettings):
         schema_extra = {
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
+        }
+
+
+class EmbedderDumbConfig(EmbedderSettings):
+
+    _pyclass = PyObject = DumbEmbedder
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Dumb Embedder",
+            "description": "Configuration for default embedder. It encodes the pairs of characters",
         }
 
 
@@ -83,6 +96,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 
 
 SUPPORTED_EMDEDDING_MODELS = [
+    EmbedderDumbConfig,
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,

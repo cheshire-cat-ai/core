@@ -55,17 +55,20 @@ class MadHatter:
         
     def uninstall_plugin(self, plugin_id):
 
+        active_plugins = self.load_active_plugins_from_db()
+
         if self.plugin_exists(plugin_id):
 
             # deactivate plugin if it is active (will sync cache)
-            if self.plugins[plugin_id].active:
+            if plugin_id in active_plugins:
                 self.toggle_plugin(plugin_id)
 
-            # remove plugin
+            # remove plugin from cache
+            plugin_path = self.plugins[plugin_id].path
             del self.plugins[plugin_id]
 
             # remove plugin folder
-            shutil.rmtree(self.ccat.get_plugin_path() + plugin_id)
+            shutil.rmtree(plugin_path)
 
     # discover all plugins
     def find_plugins(self):
@@ -98,7 +101,7 @@ class MadHatter:
 
             self.load_plugin(folder, is_active)
 
-        self.sync_hook_and_tools()
+        self.sync_hooks_and_tools()
 
     def load_plugin(self, plugin_path, active):
         # Instantiate plugin.
@@ -110,15 +113,17 @@ class MadHatter:
         self.plugins[plugin.id] = plugin
 
     # Load hooks and tools of the active plugins into MadHatter 
-    def sync_hook_and_tools(self):
+    def sync_hooks_and_tools(self):
 
         # emptying tools and hooks
         self.hooks = []
         self.tools = []
 
+        active_plugins = self.load_active_plugins_from_db()
+
         for _, plugin in self.plugins.items():
             # load hooks and tools
-            if plugin.active:
+            if plugin.id in active_plugins:
 
                 # fix tools so they have an instance of the cat # TODO: make the cat a singleton
                 for t in plugin.tools:
@@ -162,39 +167,18 @@ class MadHatter:
     def embed_tools(self):
 
         # retrieve from vectorDB all tool embeddings
-        all_tools_points = self.ccat.memory.vectors.procedural.get_all_points()
+        embedded_tools = self.ccat.memory.vectors.procedural.get_all_points()
 
-        # easy access to plugin tools
-        plugins_tools_index = {t.description: t for t in self.tools}
+        # easy acces to (point_id, tool_description)
+        embedded_tools_ids = [t.id for t in embedded_tools]
+        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
 
-        points_to_be_deleted = []
-        
-        vector_db = self.ccat.memory.vectors.vector_db
-
-        # loop over vectors
-        for record in all_tools_points:
-            # if the tools is active in plugins, assign embedding
-            try:
-                tool_description = record.payload["page_content"]
-                plugins_tools_index[tool_description].embedding = record.vector
-                # log(plugins_tools_index[tool_description], "WARNING")
-            # else delete it
-            except Exception as e:
-                log(f"Deleting embedded tool: {record.payload['page_content']}", "WARNING")
-                points_to_be_deleted.append(record.id)
-
-        if len(points_to_be_deleted) > 0:
-            vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
-            )
-
-        # loop over tools
+        # loop over mad_hatter tools
         for tool in self.tools:
-            # if there is no embedding, create it
-            if not tool.embedding:
-                # save it to DB
-                ids_inserted = self.ccat.memory.vectors.procedural.add_texts(
+            # if the tool is not embedded 
+            if tool.description not in embedded_tools_descriptions:
+                # embed the tool and save it to DB
+                self.ccat.memory.vectors.procedural.add_texts(
                     [tool.description],
                     [{
                         "source": "tool",
@@ -204,42 +188,54 @@ class MadHatter:
                     }],
                 )
 
-                # retrieve saved point and assign embedding to the Tool
-                records_inserted = vector_db.retrieve(
-                    collection_name="procedural",
-                    ids=ids_inserted,
-                    with_vectors=True
-                )
-                tool.embedding = records_inserted[0].vector
-
                 log(f"Newly embedded tool: {tool.description}", "WARNING")
+        
+        # easy access to mad hatter tools (found in plugins)
+        mad_hatter_tools_descriptions = [t.description for t in self.tools]
+
+        # loop over embedded tools and delete the ones not present in active plugins
+        points_to_be_deleted = []
+        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
+            # if the tool is not active, it inserts it in the list of points to be deleted
+            if descr not in mad_hatter_tools_descriptions:
+                log(f"Deleting embedded tool: {descr}", "WARNING")
+                points_to_be_deleted.append(id)
+
+        # delete not active tools
+        if len(points_to_be_deleted) > 0:
+            self.ccat.memory.vectors.vector_db.delete(
+                collection_name="procedural",
+                points_selector=points_to_be_deleted
+            )
 
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         log(f"toggle plugin {plugin_id}", "WARNING")
-        log(self.plugins[plugin_id].active, "WARNING")
 
         if self.plugin_exists(plugin_id):
             
             # get active plugins from db
             active_plugins = self.load_active_plugins_from_db()
 
+            plugin_is_active = plugin_id in active_plugins
+
             # update list of active plugins
-            if self.plugins[plugin_id].active:
+            if plugin_is_active:
+                # Deactivate the plugin
+                self.plugins[plugin_id].deactivate()
+                # Remove the plugin from the list of active plugins
                 active_plugins.remove(plugin_id)
             else:
+                # Activate the plugin
+                self.plugins[plugin_id].activate()
+                # Ass the plugin in the list of active plugins
                 active_plugins.append(plugin_id)
 
             # update DB with list of active plugins, delete duplicate plugins
             self.save_active_plugins_to_db(list(set(active_plugins)))
-            
-            ### toggle plugin!
-            log(self.plugins[plugin_id].active, "WARNING")
-            self.plugins[plugin_id].toggle()
-            log(self.plugins[plugin_id].active, "WARNING")
 
             # update cache and embeddings     
-            self.sync_hook_and_tools()
+            self.sync_hooks_and_tools()
             self.embed_tools()
 
         else:

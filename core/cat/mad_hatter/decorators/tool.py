@@ -22,10 +22,6 @@ class CatTool(Tool):
         if cat_arg_signature in self.description:
             self.description = self.description.replace(cat_arg_signature, ")")
 
-        # Tool embedding is saved in the "procedural" vector DB collection. 
-        # During CheshireCat.bootstrap(), after memory is loaded, the mad_hatter will retrieve the embedding from memory or create one if not present, and assign this attribute
-        self.embedding = None
-
     def _run(self, input_by_llm):
         return self.func(input_by_llm, cat=self.cat)
 

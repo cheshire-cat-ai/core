@@ -1,14 +1,9 @@
 import mimetypes
-import os
-from typing import Dict, Annotated
+from copy import deepcopy
+from typing import Dict
 from tempfile import NamedTemporaryFile
-
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
-import httpx
-import requests
-from urllib.parse import urlparse
-
 
 router = APIRouter()
 
@@ -21,13 +16,17 @@ async def list_available_plugins(request: Request) -> Dict:
     # access cat instance
     ccat = request.app.state.ccat
 
+    active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
+
     # plugins are managed by the MadHatter class
     plugins = []
     for p in ccat.mad_hatter.plugins.values():
-        plugins.append(p.manifest)
+        manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
+        manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
+        plugins.append(manifest)
 
     # retrieve plugins from official repo
-    registry = await get_registry_list()
+    registry = []
 
     return {
         "status": "success",
@@ -35,7 +34,6 @@ async def list_available_plugins(request: Request) -> Dict:
         "installed": plugins,
         "registry": registry
     }
-
 
 
 @router.post("/upload/")
@@ -113,7 +111,11 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
             detail = { "error": "Plugin not found" }
         )
 
-    plugin_info = ccat.mad_hatter.plugins[plugin_id].manifest
+    active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
+
+    # get manifest and active True/False. We make a copy to avoid modifying the original obj
+    plugin_info = deepcopy(ccat.mad_hatter.plugins[plugin_id].manifest)
+    plugin_info["active"] = plugin_id in active_plugins
 
     return {
         "status": "success",
@@ -135,12 +137,13 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
         )
 
     # plugins are managed by the MadHatter class
-    settings = ccat.mad_hatter.get_plugin_settings(plugin_id)
+    settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
+    schema = ccat.mad_hatter.plugins[plugin_id].get_settings_schema()
 
     return {
         "status": "success",
         "settings": settings,
-        "schema": {}
+        "schema": schema
     }
 
 
@@ -148,7 +151,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
 async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
-    payload: Dict = Body(example={"active": False}),
+    payload: Dict = Body(example={"setting_a": "some value", "setting_b": "another value"}),
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
@@ -161,7 +164,7 @@ async def upsert_plugin_settings(
             detail = { "error": "Plugin not found" }
         )
     
-    final_settings = ccat.mad_hatter.save_plugin_settings(plugin_id, payload)
+    final_settings = ccat.mad_hatter.plugins[plugin_id].save_settings(payload)
 
     return {
         "status": "success", 
@@ -189,49 +192,3 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
         "status": "success",
         "deleted": plugin_id
     }
-
-async def get_registry_list():
-    response = httpx.get("https://plugins.cheshirecat.ai/plugins?page=1&page_size=7000")
-    if response.status_code == 200:
-        return response.json()["plugins"]
-    else: 
-        return []
-
-@router.post("/upload/registry")
-async def download_plugin_from_registry(request: Request,background_tasks: BackgroundTasks,url_repo: Dict = Body(example={"url": "https://github.com/team-sviluppo/cheshire-cat-switch-user-role"})):
-    """Install a new plugin from external repository"""
-    
-    #Get name of file
-    url_body = url_repo["url"] + "/archive/master.zip"
-    url = urlparse(url_body)
-    url_path = url.path.split("/")
-    url_path.reverse()
-    plugin_name = str(url_path[2]) + ".zip"
-        
-    with requests.get(url_body, stream=True) as response:
-        
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code = 400,
-                detail = { "error": "Bad request" }
-            )
-        
-        with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
-            log(f"Uploading plugin {plugin_name}", "INFO")
-
-            #access cat instance
-            ccat = request.app.state.ccat
-
-            background_tasks.add_task(
-                ccat.mad_hatter.install_plugin, file.name
-            )
-
-            return {
-                "status": "success",
-                "filename": file.name,
-                "content_type": mimetypes.guess_type(plugin_name)[0],
-                "info": "Plugin is being installed asynchronously"
-            }
-    

@@ -21,15 +21,17 @@ def test_plugin_install_upload_zip(client, just_installed_plugin):
     assert "mock_plugin" in installed_plugins_names
     # both core_plugin and mock_plugin are active
     for p in installed_plugins:
-        assert p["active"]
+        assert p["active"] == True
 
     # plugin has been actually extracted in (mock) plugins folder
     assert os.path.exists(mock_plugin_final_folder)
 
-    # check whether new tools have been embedded
+    # check whether new tool has been embedded
     tools = get_embedded_tools(client)
+    assert len(tools) == 2
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "random_idea" in tool_names
+    assert "mock_tool" in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
     
 
 def test_plugin_uninstall(client, just_installed_plugin):
@@ -49,5 +51,7 @@ def test_plugin_uninstall(client, just_installed_plugin):
 
     # plugin tool disappeared
     tools = get_embedded_tools(client)
+    assert len(tools) == 1
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "random_idea" not in tool_names
+    assert "mock_tool" not in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
