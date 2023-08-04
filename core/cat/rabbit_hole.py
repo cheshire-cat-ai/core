@@ -326,7 +326,7 @@ class RabbitHole:
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
         
-        self.send_rabbit_thought("finished_reading_message")
+        self.send_rabbit_thought(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 
