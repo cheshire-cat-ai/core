@@ -136,6 +136,14 @@ class AgentManager:
 
         #Adding the tools_output key in agent input, needed by the memory chain
         if tools_result != None:
+            
+            # ((tool_name, tool_input), output)
+            used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
+
+            if self.cat.mad_hatter.tools[0].return_direct:
+                tools_result["intermediate_steps"] = used_tools
+                return tools_result
+
             # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
             # so no relevant information has been obtained from the tools.
             agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
@@ -144,7 +152,7 @@ class AgentManager:
             out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
 
             # If some tools are used the intermediate step are added to the agent output
-            out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
+            out["intermediate_steps"] = used_tools
         else:
             agent_input["tools_output"] = ""
             # Execute the memory chain

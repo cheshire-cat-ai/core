@@ -15,6 +15,8 @@ def test_list_plugins(client, key):
     # Assert
     assert response.status_code == 200
     assert key_in_json(key, response_json)
+    assert response_json["installed"][0]["id"] == "core_plugin"
+    assert response_json["installed"][0]["active"] == True
 
 
 @pytest.mark.parametrize("keys", ["status", "data"])
@@ -28,6 +30,7 @@ def test_get_plugin_id(client, keys):
     assert response_json["status"] == "success"
     assert response_json["data"] is not None
     assert response_json["data"]["id"] == "core_plugin"
+    assert response_json["data"]["active"] == True
 
 
 def test_get_non_existent_plugin(client):

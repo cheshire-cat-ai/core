@@ -27,7 +27,7 @@ class LLMDefaultConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Default Language Model",
+            "humanReadableName": "Default Language Model",
             "description":
                 "A dumb LLM just telling that the Cat is not configured. "
                 "There will be a nice LLM here "
@@ -53,9 +53,10 @@ class LLMCustomConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Custom LLM",
-            "description": "LLM on a custom endpoint. "
-                           "see docs for examples.",
+            "humanReadableName": "Custom LLM",
+            "description": 
+                "LLM on a custom endpoint. "
+                "See docs for examples.",
         }
 
 
@@ -66,7 +67,7 @@ class LLMOpenAIChatConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "OpenAI ChatGPT",
+            "humanReadableName": "OpenAI ChatGPT",
             "description": "Chat model from OpenAI",
         }
 
@@ -78,9 +79,10 @@ class LLMOpenAIConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "OpenAI GPT-3",
-            "description": "OpenAI GPT-3. More expensive but "
-                           "also more flexible than ChatGPT.",
+            "humanReadableName": "OpenAI GPT-3",
+            "description": 
+                "OpenAI GPT-3. More expensive but "
+                "also more flexible than ChatGPT.",
         }
 
 
@@ -99,7 +101,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Azure OpenAI Chat Models",
+            "humanReadableName": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
         }
 
@@ -120,7 +122,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Azure OpenAI Completion models",
+            "humanReadableName": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
         }
 
@@ -132,7 +134,7 @@ class LLMCohereConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Cohere",
+            "humanReadableName": "Cohere",
             "description": "Configuration for Cohere language model",
         }
 
@@ -149,7 +151,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "HuggingFace TextGen Inference",
+            "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
         }
 
@@ -165,7 +167,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "HuggingFace Hub",
+            "humanReadableName": "HuggingFace Hub",
             "description": "Configuration for HuggingFace Hub language models",
         }
 
@@ -178,7 +180,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "HuggingFace Endpoint",
+            "humanReadableName": "HuggingFace Endpoint",
             "description":
                 "Configuration for HuggingFace Endpoint language models",
         }
@@ -191,8 +193,8 @@ class LLMAnthropicConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Anthropic",
-            "description": "Configuration for Anthropic language Model",
+            "humanReadableName": "Anthropic",
+            "description": "Configuration for Anthropic language model",
         }
 
 
@@ -203,7 +205,7 @@ class LLMGooglePalmConfig(LLMSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Google PaLM",
+            "humanReadableName": "Google PaLM",
             "description": "Configuration for Google PaLM language model",
         }
 

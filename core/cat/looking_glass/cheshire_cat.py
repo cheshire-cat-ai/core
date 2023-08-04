@@ -290,11 +290,11 @@ class CheshireCat:
 
     def get_base_path(self):
         """Allows the Cat expose the base path."""
-        return os.path.join(os.getcwd(), "cat/")
+        return "cat/"
 
     def get_plugin_path(self):
         """Allows the Cat expose the plugins path."""
-        return os.path.join(os.getcwd(), "cat/plugins/")
+        return os.path.join(self.get_base_path(), "plugins/")
 
     def get_static_url(self):
         """Allows the Cat expose the static server url."""
@@ -302,7 +302,7 @@ class CheshireCat:
     
     def get_static_path(self):
         """Allows the Cat expose the static files path."""
-        return os.path.join(os.getcwd(), "cat/static/")
+        return os.path.join(self.get_base_path(), "static/")
 
     def __call__(self, user_message_json):
         """Call the Cat instance.
