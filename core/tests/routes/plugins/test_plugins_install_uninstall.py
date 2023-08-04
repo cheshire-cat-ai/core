@@ -29,7 +29,7 @@ def test_plugin_install_upload_zip(client, just_installed_plugin):
     # check whether new tools have been embedded
     tools = get_embedded_tools(client)
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "random_idea" in tool_names
+    assert "mock_tool" in tool_names
     
 
 def test_plugin_uninstall(client, just_installed_plugin):
@@ -50,4 +50,4 @@ def test_plugin_uninstall(client, just_installed_plugin):
     # plugin tool disappeared
     tools = get_embedded_tools(client)
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "random_idea" not in tool_names
+    assert "mock_tool" not in tool_names
