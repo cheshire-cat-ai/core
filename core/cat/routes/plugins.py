@@ -119,6 +119,34 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     }
 
 
+@router.get("/settings/", status_code=200)
+async def get_plugins_settings(request: Request) -> Dict:
+    """Returns the settings of all the plugins"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    # plugins are managed by the MadHatter class
+    settings = []
+    schema = {}
+
+    for plugin in ccat.mad_hatter.plugins.values():
+        plugin_settings = plugin.load_settings()
+        plugin_schema = plugin.get_settings_schema()
+        if len(plugin_schema['properties']) == 0:
+            continue
+        schema[plugin.id] = plugin_schema
+        plugin_settings["id"] = plugin.id
+        settings.append(plugin_settings)
+
+    return {
+        "status": "success",
+        "results": len(settings),
+        "settings": settings,
+        "schemas": schema
+    }
+
+
 @router.get("/settings/{plugin_id}", status_code=200)
 async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     """Returns the settings of a specific plugin"""
