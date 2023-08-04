@@ -130,7 +130,6 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
                 "cohere_api_key": cat._llm.cohere_api_key,
                 "model": "embed-multilingual-v2.0",
                 # Now the best model for embeddings is embed-multilingual-v2.0
-
             }
         )
 
@@ -144,6 +143,10 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
         )
 
     else:
+        # If no embedder matches vendor, and no external embedder is configured, we use the DumbEmbedder.
+        #   `This embedder is not a model properly trained
+        #    and this makes it not suitable to effectively embed text,
+        #    "but it does not know this and embeds anyway".` - cit. Nicola Corbellini
         embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
 
     return embedder
