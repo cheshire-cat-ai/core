@@ -12,7 +12,7 @@ from cat.routes import base, memory, plugins, upload, websocket
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes.setting import general_setting, prompt_setting, llm_setting, embedder_setting
+from cat.routes import settings, prompt, llm, embedder
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -55,10 +55,10 @@ cheshire_cat_api.add_middleware(
 
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"])
-cheshire_cat_api.include_router(general_setting.router, tags=["Settings - General"], prefix="/settings")
-cheshire_cat_api.include_router(prompt_setting.router, tags=["Settings - Prompt"], prefix="/settings/prompt")
-cheshire_cat_api.include_router(llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm")
-cheshire_cat_api.include_router(embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder")
+cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
+cheshire_cat_api.include_router(prompt.router, tags=["Prompt"], prefix="/prompt")
+cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")

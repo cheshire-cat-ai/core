@@ -17,7 +17,7 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 
 # get configured Embedders and configuration schemas
-@router.get("/", status_code=200)
+@router.get("/settings/", status_code=200)
 def get_embedders_settings() -> Dict:
     """Get the list of the Embedders"""
     settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
@@ -41,7 +41,7 @@ def get_embedders_settings() -> Dict:
 
 
 # get Embedder settings and its schema
-@router.get("/{languageEmbedderName}", status_code=200)
+@router.get("/settings/{languageEmbedderName}", status_code=200)
 def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     """Get settings and schema of the specified Embedder"""
 
@@ -66,7 +66,7 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     }
 
 
-@router.put("/{languageEmbedderName}", status_code=200)
+@router.put("/settings/{languageEmbedderName}", status_code=200)
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
