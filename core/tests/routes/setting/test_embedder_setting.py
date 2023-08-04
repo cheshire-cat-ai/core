@@ -6,7 +6,7 @@ from tests.utils import get_embedded_tools
 def test_get_embedder_settings(client):
 
     # act
-    response = client.get("/settings/embedder/")
+    response = client.get("/embedder/settings")
     json = response.json()
 
     # assert
@@ -23,7 +23,7 @@ def test_upsert_embedder_settings(client):
     embedder_config = {
         "size": 64
     }
-    response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
+    response = client.put("/embedder/settings/EmbedderFakeConfig", json=embedder_config)
     json = response.json()
 
     # verify success
@@ -32,7 +32,7 @@ def test_upsert_embedder_settings(client):
     assert json["setting"]["value"]["size"] == embedder_config["size"]
 
     # retrieve data to check if it was saved in DB
-    response = client.get("/settings/embedder/")
+    response = client.get("/embedder/settings/")
     json = response.json()
 
     # assert
@@ -51,7 +51,7 @@ def test_upsert_embedder_settings_updates_collections(client):
     embedder_config = {
         "size": 64
     }
-    response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
+    response = client.put("/embedder/settings/EmbedderFakeConfig", json=embedder_config)
     assert response.status_code == 200
 
     tools = get_embedded_tools(client)

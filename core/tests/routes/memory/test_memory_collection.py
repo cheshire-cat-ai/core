@@ -104,7 +104,7 @@ def test_memory_collections_wipe(client):
     assert collections_n_points["declarative"] > 1  # several chunks
 
     # wipe out all memories
-    response = client.delete("/memory/wipe-collections/")
+    response = client.delete("/memory/collections/")
     json = response.json()
     assert response.status_code == 200
 

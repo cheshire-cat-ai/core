@@ -17,8 +17,8 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 
 # get configured Embedders and configuration schemas
-@router.get("/")
-def get_embedder_settings():
+@router.get("/settings/")
+def get_embedders_settings() -> Dict:
     """Get the list of the Embedders"""
     settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
     selected = crud.get_setting_by_name(name=EMBEDDER_SELECTED_NAME)
@@ -39,12 +39,39 @@ def get_embedder_settings():
         "selected_configuration": selected_configuration,
     }
 
-@router.put("/{languageEmbedderName}")
+
+# get Embedder settings and its schema
+@router.get("/settings/{languageEmbedderName}")
+def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
+    """Get settings and schema of the specified Embedder"""
+
+    # check that languageEmbedderName is a valid name
+    allowed_configurations = list(EMBEDDER_SCHEMAS.keys())
+    if languageEmbedderName not in allowed_configurations:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}",
+        )
+    
+    settings = crud.get_setting_by_name(name=languageEmbedderName)
+    schema = EMBEDDER_SCHEMAS[languageEmbedderName]
+
+    if settings is None:
+        settings = {}
+
+    return {
+        "status": "success",
+        "settings": settings,
+        "schema": schema
+    }
+
+
+@router.put("/settings/{languageEmbedderName}")
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
     payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
-):
+) -> Dict:
     """Upsert the Embedder setting"""
     
     # check that languageModelName is a valid name

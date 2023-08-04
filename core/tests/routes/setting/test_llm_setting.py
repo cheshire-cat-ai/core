@@ -2,7 +2,7 @@
 def test_get_llm_settings(client):
     
     # act
-    response = client.get("/settings/llm/")
+    response = client.get("/llm/settings/")
     json = response.json()
 
     # assert
@@ -21,7 +21,7 @@ def test_upsert_llm_settings_success(client):
         "url": invented_url,
         "options": {}
     }
-    response = client.put("/settings/llm/LLMCustomConfig", json=payload)
+    response = client.put("/llm/settings/LLMCustomConfig", json=payload)
     json = response.json()
 
     # check immediate response
@@ -30,7 +30,7 @@ def test_upsert_llm_settings_success(client):
     assert json["setting"]["value"]["url"] == invented_url
 
     # retrieve data to check if it was saved in DB
-    response = client.get("/settings/llm/")
+    response = client.get("/llm/settings/")
     json = response.json()
 
     # assert
