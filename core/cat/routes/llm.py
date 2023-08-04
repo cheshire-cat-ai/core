@@ -17,7 +17,7 @@ LLM_SELECTED_NAME = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
-@router.get("/settings/", status_code=200)
+@router.get("/settings/")
 def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
 
@@ -42,7 +42,7 @@ def get_llms_settings() -> Dict:
 
 
 # get LLM settings and its schema
-@router.get("/settings/{languageModelName}", status_code=200)
+@router.get("/settings/{languageModelName}")
 def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     """Get settings and schema of the specified Large Language Model"""
 
@@ -67,7 +67,7 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     }
 
 
-@router.put("/settings/{languageModelName}", status_code=200)
+@router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,

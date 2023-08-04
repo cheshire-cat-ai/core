@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 # GET plugins
-@router.get("/", status_code=200)
+@router.get("/")
 async def list_available_plugins(request: Request) -> Dict:
     """List available plugins"""
 
@@ -73,7 +73,7 @@ async def install_plugin(
     }
 
 
-@router.put("/toggle/{plugin_id}", status_code=200)
+@router.put("/toggle/{plugin_id}")
 async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     """Enable or disable a single plugin"""
 
@@ -96,7 +96,7 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     }
 
 
-@router.get("/{plugin_id}", status_code=200)
+@router.get("/{plugin_id}")
 async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     """Returns information on a single plugin"""
 
@@ -119,7 +119,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     }
 
 
-@router.get("/settings/", status_code=200)
+@router.get("/settings/")
 async def get_plugins_settings(request: Request) -> Dict:
     """Returns the settings of all the plugins"""
 
@@ -147,7 +147,7 @@ async def get_plugins_settings(request: Request) -> Dict:
     }
 
 
-@router.get("/settings/{plugin_id}", status_code=200)
+@router.get("/settings/{plugin_id}")
 async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     """Returns the settings of a specific plugin"""
 
@@ -171,7 +171,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     }
 
 
-@router.put("/settings/{plugin_id}", status_code=200)
+@router.put("/settings/{plugin_id}")
 async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
@@ -196,7 +196,7 @@ async def upsert_plugin_settings(
     }
 
 
-@router.delete("/{plugin_id}", status_code=200)
+@router.delete("/{plugin_id}")
 async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     """Physically remove plugin."""
 
