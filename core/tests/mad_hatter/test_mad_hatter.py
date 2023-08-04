@@ -16,7 +16,7 @@ def mad_hatter(client): # client here injects the monkeypatched version of the c
 
     # setup before each unit
     cat = CheshireCat()
-    mh = MadHatter(cat) # trygin out a fresh instance of the mad_hatter
+    mh = MadHatter(cat) # trying out a fresh instance of the mad_hatter
 
     # each test is given a brand new instance
     yield mh

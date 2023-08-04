@@ -54,9 +54,6 @@ def test_upsert_embedder_settings_updates_collections(client):
     response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
     assert response.status_code == 200
 
-    # give some time to re-embed the default tool
-    time.sleep(3)
-
     tools = get_embedded_tools(client)
     assert len(tools) == 1
     assert len(tools[0]["vector"]) == embedder_config["size"]
