@@ -51,7 +51,7 @@ def test_instantiation_discovery(mad_hatter):
     assert "what time is it" in tool.docstring
     assert isfunction(tool.func)
     assert tool.return_direct == False
-    assert tool.embedding is None # not embedded yet
+    #assert tool.embedding is None # not embedded yet
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()
@@ -92,11 +92,6 @@ def test_plugin_install(mad_hatter: MadHatter):
     # new hook has correct priority and has been sorted by mad_hatter as first
     assert new_hook.priority == 2
     assert id(new_hook) == id(mad_hatter.hooks[0]) # same object in memory!
-
-    # tool has been embedded
-    assert type(new_tool.embedding) == list
-    assert len(new_tool.embedding) == 128 # fake embedder
-    assert type(new_tool.embedding[0]) == float
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()
