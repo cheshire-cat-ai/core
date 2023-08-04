@@ -12,8 +12,8 @@ def test_get_embedder_settings(client):
     # assert
     assert response.status_code == 200
     assert json["status"] == "success"
-    assert "EmbedderFakeConfig" in json["schemas"].keys()
-    assert "EmbedderFakeConfig" in json["allowed_configurations"]
+    assert "EmbedderDumbConfig" in json["schemas"].keys()
+    assert "EmbedderDumbConfig" in json["allowed_configurations"]
     assert json["selected_configuration"] == None # no embedder configured at stratup
 
 
@@ -45,7 +45,7 @@ def test_upsert_embedder_settings_updates_collections(client):
 
     tools = get_embedded_tools(client)
     assert len(tools) == 1
-    assert len(tools[0]["vector"]) == 128 # default embedder
+    assert len(tools[0]["vector"]) == 2367  # default embedder
     
     # set a different embedder from default one (same class different size)
     embedder_config = {
@@ -53,9 +53,6 @@ def test_upsert_embedder_settings_updates_collections(client):
     }
     response = client.put("/settings/embedder/EmbedderFakeConfig", json=embedder_config)
     assert response.status_code == 200
-
-    # give some time to re-embed the default tool
-    time.sleep(3)
 
     tools = get_embedded_tools(client)
     assert len(tools) == 1
