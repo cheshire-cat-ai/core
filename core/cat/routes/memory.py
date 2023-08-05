@@ -114,22 +114,30 @@ async def wipe_collections(
 
 
 # DELETE one collection
-@router.delete("/collections/{collection_id}")
-async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
+@router.delete("/collections/{collection_id}/")
+async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     """Delete and recreate a collection"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+
+    # check if collection exists
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Collection does not exist."}
+        )
 
     to_return = {}
 
-    if collection_id != "":
-        ccat = request.app.state.ccat
-        vector_memory = ccat.memory.vectors
 
-        ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
-        to_return[collection_id] = ret
+    ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
+    to_return[collection_id] = ret
 
-        ccat.load_memory()  # recreate the long term memories
-        ccat.mad_hatter.find_plugins()
-        ccat.mad_hatter.embed_tools()
+    ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
         "status": "success",
@@ -137,24 +145,8 @@ async def wipe_single_collection(request: Request, collection_id: str = "") -> D
     }
 
 
-# DELETE conversation history from working memory
-@router.delete("/conversation_history/")
-async def wipe_conversation_history(
-    request: Request,
-) -> Dict:
-    """Delete conversation history from working memory"""
-
-    ccat = request.app.state.ccat
-    ccat.working_memory["history"] = []
-
-    return {
-        "status": "success",
-        "deleted": True,
-    }
-
-
 # DELETE memories
-@router.delete("/{collection_id}/point/{memory_id}/")
+@router.delete("/collections/{collection_id}/points/{memory_id}/")
 async def wipe_memory_point(
     request: Request,
     collection_id: str,
@@ -190,4 +182,20 @@ async def wipe_memory_point(
     return {
         "status": "success",
         "deleted": memory_id
+    }
+
+
+# DELETE conversation history from working memory
+@router.delete("/conversation_history/")
+async def wipe_conversation_history(
+    request: Request,
+) -> Dict:
+    """Delete conversation history from working memory"""
+
+    ccat = request.app.state.ccat
+    ccat.working_memory["history"] = []
+
+    return {
+        "status": "success",
+        "deleted": True,
     }

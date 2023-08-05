@@ -41,6 +41,14 @@ def test_memory_collection_episodic_stores_messages(client):
 
     # TOODO: check point metadata
 
+def test_memory_collection_non_existent_clear(client):
+
+    non_existent_collection = "nonexistent"
+    response = client.delete(f"/memory/collections/{non_existent_collection}")
+    json = response.json()
+    assert response.status_code == 400
+    assert f"Collection does not exist" in json["detail"]["error"]
+
 
 def test_memory_collection_episodic_cleared(client):
 

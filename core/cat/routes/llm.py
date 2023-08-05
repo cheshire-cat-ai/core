@@ -51,7 +51,9 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     if languageModelName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageModelName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
+            }
         )
     
     settings = crud.get_setting_by_name(name=languageModelName)
@@ -59,6 +61,8 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
 
     if settings is None:
         settings = {}
+    else:
+        settings = settings["value"]
 
     return {
         "status": "success",
@@ -80,7 +84,9 @@ def upsert_llm_setting(
     if languageModelName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageModelName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
+            }
         )
     
     # create the setting and upsert it

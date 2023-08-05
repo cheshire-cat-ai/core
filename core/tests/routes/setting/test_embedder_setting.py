@@ -3,18 +3,39 @@ import time
 from tests.utils import get_embedded_tools
 
 
-def test_get_embedder_settings(client):
+def test_get_all_embedder_settings(client):
 
-    # act
     response = client.get("/embedder/settings")
     json = response.json()
 
-    # assert
     assert response.status_code == 200
     assert json["status"] == "success"
     assert "EmbedderDumbConfig" in json["schemas"].keys()
     assert "EmbedderDumbConfig" in json["allowed_configurations"]
     assert json["selected_configuration"] == None # no embedder configured at stratup
+
+
+def test_get_embedder_settings_non_existent(client):
+
+    non_existent_embedder_name = "EmbedderNonExistentConfig"
+    response = client.get(f"/embedder/settings/{non_existent_embedder_name}")
+    json = response.json()
+
+    assert response.status_code == 400
+    assert f"{non_existent_embedder_name} not supported" in json["detail"]["error"]
+
+
+def test_get_embedder_settings(client):
+
+    embedder_name = "EmbedderDumbConfig"
+    response = client.get(f"/embedder/settings/{embedder_name}")
+    json = response.json()
+
+    assert response.status_code == 200
+    assert json["status"] == "success"
+    assert json["settings"] == {}  # Dumb Embedder has indeed an empty config (no options)
+    assert json["schema"]["languageEmbedderName"] == embedder_name
+    assert json["schema"]["type"] == "object"
 
 
 def test_upsert_embedder_settings(client):
@@ -31,14 +52,18 @@ def test_upsert_embedder_settings(client):
     assert json["status"] == "success"
     assert json["setting"]["value"]["size"] == embedder_config["size"]
 
-    # retrieve data to check if it was saved in DB
+    # retrieve embedders settings to check if it was saved in DB
     response = client.get("/embedder/settings/")
     json = response.json()
-
-    # assert
     assert response.status_code == 200
     assert json["selected_configuration"] == 'EmbedderFakeConfig'
     assert json["settings"][0]["value"]["size"] == embedder_config["size"]
+
+    # check also specific embedder endpoint
+    response = client.get("/embedder/settings/EmbedderFakeConfig")
+    json = response.json()
+    assert response.status_code == 200
+    assert json["settings"]["size"] == embedder_config["size"]
 
 
 def test_upsert_embedder_settings_updates_collections(client):

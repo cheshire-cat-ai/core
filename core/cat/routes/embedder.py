@@ -50,7 +50,9 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     if languageEmbedderName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}"
+            }
         )
     
     settings = crud.get_setting_by_name(name=languageEmbedderName)
@@ -58,6 +60,8 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
 
     if settings is None:
         settings = {}
+    else:
+        settings = settings["value"]
 
     return {
         "status": "success",
@@ -79,7 +83,9 @@ def upsert_embedder_setting(
     if languageEmbedderName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageEmbedderName} not supported. Must be one of {allowed_configurations}"
+            }
         )
     
     # create the setting and upsert it
