@@ -237,6 +237,7 @@ def welcome():
 
     print('\n=============== ^._.^ ===============\n')
     print(f'Cat REST API:\t{cat_address}/docs')
+    print(f'Cat REDOC:\t{cat_address}/redoc')
     print(f'Cat PUBLIC:\t{cat_address}/public')
     print(f'Cat ADMIN:\t{cat_address}/admin\n')
     print('======================================')
