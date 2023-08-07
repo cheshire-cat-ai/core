@@ -36,7 +36,6 @@ class Plugin:
         # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
             self.activate()
-    
 
     def activate(self):
         # lists of hooks and tools
@@ -165,13 +164,13 @@ class Plugin:
 
         return hooks, tools
 
-    def clean_hook(self, hook):
+    def _clean_hook(self, hook):
         # getmembers returns a tuple
         h = hook[1]
         h.plugin_id = self._id
         return h
 
-    def clean_tool(self, tool):
+    def _clean_tool(self, tool):
         # getmembers returns a tuple
         t = tool[1]
         t.plugin_id = self._id
@@ -179,11 +178,13 @@ class Plugin:
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
-    def is_cat_hook(self, obj):
+    @staticmethod
+    def _is_cat_hook(obj):
         return isinstance(obj, CatHook)
 
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
-    def is_cat_tool(self, obj):
+    @staticmethod
+    def _is_cat_tool(obj):
         return isinstance(obj, CatTool)
     
