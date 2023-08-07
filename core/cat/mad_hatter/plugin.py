@@ -33,15 +33,19 @@ class Plugin:
         self._hooks = [] 
         self._tools = []
 
+        self._active = False
+
         # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
             self.activate()
 
     def activate(self):
+        self._active = True
         # lists of hooks and tools
         self._hooks, self._tools = self._load_hooks_and_tools()
 
     def deactivate(self):
+        self._active = False
         self._hooks = []
         self._tools = []
 
@@ -200,6 +204,10 @@ class Plugin:
     def manifest(self):
         return self._manifest
     
+    @property
+    def active(self):
+        return self._active
+
     @property
     def hooks(self):
         return self._hooks
