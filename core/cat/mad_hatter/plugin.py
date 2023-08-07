@@ -19,25 +19,23 @@ class Plugin:
     def __init__(self, plugin_path: str, active: bool):
 
         # where the plugin is on disk
-        self.path: str = plugin_path
+        self._path: str = plugin_path
 
         # plugin id is just the folder name
-        self.id: str = os.path.basename(os.path.normpath(plugin_path))
+        self._id: str = os.path.basename(os.path.normpath(plugin_path))
 
         # plugin manifest (name, decription, thumb, etc.)
-        self.manifest = self.load_manifest()
+        self._manifest = self._load_manifest()
 
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
-        self.hooks = []
-        self.tools = []
+        self._hooks = [] 
+        self._tools = []
 
         # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
             self.activate()
-        else:
-            self.deactivate()
     
 
     def activate(self):
@@ -45,14 +43,14 @@ class Plugin:
         self._hooks, self._tools = self._load_hooks_and_tools()
 
     def deactivate(self):
-        self.hooks = []
-        self.tools = []
+        self._hooks = []
+        self._tools = []
 
     # get plugin settings JSON schema
     def get_settings_schema(self):
 
         # is "plugin_settings_schema" hook defined in the plugin?
-        for h in self.hooks:
+        for h in self._hooks:
             if h.name == "plugin_settings_schema":
                 return h.function()
 
@@ -63,13 +61,13 @@ class Plugin:
     def load_settings(self):
 
         # is "plugin_settings_load" hook defined in the plugin?
-        for h in self.hooks:
+        for h in self._hooks:
             if h.name == "plugin_settings_load":
                 return h.function()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
-        settings_file_path = os.path.join(self.path, "settings.json")
+        settings_file_path = os.path.join(self._path, "settings.json")
 
         # default settings is an empty dictionary
         settings = {}
@@ -80,7 +78,7 @@ class Plugin:
                 with open(settings_file_path, "r") as json_file:
                     settings = json.load(json_file)
             except Exception as e:
-                log(f"Unable to load plugin {self.id} settings", "ERROR")
+                log(f"Unable to load plugin {self._id} settings", "ERROR")
                 log(e, "ERROR")
 
         return settings
@@ -89,13 +87,13 @@ class Plugin:
     def save_settings(self, settings: Dict):
 
         # is "plugin_settings_save" hook defined in the plugin?
-        for h in self.hooks:
+        for h in self._hooks:
             if h.name == "plugin_settings_save":
                 return h.function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
-        settings_file_path = os.path.join(self.path, "settings.json")
+        settings_file_path = os.path.join(self._path, "settings.json")
         
         # load already saved settings
         old_settings = self.load_settings()
@@ -108,7 +106,7 @@ class Plugin:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
         except Exception:
-            log(f"Unable to save plugin {self.id} settings", "ERROR")
+            log(f"Unable to save plugin {self._id} settings", "ERROR")
             return {}
     
         return updated_settings
@@ -144,10 +142,10 @@ class Plugin:
         return meta
 
     # lists of hooks and tools
-    def load_hooks_and_tools(self):
+    def _load_hooks_and_tools(self):
 
         # search for .py files in folder
-        py_files_path = os.path.join(self.path, "**/*.py")
+        py_files_path = os.path.join(self._path, "**/*.py")
         py_files = glob.glob(py_files_path, recursive=True)
 
         hooks = []
@@ -170,13 +168,13 @@ class Plugin:
     def clean_hook(self, hook):
         # getmembers returns a tuple
         h = hook[1]
-        h.plugin_id = self.id
+        h.plugin_id = self._id
         return h
 
     def clean_tool(self, tool):
         # getmembers returns a tuple
         t = tool[1]
-        t.plugin_id = self.id
+        t.plugin_id = self._id
         return t
 
     # a plugin hook function has to be decorated with @hook
