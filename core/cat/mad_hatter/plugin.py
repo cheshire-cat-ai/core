@@ -188,3 +188,22 @@ class Plugin:
     def _is_cat_tool(obj):
         return isinstance(obj, CatTool)
     
+    @property
+    def path(self):
+        return self._path
+    
+    @property
+    def id(self):
+        return self._id
+    
+    @property
+    def manifest(self):
+        return self._manifest
+    
+    @property
+    def hooks(self):
+        return self._hooks
+    
+    @property
+    def tools(self):
+        return self._tools
