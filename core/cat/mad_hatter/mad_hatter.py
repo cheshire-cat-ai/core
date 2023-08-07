@@ -30,7 +30,7 @@ class MadHatter:
         self.hooks = [] # list of active plugins hooks 
         self.tools = [] # list of active plugins tools 
 
-        self.active_plugins = self.load_active_plugins_from_db()
+        self.active_plugins = []
 
         self.find_plugins()
 
@@ -79,6 +79,8 @@ class MadHatter:
         # emptying plugin dictionary, plugins will be discovered from disk
         # and stored in a dictionary plugin_id -> plugin_obj
         self.plugins = {}
+
+        self.active_plugins = self.load_active_plugins_from_db()
 
         # plugins are found in the plugins folder,
         # plus the default core plugin s(where default hooks and tools are defined)
