@@ -300,7 +300,7 @@ class RabbitHole:
             # every percStep send a notification in order to monito the progress
             # N.B. file with a len < resolution does not show any percentage
             # the storing should be immediate, and it's correct show only the final msg
-            if ((d+1) % percStep) == 0:
+            if ((percStep > 0) and ((d+1) % percStep) == 0):
                 readPercentage += percResolution
                 self.send_rabbit_thought(f"Read {readPercentage}% of {source}")
 
