@@ -4,6 +4,8 @@ from typing import Dict
 from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
+from urllib.parse import urlparse
+import requests
 
 router = APIRouter()
 
@@ -194,32 +196,49 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     }
 
 async def get_registry_list():
-    response = requests.get("http://192.168.1.120:8000/plugins?page=1&page_size=7000")
-    if response.status_code == 200:
-        return response.json()["plugins"]
-    else:
+    try:
+        response = requests.get("http://192.168.1.120:8000/plugins?page=1&page_size=7000")
+        if response.status_code == 200:
+            return response.json()["plugins"]
+        else:
+            return []
+    except requests.exceptions.RequestException as e:
         return []
 
 @router.post("/upload/registry")
-async def download_plugin_from_registry(request: Request,background_tasks: BackgroundTasks,url_repo: Dict = Body(example={"url": "https://example.com/file.zip"})):
+async def download_plugin_from_registry(request: Request,background_tasks: BackgroundTasks,url_repo: Dict = Body(example={"url": "https://github.com/team-sviluppo/cc_multilingual"})):
     """Install a new plugin from external repository"""
+    
+    path_url = str(urlparse(url_repo["url"]).path)
+    url = "https://api.github.com/repos" +  path_url + "/releases"
+    response = requests.get(url)
+    if response.status_code != 200:
+            raise HTTPException(
+                status_code = 503,
+                detail = { "error": "Github API not available" }
+            )
+            
+    response = response.json()
+    
+    #Check if there are releses files
+    if len(response) != 0: 
+        url_zip = response[0]["assets"][0]["browser_download_url"]
+    else:
+        #if not, than download the zip repo
+        url_zip = url_repo["url"] + "/archive/master.zip"
+        
+    # Get plugin name
+    arr = path_url.split("/")
+    arr.reverse()
+    plugin_name = arr[0] + ".zip"
 
-    #Get name of file
-    url = urlparse(url_repo["url"] + "/archive/master.zip")
-    url_path = url.path.split("/")
-    url_path.reverse()
-    if "github" in url.netloc:
-
-        plugin_name = str(url_path[2]) + ".zip"
-
-
-
-    with requests.get(url_repo["url"], stream=True) as response:
+    with requests.get(url_zip, stream=True) as response:
         if response.status_code != 200:
             raise HTTPException(
                 status_code = 400,
                 detail = { "error": "" }
             )
+        
         with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)
@@ -227,6 +246,7 @@ async def download_plugin_from_registry(request: Request,background_tasks: Backg
 
             #access cat instance
             ccat = request.app.state.ccat
+            
 
             background_tasks.add_task(
                 ccat.mad_hatter.install_plugin, file.name
