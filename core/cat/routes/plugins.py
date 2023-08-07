@@ -197,7 +197,7 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
 
 async def get_registry_list():
     try:
-        response = requests.get("http://192.168.1.120:8000/plugins?page=1&page_size=7000")
+        response = requests.get("https://plugins.cheshirecat.ai/plugins?page=1&page_size=7000")
         if response.status_code == 200:
             return response.json()["plugins"]
         else:
