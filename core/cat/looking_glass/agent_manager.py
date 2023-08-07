@@ -137,10 +137,19 @@ class AgentManager:
         #Adding the tools_output key in agent input, needed by the memory chain
         if tools_result != None:
             
-            # ((tool_name, tool_input), output)
+            # Extract of intermediate steps in the format ((tool_name, tool_input), output)
             used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
 
-            if self.cat.mad_hatter.tools[0].return_direct:
+            # Get the name of the tools that have return_direct
+            return_direct_tools = []
+            for t in allowed_tools:
+                if t.return_direct:
+                    return_direct_tools.append(t.name)
+
+            # execute_tool_agent returns immediately when a tool with return_direct is called, 
+            # so if one is used it is definitely the last one used
+            if used_tools[-1][0][0] in return_direct_tools:
+                # intermediate_steps still contains the information of all the tools used even if their output is not returned
                 tools_result["intermediate_steps"] = used_tools
                 return tools_result
 
