@@ -3,7 +3,7 @@ import json
 import glob
 import importlib
 from typing import Dict
-from inspect import getmembers, isfunction  # , signature
+from inspect import getmembers
 from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook
@@ -42,7 +42,7 @@ class Plugin:
 
     def activate(self):
         # lists of hooks and tools
-        self.load_hooks_and_tools()
+        self._hooks, self._tools = self._load_hooks_and_tools()
 
     def deactivate(self):
         self.hooks = []
@@ -150,20 +150,22 @@ class Plugin:
         py_files_path = os.path.join(self.path, "**/*.py")
         py_files = glob.glob(py_files_path, recursive=True)
 
-        self.hooks = []
-        self.tools = []
+        hooks = []
+        tools = []
 
         for py_file in py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
             # save a reference to decorated functions
             plugin_module = importlib.import_module(py_filename)
-            self.hooks += getmembers(plugin_module, self.is_cat_hook)
-            self.tools += getmembers(plugin_module, self.is_cat_tool)
+            hooks += getmembers(plugin_module, self._is_cat_hook)
+            tools += getmembers(plugin_module, self._is_cat_tool)
 
         # clean and enrich instances
-        self.hooks = list(map(self.clean_hook, self.hooks))
-        self.tools = list(map(self.clean_tool, self.tools))
+        hooks = list(map(self._clean_hook, hooks))
+        tools = list(map(self._clean_tool, tools))
+
+        return hooks, tools
 
     def clean_hook(self, hook):
         # getmembers returns a tuple
