@@ -39,37 +39,7 @@ class Plugin:
         else:
             self.deactivate()
     
-    # load contents of plugin.json (if exists)
-    def load_manifest(self):
 
-        plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = os.path.join(self.path, plugin_json_metadata_file_name)
-        meta = {"id": self.id}
-        json_file_data = {}
-
-        if os.path.isfile(plugin_json_metadata_file_path):
-            try:
-                json_file = open(plugin_json_metadata_file_path)
-                json_file_data = json.load(json_file)
-                json_file.close()
-            except Exception:
-                log(f"Loading plugin {self.path} metadata, defaulting to generated values", "INFO")
-
-        meta["name"] = json_file_data.get("name", to_camel_case(self.id))
-        meta["description"] = json_file_data.get("description", (
-            "Description not found for this plugin. "
-            f"Please create a `{plugin_json_metadata_file_name}`"
-            " in the plugin folder."
-        ))
-        meta["author_name"] = json_file_data.get("author_name", "Unknown author")
-        meta["author_url"] = json_file_data.get("author_url", "")
-        meta["plugin_url"] = json_file_data.get("plugin_url", "")
-        meta["tags"] = json_file_data.get("tags", "unknown")
-        meta["thumb"] = json_file_data.get("thumb", "")
-        meta["version"] = json_file_data.get("version", "0.0.1")
-
-        return meta
-        
     def activate(self):
         # lists of hooks and tools
         self.load_hooks_and_tools()
@@ -142,6 +112,36 @@ class Plugin:
             return {}
     
         return updated_settings
+
+    def _load_manifest(self):
+
+        plugin_json_metadata_file_name = "plugin.json"
+        plugin_json_metadata_file_path = os.path.join(self._path, plugin_json_metadata_file_name)
+        meta = {"id": self._id}
+        json_file_data = {}
+
+        if os.path.isfile(plugin_json_metadata_file_path):
+            try:
+                json_file = open(plugin_json_metadata_file_path)
+                json_file_data = json.load(json_file)
+                json_file.close()
+            except Exception:
+                log(f"Loading plugin {self._path} metadata, defaulting to generated values", "INFO")
+
+        meta["name"] = json_file_data.get("name", to_camel_case(self._id))
+        meta["description"] = json_file_data.get("description", (
+            "Description not found for this plugin. "
+            f"Please create a `{plugin_json_metadata_file_name}`"
+            " in the plugin folder."
+        ))
+        meta["author_name"] = json_file_data.get("author_name", "Unknown author")
+        meta["author_url"] = json_file_data.get("author_url", "")
+        meta["plugin_url"] = json_file_data.get("plugin_url", "")
+        meta["tags"] = json_file_data.get("tags", "unknown")
+        meta["thumb"] = json_file_data.get("thumb", "")
+        meta["version"] = json_file_data.get("version", "0.0.1")
+
+        return meta
 
     # lists of hooks and tools
     def load_hooks_and_tools(self):
