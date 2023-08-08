@@ -1,0 +1,31 @@
+name: Create tag
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - "main"
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Read TOML
+        uses: SebRollen/toml-action@v1.0.2
+        id: read_toml
+        with:
+          file: 'core/pyproject.toml'
+          field: 'project.version'
+      - name: Publish tag
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: "${{steps.read_toml.outputs.value}}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
