@@ -1,4 +1,4 @@
-name: Cheshire Cat Action create tag
+name: Create tag
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -8,30 +8,24 @@ on:
   push:
     branches:
       - "main"
-      - "feature/tag_workflow"
-    tags:
-      - "*.*.*"
 
 permissions:
   contents: write
-
-env:
-  PLUGIN_JSON: "0.0.1"
-  TAG_EXISTS: false
 
 jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: SebRollen/toml-action@v1.0.2
+      - name: Read TOML
+        uses: SebRollen/toml-action@v1.0.2
         id: read_toml
         with:
-          file: '/core/pyproject.toml'
+          file: 'core/pyproject.toml'
           field: 'project.version'
       - name: Publish tag
-        if: env.TAG_EXISTS == false
-        uses: rickstaa/action-create-tag@v1
+        uses: richardsimko/update-tag@v1
         with:
-          tag: "${{steps.read_toml.outputs.value}}"
-          tag_exists_error: false
+          tag_name: "${{steps.read_toml.outputs.value}}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
