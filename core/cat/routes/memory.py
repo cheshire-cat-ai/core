@@ -4,46 +4,6 @@ from fastapi import Query, Request, APIRouter, HTTPException
 router = APIRouter()
 
 
-# DELETE memories
-@router.delete("/point/{collection_id}/{memory_id}/")
-async def delete_element_in_memory(
-    request: Request,
-    collection_id: str,
-    memory_id: str
-) -> Dict:
-    """Delete specific element in memory."""
-
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
-    
-    # check if collection exists
-    collections = list(vector_memory.collections.keys())
-    if collection_id not in collections:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Collection does not exist."}
-        )
-
-    # check if point exists
-    points = vector_memory.vector_db.retrieve(
-        collection_name=collection_id,
-        ids=[memory_id],
-    )
-    if points == []:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Point does not exist."}
-        )
-
-    # delete point
-    vector_memory.collections[collection_id].delete_points([memory_id])
-
-    return {
-        "status": "success",
-        "deleted": memory_id
-    }
-
-
 # GET memories from recall
 @router.get("/recall/")
 async def recall_memories_from_text(
@@ -127,32 +87,8 @@ async def get_collections(request: Request) -> Dict:
     }
 
 
-# DELETE one collection
-@router.delete("/collections/{collection_id}")
-async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
-    """Delete and recreate a collection"""
-
-    to_return = {}
-
-    if collection_id != "":
-        ccat = request.app.state.ccat
-        vector_memory = ccat.memory.vectors
-
-        ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
-        to_return[collection_id] = ret
-
-        ccat.load_memory()  # recreate the long term memories
-        ccat.mad_hatter.find_plugins()
-        ccat.mad_hatter.embed_tools()
-
-    return {
-        "status": "success",
-        "deleted": to_return,
-    }
-
-
 # DELETE all collections
-@router.delete("/wipe-collections/")
+@router.delete("/collections/")
 async def wipe_collections(
     request: Request,
 ) -> Dict:
@@ -176,8 +112,81 @@ async def wipe_collections(
         "deleted": to_return,
     }
 
-#DELETE conversation history from working memory
-@router.delete("/working-memory/conversation-history/")
+
+# DELETE one collection
+@router.delete("/collections/{collection_id}/")
+async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
+    """Delete and recreate a collection"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+
+    # check if collection exists
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Collection does not exist."}
+        )
+
+    to_return = {}
+
+
+    ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
+    to_return[collection_id] = ret
+
+    ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
+
+    return {
+        "status": "success",
+        "deleted": to_return,
+    }
+
+
+# DELETE memories
+@router.delete("/collections/{collection_id}/points/{memory_id}/")
+async def wipe_memory_point(
+    request: Request,
+    collection_id: str,
+    memory_id: str
+) -> Dict:
+    """Delete a specific point in memory"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+    
+    # check if collection exists
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Collection does not exist."}
+        )
+
+    # check if point exists
+    points = vector_memory.vector_db.retrieve(
+        collection_name=collection_id,
+        ids=[memory_id],
+    )
+    if points == []:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Point does not exist."}
+        )
+
+    # delete point
+    vector_memory.collections[collection_id].delete_points([memory_id])
+
+    return {
+        "status": "success",
+        "deleted": memory_id
+    }
+
+
+# DELETE conversation history from working memory
+@router.delete("/conversation_history/")
 async def wipe_conversation_history(
     request: Request,
 ) -> Dict:

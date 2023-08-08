@@ -17,8 +17,8 @@ LLM_SELECTED_NAME = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
-@router.get("/")
-def get_llm_settings():
+@router.get("/settings/")
+def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
 
     settings = crud.get_settings_by_category(category=LLM_CATEGORY)
@@ -41,12 +41,42 @@ def get_llm_settings():
     }
 
 
-@router.put("/{languageModelName}")
+# get LLM settings and its schema
+@router.get("/settings/{languageModelName}")
+def get_llm_settings(request: Request, languageModelName: str) -> Dict:
+    """Get settings and schema of the specified Large Language Model"""
+
+    # check that languageModelName is a valid name
+    allowed_configurations = list(LLM_SCHEMAS.keys())
+    if languageModelName not in allowed_configurations:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
+            }
+        )
+    
+    settings = crud.get_setting_by_name(name=languageModelName)
+    schema = LLM_SCHEMAS[languageModelName]
+
+    if settings is None:
+        settings = {}
+    else:
+        settings = settings["value"]
+
+    return {
+        "status": "success",
+        "settings": settings,
+        "schema": schema
+    }
+
+
+@router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,
     payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
-):
+) -> Dict:
     """Upsert the Large Language Model setting"""
 
     # check that languageModelName is a valid name
@@ -54,7 +84,9 @@ def upsert_llm_setting(
     if languageModelName not in allowed_configurations:
         raise HTTPException(
             status_code=400,
-            detail=f"{languageModelName} not supported. Must be one of {allowed_configurations}",
+            detail={
+                "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
+            }
         )
     
     # create the setting and upsert it
