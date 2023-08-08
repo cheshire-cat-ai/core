@@ -1,8 +1,10 @@
 from typing import Dict
 
 from fastapi import Request, APIRouter, Body, HTTPException
-from cat.db import crud, models
+
 from cat.factory.embedder import EMBEDDER_SCHEMAS
+from cat.db import crud, models
+from cat.log import log
 
 router = APIRouter()
 
@@ -20,23 +22,33 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 @router.get("/settings/")
 def get_embedders_settings() -> Dict:
     """Get the list of the Embedders"""
-    settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
+
+    # get selected Embedder, if any
     selected = crud.get_setting_by_name(name=EMBEDDER_SELECTED_NAME)
+    if selected is not None:
+        selected = selected["value"]["name"]
+    
+    saved_settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
+    saved_settings = { s["name"]: s for s in saved_settings }
 
-    if selected is None:
-        selected_configuration = None
-    else:
-        selected_configuration = selected["value"]["name"]
+    settings = []
+    for class_name, schema in EMBEDDER_SCHEMAS.items():
+        
+        if class_name in saved_settings:
+            saved_setting = saved_settings[class_name]["value"]
+        else:
+            saved_setting = {}
 
-    allowed_configurations = list(EMBEDDER_SCHEMAS.keys())
+        settings.append({
+            "name"  : class_name,
+            "value" : saved_setting,
+            "schema": schema,
+        })
 
     return {
-        "status": "success",
         "results": len(settings),
         "settings": settings,
-        "schemas": EMBEDDER_SCHEMAS,
-        "allowed_configurations": allowed_configurations,
-        "selected_configuration": selected_configuration,
+        "selected_configuration": selected,
     }
 
 
@@ -55,17 +67,17 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
             }
         )
     
-    settings = crud.get_setting_by_name(name=languageEmbedderName)
+    setting = crud.get_setting_by_name(name=languageEmbedderName)
     schema = EMBEDDER_SCHEMAS[languageEmbedderName]
 
-    if settings is None:
-        settings = {}
+    if setting is None:
+        setting = {}
     else:
-        settings = settings["value"]
+        setting = setting["value"]
 
     return {
-        "status": "success",
-        "settings": settings,
+        "name": languageEmbedderName,
+        "value": setting,
         "schema": schema
     }
 
@@ -98,8 +110,8 @@ def upsert_embedder_setting(
     )
 
     status = {
-        "status": "success", 
-        "setting": final_setting
+        "name": languageEmbedderName,
+        "value": final_setting["value"]
     }
 
     ccat = request.app.state.ccat

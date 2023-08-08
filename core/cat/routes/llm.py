@@ -29,7 +29,6 @@ def get_llms_settings() -> Dict:
         selected = selected["value"]["name"]
     
     saved_settings = crud.get_settings_by_category(category=LLM_CATEGORY)
-    log(selected, "ERROR")
     saved_settings = { s["name"]: s for s in saved_settings }
 
     settings = []

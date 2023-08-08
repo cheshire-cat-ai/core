@@ -3,6 +3,7 @@ from json import dumps
 from fastapi.encoders import jsonable_encoder
 from cat.factory.llm import LLM_SCHEMAS
 
+
 def test_get_all_llm_settings(client):
     
     response = client.get("/llm/settings/")
@@ -61,7 +62,7 @@ def test_upsert_llm_settings_success(client):
     assert json["name"] == new_llm
     assert json["value"]["url"] == invented_url
 
-    # retrieve LLMs settings to check if it was saved in DB
+    # retrieve all LLMs settings to check if it was saved in DB
     response = client.get("/llm/settings/")
     json = response.json()
     assert response.status_code == 200
