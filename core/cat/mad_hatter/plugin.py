@@ -17,6 +17,10 @@ from cat.log import log
 class Plugin:
 
     def __init__(self, plugin_path: str, active: bool):
+        
+        # does folder exist?
+        if not os.path.exists(plugin_path) or not os.path.isdir(plugin_path):
+            raise Exception(f"{plugin_path} does not exist or is not a folder. Cannot create Plugin.")
 
         # where the plugin is on disk
         self._path: str = plugin_path
