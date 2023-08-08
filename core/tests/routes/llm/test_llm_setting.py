@@ -1,15 +1,23 @@
 
+from json import dumps
+from fastapi.encoders import jsonable_encoder
+from cat.factory.llm import LLM_SCHEMAS
+
 def test_get_all_llm_settings(client):
     
-    # act
     response = client.get("/llm/settings/")
     json = response.json()
 
-    # assert
     assert response.status_code == 200
-    assert json["status"] == "success"
-    assert "LLMDefaultConfig" in json["schemas"].keys()
-    assert "LLMDefaultConfig" in json["allowed_configurations"]
+    assert type(json["settings"]) == list
+    assert len(json["settings"]) == len(LLM_SCHEMAS)
+
+    for setting in json["settings"]:
+        assert setting["name"] in LLM_SCHEMAS.keys()
+        assert setting["value"] == {}
+        expected_schema = LLM_SCHEMAS[setting["name"]]
+        assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
+
     assert json["selected_configuration"] == None # no llm configured at startup
 
 
@@ -30,8 +38,8 @@ def test_get_llm_settings(client):
     json = response.json()
 
     assert response.status_code == 200
-    assert json["status"] == "success"
-    assert json["settings"] == {}
+    assert json["name"] == llm_name
+    assert json["value"] == {}
     assert json["schema"]["languageModelName"] == llm_name
     assert json["schema"]["type"] == "object"
 
@@ -39,28 +47,32 @@ def test_get_llm_settings(client):
 def test_upsert_llm_settings_success(client):
     
     # set a different LLM
+    new_llm = "LLMCustomConfig"
     invented_url = "https://example.com"
     payload = {
         "url": invented_url,
         "options": {}
     }
-    response = client.put("/llm/settings/LLMCustomConfig", json=payload)
+    response = client.put(f"/llm/settings/{new_llm}", json=payload)
     json = response.json()
 
     # check immediate response
     assert response.status_code == 200
-    assert json["status"] == "success"
-    assert json["setting"]["value"]["url"] == invented_url
+    assert json["name"] == new_llm
+    assert json["value"]["url"] == invented_url
 
     # retrieve LLMs settings to check if it was saved in DB
     response = client.get("/llm/settings/")
     json = response.json()
     assert response.status_code == 200
-    assert json["selected_configuration"] == 'LLMCustomConfig'
-    assert json["settings"][0]["value"]["url"] == invented_url
+    assert json["selected_configuration"] == new_llm
+    saved_config = [ c for c in json["settings"] if c["name"] == new_llm ]
+    assert saved_config[0]["value"]["url"] == invented_url
 
     # check also specific LLM endpoint
-    response = client.get("/llm/settings/LLMCustomConfig")
-    json = response.json()
+    response = client.get(f"/llm/settings/{new_llm}")
     assert response.status_code == 200
-    assert json["settings"]["url"] == invented_url
+    json = response.json()
+    assert json["name"] == new_llm
+    assert json["value"]["url"] == invented_url
+    assert json["schema"]["languageModelName"] == new_llm

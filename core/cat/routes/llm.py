@@ -1,8 +1,10 @@
 from typing import Dict
 
+from fastapi import Request, APIRouter, Body, HTTPException
+
 from cat.factory.llm import LLM_SCHEMAS
 from cat.db import crud, models
-from fastapi import Request, APIRouter, Body, HTTPException
+from cat.log import log
 
 router = APIRouter()
 
@@ -21,23 +23,33 @@ LLM_SELECTED_NAME = "llm_selected"
 def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
 
-    settings = crud.get_settings_by_category(category=LLM_CATEGORY)
+    # get selected LLM, if any
     selected = crud.get_setting_by_name(name=LLM_SELECTED_NAME)
+    if selected is not None:
+        selected = selected["value"]["name"]
+    
+    saved_settings = crud.get_settings_by_category(category=LLM_CATEGORY)
+    log(selected, "ERROR")
+    saved_settings = { s["name"]: s for s in saved_settings }
 
-    if selected is None:
-        selected_configuration = None
-    else:
-        selected_configuration = selected["value"]["name"]
+    settings = []
+    for class_name, schema in LLM_SCHEMAS.items():
+        
+        if class_name in saved_settings:
+            saved_setting = saved_settings[class_name]["value"]
+        else:
+            saved_setting = {}
 
-    allowed_configurations = list(LLM_SCHEMAS.keys())
+        settings.append({
+            "name"  : class_name,
+            "value" : saved_setting,
+            "schema": schema,
+        })
 
     return {
-        "status": "success",
         "results": len(settings),
         "settings": settings,
-        "schemas": LLM_SCHEMAS,
-        "allowed_configurations": allowed_configurations,
-        "selected_configuration": selected_configuration,
+        "selected_configuration": selected,
     }
 
 
@@ -56,17 +68,17 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
             }
         )
     
-    settings = crud.get_setting_by_name(name=languageModelName)
+    setting = crud.get_setting_by_name(name=languageModelName)
     schema = LLM_SCHEMAS[languageModelName]
 
-    if settings is None:
-        settings = {}
+    if setting is None:
+        setting = {}
     else:
-        settings = settings["value"]
+        setting = setting["value"]
 
     return {
-        "status": "success",
-        "settings": settings,
+        "name": languageModelName,
+        "value": setting,
         "schema": schema
     }
 
@@ -99,8 +111,8 @@ def upsert_llm_setting(
     )
 
     status = {
-        "status": "success", 
-        "setting": final_setting
+        "name": languageModelName,
+        "value": final_setting["value"]
     }
 
     ccat = request.app.state.ccat
