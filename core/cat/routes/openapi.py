@@ -13,8 +13,9 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
         if cheshire_cat_api.openapi_schema:
             return cheshire_cat_api.openapi_schema
         
-        project_toml = tomli.load(open("pyproject.toml", "rb"))["project"]
-
+        with open("pyproject.toml", "rb") as f:
+            project_toml = tomli.load(f)["project"]
+        
         openapi_schema = get_openapi(
             title=f"😸 {project_toml['name']} API",
             version=project_toml['version'],

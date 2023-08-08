@@ -11,7 +11,8 @@ router = APIRouter()
 @router.get("/")
 async def home() -> Dict:
     """Server status""" 
-    project_toml = tomli.load(open("pyproject.toml", "rb"))["project"]
+    with open("pyproject.toml", "rb") as f:
+        project_toml = tomli.load(f)["project"]
 
     return {
         "status": "We're all mad here, dear!",
