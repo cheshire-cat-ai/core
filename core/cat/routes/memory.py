@@ -80,7 +80,6 @@ async def get_collections(request: Request) -> Dict:
         }]
 
     return {
-        "results": len(collections_metadata), 
         "collections": collections_metadata
     }
 

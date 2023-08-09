@@ -41,7 +41,6 @@ async def get_available_plugins(request: Request) -> Dict:
     registry = await get_registry_list()
 
     return {
-        "results": len(plugins) + len(registry),
         "installed": plugins,
         "registry": registry
     }
@@ -234,7 +233,6 @@ async def get_plugins_settings(request: Request) -> Dict:
         })
 
     return {
-        "results": len(settings),
         "settings": settings,
     }
 

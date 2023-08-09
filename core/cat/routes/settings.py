@@ -14,7 +14,6 @@ def get_settings(search: str = ""):
     settings = crud.get_settings(search=search)
 
     return {
-        "results": len(settings),
         "settings": settings
     }
 

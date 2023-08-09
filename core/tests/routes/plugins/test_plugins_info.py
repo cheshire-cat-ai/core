@@ -5,7 +5,7 @@ import shutil
 from tests.utils import key_in_json
 
 
-@pytest.mark.parametrize("key", ["results", "installed", "registry"])
+@pytest.mark.parametrize("key", ["installed", "registry"])
 def test_list_plugins(client, key):
     # Act
     response = client.get("/plugins")

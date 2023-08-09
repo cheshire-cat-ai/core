@@ -46,7 +46,6 @@ def get_embedders_settings() -> Dict:
         })
 
     return {
-        "results": len(settings),
         "settings": settings,
         "selected_configuration": selected,
     }

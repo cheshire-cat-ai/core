@@ -10,7 +10,6 @@ def test_memory_collections_created(client):
     
     # check default collections are created
     default_collections = ["episodic", "declarative", "procedural"]
-    assert json["results"] == len(default_collections)
     assert len(json["collections"]) == len(default_collections)
     
     # check correct number of default points
