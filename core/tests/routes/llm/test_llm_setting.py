@@ -55,9 +55,9 @@ def test_upsert_llm_settings_success(client):
         "options": {}
     }
     response = client.put(f"/llm/settings/{new_llm}", json=payload)
-    json = response.json()
 
     # check immediate response
+    json = response.json()
     assert response.status_code == 200
     assert json["name"] == new_llm
     assert json["value"]["url"] == invented_url
