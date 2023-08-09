@@ -30,7 +30,6 @@ def create_setting(payload: models.SettingBody):
     new_setting = crud.create_setting(payload)
 
     return {
-        "status": "success",
         "setting": new_setting
     }
 
@@ -48,7 +47,6 @@ def get_setting(settingId: str):
             },
         )
     return {
-        "status": "success",
         "setting": setting
     }
 
@@ -75,7 +73,6 @@ def update_setting(settingId: str, payload: models.SettingBody):
     updated_setting = crud.update_setting_by_id(payload)
     
     return {
-        "status": "success",
         "setting": updated_setting
     }
 

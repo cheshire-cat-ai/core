@@ -41,7 +41,6 @@ async def get_available_plugins(request: Request) -> Dict:
     registry = await get_registry_list()
 
     return {
-        "status": "success",
         "results": len(plugins) + len(registry),
         "installed": plugins,
         "registry": registry
@@ -80,7 +79,6 @@ async def install_plugin(
     )
 
     return {
-        "status": "success",
         "filename": file.filename,
         "content_type": file.content_type,
         "info": "Plugin is being installed asynchronously"
@@ -141,7 +139,6 @@ async def install_plugin_from_registry(
             )
 
             return {
-                "status": "success",
                 "filename": file.name,
                 "content_type": mimetypes.guess_type(plugin_name)[0],
                 "info": "Plugin is being installed asynchronously"
@@ -166,7 +163,6 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     ccat.mad_hatter.toggle_plugin(plugin_id)
 
     return {
-        "status": "success",
         "info": f"Plugin {plugin_id} toggled"
     }
 
@@ -191,7 +187,6 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     plugin_info["active"] = plugin_id in active_plugins
 
     return {
-        "status": "success",
         "data": plugin_info
     }
 
@@ -213,7 +208,6 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     ccat.mad_hatter.uninstall_plugin(plugin_id)
 
     return {
-        "status": "success",
         "deleted": plugin_id
     }
 

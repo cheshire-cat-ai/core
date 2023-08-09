@@ -50,7 +50,6 @@ async def upload_file(
 
     # reply to client
     return {
-        "status": "success",
         "filename": file.filename,
         "content_type": file.content_type,
         "info": "File is being ingested asynchronously",
@@ -131,7 +130,6 @@ async def upload_memory(
 
     # reply to client
     return {
-        "status": "success",
         "filename": file.filename,
         "content_type": file.content_type,
         "info": "Memory is being ingested asynchronously"

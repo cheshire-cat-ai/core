@@ -31,7 +31,6 @@ def test_point_deleted(client):
     # delete point (all right)
     res = client.delete(f"/memory/collections/episodic/points/{memory['id']}/")
     assert res.status_code == 200
-    assert res.json()["status"] == "success"
     assert res.json()["deleted"] == memory['id']
 
     # there is no point now

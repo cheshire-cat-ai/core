@@ -27,7 +27,6 @@ def just_installed_plugin(client):
 
     # request was processed
     assert response.status_code == 200
-    assert response.json()["status"] == "success"
     assert response.json()["filename"] == zip_file_name
 
     ### each test function having `just_installed_plugin` as argument, is run here

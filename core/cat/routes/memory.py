@@ -53,7 +53,6 @@ async def recall_memories_from_text(
             recalled[c].append(memory_dict)
 
     return {
-        "status": "success",
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
@@ -81,7 +80,6 @@ async def get_collections(request: Request) -> Dict:
         }]
 
     return {
-        "status": "success",
         "results": len(collections_metadata), 
         "collections": collections_metadata
     }
@@ -108,7 +106,6 @@ async def wipe_collections(
     ccat.mad_hatter.embed_tools()
 
     return {
-        "status": "success",
         "deleted": to_return,
     }
 
@@ -140,7 +137,6 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     ccat.mad_hatter.embed_tools()
 
     return {
-        "status": "success",
         "deleted": to_return,
     }
 
@@ -180,7 +176,6 @@ async def wipe_memory_point(
     vector_memory.collections[collection_id].delete_points([memory_id])
 
     return {
-        "status": "success",
         "deleted": memory_id
     }
 
@@ -196,6 +191,5 @@ async def wipe_conversation_history(
     ccat.working_memory["history"] = []
 
     return {
-        "status": "success",
         "deleted": True,
     }
