@@ -77,4 +77,4 @@ def plugin_settings_save(settings):
     """
 
     # In core_plugin we do nothing (for now).
-    return settings
+    return {}

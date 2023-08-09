@@ -72,7 +72,7 @@ def test_save_plugin_settings(client, just_installed_plugin):
         assert json["value"]["fake_setting"] == fake_value
 
 
-# core_plugin has no settings (for the moment)
+# core_plugin has no settings and ignores them when saved (for the moment)
 def test_core_plugin_settings(client):
 
     # write a new setting, and then ovewrite it (core_plugin should ignore this)
@@ -85,7 +85,7 @@ def test_core_plugin_settings(client):
         json = response.json()
         assert response.status_code == 200
         assert json["name"] == "core_plugin"
-        assert json["value"]["fake_setting"] == fake_value # TODO: should return empty dict)
+        assert json["value"] == {}
 
         # get settings back (should be empty as core_plugin does not (yet) accept settings
         response = client.get("/plugins/settings/core_plugin")
