@@ -22,7 +22,7 @@ async def get_registry_list():
 
 # GET plugins
 @router.get("/")
-async def list_available_plugins(request: Request) -> Dict:
+async def get_available_plugins(request: Request) -> Dict:
     """List available plugins"""
 
     # access cat instance
@@ -196,6 +196,28 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     }
 
 
+@router.delete("/{plugin_id}")
+async def delete_plugin(plugin_id: str, request: Request) -> Dict:
+    """Physically remove plugin."""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Item not found" }
+        )
+    
+    # remove folder, hooks and tools
+    ccat.mad_hatter.uninstall_plugin(plugin_id)
+
+    return {
+        "status": "success",
+        "deleted": plugin_id
+    }
+
+
 @router.get("/settings/")
 async def get_plugins_settings(request: Request) -> Dict:
     """Returns the settings of all the plugins"""
@@ -204,23 +226,22 @@ async def get_plugins_settings(request: Request) -> Dict:
     ccat = request.app.state.ccat
 
     settings = []
-    schema = {}
 
     # plugins are managed by the MadHatter class
     for plugin in ccat.mad_hatter.plugins.values():
         plugin_settings = plugin.load_settings()
         plugin_schema = plugin.get_settings_schema()
-        if len(plugin_schema['properties']) == 0:
-            continue
-        schema[plugin.id] = plugin_schema
-        plugin_settings["id"] = plugin.id
-        settings.append(plugin_settings)
+        if plugin_schema['properties'] == {}:
+            plugin_schema = {}
+        settings.append({
+            "name": plugin.id,
+            "value": plugin_settings,
+            "schema": plugin_schema
+        })
 
     return {
-        "status": "success",
         "results": len(settings),
         "settings": settings,
-        "schemas": schema
     }
 
 
@@ -240,10 +261,12 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
     # plugins are managed by the MadHatter class
     settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
     schema = ccat.mad_hatter.plugins[plugin_id].get_settings_schema()
+    if schema['properties'] == {}:
+        schema = {}
 
     return {
-        "status": "success",
-        "settings": settings,
+        "name": plugin_id,
+        "value": settings,
         "schema": schema
     }
 
@@ -268,28 +291,6 @@ async def upsert_plugin_settings(
     final_settings = ccat.mad_hatter.plugins[plugin_id].save_settings(payload)
 
     return {
-        "status": "success", 
-        "settings": final_settings
-    }
-
-
-@router.delete("/{plugin_id}")
-async def delete_plugin(plugin_id: str, request: Request) -> Dict:
-    """Physically remove plugin."""
-
-    # access cat instance
-    ccat = request.app.state.ccat
-
-    if not ccat.mad_hatter.plugin_exists(plugin_id):
-        raise HTTPException(
-            status_code = 404,
-            detail = { "error": "Item not found" }
-        )
-    
-    # remove folder, hooks and tools
-    ccat.mad_hatter.uninstall_plugin(plugin_id)
-
-    return {
-        "status": "success",
-        "deleted": plugin_id
+        "name": plugin_id,
+        "value": final_settings
     }
