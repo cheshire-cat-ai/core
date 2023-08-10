@@ -27,6 +27,7 @@ def clean_up_mocks():
         "tests/mocks/metadata-test.json",
         "tests/mocks/mock_plugin.zip",
         "tests/mocks/mock_plugin_folder/mock_plugin",
+        "tests/mocks/empty_folder"
     ]
     for tbr in to_be_removed:
         if os.path.exists(tbr):
