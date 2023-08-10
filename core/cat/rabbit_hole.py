@@ -126,14 +126,12 @@ class RabbitHole:
         before_rabbithole_stores_documents
         """
 
-        print("Start ingestion")
         start = time.time()
 
         # split file into a list of docs
         docs = self.file_to_docs(
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
-        print(f"Total time file_to_docs: {time.time() - start}" )
 
         # store in memory
         if isinstance(file, str):
@@ -141,10 +139,8 @@ class RabbitHole:
         else:
             filename = file.filename
 
-        print("Start storing")
         start = time.time()
         self.store_documents(docs=docs, source=filename)
-        print(f"Total time: {time.time() - start}")
 
     def file_to_docs(
             self,
@@ -289,20 +285,20 @@ class RabbitHole:
         )
 
         # parameters for storing progress percentage
-        perc100 = len(docs)
-        percResolution = 10
-        percStep = math.floor((perc100 * percResolution) / 100)
+        perc_100 = len(docs)
+        perc_resolution = 10
+        perc_step = math.floor((perc_100 * perc_resolution) / 100)
 
-        readPercentage = 0
+        perc_read = 0
 
         # classic embed
         for d, doc in enumerate(docs):
-            # every percStep send a notification in order to monito the progress
+            # every percStep send a notification in order to monitor the progress
             # N.B. file with a len < resolution does not show any percentage
             # the storing should be immediate, and it's correct show only the final msg
-            if ((percStep > 0) and ((d+1) % percStep) == 0):
-                readPercentage += percResolution
-                self.send_rabbit_thought(f"Read {readPercentage}% of {source}")
+            if ((perc_step > 0) and ((d+1) % perc_step) == 0):
+                perc_read += perc_resolution
+                self.send_rabbit_thought(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
