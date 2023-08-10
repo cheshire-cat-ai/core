@@ -25,6 +25,13 @@ class Plugin:
         # where the plugin is on disk
         self._path: str = plugin_path
 
+        # search for .py files in folder
+        py_files_path = os.path.join(self._path, "**/*.py")
+        self.py_files = glob.glob(py_files_path, recursive=True)
+
+        if len(self.py_files) == 0:
+            raise Exception(f"{plugin_path} does not contain any python files. Cannot create Plugin.")
+
         # plugin id is just the folder name
         self._id: str = os.path.basename(os.path.normpath(plugin_path))
 
@@ -150,15 +157,10 @@ class Plugin:
 
     # lists of hooks and tools
     def _load_hooks_and_tools(self):
-
-        # search for .py files in folder
-        py_files_path = os.path.join(self._path, "**/*.py")
-        py_files = glob.glob(py_files_path, recursive=True)
-
         hooks = []
         tools = []
 
-        for py_file in py_files:
+        for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
             # save a reference to decorated functions
