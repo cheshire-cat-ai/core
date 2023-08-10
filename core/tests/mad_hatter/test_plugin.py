@@ -29,6 +29,17 @@ def test_create_plugin_wrong_folder():
         
     assert f"Cannot create" in str(e.value)
 
+def test_create_plugin_empty_folder():
+
+    path = "tests/mocks/empty_folder"
+
+    os.mkdir(path)
+
+    with pytest.raises(Exception) as e:
+        Plugin(path, active=True)
+        
+    assert f"Cannot create" in str(e.value)
+
 
 def test_create_non_active_plugin():
 

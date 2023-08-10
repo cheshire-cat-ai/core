@@ -109,10 +109,12 @@ class MadHatter:
         # Instantiate plugin.
         #   If the plugin is inactive, only manifest will be loaded
         #   If active, also settings, tools and hooks
-        plugin = Plugin(plugin_path, active=active)
-        
-        # if plugin is valid, keep a reference
-        self.plugins[plugin.id] = plugin
+        try:
+            plugin = Plugin(plugin_path, active=active)
+            # if plugin is valid, keep a reference
+            self.plugins[plugin.id] = plugin
+        except Exception as e:
+            log(e, "WARNING") 
 
     # Load hooks and tools of the active plugins into MadHatter 
     def sync_hooks_and_tools(self):
