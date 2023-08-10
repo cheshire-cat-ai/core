@@ -41,4 +41,7 @@ def check_api_key(api_key: str = Security(api_key_header)) -> None | str:
     if api_key in API_KEY:
         return api_key
     else:
-        raise HTTPException(status_code=403, detail="Invalid API Key")
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "Invalid API Key"}
+        )

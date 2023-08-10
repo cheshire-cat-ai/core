@@ -49,8 +49,8 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             # chat notifications (i.e. finished uploading)
             if len(ccat.web_socket_notifications) > 0:
-                notification = ccat.web_socket_notifications[-1]
-                ccat.web_socket_notifications = ccat.web_socket_notifications[:-1]
+                # extract from FIFO list websocket notification
+                notification = ccat.web_socket_notifications.pop(0)
                 await manager.send_personal_message(notification, websocket)
 
             await asyncio.sleep(1)  # wait for 1 seconds before checking again

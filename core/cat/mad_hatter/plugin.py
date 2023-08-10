@@ -3,7 +3,8 @@ import json
 import glob
 import importlib
 from typing import Dict
-from inspect import getmembers, isfunction  # , signature
+from inspect import getmembers
+from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook
 from cat.utils import to_camel_case
@@ -15,33 +16,120 @@ from cat.log import log
 
 class Plugin:
 
-    def __init__(self, plugin_absolute_path):
+    def __init__(self, plugin_path: str, active: bool):
         
+        # does folder exist?
+        if not os.path.exists(plugin_path) or not os.path.isdir(plugin_path):
+            raise Exception(f"{plugin_path} does not exist or is not a folder. Cannot create Plugin.")
+
         # where the plugin is on disk
-        self.path: str = plugin_absolute_path
+        self._path: str = plugin_path
+
+        # search for .py files in folder
+        py_files_path = os.path.join(self._path, "**/*.py")
+        self.py_files = glob.glob(py_files_path, recursive=True)
+
+        if len(self.py_files) == 0:
+            raise Exception(f"{plugin_path} does not contain any python files. Cannot create Plugin.")
 
         # plugin id is just the folder name
-        self.id: str = os.path.basename(os.path.normpath(plugin_absolute_path))
-
-        # all plugins start inactive
-        self.active: bool = False
+        self._id: str = os.path.basename(os.path.normpath(plugin_path))
 
         # plugin manifest (name, decription, thumb, etc.)
-        self.load_manifest()
+        self._manifest = self._load_manifest()
 
-        # plugin settings
-        self.load_settings()
+        # list of tools and hooks contained in the plugin.
+        #   The MadHatter will cache them for easier access,
+        #   but they are created and stored in each plugin instance
+        self._hooks = [] 
+        self._tools = []
 
+        self._active = False
+
+        # all plugins start active, they can be deactivated/reactivated from endpoint
+        if active:
+            self.activate()
+
+    def activate(self):
+        self._active = True
         # lists of hooks and tools
-        self.load_hooks_and_tools()
+        self._hooks, self._tools = self._load_hooks_and_tools()
 
+    def deactivate(self):
+        self._active = False
+        self._hooks = []
+        self._tools = []
 
-    # load contents of plugin.json (if exists)
-    def load_manifest(self):
+    # get plugin settings JSON schema
+    def get_settings_schema(self):
+
+        # is "plugin_settings_schema" hook defined in the plugin?
+        for h in self._hooks:
+            if h.name == "plugin_settings_schema":
+                return h.function()
+
+        # default schema (empty)
+        return BaseModel.schema()
+
+    # load plugin settings
+    def load_settings(self):
+
+        # is "plugin_settings_load" hook defined in the plugin?
+        for h in self._hooks:
+            if h.name == "plugin_settings_load":
+                return h.function()
+
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+
+        # default settings is an empty dictionary
+        settings = {}
+
+        # load settings.json if exists
+        if os.path.isfile(settings_file_path):
+            try:
+                with open(settings_file_path, "r") as json_file:
+                    settings = json.load(json_file)
+            except Exception as e:
+                log(f"Unable to load plugin {self._id} settings", "ERROR")
+                log(e, "ERROR")
+
+        return settings
+    
+    # save plugin settings
+    def save_settings(self, settings: Dict):
+
+        # is "plugin_settings_save" hook defined in the plugin?
+        for h in self._hooks:
+            if h.name == "plugin_settings_save":
+                return h.function(settings)
+
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+        
+        # load already saved settings
+        old_settings = self.load_settings()
+        
+        # overwrite settings over old ones
+        updated_settings = { **old_settings, **settings }
+
+        # write settings.json in plugin folder
+        try:
+            with open(settings_file_path, "w") as json_file:
+                json.dump(updated_settings, json_file, indent=4)
+        except Exception:
+            log(f"Unable to save plugin {self._id} settings", "ERROR")
+            return {}
+    
+        return updated_settings
+
+    def _load_manifest(self):
 
         plugin_json_metadata_file_name = "plugin.json"
-        plugin_json_metadata_file_path = os.path.join(self.path, plugin_json_metadata_file_name)
-        meta = {"id": self.id}
+        plugin_json_metadata_file_path = os.path.join(self._path, plugin_json_metadata_file_name)
+        meta = {"id": self._id}
         json_file_data = {}
 
         if os.path.isfile(plugin_json_metadata_file_path):
@@ -50,9 +138,9 @@ class Plugin:
                 json_file_data = json.load(json_file)
                 json_file.close()
             except Exception:
-                log(f"Loading plugin {self.path} metadata, defaulting to generated values", "INFO")
+                log(f"Loading plugin {self._path} metadata, defaulting to generated values", "INFO")
 
-        meta["name"] = json_file_data.get("name", to_camel_case(self.id))
+        meta["name"] = json_file_data.get("name", to_camel_case(self._id))
         meta["description"] = json_file_data.get("description", (
             "Description not found for this plugin. "
             f"Please create a `{plugin_json_metadata_file_name}`"
@@ -65,110 +153,71 @@ class Plugin:
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
 
-        self.manifest = meta
-
-    # load plugin settings
-    def get_settings_schema(self):
-        return None
-
-    # load plugin settings
-    def load_settings(self):
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #settings = { "active": False }
-
-        #if os.path.isfile(settings_file_path):
-        #    try:
-        #        json_file = open(settings_file_path)
-        #        settings = json.load(json_file)
-        #        if "active" not in settings:
-        #            settings["active"] = False
-        #        json_file.close()
-        #    except Exception:
-        #        log(f"Loading plugin {plugin_id} settings, defaulting to -> 'active': False", "INFO")
-    
-        #return settings
-        return {}
-    
-    # save plugin settings
-    def save_settings(self, settings: Dict):
-
-        #settings_file_path = os.path.join("cat/plugins", plugin_id, "settings.json")
-        #updated_settings = settings
-
-        #try:
-        #    json_file = open(settings_file_path, 'r+')
-        #    current_settings = json.load(json_file)
-        #    json_file.close()
-        #    updated_settings = { **current_settings, **settings }
-        #    json_file = open(settings_file_path, 'w')
-        #    json.dump(updated_settings, json_file, indent=4)
-        #    json_file.close()
-        #except Exception:
-        #    log(f"Unable to save plugin {plugin_id} settings", "INFO")
-    
-        #return updated_settings
-        return {}
-
+        return meta
 
     # lists of hooks and tools
-    def load_hooks_and_tools(self):
+    def _load_hooks_and_tools(self):
+        hooks = []
+        tools = []
 
-        # search for .py files in folder
-        py_files_path = os.path.join(self.path, "**/*.py")
-        py_files = glob.glob(py_files_path, recursive=True)
-
-        self.hooks = []
-        self.tools = []
-
-        for py_file in py_files:
+        for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
             # save a reference to decorated functions
             plugin_module = importlib.import_module(py_filename)
-            self.hooks += getmembers(plugin_module, self.is_cat_hook)
-            self.tools += getmembers(plugin_module, self.is_cat_tool)
+            hooks += getmembers(plugin_module, self._is_cat_hook)
+            tools += getmembers(plugin_module, self._is_cat_tool)
 
         # clean and enrich instances
-        self.hooks = list(map(self.clean_hook, self.hooks))
-        self.tools = list(map(self.clean_tool, self.tools))
+        hooks = list(map(self._clean_hook, hooks))
+        tools = list(map(self._clean_tool, tools))
 
-    def clean_hook(self, hook):
+        return hooks, tools
+
+    def _clean_hook(self, hook):
         # getmembers returns a tuple
         h = hook[1]
-        h.plugin_id = self.id
+        h.plugin_id = self._id
         return h
 
-    def clean_tool(self, tool):
+    def _clean_tool(self, tool):
         # getmembers returns a tuple
         t = tool[1]
-        t.plugin_id = self.id
+        t.plugin_id = self._id
         return t
-
-    def toggle(self):
-        # TODO: save in metadata.json
-        self.active = not self.active
-
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
-    def is_cat_hook(self, obj):
+    @staticmethod
+    def _is_cat_hook(obj):
         return isinstance(obj, CatHook)
-
 
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
-    def is_cat_tool(self, obj):
+    @staticmethod
+    def _is_cat_tool(obj):
         return isinstance(obj, CatTool)
     
-
-
-
-
-
-
-
-
-
-
-
+    @property
+    def path(self):
+        return self._path
     
+    @property
+    def id(self):
+        return self._id
+    
+    @property
+    def manifest(self):
+        return self._manifest
+    
+    @property
+    def active(self):
+        return self._active
+
+    @property
+    def hooks(self):
+        return self._hooks
+    
+    @property
+    def tools(self):
+        return self._tools

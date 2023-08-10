@@ -20,7 +20,7 @@ RUN curl -sL https://github.com/cheshire-cat-ai/admin-vue/releases/download/Admi
 WORKDIR /app
 RUN pip install -U pip && \
     pip install --no-cache-dir . &&\
-    python3 -c "import nltk; nltk.download('punkt')" &&\
+    python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')" &&\
     python3 install_plugin_dependencies.py
 
 

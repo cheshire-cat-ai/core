@@ -222,10 +222,10 @@ def after_cat_recalls_memories(query: str, cat) -> None:
 # Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
 @hook(priority=0)
 def cat_recall_query(user_message: str, cat) -> str:
-    """Hook the Hypothetical Document Embedding (HyDE) search query.
+    """Hook the semantic search query.
 
-    This hook allows to edit the user's message used as a query for HyDE.
-    As a result, context retrieval can be conditioned enhancing such message.
+    This hook allows to edit the user's message used as a query for context retrieval from memories.
+    As a result, the retrieved context can be conditioned editing the user's message.
 
     Parameters
     ----------
@@ -241,12 +241,14 @@ def cat_recall_query(user_message: str, cat) -> str:
 
     Notes
     -----
-    HyDE [1]_ strategy exploits the user's message to generate a hypothetical answer. This is then applied to recall
+    For example, this hook is a suitable to perform Hypothetical Document Embedding (HyDE).
+    HyDE [1]_ strategy exploits the user's message to generate a hypothetical answer. This is then used to recall
     the relevant context from the memory.
+    An official plugin is available to test this technique.
 
     References
     ----------
-    .. [1] Gao, L., Ma, X., Lin, J., & Callan, J. (2022). Precise Zero-Shot Dense Retrieval without Relevance Labels.
+    [1] Gao, L., Ma, X., Lin, J., & Callan, J. (2022). Precise Zero-Shot Dense Retrieval without Relevance Labels.
        arXiv preprint arXiv:2212.10496.
 
     """
