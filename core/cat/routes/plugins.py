@@ -17,7 +17,7 @@ async def get_registry_list():
         else:
             return []
     except requests.exceptions.RequestException as e:
-        log(e, "ERROR")
+        #log(e, "ERROR")
         return []
 
 # GET plugins
