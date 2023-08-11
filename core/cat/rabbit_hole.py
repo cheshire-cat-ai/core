@@ -189,7 +189,7 @@ class RabbitHole:
                 source = file
 
                 # Make a request with a fake browser name
-                request = Request(file, headers={'User-Agent': "Magic Browser"})
+                request = Request(file, headers={"User-Agent": "Magic Browser"})
 
                 try:
                     # Get binary content of url
