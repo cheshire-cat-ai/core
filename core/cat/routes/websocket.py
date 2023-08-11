@@ -70,7 +70,8 @@ async def check_notification(websocket: WebSocket, ccat: object):
     """
     while True:
         if ccat.web_socket_notifications:
-            notification = ccat.web_socket_notifications.pop()
+            # extract from FIFO list websocket notification
+            notification = ccat.web_socket_notifications.pop(0)
             await manager.send_personal_message(notification, websocket)
 
         # Sleep for the specified interval before checking for notifications again.
