@@ -1,5 +1,6 @@
 import os
 import time
+import math
 import json
 import mimetypes
 from typing import List, Union
@@ -135,6 +136,7 @@ class RabbitHole:
             filename = file
         else:
             filename = file.filename
+
         self.store_documents(docs=docs, source=filename)
 
     def file_to_docs(
@@ -189,7 +191,7 @@ class RabbitHole:
                 source = file
 
                 # Make a request with a fake browser name
-                request = Request(file, headers={'User-Agent': "Magic Browser"})
+                request = Request(file, headers={"User-Agent": "Magic Browser"})
 
                 try:
                     # Get binary content of url
@@ -214,15 +216,35 @@ class RabbitHole:
                     mimetype=content_type,
                     source=source).from_data(data=file_bytes,
                                              mime_type=content_type)
-
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
+        self.send_rabbit_thought("I'm parsing the content. Big content could require some minutes...")
         text = parser.parse(blob)
 
+        self.send_rabbit_thought(f"Parsing completed. Now let's go with reading process...")
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
+
+    def send_rabbit_thought(self, thought):
+        """Append a message to the notification list.
+
+        This method receive a string and create the message to append to the list of notifications.
+
+        Parameters
+        ----------
+        thought : str
+            Text of the message to append to the notification list.
+        """
+
+        self.cat.web_socket_notifications.append({
+            "error": False,
+            "type": "notification",
+            "content": thought,
+            "why": {},
+        })
+
 
     def store_documents(self, docs: List[Document], source: str) -> None:
         """Add documents to the Cat's declarative memory.
@@ -255,7 +277,14 @@ class RabbitHole:
         )
 
         # classic embed
+        time_last_notification = time.time()
+        time_interval = 10 # a notification every 10 secs
         for d, doc in enumerate(docs):
+            if time.time() - time_last_notification > time_interval:
+                time_last_notification = time.time()
+                perc_read = int( d / len(docs) * 100 )
+                self.send_rabbit_thought(f"Read {perc_read}% of {source}")
+
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
             doc = self.cat.mad_hatter.execute_hook(
@@ -279,14 +308,8 @@ class RabbitHole:
         # notify client
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
-        self.cat.web_socket_notifications.append(
-            {
-                "error": False,
-                "type": "notification",
-                "content": finished_reading_message,
-                "why": {},
-            }
-        )
+        
+        self.send_rabbit_thought(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 

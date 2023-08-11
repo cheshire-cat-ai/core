@@ -72,9 +72,14 @@ async def upload_url(
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
     # check that URL is valid
+
     try:
         # Send a HEAD request to the specified URL
-        response = requests.head(url)
+        response = requests.head(
+            url,
+            headers={"User-Agent": "Magic Browser"},
+            allow_redirects=True
+        )
         status_code = response.status_code
 
         if status_code == 200:
