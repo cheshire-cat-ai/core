@@ -126,8 +126,6 @@ class RabbitHole:
         before_rabbithole_stores_documents
         """
 
-        start = time.time()
-
         # split file into a list of docs
         docs = self.file_to_docs(
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
@@ -139,7 +137,6 @@ class RabbitHole:
         else:
             filename = file.filename
 
-        start = time.time()
         self.store_documents(docs=docs, source=filename)
 
     def file_to_docs(
@@ -214,7 +211,6 @@ class RabbitHole:
         else:
             raise ValueError(f"{type(file)} is not a valid type.")
 
-        start = time.time()
         # Load the bytes in the Blob schema
         blob = Blob(data=file_bytes,
                     mimetype=content_type,
@@ -225,11 +221,9 @@ class RabbitHole:
 
         # Parse the text
         self.send_rabbit_thought("I'm parsing the content. Big content could require some minutes...")
-        start = time.time()
         text = parser.parse(blob)
 
         self.send_rabbit_thought(f"Parsing completed. Now let's go with reading process...")
-        start = time.time()
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
 
@@ -244,14 +238,12 @@ class RabbitHole:
             Text of the message to append to the notification list.
         """
 
-        self.cat.web_socket_notifications.append(
-                    {
-                        "error": False,
-                        "type": "notification",
-                        "content": thought,
-                        "why": {},
-                    }
-        )
+        self.cat.web_socket_notifications.append({
+            "error": False,
+            "type": "notification",
+            "content": thought,
+            "why": {},
+        })
 
 
     def store_documents(self, docs: List[Document], source: str) -> None:
@@ -288,16 +280,16 @@ class RabbitHole:
         perc_100 = len(docs)
         perc_resolution = 10
         perc_step = math.floor((perc_100 * perc_resolution) / 100)
-
         perc_read = 0
 
         # classic embed
         for d, doc in enumerate(docs):
-            # every percStep send a notification in order to monitor the progress
+            # every perc_step sends a notification in order to monitor the progress
             # N.B. file with a len < resolution does not show any percentage
             # the storing should be immediate, and it's correct show only the final msg
-            if ((perc_step > 0) and ((d+1) % perc_step) == 0):
-                perc_read += perc_resolution
+            if perc_step > 0 and ((d+1) % perc_step == 0):
+                #perc_read += perc_resolution
+                perc_read = int( (d+1) / perc_100 * 100 )
                 self.send_rabbit_thought(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
