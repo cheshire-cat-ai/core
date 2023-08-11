@@ -276,20 +276,13 @@ class RabbitHole:
             "before_rabbithole_stores_documents", docs
         )
 
-        # parameters for storing progress percentage
-        perc_100 = len(docs)
-        perc_resolution = 10
-        perc_step = math.floor((perc_100 * perc_resolution) / 100)
-        perc_read = 0
-
         # classic embed
+        time_last_notification = time.time()
+        time_interval = 10 # a notification every 10 secs
         for d, doc in enumerate(docs):
-            # every perc_step sends a notification in order to monitor the progress
-            # N.B. file with a len < resolution does not show any percentage
-            # the storing should be immediate, and it's correct show only the final msg
-            if perc_step > 0 and ((d+1) % perc_step == 0):
-                #perc_read += perc_resolution
-                perc_read = int( (d+1) / perc_100 * 100 )
+            if time.time() - time_last_notification > time_interval:
+                time_last_notification = time.time()
+                perc_read = int( d / len(docs) * 100 )
                 self.send_rabbit_thought(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
