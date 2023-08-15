@@ -74,7 +74,7 @@ async def install_plugin(
         f.write(contents)
 
     background_tasks.add_task(
-        ccat.mad_hatter.install_plugin, temp.name
+        ccat.install_plugin, temp.name
     )
 
     return {
@@ -134,7 +134,7 @@ async def install_plugin_from_registry(
             
 
             background_tasks.add_task(
-                ccat.mad_hatter.install_plugin, file.name
+                ccat.install_plugin, file.name
             )
 
             return {
@@ -159,7 +159,8 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
         )
     
     # toggle plugin
-    ccat.mad_hatter.toggle_plugin(plugin_id)
+    #ccat.mad_hatter.toggle_plugin(plugin_id)
+    ccat.toggle_plugin(plugin_id)
 
     return {
         "info": f"Plugin {plugin_id} toggled"
@@ -204,7 +205,7 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
         )
     
     # remove folder, hooks and tools
-    ccat.mad_hatter.uninstall_plugin(plugin_id)
+    ccat.uninstall_plugin(plugin_id)
 
     return {
         "deleted": plugin_id

@@ -120,8 +120,8 @@ def upsert_llm_setting(
     # (in case embedder is not configured, it will be changed automatically and aligned to vendor)
     # TODO: should we take this feature away?
     ccat.load_memory()
-    # recreate tools embeddings
-    ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
+    
+    #realod plugins and embedd tools
+    ccat.load_plugins()
 
     return status

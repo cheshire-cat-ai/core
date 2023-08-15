@@ -101,8 +101,9 @@ async def wipe_collections(
         to_return[c] = ret
 
     ccat.load_memory()  # recreate the long term memories
-    ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
+
+    #realod plugins and embedd tools
+    ccat.load_plugins()
 
     return {
         "deleted": to_return,
@@ -132,8 +133,9 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     to_return[collection_id] = ret
 
     ccat.load_memory()  # recreate the long term memories
-    ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
+    
+    #realod plugins and embedd tools
+    ccat.load_plugins()
 
     return {
         "deleted": to_return,
