@@ -46,7 +46,7 @@ class LLMCustomConfig(LLMSettings):
     @classmethod
     def get_llm_from_config(cls, config):
         # options are inserted as a string in the admin
-        if type(config["options"]) == str:
+        if isinstance(config["options"], dict):
             config["options"] = json.loads(config["options"])
 
         return cls._pyclass(**config)
