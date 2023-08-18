@@ -1,11 +1,6 @@
-import re
-import traceback
-import json
-from copy import copy
-
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain.agents import AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass.prompts import ToolPromptTemplate
 from cat.looking_glass.output_parser import ToolOutputParser

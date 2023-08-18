@@ -8,7 +8,6 @@ import time
 from typing import List, Dict
 from datetime import timedelta
 from langchain.docstore.document import Document
-from langchain.agents.conversational import prompt
 
 from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook

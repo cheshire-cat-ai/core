@@ -1,7 +1,7 @@
 import re
 from langchain.agents import AgentOutputParser
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
-from typing import List, Union
+from typing import Union
 
 
 class ToolOutputParser(AgentOutputParser):
