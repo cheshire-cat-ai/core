@@ -33,7 +33,7 @@ class AgentManager:
         allowed_tools_names = [t.name for t in allowed_tools]
 
         prompt = ToolPromptTemplate(
-            #template= TODO: get from hook,
+            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions"),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -109,20 +109,7 @@ class AgentManager:
             return fast_reply
 
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
-        #prompt_format_instructions = mad_hatter.execute_hook("agent_prompt_instructions")
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
-
-        #input_variables = [
-        #    "input",
-        #    "chat_history",
-        #    "episodic_memory",
-        #    "declarative_memory",
-        #    "agent_scratchpad",
-        #]
-
-        #input_variables = mad_hatter.execute_hook("before_agent_creates_prompt", input_variables,
-         #                                         " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
-
 
         # Try to get information from tools if there is some allowed
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
