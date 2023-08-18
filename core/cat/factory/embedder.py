@@ -1,6 +1,8 @@
 import langchain
 from pydantic import PyObject, BaseSettings
 
+from cat.factory.dumb_embedder import DumbEmbedder
+
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseSettings):
@@ -23,8 +25,19 @@ class EmbedderFakeConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Default Embedder",
-            "description": "Configuration for default embedder. It just outputs random numbers XD",
+            "humanReadableName": "Default Embedder",
+            "description": "Configuration for default embedder. It just outputs random numbers.",
+        }
+
+
+class EmbedderDumbConfig(EmbedderSettings):
+
+    _pyclass = PyObject = DumbEmbedder
+
+    class Config:
+        schema_extra = {
+            "name_human_readable": "Dumb Embedder",
+            "description": "Configuration for default embedder. It encodes the pairs of characters",
         }
 
 
@@ -35,7 +48,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "OpenAI Embedder",
+            "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
 
@@ -53,7 +66,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Azure OpenAI Embedder",
+            "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
         }
 
@@ -65,7 +78,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Cohere Embedder",
+            "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
         }
 
@@ -77,12 +90,13 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "HuggingFace Hub Embedder",
+            "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
         }
 
 
 SUPPORTED_EMDEDDING_MODELS = [
+    EmbedderDumbConfig,
     EmbedderFakeConfig,
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,

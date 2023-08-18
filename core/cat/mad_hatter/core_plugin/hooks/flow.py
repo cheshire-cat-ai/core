@@ -95,7 +95,54 @@ def before_cat_reads_message(user_message_json: dict, cat) -> dict:
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float, int, float, int, float]:
+def before_cat_recalls_memories(cat) -> None:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    Parameters
+    ----------
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    """
+    return None
+
+
+@hook(priority=0)
+def before_cat_recalls_episodic_memories(episodic_recall_config: dict, cat) -> dict:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved).
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
+
+    Parameters
+    ----------
+    episodic_recall_config : dict
+        Dictionary with data needed to recall episodic memories
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    episodic_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
+
+    """
+    return episodic_recall_config
+
+
+@hook(priority=0)
+def before_cat_recalls_declarative_memories(declarative_recall_config: dict, cat) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -105,28 +152,51 @@ def before_cat_recalls_memories(user_message: str, cat) -> tuple[int, float, int
 
     The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
     to the query in the vector memory (items with score under threshold are not retrieved)
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
 
     Parameters
     ----------
-    user_message : str
-        String with the text received from the user. This is used as a query to search into memories.
+    declarative_recall_config: dict
+        Dictionary with data needed to recall declarative memories
     cat : CheshireCat
-     Cheshire Cat instance.
+        Cheshire Cat instance.
 
     Returns
     -------
-    k_memory_type : int
-        Number of relevant memories to retrieve from the vector database.
-    threshold_memory_type : float
-        Threshold to filter memories according their similarity score with the query.
+    declarative_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
+
     """
-    k_episodic = 3
-    threshold_episodic = 0.7
-    k_declarative = 3
-    threshold_declarative = 0.7
-    k_procedural = 3
-    threshold_procedural = 0.7
-    return k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural
+    return declarative_recall_config
+
+
+@hook(priority=0)
+def before_cat_recalls_procedural_memories(procedural_recall_config: dict, cat) -> dict:
+    """Hook into semantic search in memories.
+
+    Allows to intercept when the Cat queries the memories using the embedded user's input.
+
+    The hook is executed just before the Cat searches for the meaningful context in both memories
+    and stores it in the *Working Memory*.
+
+    The hook return the values for maximum number (k) of items to retrieve from memory and the score threshold applied
+    to the query in the vector memory (items with score under threshold are not retrieved)
+    It also returns the embedded query (embedding) and the conditions on recall (metadata).
+
+    Parameters
+    ----------
+    procedural_recall_config: dict
+        Dictionary with data needed to recall tools from procedural memory
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    procedural_recall_config: dict
+        Edited dictionary that will be fed to the embedder.
+
+    """
+    return procedural_recall_config
 
 
 # Called just before the cat recalls memories.
@@ -142,8 +212,8 @@ def after_cat_recalls_memories(query: str, cat) -> None:
     query : str
         Query used to retrieve memories.
     cat : CheshireCat
-     Cheshire Cat instance.
-       
+        Cheshire Cat instance.
+
     """
     return None
 
@@ -152,10 +222,10 @@ def after_cat_recalls_memories(query: str, cat) -> None:
 # Here you can do HyDE embedding, condense recent conversation or condition recall query on something else important to your AI
 @hook(priority=0)
 def cat_recall_query(user_message: str, cat) -> str:
-    """Hook the Hypothetical Document Embedding (HyDE) search query.
+    """Hook the semantic search query.
 
-    This hook allows to edit the user's message used as a query for HyDE.
-    As a result, context retrieval can be conditioned enhancing such message.
+    This hook allows to edit the user's message used as a query for context retrieval from memories.
+    As a result, the retrieved context can be conditioned editing the user's message.
 
     Parameters
     ----------
@@ -171,12 +241,14 @@ def cat_recall_query(user_message: str, cat) -> str:
 
     Notes
     -----
-    HyDE [1]_ strategy exploits the user's message to generate a hypothetical answer. This is then applied to recall
+    For example, this hook is a suitable to perform Hypothetical Document Embedding (HyDE).
+    HyDE [1]_ strategy exploits the user's message to generate a hypothetical answer. This is then used to recall
     the relevant context from the memory.
+    An official plugin is available to test this technique.
 
     References
     ----------
-    .. [1] Gao, L., Ma, X., Lin, J., & Callan, J. (2022). Precise Zero-Shot Dense Retrieval without Relevance Labels.
+    [1] Gao, L., Ma, X., Lin, J., & Callan, J. (2022). Precise Zero-Shot Dense Retrieval without Relevance Labels.
        arXiv preprint arXiv:2212.10496.
 
     """

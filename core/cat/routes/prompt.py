@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 router = APIRouter()
 
 # get default prompt settings
-@router.get("/")
+@router.get("/settings/")
 def get_default_prompt_settings(request: Request):
     ccat = request.app.state.ccat
 

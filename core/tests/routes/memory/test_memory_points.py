@@ -19,20 +19,19 @@ def test_point_deleted(client):
     assert memory["page_content"] == "Hello Mad Hatter"
 
     # delete point (wrong collection)
-    res = client.delete(f"/memory/point/wrong_collection/{memory['id']}/")
-    assert res.status_code == 422
+    res = client.delete(f"/memory/collections/wrongcollection/points/{memory['id']}/")
+    assert res.status_code == 400
     assert res.json()["detail"]["error"] == "Collection does not exist."
 
     # delete point (wrong id)
-    res = client.delete(f"/memory/point/episodic/wrong_id/")
-    assert res.status_code == 422
+    res = client.delete(f"/memory/collections/episodic/points/wrong_id/")
+    assert res.status_code == 400
     assert res.json()["detail"]["error"] == "Point does not exist."
 
-    # delete point (all riiiiight)
-    res = client.delete(f"/memory/point/episodic/{memory['id']}/")
+    # delete point (all right)
+    res = client.delete(f"/memory/collections/episodic/points/{memory['id']}/")
     assert res.status_code == 200
-    assert res.json()["status"] == "success"
-    assert res.json()["deleted_point"] == memory['id']
+    assert res.json()["deleted"] == memory['id']
 
     # there is no point now
     params = {
@@ -44,6 +43,6 @@ def test_point_deleted(client):
     assert len(json["vectors"]["collections"]["episodic"]) == 0
 
     # delete again the same point (Qdrant in :memory: bug!)
-    #res = client.delete(f"/memory/point/episodic/{memory['id']}/")
+    #res = client.delete(f"/memory/episodic/point/{memory['id']}/")
     #assert res.status_code == 422
     #assert res.json()["detail"]["error"] == "Point does not exist."

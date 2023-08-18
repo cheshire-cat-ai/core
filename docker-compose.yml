@@ -10,6 +10,7 @@ services:
       - cheshire-cat-vector-memory
     environment:
       - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=true
       - CORE_HOST=${CORE_HOST:-localhost}
       - CORE_PORT=${CORE_PORT:-1865}
       - QDRANT_HOST=${QDRANT_HOST:-cheshire_cat_vector_memory}
@@ -31,8 +32,10 @@ services:
       - --reload # take away in prod
       - --reload-include
       - "plugin.json"
+      - --reload-exclude # TODO: can't exclude the whole tests/ folder, so excluding files with test_ or mock_ in their name
+      - "*test_*.*"
       - --reload-exclude
-      - "tests/**/*.*"
+      - "*mock_*.*"
     restart: unless-stopped
 
   cheshire-cat-vector-memory:

@@ -1,11 +1,11 @@
 [project]
 name = "Cheshire-Cat"
-description = "Open source and customizable AI architecture "
-version = "0.0.5"
+description = "Open source and customizable AI architecture"
+version = "1.0.1"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
-    { name = "Piero Savastano" }
+    { name = "Piero Savastano" }, { name = "Cheshire Cat AI Contributors" }
 ]
 dependencies = [
     "python-multipart==0.0.6",

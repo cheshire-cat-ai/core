@@ -161,7 +161,7 @@ class CatLogEngine:
             "original_caller": caller,
         }
 
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.py</cyan> <cyan>{extra[original_line]} ({extra[original_class]}.{extra[original_caller]})</cyan> => <level>{message}</level>"
+        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</cyan> => <level>{message}</level>"
 
         _logger = logger
 

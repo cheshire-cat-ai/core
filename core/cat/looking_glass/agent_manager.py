@@ -74,6 +74,7 @@ class AgentManager:
                 "chat_history",
                 "episodic_memory",
                 "declarative_memory",
+                "tools_output"
             ]
         )
 
@@ -85,6 +86,7 @@ class AgentManager:
 
         out = memory_chain(agent_input)
         out["output"] = out["text"]
+        del out["text"]
         return out
 
 
@@ -122,22 +124,47 @@ class AgentManager:
          #                                         " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
 
 
-        # Try to reply only with tools
+        # Try to get information from tools if there is some allowed
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
-        tools_are_enough = False
+        tools_result = None
         if len(allowed_tools) > 0:
             try:
-                out = self.execute_tool_agent(agent_input, allowed_tools)
-                tools_are_enough = out["output"] != None
+                tools_result = self.execute_tool_agent(agent_input, allowed_tools)
             except Exception as e:
                 error_description = str(e)
-                log(error_description, "ERROR") 
-                tools_are_enough = False
+                log(error_description, "ERROR")
 
-        # if tools were not enough, use memory # TODO: refine tool output?
-        if not tools_are_enough:
+        #Adding the tools_output key in agent input, needed by the memory chain
+        if tools_result != None:
+            
+            # Extract of intermediate steps in the format ((tool_name, tool_input), output)
+            used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
+
+            # Get the name of the tools that have return_direct
+            return_direct_tools = []
+            for t in allowed_tools:
+                if t.return_direct:
+                    return_direct_tools.append(t.name)
+
+            # execute_tool_agent returns immediately when a tool with return_direct is called, 
+            # so if one is used it is definitely the last one used
+            if used_tools[-1][0][0] in return_direct_tools:
+                # intermediate_steps still contains the information of all the tools used even if their output is not returned
+                tools_result["intermediate_steps"] = used_tools
+                return tools_result
+
+            # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
+            # so no relevant information has been obtained from the tools.
+            agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
+
+            # Execute the memory chain
             out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
+
+            # If some tools are used the intermediate step are added to the agent output
+            out["intermediate_steps"] = used_tools
         else:
-            out["intermediate_steps"] = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), out["intermediate_steps"]))
+            agent_input["tools_output"] = ""
+            # Execute the memory chain
+            out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
 
         return out

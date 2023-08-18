@@ -6,7 +6,7 @@ from tests.utils import send_websocket_message
 def test_websocket(client):
         
         # use fake LLM
-        response = client.put("/settings/llm/LLMDefaultConfig", json={})
+        response = client.put("/llm/settings/LLMDefaultConfig", json={})
         assert response.status_code == 200
 
         # send websocket message

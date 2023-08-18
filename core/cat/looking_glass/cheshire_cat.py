@@ -32,43 +32,9 @@ class CheshireCat:
         At init time the Cat executes the bootstrap.
         """
 
-
         # bootstrap the cat!
-        self.bootstrap()
-
-        # queue of cat messages not directly related to last user input
-        # i.e. finished uploading a file
-        self.web_socket_notifications = []
-
-    def bootstrap(self):
-        """Cat's bootstrap.
-
-        This method is called when the Cat is instantiated and whenever LLM, embedder, agent or memory need
-        to be reinstantiated (for example an LLM change at runtime).
-
-        Notes
-        -----
-        The pipeline of execution of the functions is important as some method rely on the previous ones.
-        Two hooks allows to intercept the pipeline before and after the bootstrap.
-        The pipeline is:
-
-            1. Load the plugins, i.e. the MadHatter.
-            2. Execute the `before_cat_bootstrap` hook.
-            3. Load Natural Language Processing related stuff, i.e. the Language Models, the prompts, etc.
-            4. Load the memories, i.e. the LongTermMemory and the WorkingMemory.
-            5. Embed the tools, i.e. insert the tools in the procedural memory.
-            6. Load the AgentManager.
-            7. Load the RabbitHole.
-            8. Execute the `after_cat_bootstrap` hook.
-
-        See Also
-        --------
-        before_cat_bootstrap
-        after_cat_bootstrap
-        """
-
-        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
-        self.load_plugins()
+         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
+        self.mad_hatter = MadHatter(self)
 
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap")
@@ -91,13 +57,15 @@ class CheshireCat:
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
+        # queue of cat messages not directly related to last user input
+        # i.e. finished uploading a file
+        self.web_socket_notifications = []      
 
     def load_natural_language(self):
         """Load Natural Language related objects.
 
         The method exposes in the Cat all the NLP related stuff. Specifically, it sets the language models
-        (LLM and Embedder), the HyDE and summarization prompts and relative Langchain chains and the main prompt with
-        default settings.
+        (LLM and Embedder) and the main prompt with default settings.
 
         Notes
         -----
@@ -113,30 +81,11 @@ class CheshireCat:
         --------
         get_language_model
         get_language_embedder
-        hypothetical_embedding_prompt
-        summarization_prompt
         agent_prompt_prefix
         """
         # LLM and embedder
         self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
-
-        # HyDE chain
-        hypothesis_prompt = langchain.PromptTemplate(
-            input_variables=["input"],
-            template=self.mad_hatter.execute_hook("hypothetical_embedding_prompt"),
-        )
-
-        self.hypothetis_chain = langchain.chains.LLMChain(prompt=hypothesis_prompt, llm=self._llm)
-
-        self.summarization_prompt = self.mad_hatter.execute_hook("summarization_prompt")
-
-        # custom summarization chain
-        self.summarization_chain = langchain.chains.LLMChain(
-            llm=self._llm,
-            verbose=False,
-            prompt=langchain.PromptTemplate(template=self.summarization_prompt, input_variables=["text"]),
-        )
 
         # set the default prompt settings
         self.default_prompt_settings = {
@@ -158,11 +107,6 @@ class CheshireCat:
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
 
-    def load_plugins(self):
-        """Instantiate the plugins manager."""
-        # Load plugin system
-        self.mad_hatter = MadHatter(self)
-
     def recall_relevant_memories_to_working_memory(self):
         """Retrieve context from memory.
 
@@ -172,66 +116,75 @@ class CheshireCat:
         Notes
         -----
         The user's message is used as a query to make a similarity search in the Cat's vector memories.
-        Two hooks allow to customize the recall pipeline before and after it is done.
+        Five hooks allow to customize the recall pipeline before and after it is done.
 
         See Also
         --------
         before_cat_recalls_memories
+        before_cat_recalls_episodic_memories
+        before_cat_recalls_declarative_memories
+        before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
         prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
-        # hook to do something before recall begins
-        k_episodic, threshold_episodic, k_declarative, threshold_declarative, k_procedural, threshold_procedural = self.mad_hatter.execute_hook(
-            "before_cat_recalls_memories", user_message)
-
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
         log(f'Recall query: "{memory_query_text}"')
 
-        ##### embed recall query
+        # Embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
         self.working_memory["memory_query"] = memory_query_text
 
-        ##### Episodic memory
-        if prompt_settings["use_episodic_memory"]:
-            # recall relevant memories (episodic)
-            episodic_memories = self.memory.vectors.episodic.recall_memories_from_embedding(
-                embedding=memory_query_embedding,
-                k=k_episodic,
-                threshold=threshold_episodic,
-                metadata={
-                    "source": user_id
-                }
-            )
-        else:
-            episodic_memories = []
+        # hook to do something before recall begins
+        self.mad_hatter.execute_hook("before_cat_recalls_memories")
 
-        self.working_memory["episodic_memories"] = episodic_memories
+        # Setting default recall configs for each memory
+        default_episodic_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": {"source": user_id},
+        }
 
-        ##### Declarative memory
-        if prompt_settings["use_declarative_memory"]:
-            # recall relevant memories (declarative)
-            declarative_memories = self.memory.vectors.declarative.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_declarative, threshold=threshold_declarative
-            )
-        else:
-            declarative_memories = []
+        default_declarative_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
 
-        self.working_memory["declarative_memories"] = declarative_memories
+        default_procedural_recall_config = {
+            "embedding": memory_query_embedding,
+            "k": 3,
+            "threshold": 0.7,
+            "metadata": None,
+        }
 
-        ##### Procedural memory
-        if prompt_settings["use_procedural_memory"]:
-            # recall relevant tools (procedural collection)
-            tools = self.memory.vectors.procedural.recall_memories_from_embedding(
-                embedding=memory_query_embedding, k=k_procedural, threshold=threshold_procedural
-            )
-        else:
-            tools = []
+        # hooks to change recall configs for each memory
+        recall_configs = [
+            self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", default_episodic_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_procedural_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)
+        ]
 
-        self.working_memory["procedural_memories"] = tools
+        memory_types = self.memory.vectors.collections.keys()
+
+        for config, memory_type in zip(recall_configs, memory_types):
+            setting = f"use_{memory_type}_memory"
+            memory_key = f"{memory_type}_memories"
+
+            if prompt_settings[setting]:
+                # recall relevant memories
+                vector_memory = getattr(self.memory.vectors, memory_type)
+                memories = vector_memory.recall_memories_from_embedding(**config)
+
+            else:
+                memories = []
+
+            self.working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
@@ -337,11 +290,11 @@ class CheshireCat:
 
     def get_base_path(self):
         """Allows the Cat expose the base path."""
-        return os.path.join(os.getcwd(), "cat/")
+        return "cat/"
 
     def get_plugin_path(self):
         """Allows the Cat expose the plugins path."""
-        return os.path.join(os.getcwd(), "cat/plugins/")
+        return os.path.join(self.get_base_path(), "plugins/")
 
     def get_static_url(self):
         """Allows the Cat expose the static server url."""
@@ -349,7 +302,7 @@ class CheshireCat:
     
     def get_static_path(self):
         """Allows the Cat expose the static files path."""
-        return os.path.join(os.getcwd(), "cat/static/")
+        return os.path.join(self.get_base_path(), "static/")
 
     def __call__(self, user_message_json):
         """Call the Cat instance.
