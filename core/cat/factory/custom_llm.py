@@ -1,7 +1,6 @@
 from typing import Optional, List, Any, Mapping, Dict
 import requests
 from langchain.llms.base import LLM
-from cat.log import log
 
 
 class LLMDefault(LLM):
@@ -44,11 +43,6 @@ class LLMCustom(LLM):
             "options": self.options
         }
 
-        headers = {
-            'accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-
         try:
             response_json = requests.post(self.url, json=request_body).json()
         except Exception as exc:
@@ -57,7 +51,7 @@ class LLMCustom(LLM):
 
         generated_text = response_json["text"]
 
-        return f"AI: {generated_text}"
+        return generated_text
 
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
