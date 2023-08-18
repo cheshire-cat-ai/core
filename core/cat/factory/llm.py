@@ -36,7 +36,6 @@ class LLMDefaultConfig(LLMSettings):
 
 
 class LLMCustomConfig(LLMSettings):
-
     url: str
     auth_key: str = "optional_auth_key"
     options: str = "{}"
@@ -45,16 +44,20 @@ class LLMCustomConfig(LLMSettings):
     # instantiate Custom LLM from configuration
     @classmethod
     def get_llm_from_config(cls, config):
+        options = config["options"]
         # options are inserted as a string in the admin
-        if type(config["options"]) == str:
-            config["options"] = json.loads(config["options"])
+        if isinstance(options, str):
+            if options != "":
+                config["options"] = json.loads(options)
+            else:
+                config["options"] = {}
 
         return cls._pyclass(**config)
 
     class Config:
         schema_extra = {
             "humanReadableName": "Custom LLM",
-            "description": 
+            "description":
                 "LLM on a custom endpoint. "
                 "See docs for examples.",
         }
@@ -80,7 +83,7 @@ class LLMOpenAIConfig(LLMSettings):
     class Config:
         schema_extra = {
             "humanReadableName": "OpenAI GPT-3",
-            "description": 
+            "description":
                 "OpenAI GPT-3. More expensive but "
                 "also more flexible than ChatGPT.",
         }
@@ -138,6 +141,7 @@ class LLMCohereConfig(LLMSettings):
             "description": "Configuration for Cohere language model",
         }
 
+
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/huggingface_textgen_inference.html
 class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     inference_server_url: str
@@ -154,6 +158,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
             "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
         }
+
 
 class LLMHuggingFaceHubConfig(LLMSettings):
     # model_kwargs = {
