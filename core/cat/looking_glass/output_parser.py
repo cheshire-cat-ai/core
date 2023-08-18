@@ -23,8 +23,11 @@ class ToolOutputParser(AgentOutputParser):
         if not match:
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
         
-        # Check if agent decidet not tool is usefull
-        if "none_of_the_others" in llm_output:
+        # Extract action
+        action = match.group(1).strip()
+        action_input = match.group(2)
+
+        if action == "none_of_the_others":
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
@@ -32,8 +35,5 @@ class ToolOutputParser(AgentOutputParser):
                 log=llm_output,
             )
 
-        # Extract action
-        action = match.group(1).strip()
-        action_input = match.group(2)
         # Return the action and action input
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
