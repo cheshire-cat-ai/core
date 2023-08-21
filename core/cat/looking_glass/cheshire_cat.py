@@ -376,7 +376,7 @@ class CheshireCat:
             # We grab the LLM output here anyway, so small and
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
-            log("LLM does not respect prompt instructions", "ERROR")
+
             log(error_description, "ERROR")
             if not "Could not parse LLM output: `" in error_description:
                 raise e
