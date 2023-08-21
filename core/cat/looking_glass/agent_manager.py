@@ -1,11 +1,6 @@
-import re
-import traceback
-import json
-from copy import copy
-
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain.agents import AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass.prompts import ToolPromptTemplate
 from cat.looking_glass.output_parser import ToolOutputParser
@@ -33,7 +28,7 @@ class AgentManager:
         allowed_tools_names = [t.name for t in allowed_tools]
 
         prompt = ToolPromptTemplate(
-            #template= TODO: get from hook,
+            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions"),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -109,20 +104,7 @@ class AgentManager:
             return fast_reply
 
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
-        #prompt_format_instructions = mad_hatter.execute_hook("agent_prompt_instructions")
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
-
-        #input_variables = [
-        #    "input",
-        #    "chat_history",
-        #    "episodic_memory",
-        #    "declarative_memory",
-        #    "agent_scratchpad",
-        #]
-
-        #input_variables = mad_hatter.execute_hook("before_agent_creates_prompt", input_variables,
-         #                                         " ".join([prompt_prefix, prompt_format_instructions, prompt_suffix]))
-
 
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
 

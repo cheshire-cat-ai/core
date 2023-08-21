@@ -4,34 +4,9 @@ from typing import List
 from langchain.agents.tools import BaseTool
 from langchain.prompts import StringPromptTemplate
 
-# TODO: get by hook
-DEFAULT_TOOL_TEMPLATE = """Answer the following question: `{input}`
-You can only reply using these tools:
-
-{tools}
-none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
-
-If you want to use tools, use the following format:
-Action: the name of the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-...
-Action: the name of the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-
-When you have a final answer respond with:
-Final Answer: the final answer to the original input question
-
-Begin!
-
-Question: {input}
-{agent_scratchpad}"""
-
-
 class ToolPromptTemplate(StringPromptTemplate):
     # The template to use
-    template: str = DEFAULT_TOOL_TEMPLATE
+    template: str
     # The list of tools available
     tools: List[BaseTool]
 
