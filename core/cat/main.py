@@ -1,6 +1,8 @@
 import os
 from contextlib import asynccontextmanager
 
+import uvicorn
+
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
@@ -90,3 +92,22 @@ async def validation_exception_handler(request, exc):
 
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
+
+# RUN!
+if __name__ == "__main__":
+    
+    # debugging utilities, to deactivate put `DEBUG=false` in .env
+    debug_config = {}
+    if os.getenv("DEBUG", "true") == "true":
+        debug_config = {
+            "reload": True,
+            "reload_includes": ["plugin.json"],
+            "reload_excludes": ["*test_*.*", "*mock_*.*"]
+        }
+
+    uvicorn.run(
+        "cat.main:cheshire_cat_api",
+        host="0.0.0.0",
+        port=80,
+        **debug_config
+    )

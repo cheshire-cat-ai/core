@@ -18,24 +18,15 @@ services:
       - CORE_USE_SECURE_PROTOCOLS=${CORE_USE_SECURE_PROTOCOLS:-}
       - API_KEY=${API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
+      - DEBUG=${DEBUG:-true}
     ports:
       - ${CORE_PORT:-1865}:80
     volumes:
       - ./core:/app
     command:
-      - uvicorn
-      - cat.main:cheshire_cat_api
-      - --host
-      - "0.0.0.0"
-      - --port
-      - "80"
-      - --reload # take away in prod
-      - --reload-include
-      - "plugin.json"
-      - --reload-exclude # TODO: can't exclude the whole tests/ folder, so excluding files with test_ or mock_ in their name
-      - "*test_*.*"
-      - --reload-exclude
-      - "*mock_*.*"
+      - python
+      - "-m"
+      - "cat.main"
     restart: unless-stopped
 
   cheshire-cat-vector-memory:
