@@ -27,12 +27,14 @@ class RabbitHole:
     def __init__(self, cat):
         self.cat = cat
 
-        self.file_handlers = {
+        file_handlers = {
             "application/pdf": PDFMinerParser(),
             "text/plain": TextParser(),
             "text/markdown": TextParser(),
             "text/html": BS4HTMLParser()
         }
+
+        self.file_handlers = cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
 
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -44,7 +46,7 @@ class RabbitHole:
 
         Notes
         -----
-        This method allows to upload a JSON file containing vector and text memories directly to the declarative memory.
+        This method allows uploading a JSON file containing vector and text memories directly to the declarative memory.
         When doing this, please, make sure the embedder used to export the memories is the same as the one used
         when uploading.
         The method also performs a check on the dimensionality of the embeddings (i.e. length of each vector).
@@ -230,7 +232,7 @@ class RabbitHole:
     def send_rabbit_thought(self, thought):
         """Append a message to the notification list.
 
-        This method receive a string and create the message to append to the list of notifications.
+        This method receives a string and creates the message to append to the list of notifications.
 
         Parameters
         ----------
@@ -244,7 +246,6 @@ class RabbitHole:
             "content": thought,
             "why": {},
         })
-
 
     def store_documents(self, docs: List[Document], source: str) -> None:
         """Add documents to the Cat's declarative memory.
@@ -278,11 +279,11 @@ class RabbitHole:
 
         # classic embed
         time_last_notification = time.time()
-        time_interval = 10 # a notification every 10 secs
+        time_interval = 10  # a notification every 10 secs
         for d, doc in enumerate(docs):
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
-                perc_read = int( d / len(docs) * 100 )
+                perc_read = int(d / len(docs) * 100)
                 self.send_rabbit_thought(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
@@ -308,7 +309,7 @@ class RabbitHole:
         # notify client
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
-        
+
         self.send_rabbit_thought(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")

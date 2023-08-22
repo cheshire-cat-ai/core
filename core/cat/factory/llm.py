@@ -32,6 +32,7 @@ class LLMDefaultConfig(LLMSettings):
                 "A dumb LLM just telling that the Cat is not configured. "
                 "There will be a nice LLM here "
                 "once consumer hardware allows it.",
+            "link": ""
         }
 
 
@@ -60,6 +61,7 @@ class LLMCustomConfig(LLMSettings):
             "description":
                 "LLM on a custom endpoint. "
                 "See docs for examples.",
+            "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/"
         }
 
 
@@ -72,6 +74,7 @@ class LLMOpenAIChatConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "OpenAI ChatGPT",
             "description": "Chat model from OpenAI",
+            "link": "https://platform.openai.com/docs/models/overview"
         }
 
 
@@ -86,6 +89,7 @@ class LLMOpenAIConfig(LLMSettings):
             "description":
                 "OpenAI GPT-3. More expensive but "
                 "also more flexible than ChatGPT.",
+            "link": "https://platform.openai.com/docs/models/overview"
         }
 
 
@@ -106,6 +110,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
         }
 
 
@@ -127,6 +132,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
         }
 
 
@@ -139,6 +145,7 @@ class LLMCohereConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "Cohere",
             "description": "Configuration for Cohere language model",
+            "link": "https://docs.cohere.com/docs/models"
         }
 
 
@@ -157,6 +164,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
+            "link": "https://huggingface.co/text-generation-inference"
         }
 
 
@@ -174,6 +182,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "HuggingFace Hub",
             "description": "Configuration for HuggingFace Hub language models",
+            "link": "https://huggingface.co/models"
         }
 
 
@@ -188,6 +197,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
             "humanReadableName": "HuggingFace Endpoint",
             "description":
                 "Configuration for HuggingFace Endpoint language models",
+            "link": "https://huggingface.co/inference-endpoints"
         }
 
 
@@ -200,6 +210,7 @@ class LLMAnthropicConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "Anthropic",
             "description": "Configuration for Anthropic language model",
+            "link": "https://www.anthropic.com/product"
         }
 
 
@@ -212,6 +223,7 @@ class LLMGooglePalmConfig(LLMSettings):
         schema_extra = {
             "humanReadableName": "Google PaLM",
             "description": "Configuration for Google PaLM language model",
+            "link": "https://developers.generativeai.google/models/language"
         }
 
 
