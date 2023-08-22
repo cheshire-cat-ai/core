@@ -8,7 +8,6 @@ import time
 from typing import List, Dict
 from datetime import timedelta
 from langchain.docstore.document import Document
-from langchain.agents.conversational import prompt
 
 from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook
@@ -87,13 +86,32 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
-    # Check if procedural memory is disabled
-    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
-    if not prompt_settings["use_procedural_memory"]:
-        return ""
+    DEFAULT_TOOL_TEMPLATE = """Answer the following question: `{input}`
+    You can only reply using these tools:
+
+    {tools}
+    none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
+
+    If you want to use tools, use the following format:
+    Action: the name of the action to take, should be one of [{tool_names}]
+    Action Input: the input to the action
+    Observation: the result of the action
+    ...
+    Action: the name of the action to take, should be one of [{tool_names}]
+    Action Input: the input to the action
+    Observation: the result of the action
+
+    When you have a final answer respond with:
+    Final Answer: the final answer to the original input question
+
+    Begin!
+
+    Question: {input}
+    {agent_scratchpad}"""
+
 
     # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
-    return prompt.FORMAT_INSTRUCTIONS
+    return DEFAULT_TOOL_TEMPLATE
 
 
 @hook(priority=0)
