@@ -1,9 +1,16 @@
 """Various utiles used from the projects."""
 
+from abc import ABC
+from typing import Iterator
 from datetime import timedelta
 
+from unstructured.partition.auto import partition
+from langchain.docstore.document import Document
+from langchain.document_loaders.base import BaseBlobParser
+from langchain.document_loaders.blob_loaders.schema import Blob
 
-def to_camel_case(text :str ) -> str:
+
+def to_camel_case(text: str) -> str:
     """Format string to camel case.
 
     Takes a string of words separated by either hyphens or underscores and returns a string of words in camel case.
@@ -67,3 +74,32 @@ def verbal_timedelta(td: timedelta) -> str:
         return "{} ago".format(abs_delta)
     else:
         return "{} ago".format(abs_delta)
+
+
+class DocxParser(BaseBlobParser, ABC):
+    """Custom parser for `.docx` and `.doc` files."""
+    def lazy_parse(self, blob: Blob) -> Iterator[Document]:
+        """This method overrides the `BaseBlobParser` to lazy parse Microsoft `.docx` and `.doc` files.
+
+        Parameters
+        ----------
+        blob: Blob
+            Raw data the `RabbitHole` receives when a file is ingested.
+
+        Returns
+        -------
+        Iterator[Document]
+            Iterator with the parsed text converted to Langchain documents.
+
+        """
+
+        # Load raw data as a file-like object with binary content
+        with blob.as_bytes_io() as file:
+            # Get the file elements using Unstructured
+            elements = partition(file=file)
+
+        # Retrieve the text from each element and format it in a text
+        elements = [e.text for e in elements]
+        text = "\n".join(elements)
+
+        yield Document(page_content=text, metadata={})

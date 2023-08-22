@@ -1,6 +1,5 @@
 import os
 import time
-import math
 import json
 import mimetypes
 from typing import List, Union
@@ -8,7 +7,6 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 
-from cat.log import log
 from starlette.datastructures import UploadFile
 from langchain.docstore.document import Document
 from qdrant_client.http import models
@@ -18,6 +16,9 @@ from langchain.document_loaders.parsers.generic import MimeTypeBasedParser
 from langchain.document_loaders.parsers.txt import TextParser
 from langchain.document_loaders.blob_loaders.schema import Blob
 from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
+
+from cat.log import log
+from cat.utils import DocxParser
 
 
 class RabbitHole:
@@ -31,7 +32,9 @@ class RabbitHole:
             "application/pdf": PDFMinerParser(),
             "text/plain": TextParser(),
             "text/markdown": TextParser(),
-            "text/html": BS4HTMLParser()
+            "text/html": BS4HTMLParser(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": DocxParser(),
+            "application/msword": DocxParser()
         }
 
     def ingest_memory(self, file: UploadFile):
