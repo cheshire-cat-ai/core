@@ -1,6 +1,8 @@
+import os
 from typing import Optional, List, Any, Mapping, Dict
 import requests
 from langchain.llms.base import LLM
+from langchain.llms.openai import OpenAI
 
 
 class LLMDefault(LLM):
@@ -62,3 +64,11 @@ class LLMCustom(LLM):
             "auth_key": self.auth_key,
             "options": self.options
         }
+
+
+class CustomOpenAI(OpenAI):
+    def __init__(self, url):
+        s = self.__super__()
+        s.openai_api_base = url
+        if not os.environ['OPENAI_API_KEY']:
+            os.environ['OPENAI_API_KEY'] = " "

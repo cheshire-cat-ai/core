@@ -3,7 +3,7 @@ from typing import Dict
 import json
 from pydantic import PyObject, BaseSettings
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
 
 
 # Base class to manage LLM configuration.
@@ -59,6 +59,16 @@ class LLMCustomConfig(LLMSettings):
                 "See docs for examples.",
         }
 
+
+class LLMLlamaCppConfig(LLMSettings):
+    url: str
+    _pyclass: PyObject = CustomOpenAI
+
+    class Config:
+        schema_extra = {
+            "humanReadableName": "Self-hosted llama-cpp-python",
+            "description": "Self-hosted llama-cpp-python compatible LLM",
+        }
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
@@ -222,7 +232,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
-    LLMGooglePalmConfig
+    LLMGooglePalmConfig,
+    LLMLlamaCppConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know
