@@ -8,10 +8,30 @@ These hooks allow to intercept the uploaded documents at different places before
 
 from typing import List
 
-from cat.log import log
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
+
+
+@hook(priority=0)
+def rabbithole_instantiates_parsers(file_handlers: dict, cat) -> dict:
+    """Hook the available parsers for ingesting files in the declarative memory.
+
+    Allows replacing or extending existing supported mime types and related parsers to customize the file ingestion.
+
+    Parameters
+    ----------
+    file_handlers : dict
+        Keys are the supported mime types and values are the related parsers.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    file_handlers : dict
+        Edited dictionary of supported mime types and related parsers.
+    """
+    return file_handlers
 
 
 # Hook called just before of inserting a document in vector memory
@@ -19,7 +39,7 @@ from langchain.docstore.document import Document
 def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
     """Hook the `Document` before is inserted in the vector memory.
 
-    Allows to edit and enhance a single `Document` before the *RabbitHole* add it to the declarative vector memory.
+    Allows editing and enhancing a single `Document` before the *RabbitHole* add it to the declarative vector memory.
 
     Parameters
     ----------
@@ -51,7 +71,7 @@ def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
 def before_rabbithole_splits_text(doc: Document, cat) -> Document:
     """Hook the `Document` before is split.
 
-    Allows to edit the whole uploaded `Document` before the *RabbitHole* recursively splits it in shorter ones.
+    Allows editing the whole uploaded `Document` before the *RabbitHole* recursively splits it in shorter ones.
 
     For instance, the hook allows to change the text or edit/add metadata.
 
@@ -76,7 +96,7 @@ def before_rabbithole_splits_text(doc: Document, cat) -> Document:
 def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> List[Document]:
     """Hook into the recursive split pipeline.
 
-    Allows to edit the recursive split the *RabbitHole* applies to chunk the ingested documents.
+    Allows editing the recursive split the *RabbitHole* applies to chunk the ingested documents.
 
     This is applied when ingesting a documents and urls from a script, using an endpoint or from the GUI.
 
@@ -120,7 +140,7 @@ def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> Li
 def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document]:
     """Hook the `Document` after is split.
 
-    Allows to edit the list of `Document` right after the *RabbitHole* chunked them in smaller ones.
+    Allows editing the list of `Document` right after the *RabbitHole* chunked them in smaller ones.
 
     Parameters
     ----------
@@ -146,7 +166,7 @@ def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document
 def before_rabbithole_stores_documents(docs: List[Document], cat) -> List[Document]:
     """Hook into the memory insertion pipeline.
 
-    Allows to modify how the list of `Document` is inserted in the vector memory.
+    Allows modifying how the list of `Document` is inserted in the vector memory.
 
     For example, this hook is a good point to summarize the incoming documents and save both original and
     summarized contents.
