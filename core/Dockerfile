@@ -23,6 +23,7 @@ RUN pip install -U pip && \
     python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')" &&\
     python3 install_plugin_dependencies.py
 
+RUN pip install debugpy -t /tmp
 
 ### FINISH ###
 # ready to go (docker-compose up)

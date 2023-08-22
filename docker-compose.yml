@@ -20,10 +20,15 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
     ports:
       - ${CORE_PORT:-1865}:80
+      - 5678:5678
     volumes:
       - ./core:/app
     command:
-      - uvicorn
+      - python
+      - /tmp/debugpy
+      - --listen
+      - "0.0.0.0:5678"
+      - /usr/local/bin/uvicorn
       - cat.main:cheshire_cat_api
       - --host
       - "0.0.0.0"
