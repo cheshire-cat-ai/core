@@ -1,14 +1,16 @@
 import os
+import sys
 import json
 import glob
 import importlib
+import traceback
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook
 from cat.utils import to_camel_case
-from cat.log import log
+from cat.log import log, get_log_level
 
 # this class represents a plugin in memory
 # the plugin itsefl is managed as much as possible unix style
@@ -48,15 +50,28 @@ class Plugin:
 
         # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
-            self.activate()
+            try:
+                self.activate()
+            except Exception as e:
+                raise e
 
     def activate(self):
-        self._active = True
-        # lists of hooks and tools
-        self._hooks, self._tools = self._load_hooks_and_tools()
+        try:
+            # lists of hooks and tools
+            self._hooks, self._tools = self._load_hooks_and_tools()
+            self._active = True
+        except Exception as e:
+            raise e
 
     def deactivate(self):
         self._active = False
+
+        # Remove the imported modules
+        for py_file in self.py_files:
+            py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
+            log(f"Remove module {py_filename}", "DEBUG")
+            sys.modules.pop(py_filename)
+        
         self._hooks = []
         self._tools = []
 
@@ -163,11 +178,19 @@ class Plugin:
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
-            # save a reference to decorated functions
-            plugin_module = importlib.import_module(py_filename)
-            hooks += getmembers(plugin_module, self._is_cat_hook)
-            tools += getmembers(plugin_module, self._is_cat_tool)
+            log(f"Import module {py_filename}", "DEBUG")
 
+            # save a reference to decorated functions
+            try:
+                plugin_module = importlib.import_module(py_filename)
+                hooks += getmembers(plugin_module, self._is_cat_hook)
+                tools += getmembers(plugin_module, self._is_cat_tool)
+            except Exception as e:
+                log(f"Error in {py_filename}: {str(e)}","DEBUG")
+                if get_log_level() == "DEBUG":
+                    traceback.print_exc()
+                raise Exception(f"Unable to load the plugin {self._id}")
+            
         # clean and enrich instances
         hooks = list(map(self._clean_hook, hooks))
         tools = list(map(self._clean_tool, tools))
