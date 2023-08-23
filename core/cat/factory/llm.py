@@ -1,5 +1,5 @@
 import langchain
-from typing import Dict
+from typing import Dict, List
 import json
 from pydantic import PyObject, BaseSettings
 
@@ -62,6 +62,12 @@ class LLMCustomConfig(LLMSettings):
 
 class LLMLlamaCppConfig(LLMSettings):
     url: str
+    temperature: float = 0.01
+    max_tokens: int = 512
+    stop: str = "Human:,###"
+    top_k: int = 40
+    top_p: float = 0.95
+    repeat_penalty: float = 1.1
     _pyclass: PyObject = CustomOpenAI
 
     class Config:
@@ -223,6 +229,7 @@ class LLMGooglePalmConfig(LLMSettings):
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
     LLMCustomConfig,
+    LLMLlamaCppConfig,
     LLMOpenAIChatConfig,
     LLMOpenAIConfig,
     LLMCohereConfig,
@@ -232,8 +239,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
-    LLMGooglePalmConfig,
-    LLMLlamaCppConfig
+    LLMGooglePalmConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know
