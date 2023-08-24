@@ -1,6 +1,7 @@
 from typing import Optional, List, Any, Mapping, Dict
 import requests
 from langchain.llms.base import LLM
+from langchain.llms.openai import OpenAI
 
 
 class LLMDefault(LLM):
@@ -61,3 +62,21 @@ class LLMCustom(LLM):
             "auth_key": self.auth_key,
             "options": self.options
         }
+
+
+class CustomOpenAI(OpenAI):
+    def __init__(self, url, temperature, max_tokens, stop, top_k, top_p, repeat_penalty):
+        model_kwargs = {'repeat_penalty': repeat_penalty}
+        if stop:
+            model_kwargs['stop'] = stop.split(',')
+            print(model_kwargs)
+
+        super().__init__(openai_api_key=" ", 
+                         model=url.split("/")[-1], 
+                         temperature=temperature,
+                         max_tokens=max_tokens,
+                         top_k=top_k,
+                         top_p=top_p,
+                         model_kwargs=model_kwargs
+                         )
+        self.openai_api_base = url
