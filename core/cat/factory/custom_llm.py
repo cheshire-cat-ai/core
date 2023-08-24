@@ -1,6 +1,8 @@
+import os
 from typing import Optional, List, Any, Mapping, Dict
 import requests
 from langchain.llms.base import LLM
+from langchain.llms.openai import OpenAI
 
 
 class LLMDefault(LLM):
@@ -61,3 +63,22 @@ class LLMCustom(LLM):
             "auth_key": self.auth_key,
             "options": self.options
         }
+
+
+class CustomOpenAI(OpenAI):
+    def __init__(self, **kwargs):
+
+        model_kwargs = {
+            'repeat_penalty': kwargs.pop('repeat_penalty')
+        }
+        
+        stop = kwargs.pop('stop', None)
+        if stop:
+            model_kwargs['stop'] = stop.split(',')
+
+        super().__init__(
+                    openai_api_key=" ",  
+                    model_kwargs=model_kwargs,
+                    **kwargs
+                )
+        self.openai_api_base = os.path.join(kwargs['url'], "v1")
