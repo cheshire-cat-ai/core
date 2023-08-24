@@ -113,6 +113,8 @@ class MadHatter:
             # if plugin is valid, keep a reference
             self.plugins[plugin.id] = plugin
         except Exception as e:
+            # Something happened while loading the plugin.
+            # Print the error and go on with the others.
             log(str(e), "ERROR")
 
     # Load hooks and tools of the active plugins into MadHatter 
@@ -224,11 +226,8 @@ class MadHatter:
                 self.active_plugins.remove(plugin_id)
             else:
                 log(f"Toggle plugin {plugin_id}: Activate", "WARNING")
-                try:
-                    # Activate the plugin
-                    self.plugins[plugin_id].activate()
-                except Exception as e:
-                    raise e
+                # Activate the plugin
+                self.plugins[plugin_id].activate()
                 # Ass the plugin in the list of active plugins
                 self.active_plugins.append(plugin_id)
 

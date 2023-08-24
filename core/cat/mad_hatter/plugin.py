@@ -50,18 +50,12 @@ class Plugin:
 
         # all plugins start active, they can be deactivated/reactivated from endpoint
         if active:
-            try:
-                self.activate()
-            except Exception as e:
-                raise e
+            self.activate()
 
     def activate(self):
-        try:
-            # lists of hooks and tools
-            self._hooks, self._tools = self._load_hooks_and_tools()
-            self._active = True
-        except Exception as e:
-            raise e
+        # lists of hooks and tools
+        self._hooks, self._tools = self._load_hooks_and_tools()
+        self._active = True
 
     def deactivate(self):
         self._active = False
@@ -186,7 +180,7 @@ class Plugin:
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
             except Exception as e:
-                log(f"Error in {py_filename}: {str(e)}","DEBUG")
+                log(f"Error in {py_filename}: {str(e)}","ERROR")
                 if get_log_level() == "DEBUG":
                     traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}")
