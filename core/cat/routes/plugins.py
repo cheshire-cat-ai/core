@@ -158,12 +158,17 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
             detail = { "error": "Plugin not found" }
         )
     
-    # toggle plugin
-    ccat.mad_hatter.toggle_plugin(plugin_id)
-
-    return {
-        "info": f"Plugin {plugin_id} toggled"
-    }
+    try:
+        # toggle plugin
+        ccat.mad_hatter.toggle_plugin(plugin_id)
+        return {
+            "info": f"Plugin {plugin_id} toggled"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = { "error": str(e)}
+        ) 
 
 
 @router.get("/{plugin_id}")
