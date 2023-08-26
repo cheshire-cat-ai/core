@@ -1,11 +1,7 @@
 import os
-import shutil
 import pytest
-from inspect import isfunction
 
 from cat.mad_hatter.mad_hatter import Plugin
-from cat.mad_hatter.decorators import CatHook, CatTool
-
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
