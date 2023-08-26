@@ -37,7 +37,7 @@ def test_create_plugin_empty_folder():
     assert f"Cannot create" in str(e.value)
 
 
-def test_create_non_active_plugin():
+def test_create_plugin():
 
     plugin = Plugin(mock_plugin_path)
 
