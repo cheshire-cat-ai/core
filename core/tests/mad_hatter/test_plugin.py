@@ -13,7 +13,7 @@ mock_plugin_path = "tests/mocks/mock_plugin/"
 @pytest.fixture
 def plugin():
 
-    p = Plugin(mock_plugin_path, active=True)
+    p = Plugin(mock_plugin_path)
     
     yield p
     
@@ -25,7 +25,7 @@ def plugin():
 def test_create_plugin_wrong_folder():
 
     with pytest.raises(Exception) as e:
-        Plugin("/non/existent/folder", active=True)
+        Plugin("/non/existent/folder")
         
     assert f"Cannot create" in str(e.value)
 
@@ -36,14 +36,14 @@ def test_create_plugin_empty_folder():
     os.mkdir(path)
 
     with pytest.raises(Exception) as e:
-        Plugin(path, active=True)
+        Plugin(path)
         
     assert f"Cannot create" in str(e.value)
 
 
 def test_create_non_active_plugin():
 
-    plugin = Plugin(mock_plugin_path, active=False)
+    plugin = Plugin(mock_plugin_path)
 
     assert plugin.active == False
     
@@ -97,7 +97,7 @@ def test_create_active_plugin(plugin):
 def test_activate_plugin():
 
     # create non-active plugin
-    plugin = Plugin(mock_plugin_path, active=False)
+    plugin = Plugin(mock_plugin_path)
 
     # activate it
     plugin.activate()

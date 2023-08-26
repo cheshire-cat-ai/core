@@ -52,7 +52,7 @@ class MadHatter:
             raise Exception("A plugin should contain a folder, found a file")
 
         # create plugin obj
-        self.load_plugin(plugin_path, active=False)
+        self.load_plugin(plugin_path)
 
         # activate it
         self.toggle_plugin(plugin_id)
@@ -104,12 +104,12 @@ class MadHatter:
 
         self.sync_hooks_and_tools()
 
-    def load_plugin(self, plugin_path, active):
+    def load_plugin(self, plugin_path):
         # Instantiate plugin.
         #   If the plugin is inactive, only manifest will be loaded
         #   If active, also settings, tools and hooks
         try:
-            plugin = Plugin(plugin_path, active=active)
+            plugin = Plugin(plugin_path)
             # if plugin is valid, keep a reference
             self.plugins[plugin.id] = plugin
         except Exception as e:
