@@ -1,8 +1,11 @@
+import os
 import string
+import json
 from typing import List
 from itertools import combinations
 from sklearn.feature_extraction.text import CountVectorizer
 from langchain.embeddings.base import Embeddings
+import httpx
 
 
 class DumbEmbedder(Embeddings):
@@ -41,3 +44,21 @@ class DumbEmbedder(Embeddings):
     def embed_query(self, text: str) -> List[float]:
         """Embed a string of text and returns the embedding vector as a list of floats."""
         return self.embedder.transform([text]).astype(float).todense().tolist()[0]
+
+
+class CustomOpenAIEmbeddings(Embeddings):
+    def __init__(self, url):
+        self.url = os.path.join(url, "v1/embeddings")
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        payload = json.dumps({"input": texts})
+        ret = httpx.post(self.url, data=payload, timeout=None)
+        ret.raise_for_status()
+        return  [e['embedding'] for e in ret.json()['data']]
+    
+    def embed_query(self, text: str) -> List[float]:
+        payload = json.dumps({"input": text})
+        ret = httpx.post(self.url, data=payload, timeout=None)
+        ret.raise_for_status()
+        return ret.json()['data'][0]['embedding']
+    
