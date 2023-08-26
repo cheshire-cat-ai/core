@@ -95,12 +95,12 @@ class MadHatter:
 
         # discover plugins, folder by folder
         for folder in all_plugin_folders:
+            self.load_plugin(folder)
 
-            # is the plugin active?
-            folder_base = os.path.basename(os.path.normpath(folder))
-            is_active = folder_base in self.active_plugins
-
-            self.load_plugin(folder, is_active)
+            plugin_id = os.path.basename(os.path.normpath(folder))
+            
+            if plugin_id in self.active_plugins:
+                self.plugins[plugin_id].activate()
 
         self.sync_hooks_and_tools()
 
