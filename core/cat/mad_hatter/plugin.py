@@ -62,9 +62,12 @@ class Plugin:
 
         # Remove the imported modules
         for py_file in self.py_files:
-            py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
-            log(f"Remove module {py_filename}", "DEBUG")
-            sys.modules.pop(py_filename)
+            py_filename = py_file.replace("/", ".").replace(".py", "")
+
+            # If the module is imported it is removed
+            if py_filename in sys.modules:
+                log(f"Remove module {py_filename}", "DEBUG")
+                sys.modules.pop(py_filename)
         
         self._hooks = []
         self._tools = []
