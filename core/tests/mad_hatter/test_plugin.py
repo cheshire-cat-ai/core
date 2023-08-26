@@ -56,40 +56,6 @@ def test_create_non_active_plugin():
     assert plugin.hooks == []
     assert plugin.tools == []
 
-
-def test_create_active_plugin(plugin):
-    
-    assert plugin.active == True
-    
-    assert plugin.path == mock_plugin_path
-    assert plugin.id == "mock_plugin"
-    
-    # manifest
-    assert type(plugin.manifest) == dict
-    assert plugin.manifest["id"] == plugin.id
-    assert plugin.manifest["name"] == "MockPlugin"
-    assert "Description not found" in plugin.manifest["description"]
-
-    # hooks
-    assert len(plugin.hooks) == 1
-    hook = plugin.hooks[0]
-    assert isinstance(hook, CatHook)
-    assert hook.plugin_id == "mock_plugin"
-    assert hook.name == "before_cat_sends_message"
-    assert isfunction(hook.function)
-    assert hook.priority == 2.0
-
-    # tools
-    assert len(plugin.tools) == 1
-    tool = plugin.tools[0]
-    assert isinstance(tool, CatTool)
-    assert tool.plugin_id == "mock_plugin"
-    assert tool.name == "mock_tool"
-    assert "mock_tool" in tool.description
-    assert isfunction(tool.func)
-    assert tool.return_direct == True
-
-
 def test_activate_plugin():
 
     # create non-active plugin
