@@ -66,8 +66,9 @@ class LLMCustom(LLM):
 
 
 class CustomOpenAI(OpenAI):
+    url: str
+    
     def __init__(self, **kwargs):
-
         model_kwargs = {
             'repeat_penalty': kwargs.pop('repeat_penalty')
         }
@@ -81,4 +82,6 @@ class CustomOpenAI(OpenAI):
                     model_kwargs=model_kwargs,
                     **kwargs
                 )
+        
         self.openai_api_base = os.path.join(kwargs['url'], "v1")
+        self.url = kwargs['url']
