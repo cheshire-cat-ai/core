@@ -1,9 +1,9 @@
 import langchain
-from typing import Dict
+from typing import Dict, List
 import json
 from pydantic import PyObject, BaseSettings
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
 
 
 # Base class to manage LLM configuration.
@@ -64,6 +64,22 @@ class LLMCustomConfig(LLMSettings):
             "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/"
         }
 
+
+class LLMLlamaCppConfig(LLMSettings):
+    url: str
+    temperature: float = 0.01
+    max_tokens: int = 512
+    stop: str = "Human:,###"
+    top_k: int = 40
+    top_p: float = 0.95
+    repeat_penalty: float = 1.1
+    _pyclass: PyObject = CustomOpenAI
+
+    class Config:
+        schema_extra = {
+            "humanReadableName": "Self-hosted llama-cpp-python",
+            "description": "Self-hosted llama-cpp-python compatible LLM",
+        }
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
@@ -230,6 +246,7 @@ class LLMGooglePalmConfig(LLMSettings):
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
     LLMCustomConfig,
+    LLMLlamaCppConfig,
     LLMOpenAIChatConfig,
     LLMOpenAIConfig,
     LLMCohereConfig,

@@ -20,7 +20,8 @@ def test_get_all_embedder_settings(client):
         expected_schema = EMBEDDER_SCHEMAS[setting["name"]]
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
-    assert json["selected_configuration"] == None # no embedder configured at stratup
+    # automatically selected embedder
+    assert json["selected_configuration"] == "EmbedderDumbConfig"
 
 
 def test_get_embedder_settings_non_existent(client):
