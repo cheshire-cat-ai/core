@@ -47,6 +47,9 @@ class DumbEmbedder(Embeddings):
 
 
 class CustomOpenAIEmbeddings(Embeddings):
+    """Use LLAMA2 as embedder by calling a self-hosted lama-cpp-python instance.
+    """
+    
     def __init__(self, url):
         self.url = os.path.join(url, "v1/embeddings")
 
