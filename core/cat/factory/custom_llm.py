@@ -70,7 +70,8 @@ class CustomOpenAI(OpenAI):
     
     def __init__(self, **kwargs):
         model_kwargs = {
-            'repeat_penalty': kwargs.pop('repeat_penalty')
+            'repeat_penalty': kwargs.pop('repeat_penalty'),
+            'top_k': kwargs.pop('top_k')
         }
         
         stop = kwargs.pop('stop', None)
@@ -83,5 +84,6 @@ class CustomOpenAI(OpenAI):
                     **kwargs
                 )
         
-        self.openai_api_base = os.path.join(kwargs['url'], "v1")
         self.url = kwargs['url']
+        self.openai_api_base = os.path.join(self.url, "v1")
+        
