@@ -15,6 +15,7 @@ from langchain.base_language import BaseLanguageModel
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.mad_hatter.decorators import hook
+from cat.factory.custom_llm import CustomOpenAI
 
 
 @hook(priority=0)
@@ -139,6 +140,14 @@ def get_language_embedder(cat) -> embedders.EmbedderSettings:
             {
                 "huggingfacehub_api_token": cat._llm.huggingfacehub_api_token,
                 "repo_id": "sentence-transformers/all-mpnet-base-v2",
+            }
+        )
+
+    # Llama-cpp-python
+    elif type(cat._llm) in [CustomOpenAI]:
+        embedder = embedders.EmbedderLlamaCppConfig.get_embedder_from_config(
+            {
+                "url": cat._llm.url
             }
         )
 

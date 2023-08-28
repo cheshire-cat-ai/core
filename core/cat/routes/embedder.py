@@ -2,7 +2,7 @@ from typing import Dict
 
 from fastapi import Request, APIRouter, Body, HTTPException
 
-from cat.factory.embedder import EMBEDDER_SCHEMAS
+from cat.factory.embedder import EMBEDDER_SCHEMAS, SUPPORTED_EMDEDDING_MODELS
 from cat.db import crud, models
 from cat.log import log
 
@@ -20,13 +20,19 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 # get configured Embedders and configuration schemas
 @router.get("/settings/")
-def get_embedders_settings() -> Dict:
+def get_embedders_settings(request: Request) -> Dict:
     """Get the list of the Embedders"""
 
     # get selected Embedder, if any
     selected = crud.get_setting_by_name(name=EMBEDDER_SELECTED_NAME)
     if selected is not None:
         selected = selected["value"]["name"]
+    # If DB does not contain a selected embedder, it means an embedder was automatically selected.
+    # Deduce selected embedder:
+    ccat = request.app.state.ccat
+    for embedder_config_class in reversed(SUPPORTED_EMDEDDING_MODELS):
+        if embedder_config_class._pyclass == type(ccat.embedder):
+            selected = embedder_config_class.__name__
     
     saved_settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
     saved_settings = { s["name"]: s for s in saved_settings }
