@@ -147,7 +147,7 @@ async def get_allowed_mimetypes(request: Request) -> Dict:
 
     ccat = request.app.state.ccat
 
-    admitted_types = [*ccat.rabbit_hole.file_handlers]
+    admitted_types = list(ccat.rabbit_hole.file_handlers.keys())
 
     return {
         "allowed": admitted_types
