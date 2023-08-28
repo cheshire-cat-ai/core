@@ -139,3 +139,16 @@ async def upload_memory(
         "content_type": file.content_type,
         "info": "Memory is being ingested asynchronously"
     }
+
+
+@router.get("/allowed-mimetypes/")
+async def get_allowed_mimetypes(request: Request) -> Dict:
+    """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
+
+    ccat = request.app.state.ccat
+
+    admitted_types = [*ccat.rabbit_hole.file_handlers]
+
+    return {
+        "allowed": admitted_types
+    }
