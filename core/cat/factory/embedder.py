@@ -1,7 +1,7 @@
 import langchain
 from pydantic import PyObject, BaseSettings
 
-from cat.factory.dumb_embedder import DumbEmbedder
+from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
@@ -36,8 +36,19 @@ class EmbedderDumbConfig(EmbedderSettings):
 
     class Config:
         schema_extra = {
-            "name_human_readable": "Dumb Embedder",
+            "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
+        }
+
+
+class EmbedderLlamaCppConfig(EmbedderSettings):
+    url: str
+    _pyclass = PyObject = CustomOpenAIEmbeddings
+
+    class Config:
+        schema_extra = {
+            "humanReadableName": "Self-hosted llama-cpp-python embedder",
+            "description": "Self-hosted llama-cpp-python embedder",
         }
 
 
@@ -98,6 +109,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderDumbConfig,
     EmbedderFakeConfig,
+    EmbedderLlamaCppConfig,
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
