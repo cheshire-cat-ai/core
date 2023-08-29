@@ -217,35 +217,18 @@ class RabbitHole:
         blob = Blob(data=file_bytes,
                     mimetype=content_type,
                     source=source).from_data(data=file_bytes,
-                                             mime_type=content_type)
+                                             mime_type=content_type,
+                                             path=source)
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
-        self.send_rabbit_thought("I'm parsing the content. Big content could require some minutes...")
+        self.cat.send_ws_message("notification", "I'm parsing the content. Big content could require some minutes...")
         text = parser.parse(blob)
 
-        self.send_rabbit_thought(f"Parsing completed. Now let's go with reading process...")
+        self.cat.send_ws_message("notification", f"Parsing completed. Now let's go with reading process...")
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
-
-    def send_rabbit_thought(self, thought):
-        """Append a message to the notification list.
-
-        This method receives a string and creates the message to append to the list of notifications.
-
-        Parameters
-        ----------
-        thought : str
-            Text of the message to append to the notification list.
-        """
-
-        self.cat.web_socket_notifications.append({
-            "error": False,
-            "type": "notification",
-            "content": thought,
-            "why": {},
-        })
 
     def store_documents(self, docs: List[Document], source: str) -> None:
         """Add documents to the Cat's declarative memory.
@@ -284,7 +267,7 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                self.send_rabbit_thought(f"Read {perc_read}% of {source}")
+                self.cat.send_ws_message("notification", f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
@@ -310,7 +293,7 @@ class RabbitHole:
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
 
-        self.send_rabbit_thought(finished_reading_message)
+        self.cat.send_ws_message("notification", finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 

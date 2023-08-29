@@ -21,7 +21,7 @@ class CheshireCat:
 
     Attributes
     ----------
-    web_socket_notifications : list
+    ws_messages : list
         List of notifications to be sent to the frontend.
 
     """
@@ -33,7 +33,7 @@ class CheshireCat:
         """
 
         # bootstrap the cat!
-         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
+        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
         self.mad_hatter = MadHatter(self)
 
         # allows plugins to do something before cat components are loaded
@@ -59,7 +59,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.web_socket_notifications = []      
+        self.ws_messages = []      
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -280,6 +280,30 @@ class CheshireCat:
         prompt_settings.update(user_message_json.get("prompt_settings", {}))
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+
+    def send_ws_message(self, type: str, content: str):
+        """Send a message via websocket.
+
+        This method is useful for sending a message via websocket directly without passing through the llm
+
+        Parameters
+        ----------
+        type : str
+            The type of the message. Should be either `notification` or `chat`
+        content : str
+            The content of the message. 
+
+        Returns
+        -------
+        str
+            The generated response.
+
+        """
+
+        self.ws_messages.append({
+            "type": type,
+            "content": content
+        })
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""

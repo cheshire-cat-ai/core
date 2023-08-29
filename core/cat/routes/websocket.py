@@ -69,9 +69,9 @@ async def check_notification(websocket: WebSocket, ccat: object):
     Periodically check if there are any new notifications from the `ccat` object and send them to the user.
     """
     while True:
-        if ccat.web_socket_notifications:
+        if ccat.ws_messages:
             # extract from FIFO list websocket notification
-            notification = ccat.web_socket_notifications.pop(0)
+            notification = ccat.ws_messages.pop(0)
             await manager.send_personal_message(notification, websocket)
 
         # Sleep for the specified interval before checking for notifications again.
