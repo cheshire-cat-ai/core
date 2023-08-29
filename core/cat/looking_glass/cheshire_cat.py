@@ -284,20 +284,14 @@ class CheshireCat:
     def send_ws_message(self, type: str, content: str):
         """Send a message via websocket.
 
-        This method is useful for sending a message via websocket directly without passing through the llm
+        This method is useful for sending a message via websocket directly without passing through the LLM
 
         Parameters
         ----------
         type : str
             The type of the message. Should be either `notification` or `chat`
         content : str
-            The content of the message. 
-
-        Returns
-        -------
-        str
-            The generated response.
-
+            The content of the message.
         """
 
         self.ws_messages.append({
