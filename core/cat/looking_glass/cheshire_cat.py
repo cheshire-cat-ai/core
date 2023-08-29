@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 import traceback
-from typing import Literal
+from typing import Literal, get_args
 import langchain
 import os
 from cat.log import log
@@ -12,6 +12,7 @@ from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
+MSG_TYPES = Literal["notification", "chat"]
 
 # main class
 class CheshireCat:
@@ -281,7 +282,7 @@ class CheshireCat:
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
-    def send_ws_message(self, type: Literal["notification", "chat"], content: str):
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
@@ -293,6 +294,11 @@ class CheshireCat:
         content : str
             The content of the message.
         """
+
+        options = get_args(MSG_TYPES)
+
+        if msg_type not in options:
+            raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         self.ws_messages.append({
             "type": type,

@@ -223,10 +223,10 @@ class RabbitHole:
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
-        self.cat.send_ws_message("notification", "I'm parsing the content. Big content could require some minutes...")
+        self.cat.send_ws_message("I'm parsing the content. Big content could require some minutes...")
         text = parser.parse(blob)
 
-        self.cat.send_ws_message("notification", f"Parsing completed. Now let's go with reading process...")
+        self.cat.send_ws_message(f"Parsing completed. Now let's go with reading process...")
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
 
@@ -267,7 +267,7 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                self.cat.send_ws_message("notification", f"Read {perc_read}% of {source}")
+                self.cat.send_ws_message(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
@@ -293,7 +293,7 @@ class RabbitHole:
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
 
-        self.cat.send_ws_message("notification", finished_reading_message)
+        self.cat.send_ws_message(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 
