@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 import traceback
-
+from typing import Literal
 import langchain
 import os
 from cat.log import log
@@ -281,7 +281,7 @@ class CheshireCat:
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
-    def send_ws_message(self, type: str, content: str):
+    def send_ws_message(self, type: Literal["notification", "chat"], content: str):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
