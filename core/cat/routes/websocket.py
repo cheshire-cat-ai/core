@@ -8,7 +8,7 @@ from fastapi.concurrency import run_in_threadpool
 router = APIRouter()
 
 # This constant sets the interval (in seconds) at which the system checks for notifications.
-NOTIFICATION_CHECK_INTERVAL = 1  # seconds
+QUEUE_CHECK_INTERVAL = 1  # seconds
 
 
 class ConnectionManager:
@@ -64,9 +64,9 @@ async def receive_message(websocket: WebSocket, ccat: object):
         await manager.send_personal_message(cat_message, websocket)
 
 
-async def check_notification(websocket: WebSocket, ccat: object):
+async def check_messages(websocket: WebSocket, ccat):
     """
-    Periodically check if there are any new notifications from the `ccat` object and send them to the user.
+    Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
     while True:
         if ccat.ws_messages:
@@ -75,13 +75,13 @@ async def check_notification(websocket: WebSocket, ccat: object):
             await manager.send_personal_message(notification, websocket)
 
         # Sleep for the specified interval before checking for notifications again.
-        await asyncio.sleep(NOTIFICATION_CHECK_INTERVAL)
+        await asyncio.sleep(QUEUE_CHECK_INTERVAL)
 
 
 @router.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """
-    Endpoint to handle incoming WebSocket connections, process messages, and check for notifications.
+    Endpoint to handle incoming WebSocket connections, process messages, and check for messages.
     """
 
     # Retrieve the `ccat` instance from the application's state.
@@ -94,7 +94,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Process messages and check for notifications concurrently.
         await asyncio.gather(
             receive_message(websocket, ccat),
-            check_notification(websocket, ccat)
+            check_messages(websocket, ccat)
         )
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
