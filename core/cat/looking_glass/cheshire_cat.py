@@ -301,7 +301,7 @@ class CheshireCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         self.ws_messages.append({
-            "type": type,
+            "type": msg_type,
             "content": content
         })
 
