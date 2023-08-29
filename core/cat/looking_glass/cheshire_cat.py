@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 import traceback
-
+from typing import Literal, get_args
 import langchain
 import os
 from cat.log import log
@@ -12,6 +12,7 @@ from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
+MSG_TYPES = Literal["notification", "chat"]
 
 # main class
 class CheshireCat:
@@ -21,7 +22,7 @@ class CheshireCat:
 
     Attributes
     ----------
-    web_socket_notifications : list
+    ws_messages : list
         List of notifications to be sent to the frontend.
 
     """
@@ -33,7 +34,7 @@ class CheshireCat:
         """
 
         # bootstrap the cat!
-         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
+        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
         self.mad_hatter = MadHatter(self)
 
         # allows plugins to do something before cat components are loaded
@@ -59,7 +60,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.web_socket_notifications = []      
+        self.ws_messages = []      
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -280,6 +281,29 @@ class CheshireCat:
         prompt_settings.update(user_message_json.get("prompt_settings", {}))
 
         self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
+
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
+        """Send a message via websocket.
+
+        This method is useful for sending a message via websocket directly without passing through the LLM
+
+        Parameters
+        ----------
+        type : str
+            The type of the message. Should be either `notification` or `chat`
+        content : str
+            The content of the message.
+        """
+
+        options = get_args(MSG_TYPES)
+
+        if msg_type not in options:
+            raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
+
+        self.ws_messages.append({
+            "type": msg_type,
+            "content": content
+        })
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""
