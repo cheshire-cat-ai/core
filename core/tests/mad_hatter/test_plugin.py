@@ -1,7 +1,9 @@
 import os
 import pytest
+from inspect import isfunction
 
 from cat.mad_hatter.mad_hatter import Plugin
+from cat.mad_hatter.decorators import CatHook, CatTool
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
@@ -37,9 +39,7 @@ def test_create_plugin_empty_folder():
     assert f"Cannot create" in str(e.value)
 
 
-def test_create_plugin():
-
-    plugin = Plugin(mock_plugin_path)
+def test_create_plugin(plugin):
 
     assert plugin.active == False
     
@@ -56,10 +56,7 @@ def test_create_plugin():
     assert plugin.hooks == []
     assert plugin.tools == []
 
-def test_activate_plugin():
-
-    # create non-active plugin
-    plugin = Plugin(mock_plugin_path)
+def test_activate_plugin(plugin):
 
     # activate it
     plugin.activate()
