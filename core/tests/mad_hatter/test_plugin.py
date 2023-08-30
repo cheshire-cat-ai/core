@@ -62,13 +62,30 @@ def test_activate_plugin(plugin):
     plugin.activate()
 
     assert plugin.active == True
-    
-    # hooks and tools
-    assert len(plugin.hooks) == 1
-    assert len(plugin.tools) == 1
 
+    # hooks
+    assert len(plugin.hooks) == 1
+    hook = plugin.hooks[0]
+    assert isinstance(hook, CatHook)
+    assert hook.plugin_id == "mock_plugin"
+    assert hook.name == "before_cat_sends_message"
+    assert isfunction(hook.function)
+    assert hook.priority == 2.0
+
+    # tools
+    assert len(plugin.tools) == 1
+    tool = plugin.tools[0]
+    assert isinstance(tool, CatTool)
+    assert tool.plugin_id == "mock_plugin"
+    assert tool.name == "mock_tool"
+    assert "mock_tool" in tool.description
+    assert isfunction(tool.func)
+    assert tool.return_direct == True
 
 def test_deactivate_plugin(plugin):
+
+    # The plugin is non active by default
+    plugin.activate()
 
     # deactivate it
     plugin.deactivate()
