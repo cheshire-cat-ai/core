@@ -12,7 +12,7 @@ from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
-MSG_TYPES = Literal["notification", "chat"]
+MSG_TYPES = Literal["notification", "chat", "error"]
 
 # main class
 class CheshireCat:
@@ -290,7 +290,7 @@ class CheshireCat:
         Parameters
         ----------
         type : str
-            The type of the message. Should be either `notification` or `chat`
+            The type of the message. Should be either `notification` or `chat` or `error`
         content : str
             The content of the message.
         """
@@ -300,10 +300,17 @@ class CheshireCat:
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
-        self.ws_messages.append({
-            "type": msg_type,
-            "content": content
-        })
+        if msg_type is "error":
+            self.ws_messages.append({
+                "type": msg_type,
+                "name": "GenericError",
+                "description": content
+            })
+        else:
+            self.ws_messages.append({
+                "type": msg_type,
+                "content": content
+            })
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""
@@ -375,16 +382,14 @@ class CheshireCat:
             traceback.print_exc(e)
 
             err_message = (
-                "Vector memory error: you probably changed "
-                "Embedder and old vector memory is not compatible. "
+                "You probably changed Embedder and old vector memory is not compatible. "
                 "Please delete `core/long_term_memory` folder."
             )
+
             return {
-                "error": False,
-                # TODO: Otherwise the frontend gives notice of the error
-                #   but does not show what the error is
-                "content": err_message,
-                "why": {},
+                "type": "error",
+                "name": "VectorMemoryError",
+                "description": err_message,
             }
 
         # prepare input to be passed to the agent.
@@ -417,6 +422,7 @@ class CheshireCat:
 
         # update conversation history
         user_message = self.working_memory["user_message_json"]["text"]
+        user_id = self.working_memory["user_message_json"]["user_id"]
         self.working_memory.update_conversation_history(who="Human", message=user_message)
         self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
@@ -434,8 +440,8 @@ class CheshireCat:
         procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
         
         final_output = {
-            "error": False,
             "type": "chat",
+            "user_id": user_id,
             "content": cat_message.get("output"),
             "why": {
                 "input": cat_message.get("input"),
