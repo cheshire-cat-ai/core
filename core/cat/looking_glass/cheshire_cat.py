@@ -422,7 +422,6 @@ class CheshireCat:
 
         # update conversation history
         user_message = self.working_memory["user_message_json"]["text"]
-        user_id = self.working_memory["user_message_json"]["user_id"]
         self.working_memory.update_conversation_history(who="Human", message=user_message)
         self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
