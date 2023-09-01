@@ -18,7 +18,7 @@ from cat.log import log, get_log_level
 
 class Plugin:
 
-    def __init__(self, plugin_path: str, active: bool):
+    def __init__(self, plugin_path: str):
         
         # does folder exist?
         if not os.path.exists(plugin_path) or not os.path.isdir(plugin_path):
@@ -45,12 +45,7 @@ class Plugin:
         #   but they are created and stored in each plugin instance
         self._hooks = [] 
         self._tools = []
-
         self._active = False
-
-        # all plugins start active, they can be deactivated/reactivated from endpoint
-        if active:
-            self.activate()
 
     def activate(self):
         # lists of hooks and tools
@@ -58,16 +53,18 @@ class Plugin:
         self._active = True
 
     def deactivate(self):
-        self._active = False
-
         # Remove the imported modules
         for py_file in self.py_files:
-            py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
-            log(f"Remove module {py_filename}", "DEBUG")
-            sys.modules.pop(py_filename)
+            py_filename = py_file.replace("/", ".").replace(".py", "")
+
+            # If the module is imported it is removed
+            if py_filename in sys.modules:
+                log(f"Remove module {py_filename}", "DEBUG")
+                sys.modules.pop(py_filename)
         
         self._hooks = []
         self._tools = []
+        self._active = False
 
     # get plugin settings JSON schema
     def get_settings_schema(self):
