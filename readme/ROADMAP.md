@@ -1,5 +1,50 @@
 
-* Version 1
+* **Version 2**
+	* Technical 
+		* Plugins
+			* redesign hooks & tools signature
+			* tools with more than one arg (structured Tool)
+			* no cat argument
+			* registry online
+		* Agent
+			* Custom hookable agent
+			* Async agent
+			* Output dictionary retry (guardrails, kor, guidance)
+			* (streaming?)
+		* Unit tests 
+			* Half coverage (main classes)
+		* Admin
+			* sync / async calls consistent management
+			* adapt to design system
+			* show registry plugins (core should send them alongside the installed ones)
+			* filters for memory search
+		* Deploy
+			* docker image!
+			* compose with local LLM + embedder - ready to use
+			* (nginx?)
+		* LLM improvements
+			* explicit support for chat vs completion
+			* each LLM has its own default template
+		* User support (not management)
+			* fix bugs
+			* sessions
+	* Outreach
+		* Community
+			* 1 live event
+			* 4 meow talk
+			* 1 challenge
+		* Dissemination
+			* use cases examples
+			* tutorials on hooks
+			* hook discovery tool
+			* website analytics 
+		* Branding
+			* logo
+			* website + docs + admin design system
+
+---
+
+* **Version 1**
   * Forms from JSON schema ✅ 
   * Configurations
 	  * Language model provider ✅ 
@@ -33,13 +78,13 @@
   * Agent
     * Tool embeddings ✅
     * Custom hookable agent 
-  * Local LLM / embedder
-    * CustomLLMConfig
-    * CustomEmbedderConfig adapters
-    * LLM / embedder example docker container
+  * Local LLM / embedder ✅
+    * CustomLLMConfig ✅
+    * CustomEmbedderConfig adapters ✅
+    * LLM / embedder example docker container ✅
   * Hook surface
     * 20 hooks ✅
-    * more hooks where customization is needed
+    * more hooks where customization is needed ✅
   * Plugin management
     * Install plugin dependencies ✅
     * Activate / deactivate plugins ✅
