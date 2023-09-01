@@ -300,7 +300,7 @@ class CheshireCat:
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
-        if msg_type is "error":
+        if msg_type == "error":
             self.ws_messages.append({
                 "type": msg_type,
                 "name": "GenericError",
