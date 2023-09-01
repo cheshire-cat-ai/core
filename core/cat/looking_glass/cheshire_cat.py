@@ -289,10 +289,10 @@ class CheshireCat:
 
         Parameters
         ----------
-        type : str
-            The type of the message. Should be either `notification` or `chat` or `error`
         content : str
             The content of the message.
+        msg_type : str
+            The type of the message. Should be either `notification`, `chat` or `error`
         """
 
         options = get_args(MSG_TYPES)
