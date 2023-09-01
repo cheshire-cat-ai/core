@@ -1,7 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
-
+import traceback
 from cat.looking_glass.prompts import ToolPromptTemplate
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.log import log
@@ -151,6 +151,7 @@ class AgentManager:
             except Exception as e:
                 error_description = str(e)
                 log(error_description, "ERROR")
+                traceback.print_exc()
 
         #If an exeption occur in the execute_tool_agent or there is no allowed tools execute only the memory chain
 
