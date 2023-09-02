@@ -1,13 +1,14 @@
 name: Cheshire-Cat Action on Pull Requests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
-    branches:
-      - "main"
-      - "develop"
+    branches: [main, develop]
   push:
-    branches:
-      - "main"
-      - "develop"
+    branches: [main, develop]
 
 jobs:
   pylint:
@@ -32,12 +33,10 @@ jobs:
         run: pip install .[dev]
       - name: Pylint
         run: pylint -f actions ./
-
   test:
     needs: [ pylint ]
     name: "Run Tests"
     runs-on: 'ubuntu-latest'
-
     steps:
       - uses: actions/checkout@v2
       - name: Cat up
