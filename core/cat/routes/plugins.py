@@ -11,13 +11,13 @@ router = APIRouter()
 
 async def get_registry_list():
     try:
-        response = await requests.get("https://plugins.cheshirecat.ai/plugins?page=1&page_size=7000")
+        response = requests.get("https://registry.cheshirecat.ai/plugins?page=1&page_size=1000")
         if response.status_code == 200:
             return response.json()["plugins"]
         else:
             return []
-    except requests.exceptions.RequestException as e:
-        #log(e, "ERROR")
+    except Exception as e:
+        log(e, "ERROR")
         return []
 
 # GET plugins
