@@ -14,10 +14,10 @@ def test_websocket(client):
             "text": "Your bald aunt with a wooden leg"
         }, client)
 
-        for k in ["error", "content", "why"]:
+        for k in ["type", "content", "why"]:
             assert k in res.keys()
 
-        assert not res["error"]
+        assert res["type"] != "error"
         assert type(res["content"]) == str
         assert "You did not configure" in res["content"]
         assert len(res["why"].keys()) > 0

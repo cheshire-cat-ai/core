@@ -310,7 +310,6 @@ def before_cat_sends_message(message: dict, cat) -> dict:
     Default `message` is::
 
             {
-                "error": False,
                 "type": "chat",
                 "content": cat_message["output"],
                 "why": {
