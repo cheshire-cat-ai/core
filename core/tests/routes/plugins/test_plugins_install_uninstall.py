@@ -6,8 +6,30 @@ from tests.utils import create_mock_plugin_zip, get_embedded_tools
 from fixture_just_installed_plugin import just_installed_plugin
 
 
-# TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
-def test_plugin_install_upload_zip(client, just_installed_plugin):
+def test_plugin_uninstall(client, just_installed_plugin):
+
+    # during tests, the cat uses a different folder for plugins
+    mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
+
+    # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
+    response = client.delete("/plugins/mock_plugin")
+    assert response.status_code == 200
+    
+    # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
+    response = client.get("/plugins")
+    installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
+    assert "mock_plugin" not in installed_plugins_names
+    assert not os.path.exists(mock_plugin_final_folder) # plugin folder removed from disk
+
+    # plugin tool disappeared
+    tools = get_embedded_tools(client)
+    assert len(tools) == 1
+    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
+    assert "mock_tool" not in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
+
+
+def test_plugin_install_from_zip(client, just_installed_plugin):
 
     # during tests, the cat uses a different folder for plugins
     mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
@@ -32,26 +54,9 @@ def test_plugin_install_upload_zip(client, just_installed_plugin):
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" in tool_names
     assert "get_the_time" in tool_names # from core_plugin
-    
 
-def test_plugin_uninstall(client, just_installed_plugin):
 
-    # during tests, the cat uses a different folder for plugins
-    mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
+def test_plugin_install_from_registry(client):
 
-    # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
-    response = client.delete("/plugins/mock_plugin")
-    assert response.status_code == 200
-    
-    # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
-    response = client.get("/plugins")
-    installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
-    assert "mock_plugin" not in installed_plugins_names
-    assert not os.path.exists(mock_plugin_final_folder) # plugin folder removed from disk
-
-    # plugin tool disappeared
-    tools = get_embedded_tools(client)
-    assert len(tools) == 1
-    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "mock_tool" not in tool_names
-    assert "get_the_time" in tool_names # from core_plugin
+    # TODO: install plugin from registry
+    pass

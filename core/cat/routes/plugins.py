@@ -4,45 +4,60 @@ from typing import Dict
 from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
+from cat.mad_hatter.registry import registry_search_plugins
 from urllib.parse import urlparse
 import requests
 
 router = APIRouter()
 
-async def get_registry_list():
-    try:
-        response = requests.get("https://registry.cheshirecat.ai/plugins?page=1&page_size=1000")
-        if response.status_code == 200:
-            return response.json()["plugins"]
-        else:
-            return []
-    except Exception as e:
-        log(e, "ERROR")
-        return []
 
 # GET plugins
 @router.get("/")
-async def get_available_plugins(request: Request) -> Dict:
+async def get_available_plugins(
+    request: Request,
+    query: str = None,
+    #author: str = None, to be activated in case of more granular search
+    #tag: str = None, to be activated in case of more granular search
+) -> Dict:
     """List available plugins"""
 
-    # access cat instance
-    ccat = request.app.state.ccat
+    # retrieve plugins from official repo
+    registry_plugins = await registry_search_plugins(query)
+    # index registry plugins by url
+    registry_plugins_index = {}
+    for p in registry_plugins:
+        plugin_url = p["url"]
+        registry_plugins_index[plugin_url] = p
 
+    # get active plugins
+    ccat = request.app.state.ccat
     active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
 
-    # plugins are managed by the MadHatter class
-    plugins = []
+    # list installed plugins' manifest
+    installed_plugins = []
     for p in ccat.mad_hatter.plugins.values():
+        
+        # get manifest
         manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
         manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
-        plugins.append(manifest)
+        
+        # filter by query
+        plugin_text = [str(field) for field in manifest.values()]
+        plugin_text = " ".join(plugin_text).lower()
+        if (query is None) or (query.lower() in plugin_text):
+            installed_plugins.append(manifest)
 
-    # retrieve plugins from official repo
-    registry = await get_registry_list()
+        # do not show already installed plugins among registry plugins
+        registry_plugins_index.pop( manifest["plugin_url"], None )
 
     return {
-        "installed": plugins,
-        "registry": registry
+        "filters": {
+            "query": query,
+            #"author": author, to be activated in case of more granular search
+            #"tag": tag, to be activated in case of more granular search
+        },
+        "installed": installed_plugins,
+        "registry": list(registry_plugins_index.values())
     }
 
 
