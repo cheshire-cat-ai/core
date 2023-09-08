@@ -36,21 +36,11 @@ class MadHatter:
     def install_plugin(self, package_plugin):
 
         # extract zip/tar file into plugin folder
-        plugin_folder = self.ccat.get_plugin_path()
+        plugins_folder = self.ccat.get_plugin_path()
         extractor = PluginExtractor(package_plugin)
-        extracted_contents = extractor.extract(plugin_folder)
+        plugin_path = extractor.extract(plugins_folder)
+        plugin_id = os.path.basename(plugin_path)
         
-        # there should be a method to check for plugin integrity
-        if len(extracted_contents) != 1:
-            raise Exception("A plugin should consist in one new folder: "
-                            "found many contents in compressed archive or plugin already present.")
-        
-        plugin_id = extracted_contents[0]
-        plugin_path = os.path.join(plugin_folder, plugin_id)
-        
-        if not os.path.isdir(plugin_path):
-            raise Exception("A plugin should contain a folder, found a file")
-
         # create plugin obj
         self.load_plugin(plugin_path)
 
