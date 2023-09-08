@@ -57,10 +57,12 @@ def test_instantiation_discovery(mad_hatter):
     assert active_plugins[0] == "core_plugin"
 
 
-
-def test_plugin_install(mad_hatter: MadHatter):
+# installation tests will be run for both flat and nested plugin
+@pytest.mark.parametrize("plugin_is_flat", [True, False])
+def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
+    
     # install plugin
-    new_plugin_zip_path = create_mock_plugin_zip()
+    new_plugin_zip_path = create_mock_plugin_zip(flat=plugin_is_flat)
     mad_hatter.install_plugin(new_plugin_zip_path)
 
     # archive extracted

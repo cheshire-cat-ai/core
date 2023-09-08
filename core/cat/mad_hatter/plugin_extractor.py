@@ -4,7 +4,7 @@ import tarfile
 import zipfile
 import shutil
 import mimetypes
-import slugify
+from slugify import slugify
 
 from cat.log import log
 
@@ -26,7 +26,12 @@ class PluginExtractor:
         self.path = path
 
         # this will be plugin folder name (its id for the mad hatter)
-        self.id = slugify(path)
+        self.id = self.create_plugin_id()
+        
+    def create_plugin_id(self):
+        file_name = os.path.basename(self.path)
+        file_name_no_extension = os.path.splitext(file_name)[0]
+        return slugify(file_name_no_extension, separator="_")
 
     def extract(self, to):
 
@@ -42,13 +47,11 @@ class PluginExtractor:
         # if it is just one folder and nothing else, that is the plugin
         if len(contents) == 1 and os.path.isdir( os.path.join(tmp_folder_name, contents[0]) ):
             folder_to_copy = os.path.join(tmp_folder_name, contents[0])
-            log(f"plugin is nested, copy: {folder_to_copy}", "ERROR")
         else: # flat zip
             folder_to_copy = tmp_folder_name
-            log(f"plugin is flat, copy: {folder_to_copy}", "ERROR")
         
         # move plugin folder to cat plugins folder
-        extracted_path = f"{to}/mock_plugin"
+        extracted_path = os.path.join(to, self.id)
         shutil.move(folder_to_copy, extracted_path)
 
         # cleanup
@@ -57,10 +60,9 @@ class PluginExtractor:
 
         # return extracted dir path
         return extracted_path
-    
 
     def get_extension(self):
         return self.extension
 
-    def get_name(self):
+    def get_plugin_id(self):
         return self.id

@@ -36,11 +36,11 @@ def test_unpackage_flat_zip(client):
     shutil.rmtree(f"{plugins_folder}/mock_plugin")
 
 
-def test_get_name_and_extension(client):
+def test_get_id_and_extension(client):
 
     zip_path = create_mock_plugin_zip()
     extractor = PluginExtractor(zip_path)
-    assert extractor.get_name() == "mock_plugin.zip"
+    assert extractor.get_plugin_id() == "mock_plugin"
     assert extractor.get_extension() == "zip"
     os.remove(zip_path)
 
