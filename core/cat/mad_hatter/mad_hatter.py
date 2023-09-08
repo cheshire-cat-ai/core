@@ -7,7 +7,7 @@ import os
 from cat.log import log
 from cat.db import crud
 from cat.db.models import Setting
-from cat.infrastructure.package import Package
+from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
 
 # This class is responsible for plugins functionality:
@@ -37,8 +37,8 @@ class MadHatter:
 
         # extract zip/tar file into plugin folder
         plugin_folder = self.ccat.get_plugin_path()
-        archive = Package(package_plugin)
-        extracted_contents = archive.unpackage(plugin_folder)
+        extractor = PluginExtractor(package_plugin)
+        extracted_contents = extractor.extract(plugin_folder)
         
         # there should be a method to check for plugin integrity
         if len(extracted_contents) != 1:
