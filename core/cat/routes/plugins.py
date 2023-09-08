@@ -83,13 +83,12 @@ async def install_plugin(
         )
 
     log(f"Uploading {content_type} plugin {file.filename}", "INFO")
-    temp = NamedTemporaryFile(delete=False, suffix=file.filename)
-    contents = file.file.read()
-    with temp as f:
-        f.write(contents)
+    plugin_archive_path = f"/tmp/{file.filename}"
+    with open(plugin_archive_path, "wb+") as f:
+        f.write(file.file.read())
 
     background_tasks.add_task(
-        ccat.mad_hatter.install_plugin, temp.name
+        ccat.mad_hatter.install_plugin, plugin_archive_path
     )
 
     return {

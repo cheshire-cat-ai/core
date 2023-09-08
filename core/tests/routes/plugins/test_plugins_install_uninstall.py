@@ -2,7 +2,7 @@ import os
 import time
 import pytest
 import shutil
-from tests.utils import create_mock_plugin_zip, get_embedded_tools
+from tests.utils import get_embedded_tools
 from fixture_just_installed_plugin import just_installed_plugin
 
 

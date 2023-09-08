@@ -116,9 +116,10 @@ def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
     assert active_plugins[0] == "core_plugin"
 
 
-def test_plugin_uninstall(mad_hatter: MadHatter):
+@pytest.mark.parametrize("plugin_is_flat", [True, False])
+def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
     # install plugin
-    new_plugin_zip_path = create_mock_plugin_zip()
+    new_plugin_zip_path = create_mock_plugin_zip(flat=plugin_is_flat)
     mad_hatter.install_plugin(new_plugin_zip_path)
 
     # uninstall

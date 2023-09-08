@@ -37,7 +37,7 @@ def key_in_json(key, json):
 # create a plugin zip out of the mock plugin folder.
 # - Used to test plugin upload.
 # - zip can be created flat (plugin files in root dir) or nested (plugin files in zipped folder)
-def create_mock_plugin_zip(flat: bool = False):
+def create_mock_plugin_zip(flat: bool):
 
     if flat:
         root_dir = "tests/mocks/mock_plugin"

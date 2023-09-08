@@ -13,7 +13,7 @@ def just_installed_plugin(client):
     ### executed before each test function
 
     # create zip file with a plugin
-    zip_path = create_mock_plugin_zip()
+    zip_path = create_mock_plugin_zip(flat=True)
     zip_file_name = zip_path.split("/")[-1] # mock_plugin.zip in tests/mocks folder
 
     # upload plugin via endpoint
