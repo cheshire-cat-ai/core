@@ -41,7 +41,7 @@ async def registry_search_plugins(
 
 def registry_download_plugin(url: str) -> str:
 
-    log(f"downloading {url}", "WARNING")
+    log(f"Downloading {url}", "INFO")
 
     registry_url = get_registry_url()
     payload = {
@@ -51,5 +51,7 @@ def registry_download_plugin(url: str) -> str:
     plugin_zip_path = f"/tmp/{url.split('/')[-1]}.zip"
     with open(plugin_zip_path, "wb") as f:
         f.write(response.content)
+
+    log(f"Saved plugin as {plugin_zip_path}", "INFO")
 
     return plugin_zip_path

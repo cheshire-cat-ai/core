@@ -178,8 +178,7 @@ class Plugin:
                 tools += getmembers(plugin_module, self._is_cat_tool)
             except Exception as e:
                 log(f"Error in {py_filename}: {str(e)}","ERROR")
-                if get_log_level() == "DEBUG":
-                    traceback.print_exc()
+                traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}")
             
         # clean and enrich instances
