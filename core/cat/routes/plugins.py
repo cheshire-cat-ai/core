@@ -4,7 +4,7 @@ from typing import Dict
 from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
-from cat.mad_hatter.registry import registry_search_plugins
+from cat.mad_hatter.registry import registry_search_plugins, registry_download_plugin
 from urllib.parse import urlparse
 import requests
 
@@ -102,60 +102,32 @@ async def install_plugin(
 async def install_plugin_from_registry(
     request: Request,
     background_tasks: BackgroundTasks,
-    url_repo: Dict = Body(example={"url": "https://github.com/plugin-dev-account/plugin-repo"})
+    payload: Dict = Body(example={"url": "https://github.com/plugin-dev-account/plugin-repo"})
     ) -> Dict:
-    """Install a new plugin from external repository"""
-    
-    # search for a release on Github
-    path_url = str(urlparse(url_repo["url"]).path)
-    url = "https://api.github.com/repos" +  path_url + "/releases"
-    response = requests.get(url)
-    if response.status_code != 200:
-            raise HTTPException(
-                status_code = 503,
-                detail = { "error": "Github API not available" }
-            )
-            
-    response = response.json()
-    
-    #Check if there are files for the latest release
-    if len(response) != 0: 
-        url_zip = response[0]["assets"][0]["browser_download_url"]
-    else:
-        # if not, than download the zip repo
-        # TODO: extracted folder still contains branch name
-        url_zip = url_repo["url"] + "/archive/master.zip"
-        
-    # Get plugin name
-    arr = path_url.split("/")
-    arr.reverse()
-    plugin_name = arr[0] + ".zip"
+    """Install a new plugin from registry"""
 
-    with requests.get(url_zip, stream=True) as response:
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code = 400,
-                detail = { "error": "" }
-            )
-        
-        with NamedTemporaryFile(delete=False,mode="w+b",suffix=plugin_name) as file:
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
-            log(f"Uploading plugin {plugin_name}", "INFO")
+    # access cat instance
+    ccat = request.app.state.ccat
 
-            #access cat instance
-            ccat = request.app.state.ccat
-            
+    # download zip from registry
+    try:
+        tmp_plugin_path = registry_download_plugin( payload["url"] )
+    except Exception as e:
+        log("Could not download plugin form registry", "ERROR")
+        log(e, "ERROR")
+        raise HTTPException(
+            status_code = 500,
+            detail = { "error": str(e)}
+        ) 
 
-            background_tasks.add_task(
-                ccat.mad_hatter.install_plugin, file.name
-            )
+    background_tasks.add_task(
+        ccat.mad_hatter.install_plugin, tmp_plugin_path
+    )
 
-            return {
-                "filename": file.name,
-                "content_type": mimetypes.guess_type(plugin_name)[0],
-                "info": "Plugin is being installed asynchronously"
-            }
+    return {
+        "url": payload["url"],
+        "info": "Plugin is being installed asynchronously"
+    }
 
 
 @router.put("/toggle/{plugin_id}", status_code=200)

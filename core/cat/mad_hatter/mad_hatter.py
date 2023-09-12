@@ -39,6 +39,11 @@ class MadHatter:
         plugins_folder = self.ccat.get_plugin_path()
         extractor = PluginExtractor(package_plugin)
         plugin_path = extractor.extract(plugins_folder)
+
+        # remove zip after extraction
+        os.remove(package_plugin)
+
+        # get plugin id (will be its folder name)
         plugin_id = os.path.basename(plugin_path)
         
         # create plugin obj

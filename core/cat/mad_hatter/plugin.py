@@ -169,7 +169,7 @@ class Plugin:
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
-            log(f"Import module {py_filename}", "DEBUG")
+            log(f"Import module {py_filename}", "WARNING")
 
             # save a reference to decorated functions
             try:

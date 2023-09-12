@@ -1,4 +1,5 @@
 import os
+from utils import get_embedded_tools
 
 # TODO: registry responses here should be mocked, at the moment we are actually calling the service
 
@@ -70,6 +71,33 @@ def test_list_registry_plugins_by_tag(client):
         plugin_tags = plugin["tags"].split(", ")
         assert params["tag"] in plugin_tags # verify tag
 '''
+
+
+def test_plugin_install_from_registry(client):
+
+    # during tests, the cat uses a different folder for plugins
+    mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
+
+    
+
+    # GET plugins endpoint lists the plugin
+    response = client.get("/plugins")
+    installed_plugins = response.json()["installed"]
+    installed_plugins_names = list(map(lambda p: p["id"], installed_plugins))
+    assert "mock_plugin" in installed_plugins_names
+    # both core_plugin and mock_plugin are active
+    for p in installed_plugins:
+        assert p["active"] == True
+
+    # plugin has been actually extracted in (mock) plugins folder
+    assert os.path.exists(mock_plugin_final_folder)
+
+    # check whether new tool has been embedded
+    tools = get_embedded_tools(client)
+    assert len(tools) == 2
+    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
+    assert "mock_tool" in tool_names
+    assert "get_the_time" in tool_names # from core_plugin
 
 
 # take away from the list of availbale registry plugins, the ones that are already installed
