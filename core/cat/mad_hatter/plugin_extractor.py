@@ -52,6 +52,10 @@ class PluginExtractor:
         
         # move plugin folder to cat plugins folder
         extracted_path = os.path.join(to, self.id)
+        # if folder exists, delete it as it will be replaced
+        if os.path.exists(extracted_path):
+            shutil.rmtree(extracted_path)
+        # extracted plugin in plugins folder!
         shutil.move(folder_to_copy, extracted_path)
 
         # cleanup
