@@ -99,10 +99,6 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     assert "core_plugin" in active_plugins
     assert "mock_plugin" in active_plugins
 
-    # remove plugin files (both zip and extracted)
-    os.remove(new_plugin_zip_path)
-    shutil.rmtree(os.path.join(mad_hatter.ccat.get_plugin_path(), "mock_plugin"))
-
 
 def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
     # should not throw error
@@ -141,6 +137,3 @@ def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
     active_plugins = mad_hatter.load_active_plugins_from_db()
     assert len(active_plugins) == 1
     assert active_plugins[0] == "core_plugin"
-
-    # remove also original zip file
-    os.remove(new_plugin_zip_path)

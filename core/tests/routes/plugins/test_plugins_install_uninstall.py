@@ -1,6 +1,5 @@
 import os
 import time
-import pytest
 import shutil
 from tests.utils import get_embedded_tools
 from fixture_just_installed_plugin import just_installed_plugin
@@ -14,6 +13,13 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
 
     #### PLUGIN IS ALREADY ACTIVE
+
+    # GET plugin endpoint responds
+    response = client.get(f"/plugins/mock_plugin")
+    assert response.status_code == 200
+    json = response.json()
+    assert json["data"]["id"] == "mock_plugin"
+    assert json["data"]["active"] == True
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
