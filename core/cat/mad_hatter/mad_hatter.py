@@ -26,7 +26,7 @@ class MadHatter:
 
         self.plugins = {} # plugins dictionary
 
-        self.hooks = [] # list of active plugins hooks 
+        self.hooks = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
         self.tools = [] # list of active plugins tools 
 
         self.active_plugins = []
@@ -116,7 +116,7 @@ class MadHatter:
     def sync_hooks_and_tools(self):
 
         # emptying tools and hooks
-        self.hooks = []
+        self.hooks = {}
         self.tools = []
 
         for _, plugin in self.plugins.items():
@@ -128,11 +128,18 @@ class MadHatter:
                     # Prepare the tool to be used in the Cat (setting the cat instance, adding properties)
                     t.augment_tool(self.ccat)
 
-                self.hooks += plugin.hooks
+                # cache tools
                 self.tools += plugin.tools
 
-        # sort hooks by priority
-        self.hooks.sort(key=lambda x: x.priority, reverse=True)
+                # cache hooks (indexed by hook name)
+                for h in plugin.hooks:
+                    if h.name not in self.hooks.keys():
+                        self.hooks[h.name] = []
+                    self.hooks[h.name].append(h)
+
+        # sort each hooks list by priority
+        for hook_name in self.hooks.keys():
+            self.hooks[hook_name].sort(key=lambda x: x.priority, reverse=True)
                 
     # check if plugin exists
     def plugin_exists(self, plugin_id):
@@ -238,9 +245,13 @@ class MadHatter:
         
     # execute requested hook
     def execute_hook(self, hook_name, *args):
-        for h in self.hooks:
-            if hook_name == h.name:
-                return h.function(*args, cat=self.ccat)
 
-        # every hook must have a default in core_plugin
-        raise Exception(f"Hook {hook_name} not present in any plugin")
+        # check if hook is supported
+        if hook_name not in self.hooks.keys():
+            raise Exception(f"Hook {hook_name} not present in any plugin")
+        
+        # run hooks
+        for h in self.hooks[hook_name]:
+            return h.function(*args, cat=self.ccat)
+            # TODO: should be run as a pipe, not return immediately
+
