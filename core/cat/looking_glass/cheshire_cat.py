@@ -66,12 +66,7 @@ class CheshireCat:
         """Load Natural Language related objects.
 
         The method exposes in the Cat all the NLP related stuff. Specifically, it sets the language models
-        (LLM and Embedder) and the main prompt with default settings.
-
-        Notes
-        -----
-        `use_episodic_memory`, `use_declarative_memory` and `use_procedural_memory` settings can be set from the admin
-        GUI and allows to prevent the Cat from using any of the three vector memories.
+        (LLM and Embedder).
 
         Warnings
         --------
@@ -87,14 +82,6 @@ class CheshireCat:
         # LLM and embedder
         self._llm = self.mad_hatter.execute_hook("get_language_model")
         self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
-
-        # set the default prompt settings
-        self.default_prompt_settings = {
-            "prefix": "",
-            "use_episodic_memory": True,
-            "use_declarative_memory": True,
-            "use_procedural_memory": True,
-        }
 
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
@@ -129,7 +116,6 @@ class CheshireCat:
         """
         user_id = self.working_memory.get_user_id()
         user_message = self.working_memory["user_message_json"]["text"]
-        prompt_settings = self.working_memory["user_message_json"]["prompt_settings"]
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
@@ -174,16 +160,11 @@ class CheshireCat:
         memory_types = self.memory.vectors.collections.keys()
 
         for config, memory_type in zip(recall_configs, memory_types):
-            setting = f"use_{memory_type}_memory"
             memory_key = f"{memory_type}_memories"
 
-            if prompt_settings[setting]:
-                # recall relevant memories
-                vector_memory = getattr(self.memory.vectors, memory_type)
-                memories = vector_memory.recall_memories_from_embedding(**config)
-
-            else:
-                memories = []
+            # recall relevant memories for collection
+            vector_memory = getattr(self.memory.vectors, memory_type)
+            memories = vector_memory.recall_memories_from_embedding(**config)
 
             self.working_memory[memory_key] = memories
 
@@ -258,29 +239,6 @@ class CheshireCat:
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
         }
-
-    def store_new_message_in_working_memory(self, user_message_json):
-        """Store message in working_memory and update the prompt settings.
-
-        The method update the working memory with the last user's message.
-        Also, the client sends the settings to turn on/off the vector memories.
-
-        Parameters
-        ----------
-        user_message_json : dict
-            Dictionary with the message received from the Websocket client
-
-        """
-
-        # store last message in working memory
-        self.working_memory["user_message_json"] = user_message_json
-
-        prompt_settings = deepcopy(self.default_prompt_settings)
-
-        # override current prompt_settings with prompt settings sent via websocket (if any)
-        prompt_settings.update(user_message_json.get("prompt_settings", {}))
-
-        self.working_memory["user_message_json"]["prompt_settings"] = prompt_settings
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
@@ -367,11 +325,8 @@ class CheshireCat:
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
-        # store user_message_json in working memory
-        # it contains the new message, prompt settings and other info plugins may find useful
-        self.store_new_message_in_working_memory(user_message_json)
-
-        # TODO another hook here?
+        # store last message in working memory
+        self.working_memory["user_message_json"] = user_message_json
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory

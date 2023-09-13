@@ -10,11 +10,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from cat.log import log, welcome
-from cat.routes import base, memory, plugins, upload, websocket
+from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes import settings, prompt, llm, embedder
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -58,7 +57,6 @@ cheshire_cat_api.add_middleware(
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
-cheshire_cat_api.include_router(prompt.router, tags=["Prompt"], prefix="/prompt")
 cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
 cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")

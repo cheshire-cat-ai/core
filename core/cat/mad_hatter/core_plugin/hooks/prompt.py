@@ -42,11 +42,6 @@ def agent_prompt_prefix(cat) -> str:
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
 You answer Human with a focus on the following context.
 """
-    # check if custom prompt is sent in prompt settings
-    prompt_settings = cat.working_memory["user_message_json"]["prompt_settings"]
-
-    if prompt_settings["prefix"]:
-        prefix = prompt_settings["prefix"]
 
     return prefix
 
