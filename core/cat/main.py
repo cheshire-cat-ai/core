@@ -33,12 +33,14 @@ async def lifespan(app: FastAPI):
 
     yield
 
+
 def custom_generate_unique_id(route: APIRoute):
     return f"{route.name}"
 
+
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan, 
+    lifespan=lifespan,
     dependencies=[Depends(check_api_key)],
     generate_unique_id_function=custom_generate_unique_id
 )
@@ -63,7 +65,6 @@ cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugi
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
-
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
@@ -93,7 +94,7 @@ cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
 
 # RUN!
 if __name__ == "__main__":
-    
+
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
     if os.getenv("DEBUG", "true") == "true":

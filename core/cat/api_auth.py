@@ -1,5 +1,7 @@
 import os
+import fnmatch
 
+from fastapi import Request
 from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
@@ -15,13 +17,15 @@ The keys are piped with a `|`, hence the list takes care of splitting and storin
 api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 
-def check_api_key(api_key: str = Security(api_key_header)) -> None | str:
+def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> None | str:
     """Authenticate endpoint.
 
     Check the provided key is available in API keys list.
 
     Parameters
     ----------
+    request : Request
+        HTTP request.
     api_key : str
         API keys to be checked.
 
@@ -37,6 +41,8 @@ def check_api_key(api_key: str = Security(api_key_header)) -> None | str:
 
     """
     if not API_KEY:
+        return None
+    if fnmatch.fnmatch(request.url.path, "/admin*"):
         return None
     if api_key in API_KEY:
         return api_key

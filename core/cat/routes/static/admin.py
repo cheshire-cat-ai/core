@@ -32,7 +32,6 @@ def mount_admin_spa(cheshire_cat_api):
             "CORE_HOST": os.getenv("CORE_HOST"),
             "CORE_PORT": os.getenv("CORE_PORT"),
             "CORE_USE_SECURE_PROTOCOLS": os.getenv("CORE_USE_SECURE_PROTOCOLS"),
-            "API_KEY": os.getenv("API_KEY"),
         })
 
         # the admin sttic build is created during docker build from this repo:
