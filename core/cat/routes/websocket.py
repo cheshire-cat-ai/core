@@ -1,7 +1,7 @@
 import traceback
 import asyncio
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from cat.log import log
 from fastapi.concurrency import run_in_threadpool
 
@@ -24,6 +24,7 @@ class ConnectionManager:
         """
         Accept the incoming WebSocket connection and add it to the active connections list.
         """
+
         await websocket.accept()
         self.active_connections.append(websocket)
 
