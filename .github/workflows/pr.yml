@@ -34,7 +34,7 @@ jobs:
   #     - name: Pylint
   #       run: pylint -f actions ./
   test:
-    needs: [ pylint ]
+    # needs: [ pylint ]
     name: "Run Tests"
     runs-on: 'ubuntu-latest'
     steps:
