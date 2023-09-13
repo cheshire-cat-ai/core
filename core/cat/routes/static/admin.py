@@ -25,9 +25,6 @@ def mount_admin_spa(cheshire_cat_api):
         # - CORE_HOST
         # - CORE_PORT
         # - CORE_USE_SECURE_PROTOCOLS
-        # - API_KEY
-        # TODO: this is not secure nor useful, because if API_KEY is activated than the endpoint itself does not work.
-        #       fix when user system is available
         cat_core_config = json.dumps({
             "CORE_HOST": os.getenv("CORE_HOST"),
             "CORE_PORT": os.getenv("CORE_PORT"),
