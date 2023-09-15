@@ -38,16 +38,12 @@ def agent_prompt_prefix(prefix, cat) -> str:
     The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     """
-    prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
-You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
-You answer Human with a focus on the following context.
-"""
 
     return prefix
 
 
 @hook(priority=0)
-def agent_prompt_instructions(cat) -> str:
+def agent_prompt_instructions(instructions, cat) -> str:
     """Hook the instruction prompt.
 
     Allows to edit the instructions that the Cat feeds to the *Agent*.
@@ -81,36 +77,11 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
-    DEFAULT_TOOL_TEMPLATE = """Answer the following question: `{input}`
-    You can only reply using these tools:
-
-    {tools}
-    none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
-
-    If you want to use tools, use the following format:
-    Action: the name of the action to take, should be one of [{tool_names}]
-    Action Input: the input to the action
-    Observation: the result of the action
-    ...
-    Action: the name of the action to take, should be one of [{tool_names}]
-    Action Input: the input to the action
-    Observation: the result of the action
-
-    When you have a final answer respond with:
-    Final Answer: the final answer to the original input question
-
-    Begin!
-
-    Question: {input}
-    {agent_scratchpad}"""
-
-
-    # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
-    return DEFAULT_TOOL_TEMPLATE
+    return instructions
 
 
 @hook(priority=0)
-def agent_prompt_suffix(cat) -> str:
+def agent_prompt_suffix(prompt_suffix: str, cat) -> str:
     """Hook the main prompt suffix.
 
     Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*.
@@ -138,20 +109,8 @@ def agent_prompt_suffix(cat) -> str:
     - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     """
-    suffix = """
-# Context
 
-{episodic_memory}
-
-{declarative_memory}
-
-{tools_output}
-
-## Conversation until now:{chat_history}
- - Human: {input}
- - AI: """
-
-    return suffix
+    return prompt_suffix
 
 
 @hook(priority=0)
@@ -266,7 +225,7 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
 
 
 @hook(priority=0)
-def agent_prompt_chat_history(chat_history: List[Dict], cat) -> str:
+def agent_prompt_chat_history(chat_history: List[Dict], cat) -> List[Dict]:
     """Hook the chat history.
 
     This hook converts to text the recent conversation turns fed to the *Agent*.

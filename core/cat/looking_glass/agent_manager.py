@@ -2,7 +2,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
-from cat.looking_glass.prompts import ToolPromptTemplate
+from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.log import log
 
@@ -26,9 +26,10 @@ class AgentManager:
     def execute_tool_agent(self, agent_input, allowed_tools):
 
         allowed_tools_names = [t.name for t in allowed_tools]
+        # TODO: dynamic input_variables as in the main prompt 
 
-        prompt = ToolPromptTemplate(
-            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions"),
+        prompt = prompts.ToolPromptTemplate(
+            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -60,17 +61,13 @@ class AgentManager:
     
 
     def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix):
+
+        input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
         
         # memory chain (second step)
         memory_prompt = PromptTemplate(
             template = prompt_prefix + prompt_suffix,
-            input_variables=[
-                "input",
-                "chat_history",
-                "episodic_memory",
-                "declarative_memory",
-                "tools_output"
-            ]
+            input_variables=input_variables
         )
 
         memory_chain = LLMChain(
@@ -97,20 +94,27 @@ class AgentManager:
             Instance of the Agent provided with a set of tools.
         """
         mad_hatter = self.cat.mad_hatter
+        working_memory = self.cat.working_memory
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input()
 
         # this hook allows to reply without executing the agent (for example canned responses, out-of-topic barriers etc.)
-        fast_reply = mad_hatter.execute_hook("before_agent_starts", agent_input)
-        if fast_reply:
-            return fast_reply
+        #fast_reply = mad_hatter.execute_hook("before_agent_starts", agent_input)
+        #if fast_reply:
+        #    return fast_reply
 
-        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", "TODO_HOOK")
-        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", "TODO_HOOK")
+        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
+        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
 
-        allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
+        # tools currently recalled in working memory
+        recalled_tools = working_memory["procedural_memories"]
+        # Get the tools names only
+        tools_names = [t[0].metadata["name"] for t in recalled_tools]
+        tools_names = mad_hatter.execute_hook("agent_allowed_tools", tools_names)
+        # Get tools with that name from mad_hatter
+        allowed_tools = [i for i in mad_hatter.tools if i.name in tools_names]
 
         # Try to get information from tools if there is some allowed
         if len(allowed_tools) > 0:
