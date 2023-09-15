@@ -119,10 +119,10 @@ class CatLogEngine:
         if module_info:
             mod = module_info.__name__.split(".")
             package = mod[0]
-            module = mod[1]
+            module = ".".join(mod[1:])
 
         # class name.
-        klass = None
+        klass = ""
         if "self" in parentframe.f_locals:
             klass = parentframe.f_locals["self"].__class__.__name__
 
@@ -140,8 +140,32 @@ class CatLogEngine:
 
         return package, module, klass, caller, line
 
+    def __call__(self, msg, level="DEBUG"):
+        """Alias of self.log()"""
+        self.log(msg, level)
+
+    def debug(self, msg):
+        """Logs a DEBUG message"""
+        self.log(msg, level="DEBUG")
+
+    def info(self, msg):
+        """Logs an INFO message"""
+        self.log(msg, level="INFO")
+
+    def warning(self, msg):
+        """Logs a WARNING message"""
+        self.log(msg, level="WARNING")
+
+    def error(self, msg):
+        """Logs an ERROR message"""
+        self.log(msg, level="ERROR")
+
+    def critical(self, msg):
+        """Logs a CRITICAL message"""
+        self.log(msg, level="CRITICAL")
+
     def log(self, msg, level="DEBUG"):
-        """Add to log based on settings.
+        """Log a message
 
         Parameters
         ----------
@@ -149,6 +173,7 @@ class CatLogEngine:
             Message to be logged.
         level : str
             Logging level."""
+
         global logger
         logger.remove()
 
@@ -203,40 +228,22 @@ class CatLogEngine:
         # After our custom log we need to set again the logger as default for the other dependencies
         self.default_log()
 
+    def welcome(self):
+        """Welcome message in the terminal."""
+        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+        if secure != '':
+            secure = 's'
 
-logEngine = CatLogEngine()
+        cat_address = f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
 
+        with open("cat/welcome.txt", 'r') as f:
+            print(f.read())
 
-def log(msg, level="DEBUG"):
-    """Create function wrapper to class.
+        print('\n=============== ^._.^ ===============\n')
+        print(f'Cat REST API:\t{cat_address}/docs')
+        print(f'Cat PUBLIC:\t{cat_address}/public')
+        print(f'Cat ADMIN:\t{cat_address}/admin\n')
+        print('======================================')
 
-    Parameters
-    ----------
-    msg : str
-        Message to be logged.
-    level : str
-        Logging level.
-
-    Returns
-    -------
-    """
-    global logEngine
-    return logEngine.log(msg, level)
-
-
-def welcome():
-    """Welcome message in the terminal."""
-    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
-    if secure != '':
-        secure = 's'
-
-    cat_address = f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
-
-    with open("cat/welcome.txt", 'r') as f:
-        print(f.read())
-
-    print('\n=============== ^._.^ ===============\n')
-    print(f'Cat REST API:\t{cat_address}/docs')
-    print(f'Cat PUBLIC:\t{cat_address}/public')
-    print(f'Cat ADMIN:\t{cat_address}/admin\n')
-    print('======================================')
+# logger instance
+log = CatLogEngine()
