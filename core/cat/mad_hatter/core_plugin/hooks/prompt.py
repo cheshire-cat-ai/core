@@ -14,7 +14,7 @@ from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def agent_prompt_prefix(cat) -> str:
+def agent_prompt_prefix(prefix, cat) -> str:
     """Hook the main prompt prefix.
 
     Allows to edit the prefix of the *Main Prompt* that the Cat feeds to the *Agent*.

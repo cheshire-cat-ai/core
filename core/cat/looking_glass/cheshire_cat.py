@@ -340,51 +340,6 @@ class CheshireCat:
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt)
 
-    def format_agent_input(self):
-        """Format the input for the Agent.
-
-        The method formats the strings of recalled memories and chat history that will be provided to the Langchain
-        Agent and inserted in the prompt.
-
-        Returns
-        -------
-        dict
-            Formatted output to be parsed by the Agent executor.
-
-        Notes
-        -----
-        The context of memories and conversation history is properly formatted before being parsed by the and, hence,
-        information are inserted in the main prompt.
-        All the formatting pipeline is hookable and memories can be edited.
-
-        See Also
-        --------
-        agent_prompt_episodic_memories
-        agent_prompt_declarative_memories
-        agent_prompt_chat_history
-        """
-        # format memories to be inserted in the prompt
-        episodic_memory_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_episodic_memories",
-            self.working_memory["episodic_memories"],
-        )
-        declarative_memory_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_declarative_memories",
-            self.working_memory["declarative_memories"],
-        )
-
-        # format conversation history to be inserted in the prompt
-        conversation_history_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_chat_history", self.working_memory["history"]
-        )
-
-        return {
-            "input": self.working_memory["user_message_json"]["text"],
-            "episodic_memory": episodic_memory_formatted_content,
-            "declarative_memory": declarative_memory_formatted_content,
-            "chat_history": conversation_history_formatted_content,
-        }
-
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
 
@@ -492,13 +447,9 @@ class CheshireCat:
                 "description": err_message,
             }
 
-        # prepare input to be passed to the agent.
-        #   Info will be extracted from working memory
-        agent_input = self.format_agent_input()
-
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent(agent_input)
+            cat_message = self.agent_manager.execute_agent()
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -512,7 +463,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input": agent_input["input"],
+                "input": self.working_memory["user_message_json"]["text"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }

@@ -253,25 +253,28 @@ class MadHatter:
         if hook_name not in self.hooks.keys():
             raise Exception(f"Hook {hook_name} not present in any plugin")
         
-
-        # First argument is passed to `execute_hook` is the pipeable one.
+        # Hook has no arguments (aside cat)
+        #  no need to pipe
+        if len(args) == 0:
+            for hook in self.hooks[hook_name]:
+                try:
+                    hook.function(cat=self.ccat)
+                except Exception as e:
+                    log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
+                    log.error(e)
+                    traceback.print_exc()
+            return
+            
+        # Hook with arguments.
+        #  First argument is passed to `execute_hook` is the pipeable one.
         #  We call it `tea_cup` as every hook called will receive it as an input,
         #  can add sugar, milk, or whatever, and return it for the next hook
-        if len(args) == 0:
-            tea_cup = None
-        else:
-            tea_cup = args[0]
+        tea_cup = args[0]
         
         # run hooks
         for hook in self.hooks[hook_name]:
             try:
                 # pass tea_cup to the hooks, along other args
-                
-                # hook has no input (aside cat)
-                if tea_cup is None:
-                    hook.function(cat=self.ccat)
-                    continue
-
                 # hook has at least one argument, and it will be piped
                 tea_spoon = hook.function(tea_cup, *args[1:], cat=self.ccat)
                 log.info(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")

@@ -85,7 +85,7 @@ class AgentManager:
         return out
 
 
-    def execute_agent(self, agent_input):
+    def execute_agent(self):
         """Instantiate the Agent with tools.
 
         The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
@@ -98,13 +98,17 @@ class AgentManager:
         """
         mad_hatter = self.cat.mad_hatter
 
+        # prepare input to be passed to the agent.
+        #   Info will be extracted from working memory
+        agent_input = self.format_agent_input()
+
         # this hook allows to reply without executing the agent (for example canned responses, out-of-topic barriers etc.)
         fast_reply = mad_hatter.execute_hook("before_agent_starts", agent_input)
         if fast_reply:
             return fast_reply
 
-        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix")
-        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix")
+        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", "TODO_HOOK")
+        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", "TODO_HOOK")
 
         allowed_tools = mad_hatter.execute_hook("agent_allowed_tools")
 
@@ -160,3 +164,53 @@ class AgentManager:
         out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
 
         return out
+    
+    def format_agent_input(self):
+        """Format the input for the Agent.
+
+        The method formats the strings of recalled memories and chat history that will be provided to the Langchain
+        Agent and inserted in the prompt.
+
+        Returns
+        -------
+        dict
+            Formatted output to be parsed by the Agent executor.
+
+        Notes
+        -----
+        The context of memories and conversation history is properly formatted before being parsed by the and, hence,
+        information are inserted in the main prompt.
+        All the formatting pipeline is hookable and memories can be edited.
+
+        See Also
+        --------
+        agent_prompt_episodic_memories
+        agent_prompt_declarative_memories
+        agent_prompt_chat_history
+        """
+
+        mad_hatter = self.cat.mad_hatter
+        working_memory = self.cat.working_memory
+
+        # format memories to be inserted in the prompt
+        episodic_memory_formatted_content = mad_hatter.execute_hook(
+            "agent_prompt_episodic_memories",
+            working_memory["episodic_memories"],
+        )
+        declarative_memory_formatted_content = mad_hatter.execute_hook(
+            "agent_prompt_declarative_memories",
+            working_memory["declarative_memories"],
+        )
+
+        # format conversation history to be inserted in the prompt
+        conversation_history_formatted_content = mad_hatter.execute_hook(
+            "agent_prompt_chat_history",
+            working_memory["history"]
+        )
+
+        return {
+            "input": working_memory["user_message_json"]["text"],
+            "episodic_memory": episodic_memory_formatted_content,
+            "declarative_memory": declarative_memory_formatted_content,
+            "chat_history": conversation_history_formatted_content,
+        }

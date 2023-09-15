@@ -2,7 +2,6 @@
 from tests.utils import send_websocket_message
 
 
-# TODO: ws endpoint still talks with the prod cat configuration 
 def test_websocket(client):
         
         # use fake LLM
