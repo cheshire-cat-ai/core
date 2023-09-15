@@ -113,6 +113,7 @@ def agent_prompt_suffix(prompt_suffix: str, cat) -> str:
     return prompt_suffix
 
 
+# TODO_HOOK
 @hook(priority=0)
 def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
     """Hook memories retrieved from episodic memory.
@@ -171,6 +172,7 @@ def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
     return memory_content
 
 
+# TODO_HOOK
 @hook(priority=0)
 def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
     """Hook memories retrieved from declarative memory.
@@ -224,6 +226,7 @@ def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
     return memory_content
 
 
+# TODO_HOOK
 @hook(priority=0)
 def agent_prompt_chat_history(chat_history: List[Dict], cat) -> List[Dict]:
     """Hook the chat history.

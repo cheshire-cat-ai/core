@@ -260,28 +260,6 @@ def after_cat_recalls_memories(cat) -> None:
     pass # do nothing
 
 
-# Called just after memories are recalled. They are stored in:
-# - cat.working_memory["episodic_memories"]
-# - cat.working_memory["declarative_memories"]
-@hook(priority=0)
-def after_cat_recalled_memories(memory_query_text: str, cat) -> None:
-    """Hook into semantic search after the memory retrieval.
-
-    Allows to intercept the recalled memories right after these are stored in the Working Memory.
-    According to the user's input, the relevant context is saved in `cat.working_memory["episodic_memories"]`
-    and `cat.working_memory["declarative_memories"]`. At this point,
-    this hook is executed to edit the search query.
-
-    Parameters
-    ----------
-    memory_query_text : str
-        String used to query both *episodic* and *declarative* memories.
-    cat : CheshireCat
-        Cheshire Cat instance.
-    """
-    return None
-
-
 # Hook called just before sending response to a client.
 @hook(priority=0)
 def before_cat_sends_message(message: dict, cat) -> dict:

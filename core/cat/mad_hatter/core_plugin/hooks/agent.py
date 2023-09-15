@@ -12,6 +12,7 @@ from cat.mad_hatter.decorators import hook
 from cat.log import log
 
 
+# TODO_HOOK
 @hook(priority=0)
 def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
     """Hook before the agent starts.
