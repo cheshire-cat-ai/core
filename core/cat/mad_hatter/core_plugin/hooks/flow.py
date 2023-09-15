@@ -25,7 +25,7 @@ def before_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    return None
+    pass # do nothing
 
 
 # Called after cat bootstrap
@@ -46,7 +46,7 @@ def after_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    return None
+    pass # do nothing
 
 
 # Called when a user message arrives.
