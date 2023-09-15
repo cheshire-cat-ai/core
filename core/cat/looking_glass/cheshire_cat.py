@@ -251,6 +251,7 @@ class CheshireCat:
 
         See Also
         --------
+        cat_recall_query
         before_cat_recalls_memories
         before_cat_recalls_episodic_memories
         before_cat_recalls_declarative_memories
@@ -265,29 +266,30 @@ class CheshireCat:
         log.info(f'Recall query: "{recall_query}"')
 
         # Embed recall query
-        memory_query_embedding = self.embedder.embed_query(recall_query)
+        recall_query_embedding = self.embedder.embed_query(recall_query)
         self.working_memory["recall_query"] = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories")
 
         # Setting default recall configs for each memory
+        # TODO: can these data structrues become instances of a RecallSettings class?
         default_episodic_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": {"source": user_id},
         }
 
         default_declarative_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": None,
         }
 
         default_procedural_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": None,
