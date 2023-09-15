@@ -258,15 +258,15 @@ class CheshireCat:
         after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
-        user_message = self.working_memory["user_message_json"]["text"]
+        recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
-        memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
-        log.info(f'Recall query: "{memory_query_text}"')
+        recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query)
+        log.info(f'Recall query: "{recall_query}"')
 
         # Embed recall query
-        memory_query_embedding = self.embedder.embed_query(memory_query_text)
-        self.working_memory["memory_query"] = memory_query_text
+        memory_query_embedding = self.embedder.embed_query(recall_query)
+        self.working_memory["recall_query"] = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories")
@@ -312,7 +312,7 @@ class CheshireCat:
             self.working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
+        self.mad_hatter.execute_hook("after_cat_recalls_memories")
 
     def llm(self, prompt: str) -> str:
         """Generate a response using the LLM model.

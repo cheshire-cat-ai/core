@@ -201,21 +201,19 @@ def before_cat_recalls_procedural_memories(procedural_recall_config: dict, cat) 
 
 # Called just before the cat recalls memories.
 @hook(priority=0)
-def after_cat_recalls_memories(query: str, cat) -> None:
+def after_cat_recalls_memories(cat) -> None:
     """Hook after semantic search in memories.
 
-    The hook is executed just after the Cat searches for the meaningful context in both memories
+    The hook is executed just after the Cat searches for the meaningful context in memories
     and stores it in the *Working Memory*.
 
     Parameters
     ----------
-    query : str
-        Query used to retrieve memories.
     cat : CheshireCat
         Cheshire Cat instance.
 
     """
-    return None
+    pass # do nothing
 
 
 # What is the input to recall memories?

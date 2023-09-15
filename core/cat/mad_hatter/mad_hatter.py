@@ -274,9 +274,8 @@ class MadHatter:
 
                 # hook has at least one argument, and it will be piped
                 tea_spoon = hook.function(tea_cup, *args[1:], cat=self.ccat)
-                if tea_spoon is None:
-                    log.warning(f"Hook {hook.plugin_id}::{hook.name} returned None")
-                else:
+                log.info(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
+                if tea_spoon is not None:
                     tea_cup = tea_spoon
             except Exception as e:
                 log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
