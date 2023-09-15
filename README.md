@@ -113,12 +113,6 @@ To run the tests within the Docker container, execute the following command:
 docker exec cheshire_cat_core python -m pytest --color=yes .
 ```
 
-If you are running the tests locally on your machine, use the following command:
-
-```bash
-python -m pytest --color=yes .
-```
-
 ### Try in GitHub Codespaces
 
 You can try Cheshire Cat in GitHub Codespaces. The free account provides 60 free hours a month.
