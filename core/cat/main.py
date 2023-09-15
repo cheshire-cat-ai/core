@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from cat.log import log, welcome
+from cat.log import log
 from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     app.state.ccat = CheshireCat()
 
     # startup message with admin, public and swagger addresses
-    welcome()
+    log.welcome()
 
     yield
 
