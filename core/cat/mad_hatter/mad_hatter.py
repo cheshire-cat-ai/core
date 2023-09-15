@@ -85,8 +85,8 @@ class MadHatter:
 
         all_plugin_folders = [core_plugin_folder] + glob.glob(f"{plugins_folder}*/")
 
-        log("ACTIVE PLUGINS:", "INFO")
-        log(self.active_plugins, "INFO")
+        log.info("ACTIVE PLUGINS:")
+        log.info(self.active_plugins)
 
         # discover plugins, folder by folder
         for folder in all_plugin_folders:
@@ -110,7 +110,7 @@ class MadHatter:
         except Exception as e:
             # Something happened while loading the plugin.
             # Print the error and go on with the others.
-            log(str(e), "ERROR")
+            log.error(str(e))
 
     # Load hooks and tools of the active plugins into MadHatter 
     def sync_hooks_and_tools(self):
@@ -193,7 +193,7 @@ class MadHatter:
                     }],
                 )
 
-                log(f"Newly embedded tool: {tool.description}", "WARNING")
+                log.warning(f"Newly embedded tool: {tool.description}")
         
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.tools]
@@ -203,7 +203,7 @@ class MadHatter:
         for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
             # if the tool is not active, it inserts it in the list of points to be deleted
             if descr not in mad_hatter_tools_descriptions:
-                log(f"Deleting embedded tool: {descr}", "WARNING")
+                log.warning(f"Deleting embedded tool: {descr}")
                 points_to_be_deleted.append(id)
 
         # delete not active tools
@@ -221,13 +221,13 @@ class MadHatter:
 
             # update list of active plugins
             if plugin_is_active:
-                log(f"Toggle plugin {plugin_id}: Deactivate", "WARNING")
+                log.warning(f"Toggle plugin {plugin_id}: Deactivate")
                 # Deactivate the plugin
                 self.plugins[plugin_id].deactivate()
                 # Remove the plugin from the list of active plugins
                 self.active_plugins.remove(plugin_id)
             else:
-                log(f"Toggle plugin {plugin_id}: Activate", "WARNING")
+                log.warning(f"Toggle plugin {plugin_id}: Activate")
                 # Activate the plugin
                 self.plugins[plugin_id].activate()
                 # Ass the plugin in the list of active plugins

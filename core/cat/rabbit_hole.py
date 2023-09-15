@@ -78,7 +78,7 @@ class RabbitHole:
         } for p in declarative_memories]
         vectors = [v["vector"] for v in declarative_memories]
 
-        log(f"Preparing to load {len(vectors)} vector memories", "INFO")
+        log.info(f"Preparing to load {len(vectors)} vector memories")
 
         # Check embedding size is correct
         embedder_size = self.cat.memory.vectors.embedder_size
@@ -200,7 +200,7 @@ class RabbitHole:
                     with urlopen(request) as response:
                         file_bytes = response.read()
                 except HTTPError as e:
-                    log(e, "ERROR")
+                    log.error(e)
             else:
 
                 # Get mime type from file extension and source
@@ -253,7 +253,7 @@ class RabbitHole:
         before_rabbithole_insert_memory
         """
 
-        log(f"Preparing to memorize {len(docs)} vectors")
+        log.info(f"Preparing to memorize {len(docs)} vectors")
 
         # hook the docs before they are stored in the vector memory
         docs = self.cat.mad_hatter.execute_hook(
@@ -281,10 +281,9 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                # log(f"Inserted into memory({inserting_info})", "INFO")
-                print(f"Inserted into memory({inserting_info})")
+                log.info(f"Inserted into memory({inserting_info})")
             else:
-                log(f"Skipped memory insertion of empty doc ({inserting_info})", "INFO")
+                log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)

@@ -111,7 +111,7 @@ class AgentManager:
         # Try to get information from tools if there is some allowed
         if len(allowed_tools) > 0:
 
-            log(f"{len(allowed_tools)} allowed tools retrived.", "DEBUG")
+            log.debug(f"{len(allowed_tools)} allowed tools retrived.")
 
             try:
                 tools_result = self.execute_tool_agent(agent_input, allowed_tools)
@@ -150,7 +150,7 @@ class AgentManager:
 
             except Exception as e:
                 error_description = str(e)
-                log(error_description, "ERROR")
+                log.error(error_description)
 
         #If an exeption occur in the execute_tool_agent or there is no allowed tools execute only the memory chain
 

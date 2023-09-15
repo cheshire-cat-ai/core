@@ -82,7 +82,7 @@ async def install_plugin(
             },
         )
 
-    log(f"Uploading {content_type} plugin {file.filename}", "INFO")
+    log.info(f"Uploading {content_type} plugin {file.filename}")
     plugin_archive_path = f"/tmp/{file.filename}"
     with open(plugin_archive_path, "wb+") as f:
         f.write(file.file.read())
@@ -113,8 +113,8 @@ async def install_plugin_from_registry(
     try:
         tmp_plugin_path = registry_download_plugin( payload["url"] )
     except Exception as e:
-        log("Could not download plugin form registry", "ERROR")
-        log(e, "ERROR")
+        log.error("Could not download plugin form registry")
+        log.error(e)
         raise HTTPException(
             status_code = 500,
             detail = { "error": str(e)}

@@ -119,7 +119,7 @@ class CheshireCat:
 
         # We may want to search in memory
         memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
-        log(f'Recall query: "{memory_query_text}"')
+        log.info(f'Recall query: "{memory_query_text}"')
 
         # Embed recall query
         memory_query_embedding = self.embedder.embed_query(memory_query_text)
@@ -315,7 +315,7 @@ class CheshireCat:
         answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
 
         """
-        log(user_message_json, "INFO")
+        log.info(user_message_json)
 
         # Change working memory based on received user_id
         user_id = user_message_json.get('user_id', 'user')
@@ -333,7 +333,7 @@ class CheshireCat:
         try:
             self.recall_relevant_memories_to_working_memory()
         except Exception as e:
-            log(e, "ERROR")
+            log.error(e)
             traceback.print_exc(e)
 
             err_message = (
@@ -361,7 +361,7 @@ class CheshireCat:
             #   non instruction-fine-tuned models can still be used.
             error_description = str(e)
 
-            log(error_description, "ERROR")
+            log.error(error_description)
             if not "Could not parse LLM output: `" in error_description:
                 raise e
 
@@ -372,8 +372,8 @@ class CheshireCat:
                 "output": unparsable_llm_output
             }
 
-        log("cat_message:", "DEBUG")
-        log(cat_message, "DEBUG")
+        log.info("cat_message:")
+        log.info(cat_message)
 
         # update conversation history
         user_message = self.working_memory["user_message_json"]["text"]

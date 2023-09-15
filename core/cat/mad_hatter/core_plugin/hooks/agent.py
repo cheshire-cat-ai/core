@@ -47,7 +47,6 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
     Example 2: don't remember (no uploaded documents about topic)
     ```python
     num_declarative_memories = len( cat.working_memory["declarative_memories"] )
-    log(num_declarative_memories, "ERROR")
     if num_declarative_memories == 0:
         return {
            "output": "Sorry, I have no memories about that."

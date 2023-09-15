@@ -59,7 +59,7 @@ class Plugin:
 
             # If the module is imported it is removed
             if py_filename in sys.modules:
-                log(f"Remove module {py_filename}", "DEBUG")
+                log.debug(f"Remove module {py_filename}")
                 sys.modules.pop(py_filename)
         
         self._hooks = []
@@ -98,8 +98,8 @@ class Plugin:
                 with open(settings_file_path, "r") as json_file:
                     settings = json.load(json_file)
             except Exception as e:
-                log(f"Unable to load plugin {self._id} settings", "ERROR")
-                log(e, "ERROR")
+                log.error(f"Unable to load plugin {self._id} settings")
+                log.error(e)
 
         return settings
     
@@ -126,7 +126,7 @@ class Plugin:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
         except Exception:
-            log(f"Unable to save plugin {self._id} settings", "ERROR")
+            log.error(f"Unable to save plugin {self._id} settings")
             return {}
     
         return updated_settings
@@ -144,7 +144,7 @@ class Plugin:
                 json_file_data = json.load(json_file)
                 json_file.close()
             except Exception:
-                log(f"Loading plugin {self._path} metadata, defaulting to generated values", "INFO")
+                log.info(f"Loading plugin {self._path} metadata, defaulting to generated values")
 
         meta["name"] = json_file_data.get("name", to_camel_case(self._id))
         meta["description"] = json_file_data.get("description", (
@@ -169,7 +169,7 @@ class Plugin:
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
-            log(f"Import module {py_filename}", "INFO")
+            log.info(f"Import module {py_filename}")
 
             # save a reference to decorated functions
             try:
@@ -177,7 +177,7 @@ class Plugin:
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
             except Exception as e:
-                log(f"Error in {py_filename}: {str(e)}","ERROR")
+                log.error(f"Error in {py_filename}: {str(e)}")
                 traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}")
             

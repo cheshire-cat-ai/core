@@ -33,7 +33,7 @@ async def upload_file(
 
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
+    log.info(f"Uploaded {content_type} down the rabbit hole")
 
     # check if MIME type of uploaded file is supported
     if content_type not in admitted_types:
@@ -122,7 +122,7 @@ async def upload_memory(
 
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
+    log.info(f"Uploaded {content_type} down the rabbit hole")
     if content_type != "application/json":
         raise HTTPException(
             status_code=400,

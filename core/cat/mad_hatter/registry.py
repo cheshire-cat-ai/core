@@ -35,13 +35,13 @@ async def registry_search_plugins(
             return response.json()["plugins"]
         
     except Exception as e:
-        log(e, "ERROR")
+        log.error(e)
         return []
     
 
 def registry_download_plugin(url: str) -> str:
 
-    log(f"Downloading {url}", "INFO")
+    log.info(f"Downloading {url}")
 
     registry_url = get_registry_url()
     payload = {
@@ -52,6 +52,6 @@ def registry_download_plugin(url: str) -> str:
     with open(plugin_zip_path, "wb") as f:
         f.write(response.content)
 
-    log(f"Saved plugin as {plugin_zip_path}", "INFO")
+    log.info(f"Saved plugin as {plugin_zip_path}")
 
     return plugin_zip_path

@@ -99,10 +99,10 @@ async def websocket_endpoint(websocket: WebSocket):
         )
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
-        log("WebSocket connection closed", "INFO")
+        log.info("WebSocket connection closed")
     except Exception as e:
         # Log any unexpected errors and send an error message back to the user.
-        log(e, "ERROR")
+        log.error(e)
         traceback.print_exc()
         await manager.send_personal_message({
             "type": "error",
