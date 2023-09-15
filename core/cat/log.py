@@ -119,14 +119,10 @@ class CatLogEngine:
         if module_info:
             mod = module_info.__name__.split(".")
             package = mod[0]
-            module = mod[1]
-
-            # When the module is "plugins" get also the plugin module name
-            if module == "plugins":
-                module = ".".join(mod[1:])
+            module = ".".join(mod[1:])
 
         # class name.
-        klass = None
+        klass = ""
         if "self" in parentframe.f_locals:
             klass = parentframe.f_locals["self"].__class__.__name__
 
