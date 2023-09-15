@@ -110,38 +110,45 @@ class VectorMemoryCollection(Qdrant):
         # Set embedding size (may be changed at runtime)
         self.embedder_size = vector_size
 
-        # Check if memory collection exists, otherwise create it
-        self.create_collection_if_not_exists()
+        # Check if memory collection exists also in vectorDB, otherwise create it
+        self.create_db_collection_if_not_exists()
 
+        # Check db collection vector size is same as embedder size
+        self.check_embedding_size()
 
-    def create_collection_if_not_exists(self):
-        # create collection if it does not exist
-        try:
-            self.client.get_collection(self.collection_name)
-            log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
-            log(f'Collection alias: "{self.client.get_collection_aliases(self.collection_name).aliases}" ', "INFO")
-            
-            # having the same size does not necessarily imply being the same embedder
-            # having vectors with the same size but from diffent embedder in the same vector space is wrong
-            same_size = (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size)
-            alias = self.embedder_name + "_" + self.collection_name
-            if alias==self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name and same_size:
-                log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
-            else:
-                log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
-                # dump collection on disk before deleting
-                self.save_dump()
-                log(f'Dump "{self.collection_name}" completed', "INFO")
-
-                self.client.delete_collection(self.collection_name)
-                log(f'Collection "{self.collection_name}" deleted', "WARNING")
-                self.create_collection()
-        except Exception as e:
-            log(e, "ERROR")
-            self.create_collection()
-
+        # log collection info
         log(f"Collection {self.collection_name}:", "INFO")
         log(dict(self.client.get_collection(self.collection_name)), "INFO")
+
+    def check_embedding_size(self):
+
+        # having the same size does not necessarily imply being the same embedder
+        # having vectors with the same size but from diffent embedder in the same vector space is wrong
+        same_size = (self.client.get_collection(self.collection_name).config.params.vectors.size==self.embedder_size)
+        alias = self.embedder_name + "_" + self.collection_name
+        if alias==self.client.get_collection_aliases(self.collection_name).aliases[0].alias_name and same_size:
+            log(f'Collection "{self.collection_name}" has the same embedder', "INFO")
+        else:
+            log(f'Collection "{self.collection_name}" has different embedder', "WARNING")
+            # dump collection on disk before deleting
+            self.save_dump()
+            log(f'Dump "{self.collection_name}" completed', "INFO")
+
+            self.client.delete_collection(self.collection_name)
+            log(f'Collection "{self.collection_name}" deleted', "WARNING")
+            self.create_collection()
+
+    def create_db_collection_if_not_exists(self):
+        
+        # is collection present in DB?
+        collections_response = self.client.get_collections()
+        for c in collections_response.collections:
+            if c.name == self.collection_name:
+                # collection exists. Do nothing
+                log(f'Collection "{self.collection_name}" already present in vector store', "INFO")
+                return
+        
+        self.create_collection()
 
     # create collection
     def create_collection(self):
