@@ -173,9 +173,12 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
 
+    plugin = ccat.mad_hatter.plugins[plugin_id]
+
     # get manifest and active True/False. We make a copy to avoid modifying the original obj
-    plugin_info = deepcopy(ccat.mad_hatter.plugins[plugin_id].manifest)
+    plugin_info = deepcopy(plugin.manifest)
     plugin_info["active"] = plugin_id in active_plugins
+    plugin_info["used_hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in plugin.hooks]
 
     return {
         "data": plugin_info
