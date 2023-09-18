@@ -41,6 +41,7 @@ async def get_available_plugins(
         manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
         manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
         manifest["used_hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in p.hooks]
+        manifest["used_tools"] = [tool.func.__name__ for tool in p.tools]
         
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
@@ -179,6 +180,7 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
     plugin_info = deepcopy(plugin.manifest)
     plugin_info["active"] = plugin_id in active_plugins
     plugin_info["used_hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in plugin.hooks]
+    plugin_info["used_tools"] = [tool.func.__name__ for tool in plugin.tools]
 
     return {
         "data": plugin_info
