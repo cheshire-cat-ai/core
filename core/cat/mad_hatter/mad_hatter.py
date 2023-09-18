@@ -247,8 +247,6 @@ class MadHatter:
     # execute requested hook
     def execute_hook(self, hook_name, *args):
 
-        log.critical(hook_name)
-
         # check if hook is supported
         if hook_name not in self.hooks.keys():
             raise Exception(f"Hook {hook_name} not present in any plugin")
@@ -258,6 +256,7 @@ class MadHatter:
         if len(args) == 0:
             for hook in self.hooks[hook_name]:
                 try:
+                    log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
                     hook.function(cat=self.ccat)
                 except Exception as e:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
@@ -276,8 +275,9 @@ class MadHatter:
             try:
                 # pass tea_cup to the hooks, along other args
                 # hook has at least one argument, and it will be piped
+                log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
                 tea_spoon = hook.function(tea_cup, *args[1:], cat=self.ccat)
-                log.info(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
+                log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
                     tea_cup = tea_spoon
             except Exception as e:

@@ -110,7 +110,7 @@ class AgentManager:
         agent_input = mad_hatter.execute_hook("before_agent_starts", agent_input)
         # should we ran the default agent?
         fast_reply = {}
-        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply)
+        fast_reply = mad_hatter.execute_hook("agent_fast_reply", fast_reply)
         if len(fast_reply.keys()) > 0:
             return fast_reply
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
@@ -202,22 +202,18 @@ class AgentManager:
         agent_prompt_chat_history
         """
 
-        mad_hatter = self.cat.mad_hatter
         working_memory = self.cat.working_memory
 
         # format memories to be inserted in the prompt
-        episodic_memory_formatted_content = mad_hatter.execute_hook(
-            "agent_prompt_episodic_memories",
-            working_memory["episodic_memories"],
+        episodic_memory_formatted_content = self.agent_prompt_episodic_memories(
+            working_memory["episodic_memories"]
         )
-        declarative_memory_formatted_content = mad_hatter.execute_hook(
-            "agent_prompt_declarative_memories",
-            working_memory["declarative_memories"],
+        declarative_memory_formatted_content = self.agent_prompt_declarative_memories(
+            working_memory["declarative_memories"]
         )
 
         # format conversation history to be inserted in the prompt
-        conversation_history_formatted_content = mad_hatter.execute_hook(
-            "agent_prompt_chat_history",
+        conversation_history_formatted_content = self.agent_prompt_chat_history(
             working_memory["history"]
         )
 
