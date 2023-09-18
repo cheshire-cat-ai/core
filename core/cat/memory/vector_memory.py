@@ -190,6 +190,7 @@ class VectorMemoryCollection(Qdrant):
             collection_name=self.collection_name,
             points_selector=self._qdrant_filter_from_dict(metadata),
         )
+        return res
     # delete point in collection
     def delete_points(self, points_ids):
         res = self.client.delete(
