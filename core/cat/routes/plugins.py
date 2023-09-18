@@ -40,6 +40,8 @@ async def get_available_plugins(
         # get manifest
         manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
         manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
+        manifest["hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in p.hooks]
+        manifest["tools"] = [{ "name": tool.name } for tool in p.tools]
         
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
@@ -48,7 +50,7 @@ async def get_available_plugins(
             installed_plugins.append(manifest)
 
         # do not show already installed plugins among registry plugins
-        registry_plugins_index.pop( manifest["plugin_url"], None )
+        registry_plugins_index.pop(manifest["plugin_url"], None)
 
     return {
         "filters": {
@@ -172,9 +174,13 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
     active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
 
+    plugin = ccat.mad_hatter.plugins[plugin_id]
+
     # get manifest and active True/False. We make a copy to avoid modifying the original obj
-    plugin_info = deepcopy(ccat.mad_hatter.plugins[plugin_id].manifest)
+    plugin_info = deepcopy(plugin.manifest)
     plugin_info["active"] = plugin_id in active_plugins
+    plugin_info["hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in plugin.hooks]
+    plugin_info["tools"] = [{ "name": tool.name } for tool in plugin.tools]
 
     return {
         "data": plugin_info
