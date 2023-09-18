@@ -40,7 +40,7 @@ async def get_available_plugins(
         # get manifest
         manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
         manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
-        manifest["used_hooks"] = [hook.name for hook in p.hooks]
+        manifest["used_hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in p.hooks]
         
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
@@ -49,7 +49,7 @@ async def get_available_plugins(
             installed_plugins.append(manifest)
 
         # do not show already installed plugins among registry plugins
-        registry_plugins_index.pop( manifest["plugin_url"], None )
+        registry_plugins_index.pop(manifest["plugin_url"], None)
 
     return {
         "filters": {
