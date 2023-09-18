@@ -12,13 +12,9 @@ from cat.mad_hatter.decorators import hook
 from cat.log import log
 
 
-# TODO_HOOK
 @hook(priority=0)
-def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
-    """Hook before the agent starts.
-
-    This hook is useful to shortcut the Cat response.
-    If you do not want the agent to run, return the final response from here and it will end up in the chat without the agent being executed.
+def before_agent_starts(agent_input: Dict, cat) -> Dict:
+    """Hook to read and edit the agent input
 
     Parameters
     --------
@@ -29,8 +25,29 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
 
     Returns
     --------
+    response : Dict
+        Agent Input
+    """
+
+    return agent_input
+
+
+@hook(priority=0)
+def agent_fast_reply(fast_reply, cat) -> Union[None, Dict]:
+    """This hook is useful to shortcut the Cat response.
+    If you do not want the agent to run, return the final response from here and it will end up in the chat without the agent being executed.
+
+    Parameters
+    --------
+    fast_reply: dict
+        Input is dict (initially empty), which can be enriched whith an "output" key with the shortcut response.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
     response : Union[None, Dict]
-        Cat response if you want to avoid using the agent, or None if you want the agent to be executed.
+        Cat response if you want to avoid using the agent, or None / {} if you want the agent to be executed.
         See below for examples of Cat response
 
     Examples
@@ -55,7 +72,7 @@ def before_agent_starts(agent_input, cat) -> Union[None, Dict]:
     ```
     """
 
-    return None
+    return fast_reply
 
 
 @hook(priority=0)

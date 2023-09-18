@@ -446,7 +446,7 @@ class CheshireCat:
                 "name": "VectorMemoryError",
                 "description": err_message,
             }
-
+        
         # reply with agent
         try:
             cat_message = self.agent_manager.execute_agent()

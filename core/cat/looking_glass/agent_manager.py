@@ -1,10 +1,18 @@
+from datetime import timedelta
+import time
+from typing import List, Dict
+
+from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ToolOutputParser
+from cat.utils import verbal_timedelta
 from cat.log import log
+
+
 
 
 class AgentManager:
@@ -99,14 +107,15 @@ class AgentManager:
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input()
-
-        # this hook allows to reply without executing the agent (for example canned responses, out-of-topic barriers etc.)
-        #fast_reply = mad_hatter.execute_hook("before_agent_starts", agent_input)
-        #if fast_reply:
-        #    return fast_reply
-
+        agent_input = mad_hatter.execute_hook("before_agent_starts", agent_input)
+        # should we ran the default agent?
+        fast_reply = {}
+        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply)
+        if len(fast_reply.keys()) > 0:
+            return fast_reply
         prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
         prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
+
 
         # tools currently recalled in working memory
         recalled_tools = working_memory["procedural_memories"]
@@ -218,3 +227,118 @@ class AgentManager:
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
         }
+
+    def agent_prompt_episodic_memories(self, memory_docs: List[Document]) -> str:
+        """Formats episodic memories to be inserted into the prompt.
+
+        Parameters
+        ----------
+        memory_docs : List[Document]
+            List of Langchain `Document` retrieved from the episodic memory.
+
+        Returns
+        -------
+        memory_content : str
+            String of retrieved context from the episodic memory.
+        """
+
+        # convert docs to simple text
+        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
+
+        # add time information (e.g. "2 days ago")
+        memory_timestamps = []
+        for m in memory_docs:
+
+            # Get Time information in the Document metadata
+            timestamp = m[0].metadata["when"]
+
+            # Get Current Time - Time when memory was stored
+            delta = timedelta(seconds=(time.time() - timestamp))
+
+            # Convert and Save timestamps to Verbal (e.g. "2 days ago")
+            memory_timestamps.append(f" ({verbal_timedelta(delta)})")
+
+        # Join Document text content with related temporal information
+        memory_texts = [a + b for a, b in zip(memory_texts, memory_timestamps)]
+
+        # Format the memories for the output
+        memories_separator = "\n  - "
+        memory_content = "## Context of things the Human said in the past: " + \
+            memories_separator + memories_separator.join(memory_texts)
+
+        # if no data is retrieved from memory don't erite anithing in the prompt
+        if len(memory_texts) == 0:
+            memory_content = ""
+
+        return memory_content
+
+    def agent_prompt_declarative_memories(self, memory_docs: List[Document]) -> str:
+        """Formats the declarative memories for the prompt context.
+        Such context is placed in the `agent_prompt_prefix` in the place held by {declarative_memory}.
+
+        Parameters
+        ----------
+        memory_docs : List[Document]
+            list of Langchain `Document` retrieved from the declarative memory.
+
+        Returns
+        -------
+        memory_content : str
+            String of retrieved context from the declarative memory.
+        """
+
+        # convert docs to simple text
+        memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
+
+        # add source information (e.g. "extracted from file.txt")
+        memory_sources = []
+        for m in memory_docs:
+
+            # Get and save the source of the memory
+            source = m[0].metadata["source"]
+            memory_sources.append(f" (extracted from {source})")
+
+        # Join Document text content with related source information
+        memory_texts = [a + b for a, b in zip(memory_texts, memory_sources)]
+
+        # Format the memories for the output
+        memories_separator = "\n  - "
+
+        memory_content = "## Context of documents containing relevant information: " + \
+            memories_separator + memories_separator.join(memory_texts)
+
+        # if no data is retrieved from memory don't erite anithing in the prompt
+        if len(memory_texts) == 0:
+            memory_content = ""
+
+        return memory_content
+
+    def agent_prompt_chat_history(self, chat_history: List[Dict]) -> str:
+        """Serialize chat history for the agent input.
+        Converts to text the recent conversation turns fed to the *Agent*.
+
+        Parameters
+        ----------
+        chat_history : List[Dict]
+            List of dictionaries collecting speaking turns.
+
+        Returns
+        -------
+        history : str
+            String with recent conversation turns to be provided as context to the *Agent*.
+
+        Notes
+        -----
+        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
+
+        The chat history is a dictionary with keys::
+            'who': the name of who said the utterance;
+            'message': the utterance.
+
+        """
+        history = ""
+        for turn in chat_history:
+            history += f"\n - {turn['who']}: {turn['message']}"
+
+        return history
+
