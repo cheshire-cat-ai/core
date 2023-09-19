@@ -13,6 +13,7 @@ from starlette.datastructures import UploadFile
 from langchain.docstore.document import Document
 from qdrant_client.http import models
 
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.parsers import PDFMinerParser
 from langchain.document_loaders.parsers.generic import MimeTypeBasedParser
 from langchain.document_loaders.parsers.txt import TextParser
@@ -334,9 +335,16 @@ class RabbitHole:
         )
 
         # split the documents using chunk_size and chunk_overlap
-        docs = self.cat.mad_hatter.execute_hook(
-            "rabbithole_splits_text", text, chunk_size, chunk_overlap
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
+        # split text
+        docs = text_splitter.split_documents(text)
+        # remove short texts (page numbers, isolated words, etc.)
+        # TODO: join each short chunk with previous one, instead of deleting them
+        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
         docs = self.cat.mad_hatter.execute_hook(

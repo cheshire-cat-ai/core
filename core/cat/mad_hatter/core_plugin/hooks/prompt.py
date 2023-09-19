@@ -6,15 +6,12 @@ Here is a collection of methods to hook the prompts components that instruct the
 
 import time
 from typing import List, Dict
-from datetime import timedelta
-from langchain.docstore.document import Document
 
-from cat.utils import verbal_timedelta
 from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
-def agent_prompt_prefix(cat) -> str:
+def agent_prompt_prefix(prefix, cat) -> str:
     """Hook the main prompt prefix.
 
     Allows to edit the prefix of the *Main Prompt* that the Cat feeds to the *Agent*.
@@ -38,16 +35,12 @@ def agent_prompt_prefix(cat) -> str:
     The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
 
     """
-    prefix = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
-You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
-You answer Human with a focus on the following context.
-"""
 
     return prefix
 
 
 @hook(priority=0)
-def agent_prompt_instructions(cat) -> str:
+def agent_prompt_instructions(instructions: str, cat) -> str:
     """Hook the instruction prompt.
 
     Allows to edit the instructions that the Cat feeds to the *Agent*.
@@ -81,36 +74,11 @@ def agent_prompt_instructions(cat) -> str:
 
     """
 
-    DEFAULT_TOOL_TEMPLATE = """Answer the following question: `{input}`
-    You can only reply using these tools:
-
-    {tools}
-    none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
-
-    If you want to use tools, use the following format:
-    Action: the name of the action to take, should be one of [{tool_names}]
-    Action Input: the input to the action
-    Observation: the result of the action
-    ...
-    Action: the name of the action to take, should be one of [{tool_names}]
-    Action Input: the input to the action
-    Observation: the result of the action
-
-    When you have a final answer respond with:
-    Final Answer: the final answer to the original input question
-
-    Begin!
-
-    Question: {input}
-    {agent_scratchpad}"""
-
-
-    # here we piggy back directly on langchain agent instructions. Different instructions will require a different OutputParser
-    return DEFAULT_TOOL_TEMPLATE
+    return instructions
 
 
 @hook(priority=0)
-def agent_prompt_suffix(cat) -> str:
+def agent_prompt_suffix(prompt_suffix: str, cat) -> str:
     """Hook the main prompt suffix.
 
     Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*.
@@ -138,165 +106,5 @@ def agent_prompt_suffix(cat) -> str:
     - {agent_scratchpad} is where the *Agent* can concatenate tools use and multiple calls to the LLM.
 
     """
-    suffix = """
-# Context
 
-{episodic_memory}
-
-{declarative_memory}
-
-{tools_output}
-
-## Conversation until now:{chat_history}
- - Human: {input}
- - AI: """
-
-    return suffix
-
-
-@hook(priority=0)
-def agent_prompt_episodic_memories(memory_docs: List[Document], cat) -> str:
-    """Hook memories retrieved from episodic memory.
-
-    This hook formats the relevant memories retrieved from the context of things the human said in the past.
-
-    Retrieved memories are converted to string and temporal information is added to inform the *Agent* about
-    when the user said that sentence in the past.
-
-    This hook allows to edit the retrieved memory to condition the information provided as context to the *Agent*.
-
-    Such context is placed in the `agent_prompt_prefix` in the place held by {episodic_memory}.
-
-    Parameters
-    ----------
-    memory_docs : List[Document]
-        List of Langchain `Document` retrieved from the episodic memory.
-    cat : CheshireCat
-        Cheshire Cat instance.
-
-    Returns
-    -------
-    memory_content : str
-        String of retrieved context from the episodic memory.
-
-    """
-
-    # convert docs to simple text
-    memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
-
-    # add time information (e.g. "2 days ago")
-    memory_timestamps = []
-    for m in memory_docs:
-
-        # Get Time information in the Document metadata
-        timestamp = m[0].metadata["when"]
-
-        # Get Current Time - Time when memory was stored
-        delta = timedelta(seconds=(time.time() - timestamp))
-
-        # Convert and Save timestamps to Verbal (e.g. "2 days ago")
-        memory_timestamps.append(f" ({verbal_timedelta(delta)})")
-
-    # Join Document text content with related temporal information
-    memory_texts = [a + b for a, b in zip(memory_texts, memory_timestamps)]
-
-    # Format the memories for the output
-    memories_separator = "\n  - "
-    memory_content = "## Context of things the Human said in the past: " + \
-        memories_separator + memories_separator.join(memory_texts)
-
-    # if no data is retrieved from memory don't erite anithing in the prompt
-    if len(memory_texts) == 0:
-        memory_content = ""
-
-    return memory_content
-
-
-@hook(priority=0)
-def agent_prompt_declarative_memories(memory_docs: List[Document], cat) -> str:
-    """Hook memories retrieved from declarative memory.
-
-    This hook formats the relevant memories retrieved from the context of documents uploaded in the Cat's memory.
-
-    Retrieved memories are converted to string and the source information is added to inform the *Agent* on
-    which document the information was retrieved from.
-
-    This hook allows to edit the retrieved memory to condition the information provided as context to the *Agent*.
-
-    Such context is placed in the `agent_prompt_prefix` in the place held by {declarative_memory}.
-
-    Parameters
-    ----------
-    memory_docs : List[Document]
-        list of Langchain `Document` retrieved from the declarative memory.
-    cat : CheshireCat
-        Cheshire Cat instance.
-
-    Returns
-    -------
-    memory_content : str
-        String of retrieved context from the declarative memory.
-    """
-
-    # convert docs to simple text
-    memory_texts = [m[0].page_content.replace("\n", ". ") for m in memory_docs]
-
-    # add source information (e.g. "extracted from file.txt")
-    memory_sources = []
-    for m in memory_docs:
-
-        # Get and save the source of the memory
-        source = m[0].metadata["source"]
-        memory_sources.append(f" (extracted from {source})")
-
-    # Join Document text content with related source information
-    memory_texts = [a + b for a, b in zip(memory_texts, memory_sources)]
-
-    # Format the memories for the output
-    memories_separator = "\n  - "
-
-    memory_content = "## Context of documents containing relevant information: " + \
-        memories_separator + memories_separator.join(memory_texts)
-
-    # if no data is retrieved from memory don't erite anithing in the prompt
-    if len(memory_texts) == 0:
-        memory_content = ""
-
-    return memory_content
-
-
-@hook(priority=0)
-def agent_prompt_chat_history(chat_history: List[Dict], cat) -> str:
-    """Hook the chat history.
-
-    This hook converts to text the recent conversation turns fed to the *Agent*.
-    The hook allows to edit and enhance the chat history provided as context to the *Agent*.
-
-
-    Parameters
-    ----------
-    chat_history : List[Dict]
-        List of dictionaries collecting speaking turns.
-    cat : CheshireCat
-        Cheshire Cat instances.
-
-    Returns
-    -------
-    history : str
-        String with recent conversation turns to be provided as context to the *Agent*.
-
-    Notes
-    -----
-    Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-    The chat history is a dictionary with keys::
-        'who': the name of who said the utterance;
-        'message': the utterance.
-
-    """
-    history = ""
-    for turn in chat_history:
-        history += f"\n - {turn['who']}: {turn['message']}"
-
-    return history
-
+    return prompt_suffix

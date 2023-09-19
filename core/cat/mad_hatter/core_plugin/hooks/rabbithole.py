@@ -8,9 +8,9 @@ These hooks allow to intercept the uploaded documents at different places before
 
 from typing import List
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
+
+from cat.mad_hatter.decorators import hook
 
 
 @hook(priority=0)
@@ -91,49 +91,6 @@ def before_rabbithole_splits_text(doc: Document, cat) -> Document:
     return doc
 
 
-# Hook called when rabbithole splits text. Input is whole Document
-@hook(priority=0)
-def rabbithole_splits_text(text, chunk_size: int, chunk_overlap: int, cat) -> List[Document]:
-    """Hook into the recursive split pipeline.
-
-    Allows editing the recursive split the *RabbitHole* applies to chunk the ingested documents.
-
-    This is applied when ingesting a documents and urls from a script, using an endpoint or from the GUI.
-
-    Parameters
-    ----------
-    text : List[Document]
-        List of langchain `Document` to chunk.
-    chunk_size : int
-        Length of every chunk in characters.
-    chunk_overlap : int
-        Amount of overlap between consecutive chunks.
-    cat : CheshireCat
-        Cheshire Cat instance.
-
-    Returns
-    -------
-    docs : List[Document]
-        List of chunked langchain documents to be stored in the episodic memory.
-
-    """
-
-    # text splitter
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-    )
-
-    # split text
-    docs = text_splitter.split_documents(text)
-
-    # remove short texts (page numbers, isolated words, etc.)
-    docs = list(filter(lambda d: len(d.page_content) > 10, docs))
-
-    return docs
-
-
 # Hook called after rabbithole have splitted text into chunks.
 #   Input is the chunks
 @hook(priority=0)
@@ -159,6 +116,7 @@ def after_rabbithole_splitted_text(chunks: List[Document], cat) -> List[Document
     return chunks
 
 
+# TODO_HOOK: is this useful or just a duplication of `after_rabbithole_splitted_text` ?
 # Hook called when a list of Document is going to be inserted in memory from the rabbit hole.
 # Here you can edit/summarize the documents before inserting them in memory
 # Should return a list of documents (each is a langchain Document)

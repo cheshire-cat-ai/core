@@ -3,6 +3,8 @@ import json
 import time
 import shutil
 import os
+import traceback
+from copy import deepcopy
 
 from cat.log import log
 from cat.db import crud
@@ -250,8 +252,43 @@ class MadHatter:
         if hook_name not in self.hooks.keys():
             raise Exception(f"Hook {hook_name} not present in any plugin")
         
+        # Hook has no arguments (aside cat)
+        #  no need to pipe
+        if len(args) == 0:
+            for hook in self.hooks[hook_name]:
+                try:
+                    log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
+                    hook.function(cat=self.ccat)
+                except Exception as e:
+                    log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
+                    log.error(e)
+                    traceback.print_exc()
+            return
+            
+        # Hook with arguments.
+        #  First argument is passed to `execute_hook` is the pipeable one.
+        #  We call it `tea_cup` as every hook called will receive it as an input,
+        #  can add sugar, milk, or whatever, and return it for the next hook
+        tea_cup = deepcopy(args[0])
+        
         # run hooks
-        for h in self.hooks[hook_name]:
-            return h.function(*args, cat=self.ccat)
-            # TODO: should be run as a pipe, not return immediately
+        for hook in self.hooks[hook_name]:
+            try:
+                # pass tea_cup to the hooks, along other args
+                # hook has at least one argument, and it will be piped
+                log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
+                tea_spoon = hook.function(
+                    deepcopy(tea_cup),
+                    *deepcopy(args[1:]),
+                    cat=self.ccat
+                )
+                log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
+                if tea_spoon is not None:
+                    tea_cup = tea_spoon
+            except Exception as e:
+                log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
+                log.error(e)
+                traceback.print_exc()
 
+        # tea_cup has passed through all hooks. Return final output
+        return tea_cup

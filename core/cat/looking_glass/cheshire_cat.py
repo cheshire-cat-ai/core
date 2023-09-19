@@ -12,6 +12,18 @@ from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 
+# TODO: natural language dependencies; move to another file
+import cat.factory.llm as llms
+import cat.factory.embedder as embedders
+from cat.db import crud
+from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
+from langchain.chat_models import ChatOpenAI
+from langchain.base_language import BaseLanguageModel
+from langchain import HuggingFaceHub
+from langchain.chat_models import AzureChatOpenAI
+from cat.factory.custom_llm import CustomOpenAI
+
+
 MSG_TYPES = Literal["notification", "chat", "error"]
 
 # main class
@@ -75,13 +87,144 @@ class CheshireCat:
 
         See Also
         --------
-        get_language_model
-        get_language_embedder
         agent_prompt_prefix
         """
         # LLM and embedder
-        self._llm = self.mad_hatter.execute_hook("get_language_model")
-        self.embedder = self.mad_hatter.execute_hook("get_language_embedder")
+        self._llm = self.get_language_model()
+        self.embedder = self.get_language_embedder()
+
+    def get_language_model(self) -> BaseLanguageModel:
+        """Large Language Model (LLM) selection at bootstrap time.
+
+        Returns
+        -------
+        llm : BaseLanguageModel
+            Langchain `BaseLanguageModel` instance of the selected model.
+
+        Notes
+        -----
+        Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+        the *Agent Manager* and the *Rabbit Hole*.
+
+        """
+        selected_llm = crud.get_setting_by_name(name="llm_selected")
+
+        if selected_llm is None:
+            # return default LLM
+            llm = llms.LLMDefaultConfig.get_llm_from_config({})
+
+        else:
+            # get LLM factory class
+            selected_llm_class = selected_llm["value"]["name"]
+            FactoryClass = getattr(llms, selected_llm_class)
+
+            # obtain configuration and instantiate LLM
+            selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+            try:
+                llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                llm = llms.LLMDefaultConfig.get_llm_from_config({})
+
+        return llm
+
+
+    def get_language_embedder(self) -> embedders.EmbedderSettings:
+        """Hook into the  embedder selection.
+
+        Allows to modify how the Cat selects the embedder at bootstrap time.
+
+        Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
+        the memories, the *Agent Manager* and the *Rabbit Hole*.
+
+        Parameters
+        ----------
+        cat: CheshireCat
+            Cheshire Cat instance.
+
+        Returns
+        -------
+        embedder : Embeddings
+            Selected embedder model.
+        """
+        # Embedding LLM
+
+        selected_embedder = crud.get_setting_by_name(name="embedder_selected")
+
+        if selected_embedder is not None:
+            # get Embedder factory class
+            selected_embedder_class = selected_embedder["value"]["name"]
+            FactoryClass = getattr(embedders, selected_embedder_class)
+
+            # obtain configuration and instantiate Embedder
+            selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
+            embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
+
+            return embedder
+
+        # OpenAI embedder
+        if type(self._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
+            embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
+                {
+                    "openai_api_key": self._llm.openai_api_key,
+                }
+            )
+
+        # Azure
+        elif type(self._llm) in [AzureOpenAI, AzureChatOpenAI]:
+            embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
+                {
+                    "openai_api_key": self._llm.openai_api_key,
+                    "openai_api_type": "azure",
+                    "model": "text-embedding-ada-002",
+                    # Now the only model for embeddings is text-embedding-ada-002
+                    # It is also possible to use the Azure "deployment" name that is user defined
+                    # when the model is deployed to Azure.
+                    # "deployment": "my-text-embedding-ada-002",
+                    "openai_api_base": self._llm.openai_api_base,
+                    # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
+                    # current supported versions 2022-12-01,2023-03-15-preview, 2023-05-15
+                    # Don't mix api versions https://github.com/hwchase17/langchain/issues/4775
+                    "openai_api_version": "2023-05-15",
+                }
+            )
+
+        # Cohere
+        elif type(self._llm) in [Cohere]:
+            embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
+                {
+                    "cohere_api_key": self._llm.cohere_api_key,
+                    "model": "embed-multilingual-v2.0",
+                    # Now the best model for embeddings is embed-multilingual-v2.0
+                }
+            )
+
+        # HuggingFace
+        elif type(self._llm) in [HuggingFaceHub]:
+            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
+                {
+                    "huggingfacehub_api_token": self._llm.huggingfacehub_api_token,
+                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
+                }
+            )
+
+        # Llama-cpp-python
+        elif type(self._llm) in [CustomOpenAI]:
+            embedder = embedders.EmbedderLlamaCppConfig.get_embedder_from_config(
+                {
+                    "url": self._llm.url
+                }
+            )
+
+        else:
+            # If no embedder matches vendor, and no external embedder is configured, we use the DumbEmbedder.
+            #   `This embedder is not a model properly trained
+            #    and this makes it not suitable to effectively embed text,
+            #    "but it does not know this and embeds anyway".` - cit. Nicola Corbellini
+            embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
+
+        return embedder
 
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
@@ -108,6 +251,7 @@ class CheshireCat:
 
         See Also
         --------
+        cat_recall_query
         before_cat_recalls_memories
         before_cat_recalls_episodic_memories
         before_cat_recalls_declarative_memories
@@ -115,36 +259,37 @@ class CheshireCat:
         after_cat_recalls_memories
         """
         user_id = self.working_memory.get_user_id()
-        user_message = self.working_memory["user_message_json"]["text"]
+        recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
-        memory_query_text = self.mad_hatter.execute_hook("cat_recall_query", user_message)
-        log.info(f'Recall query: "{memory_query_text}"')
+        recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query)
+        log.info(f'Recall query: "{recall_query}"')
 
         # Embed recall query
-        memory_query_embedding = self.embedder.embed_query(memory_query_text)
-        self.working_memory["memory_query"] = memory_query_text
+        recall_query_embedding = self.embedder.embed_query(recall_query)
+        self.working_memory["recall_query"] = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories")
 
         # Setting default recall configs for each memory
+        # TODO: can these data structrues become instances of a RecallSettings class?
         default_episodic_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": {"source": user_id},
         }
 
         default_declarative_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": None,
         }
 
         default_procedural_recall_config = {
-            "embedding": memory_query_embedding,
+            "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
             "metadata": None,
@@ -169,7 +314,7 @@ class CheshireCat:
             self.working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalls_memories", memory_query_text)
+        self.mad_hatter.execute_hook("after_cat_recalls_memories")
 
     def llm(self, prompt: str) -> str:
         """Generate a response using the LLM model.
@@ -194,51 +339,6 @@ class CheshireCat:
         # Check if self._llm is a chat model and call it as a completion model
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt)
-
-    def format_agent_input(self):
-        """Format the input for the Agent.
-
-        The method formats the strings of recalled memories and chat history that will be provided to the Langchain
-        Agent and inserted in the prompt.
-
-        Returns
-        -------
-        dict
-            Formatted output to be parsed by the Agent executor.
-
-        Notes
-        -----
-        The context of memories and conversation history is properly formatted before being parsed by the and, hence,
-        information are inserted in the main prompt.
-        All the formatting pipeline is hookable and memories can be edited.
-
-        See Also
-        --------
-        agent_prompt_episodic_memories
-        agent_prompt_declarative_memories
-        agent_prompt_chat_history
-        """
-        # format memories to be inserted in the prompt
-        episodic_memory_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_episodic_memories",
-            self.working_memory["episodic_memories"],
-        )
-        declarative_memory_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_declarative_memories",
-            self.working_memory["declarative_memories"],
-        )
-
-        # format conversation history to be inserted in the prompt
-        conversation_history_formatted_content = self.mad_hatter.execute_hook(
-            "agent_prompt_chat_history", self.working_memory["history"]
-        )
-
-        return {
-            "input": self.working_memory["user_message_json"]["text"],
-            "episodic_memory": episodic_memory_formatted_content,
-            "declarative_memory": declarative_memory_formatted_content,
-            "chat_history": conversation_history_formatted_content,
-        }
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
@@ -346,14 +446,10 @@ class CheshireCat:
                 "name": "VectorMemoryError",
                 "description": err_message,
             }
-
-        # prepare input to be passed to the agent.
-        #   Info will be extracted from working memory
-        agent_input = self.format_agent_input()
-
+        
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent(agent_input)
+            cat_message = self.agent_manager.execute_agent()
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -367,7 +463,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input": agent_input["input"],
+                "input": self.working_memory["user_message_json"]["text"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }
