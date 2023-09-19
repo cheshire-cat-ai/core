@@ -4,6 +4,7 @@ import time
 import shutil
 import os
 import traceback
+from copy import deepcopy
 
 from cat.log import log
 from cat.db import crud
@@ -268,7 +269,7 @@ class MadHatter:
         #  First argument is passed to `execute_hook` is the pipeable one.
         #  We call it `tea_cup` as every hook called will receive it as an input,
         #  can add sugar, milk, or whatever, and return it for the next hook
-        tea_cup = args[0]
+        tea_cup = deepcopy(args[0])
         
         # run hooks
         for hook in self.hooks[hook_name]:
@@ -276,7 +277,11 @@ class MadHatter:
                 # pass tea_cup to the hooks, along other args
                 # hook has at least one argument, and it will be piped
                 log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
-                tea_spoon = hook.function(tea_cup, *args[1:], cat=self.ccat)
+                tea_spoon = hook.function(
+                    deepcopy(tea_cup),
+                    *deepcopy(args[1:]),
+                    cat=self.ccat
+                )
                 log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
                     tea_cup = tea_spoon
