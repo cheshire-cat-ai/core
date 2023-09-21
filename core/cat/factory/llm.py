@@ -96,7 +96,7 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "text-davinci-003"
+    model_name: str = "gpt-3.5-turbo-instruct"
     _pyclass: PyObject = langchain.llms.OpenAI
 
     class Config:
