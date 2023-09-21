@@ -51,7 +51,7 @@ def test_plugin_install_from_registry(client):
     
     # install plugin from registry
     payload = {
-        "url": "https://github.com/nicola-corbellini/ccat_summarization"
+        "url": "https://github.com/Furrmidable-Crew/ccat_summarization"
     }
     response = client.post("/plugins/upload/registry", json=payload)
     assert response.status_code == 200
