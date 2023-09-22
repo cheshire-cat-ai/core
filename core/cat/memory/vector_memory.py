@@ -129,9 +129,8 @@ class VectorMemoryCollection(Qdrant):
             log.info(f'Collection "{self.collection_name}" has the same embedder')
         else:
             log.warning(f'Collection "{self.collection_name}" has different embedder')
-            # Opt-in memory snapshot saving can be turned off in the .env file with:
+            # Memory snapshot saving can be turned off in the .env file with:
             # SAVE_MEMORY_SNAPSHOTS=false
-            log.critical(os.getenv("SAVE_MEMORY_SNAPSHOTS"))
             if os.getenv("SAVE_MEMORY_SNAPSHOTS") == "true":
                 # dump collection on disk before deleting
                 self.save_dump()
