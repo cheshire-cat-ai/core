@@ -12,6 +12,8 @@ class CatTool(Tool):
     def augment_tool(self, cat_instance):
         
         self.cat = cat_instance
+
+        self.name = self.func.__name__
         
         # Tool docstring, is also available under self.func.__doc__
         self.docstring = self.func.__doc__

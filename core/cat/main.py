@@ -9,12 +9,11 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from cat.log import log, welcome
-from cat.routes import base, memory, plugins, upload, websocket
+from cat.log import log
+from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
 from cat.api_auth import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes import settings, prompt, llm, embedder
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -30,16 +29,18 @@ async def lifespan(app: FastAPI):
     app.state.ccat = CheshireCat()
 
     # startup message with admin, public and swagger addresses
-    welcome()
+    log.welcome()
 
     yield
+
 
 def custom_generate_unique_id(route: APIRoute):
     return f"{route.name}"
 
+
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan, 
+    lifespan=lifespan,
     dependencies=[Depends(check_api_key)],
     generate_unique_id_function=custom_generate_unique_id
 )
@@ -58,14 +59,12 @@ cheshire_cat_api.add_middleware(
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
-cheshire_cat_api.include_router(prompt.router, tags=["Prompt"], prefix="/prompt")
 cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
 cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
-
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
@@ -95,7 +94,7 @@ cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
 
 # RUN!
 if __name__ == "__main__":
-    
+
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
     if os.getenv("DEBUG", "true") == "true":

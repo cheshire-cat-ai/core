@@ -8,7 +8,7 @@ from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel
 
-from cat.mad_hatter.decorators import CatTool, CatHook
+from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
 from cat.log import log, get_log_level
 
@@ -18,7 +18,7 @@ from cat.log import log, get_log_level
 
 class Plugin:
 
-    def __init__(self, plugin_path: str, active: bool):
+    def __init__(self, plugin_path: str):
         
         # does folder exist?
         if not os.path.exists(plugin_path) or not os.path.isdir(plugin_path):
@@ -46,35 +46,38 @@ class Plugin:
         self._hooks = [] 
         self._tools = []
 
-        self._active = False
+        # list of @plugin decorated functions overrriding default plugin behaviour
+        self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access
 
-        # all plugins start active, they can be deactivated/reactivated from endpoint
-        if active:
-            self.activate()
+        # plugin starts deactivated
+        self._active = False
 
     def activate(self):
         # lists of hooks and tools
-        self._hooks, self._tools = self._load_hooks_and_tools()
+        self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
         self._active = True
 
     def deactivate(self):
-        self._active = False
-
         # Remove the imported modules
         for py_file in self.py_files:
-            py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
-            log(f"Remove module {py_filename}", "DEBUG")
-            sys.modules.pop(py_filename)
+            py_filename = py_file.replace("/", ".").replace(".py", "")
+
+            # If the module is imported it is removed
+            if py_filename in sys.modules:
+                log.debug(f"Remove module {py_filename}")
+                sys.modules.pop(py_filename)
         
         self._hooks = []
         self._tools = []
+        self._plugin_overrides = []
+        self._active = False
 
     # get plugin settings JSON schema
-    def get_settings_schema(self):
+    def settings_schema(self):
 
         # is "plugin_settings_schema" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_schema":
+        for h in self._plugin_overrides:
+            if h.name == "settings_schema":
                 return h.function()
 
         # default schema (empty)
@@ -84,8 +87,8 @@ class Plugin:
     def load_settings(self):
 
         # is "plugin_settings_load" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_load":
+        for h in self._plugin_overrides:
+            if h.name == "load_settings":
                 return h.function()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -101,8 +104,8 @@ class Plugin:
                 with open(settings_file_path, "r") as json_file:
                     settings = json.load(json_file)
             except Exception as e:
-                log(f"Unable to load plugin {self._id} settings", "ERROR")
-                log(e, "ERROR")
+                log.error(f"Unable to load plugin {self._id} settings")
+                log.error(e)
 
         return settings
     
@@ -110,8 +113,8 @@ class Plugin:
     def save_settings(self, settings: Dict):
 
         # is "plugin_settings_save" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_save":
+        for h in self._plugin_overrides:
+            if h.name == "save_settings":
                 return h.function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
@@ -129,7 +132,7 @@ class Plugin:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
         except Exception:
-            log(f"Unable to save plugin {self._id} settings", "ERROR")
+            log.error(f"Unable to save plugin {self._id} settings")
             return {}
     
         return updated_settings
@@ -147,7 +150,7 @@ class Plugin:
                 json_file_data = json.load(json_file)
                 json_file.close()
             except Exception:
-                log(f"Loading plugin {self._path} metadata, defaulting to generated values", "INFO")
+                log.info(f"Loading plugin {self._path} metadata, defaulting to generated values")
 
         meta["name"] = json_file_data.get("name", to_camel_case(self._id))
         meta["description"] = json_file_data.get("description", (
@@ -165,31 +168,33 @@ class Plugin:
         return meta
 
     # lists of hooks and tools
-    def _load_hooks_and_tools(self):
+    def _load_decorated_functions(self):
         hooks = []
         tools = []
+        plugin_overrides = []
 
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
 
-            log(f"Import module {py_filename}", "DEBUG")
+            log.info(f"Import module {py_filename}")
 
             # save a reference to decorated functions
             try:
                 plugin_module = importlib.import_module(py_filename)
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
+                plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
-                log(f"Error in {py_filename}: {str(e)}","ERROR")
-                if get_log_level() == "DEBUG":
-                    traceback.print_exc()
+                log.error(f"Error in {py_filename}: {str(e)}")
+                traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}")
             
         # clean and enrich instances
         hooks = list(map(self._clean_hook, hooks))
         tools = list(map(self._clean_tool, tools))
+        plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
 
-        return hooks, tools
+        return hooks, tools, plugin_overrides
 
     def _clean_hook(self, hook):
         # getmembers returns a tuple
@@ -202,6 +207,10 @@ class Plugin:
         t = tool[1]
         t.plugin_id = self._id
         return t
+    
+    def _clean_plugin_override(self, plugin_override):
+        # getmembers returns a tuple
+        return plugin_override[1]
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
@@ -214,6 +223,12 @@ class Plugin:
     @staticmethod
     def _is_cat_tool(obj):
         return isinstance(obj, CatTool)
+    
+    # a plugin override function has to be decorated with @plugin
+    # (which returns an instance of CatPluginOverride)
+    @staticmethod
+    def _is_cat_plugin_override(obj):
+        return isinstance(obj, CatPluginOverride)
     
     @property
     def path(self):

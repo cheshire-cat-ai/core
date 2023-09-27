@@ -1,18 +1,25 @@
 import os
 import time
-import pytest
 import shutil
-from tests.utils import create_mock_plugin_zip, get_embedded_tools
+from tests.utils import get_embedded_tools
 from fixture_just_installed_plugin import just_installed_plugin
 
 
-# TODO: these test cases should be splitted in different test functions, with apppropriate setup/teardown
-def test_plugin_install_upload_zip(client, just_installed_plugin):
+# NOTE: here we test zip upload install
+# install from registry is in `./test_plugins_registry.py`
+def test_plugin_install_from_zip(client, just_installed_plugin):
 
     # during tests, the cat uses a different folder for plugins
     mock_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
 
     #### PLUGIN IS ALREADY ACTIVE
+
+    # GET plugin endpoint responds
+    response = client.get(f"/plugins/mock_plugin")
+    assert response.status_code == 200
+    json = response.json()
+    assert json["data"]["id"] == "mock_plugin"
+    assert json["data"]["active"] == True
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
@@ -32,7 +39,7 @@ def test_plugin_install_upload_zip(client, just_installed_plugin):
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" in tool_names
     assert "get_the_time" in tool_names # from core_plugin
-    
+
 
 def test_plugin_uninstall(client, just_installed_plugin):
 
@@ -55,3 +62,6 @@ def test_plugin_uninstall(client, just_installed_plugin):
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" not in tool_names
     assert "get_the_time" in tool_names # from core_plugin
+
+
+

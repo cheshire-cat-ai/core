@@ -13,6 +13,7 @@ from starlette.datastructures import UploadFile
 from langchain.docstore.document import Document
 from qdrant_client.http import models
 
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.parsers import PDFMinerParser
 from langchain.document_loaders.parsers.generic import MimeTypeBasedParser
 from langchain.document_loaders.parsers.txt import TextParser
@@ -78,7 +79,7 @@ class RabbitHole:
         } for p in declarative_memories]
         vectors = [v["vector"] for v in declarative_memories]
 
-        log(f"Preparing to load {len(vectors)} vector memories", "INFO")
+        log.info(f"Preparing to load {len(vectors)} vector memories")
 
         # Check embedding size is correct
         embedder_size = self.cat.memory.vectors.embedder_size
@@ -200,7 +201,7 @@ class RabbitHole:
                     with urlopen(request) as response:
                         file_bytes = response.read()
                 except HTTPError as e:
-                    log(e, "ERROR")
+                    log.error(e)
             else:
 
                 # Get mime type from file extension and source
@@ -217,35 +218,18 @@ class RabbitHole:
         blob = Blob(data=file_bytes,
                     mimetype=content_type,
                     source=source).from_data(data=file_bytes,
-                                             mime_type=content_type)
+                                             mime_type=content_type,
+                                             path=source)
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
-        self.send_rabbit_thought("I'm parsing the content. Big content could require some minutes...")
+        self.cat.send_ws_message("I'm parsing the content. Big content could require some minutes...")
         text = parser.parse(blob)
 
-        self.send_rabbit_thought(f"Parsing completed. Now let's go with reading process...")
+        self.cat.send_ws_message(f"Parsing completed. Now let's go with reading process...")
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
-
-    def send_rabbit_thought(self, thought):
-        """Append a message to the notification list.
-
-        This method receives a string and creates the message to append to the list of notifications.
-
-        Parameters
-        ----------
-        thought : str
-            Text of the message to append to the notification list.
-        """
-
-        self.cat.web_socket_notifications.append({
-            "error": False,
-            "type": "notification",
-            "content": thought,
-            "why": {},
-        })
 
     def store_documents(self, docs: List[Document], source: str) -> None:
         """Add documents to the Cat's declarative memory.
@@ -270,7 +254,7 @@ class RabbitHole:
         before_rabbithole_insert_memory
         """
 
-        log(f"Preparing to memorize {len(docs)} vectors")
+        log.info(f"Preparing to memorize {len(docs)} vectors")
 
         # hook the docs before they are stored in the vector memory
         docs = self.cat.mad_hatter.execute_hook(
@@ -284,7 +268,7 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                self.send_rabbit_thought(f"Read {perc_read}% of {source}")
+                self.cat.send_ws_message(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
@@ -298,10 +282,9 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                # log(f"Inserted into memory({inserting_info})", "INFO")
-                print(f"Inserted into memory({inserting_info})")
+                log.info(f"Inserted into memory({inserting_info})")
             else:
-                log(f"Skipped memory insertion of empty doc ({inserting_info})", "INFO")
+                log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
@@ -310,7 +293,7 @@ class RabbitHole:
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
 
-        self.send_rabbit_thought(finished_reading_message)
+        self.cat.send_ws_message(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 
@@ -352,9 +335,16 @@ class RabbitHole:
         )
 
         # split the documents using chunk_size and chunk_overlap
-        docs = self.cat.mad_hatter.execute_hook(
-            "rabbithole_splits_text", text, chunk_size, chunk_overlap
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
+        # split text
+        docs = text_splitter.split_documents(text)
+        # remove short texts (page numbers, isolated words, etc.)
+        # TODO: join each short chunk with previous one, instead of deleting them
+        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
         docs = self.cat.mad_hatter.execute_hook(

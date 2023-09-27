@@ -34,12 +34,23 @@ def key_in_json(key, json):
     return key in json.keys()
 
 
-def create_mock_plugin_zip():
-    return shutil.make_archive(
-        "tests/mocks/mock_plugin",
-        "zip",
-        root_dir="tests/mocks/",
+# create a plugin zip out of the mock plugin folder.
+# - Used to test plugin upload.
+# - zip can be created flat (plugin files in root dir) or nested (plugin files in zipped folder)
+def create_mock_plugin_zip(flat: bool):
+
+    if flat:
+        root_dir = "tests/mocks/mock_plugin"
+        base_dir="./"
+    else:
+        root_dir = "tests/mocks/"
         base_dir="mock_plugin"
+
+    return shutil.make_archive(
+        base_name="tests/mocks/mock_plugin",
+        format="zip",
+        root_dir=root_dir,
+        base_dir=base_dir
     )
 
 
