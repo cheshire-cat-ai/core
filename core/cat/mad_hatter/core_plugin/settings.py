@@ -37,7 +37,7 @@ def settings_schema():
 
 
 @plugin
-def settings_load():
+def load_settings():
     """
     This function defines how to load saved settings for the plugin.
     
@@ -56,7 +56,7 @@ def settings_load():
 
 
 @plugin
-def settings_save(settings):
+def save_settings(settings):
     """
     This function passes the plugin settings as sent to the http endpoint (via admin, or any client), in order to let the plugin save them as desired.
     The settings to save should be validated according to the json schema given in the `plugin_settings_schema` hook.
