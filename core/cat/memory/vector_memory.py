@@ -188,7 +188,14 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(
             query_embedding, metadata=metadata, k=k, threshold=threshold
         )
-    
+
+    def delete_points_by_metadata_filter(self, metadata=None):
+        res = self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=self._qdrant_filter_from_dict(metadata),
+        )
+        return res
+
     # delete point in collection
     def delete_points(self, points_ids):
         res = self.client.delete(

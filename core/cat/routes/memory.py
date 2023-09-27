@@ -7,10 +7,10 @@ router = APIRouter()
 # GET memories from recall
 @router.get("/recall/")
 async def recall_memories_from_text(
-    request: Request,
-    text: str = Query(description="Find memories similar to this text."),
-    k: int = Query(default=100, description="How many memories to return."),
-    user_id: str = Query(default="user", description="User id."),
+        request: Request,
+        text: str = Query(description="Find memories similar to this text."),
+        k: int = Query(default=100, description="How many memories to return."),
+        user_id: str = Query(default="user", description="User id."),
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -36,7 +36,7 @@ async def recall_memories_from_text(
             }
         else:
             user_filter = None
-            
+
         memories = vector_memory.collections[c].recall_memories_from_embedding(
             query_embedding,
             k=k,
@@ -46,7 +46,7 @@ async def recall_memories_from_text(
         recalled[c] = []
         for metadata, score, vector, id in memories:
             memory_dict = dict(metadata)
-            memory_dict.pop("lc_kwargs", None) # langchain stuff, not needed
+            memory_dict.pop("lc_kwargs", None)  # langchain stuff, not needed
             memory_dict["id"] = id
             memory_dict["score"] = float(score)
             memory_dict["vector"] = vector
@@ -55,7 +55,7 @@ async def recall_memories_from_text(
     return {
         "query": query,
         "vectors": {
-            "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
+            "embedder": str(ccat.embedder.__class__.__name__),  # TODO: should be the config class name
             "collections": recalled
         }
     }
@@ -87,7 +87,7 @@ async def get_collections(request: Request) -> Dict:
 # DELETE all collections
 @router.delete("/collections/")
 async def wipe_collections(
-    request: Request,
+        request: Request,
 ) -> Dict:
     """Delete and create all collections"""
 
@@ -111,7 +111,8 @@ async def wipe_collections(
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}/")
-async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
+async def wipe_single_collection(request: Request,
+                                 collection_id: str) -> Dict:
     """Delete and recreate a collection"""
 
     ccat = request.app.state.ccat
@@ -126,7 +127,6 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
         )
 
     to_return = {}
-
 
     ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
     to_return[collection_id] = ret
@@ -143,15 +143,15 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
 # DELETE memories
 @router.delete("/collections/{collection_id}/points/{memory_id}/")
 async def wipe_memory_point(
-    request: Request,
-    collection_id: str,
-    memory_id: str
+        request: Request,
+        collection_id: str,
+        memory_id: str
 ) -> Dict:
     """Delete a specific point in memory"""
 
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
-    
+
     # check if collection exists
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
@@ -179,10 +179,29 @@ async def wipe_memory_point(
     }
 
 
+@router.delete("/collections/{collection_id}/points")
+async def wipe_memory_points_by_metadata(
+        request: Request,
+        collection_id: str,
+        metadata: Dict = {},
+) -> Dict:
+    """Delete points in memory by filter"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+
+    # delete points
+    vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
+
+    return {
+        "deleted": [] # TODO: Qdrant does not return deleted points?
+    }
+
+
 # DELETE conversation history from working memory
 @router.delete("/conversation_history/")
 async def wipe_conversation_history(
-    request: Request,
+        request: Request,
 ) -> Dict:
     """Delete conversation history from working memory"""
 
