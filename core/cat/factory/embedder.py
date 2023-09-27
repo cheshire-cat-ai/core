@@ -2,7 +2,7 @@ import langchain
 from pydantic import PyObject, BaseSettings
 
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
-
+from cat.utils import check_openai_key_valid
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseSettings):
@@ -62,6 +62,16 @@ class EmbedderOpenAIConfig(EmbedderSettings):
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
+    
+    # instantiate an open ai Embedder from configuration with checking for the validity of the key
+    @classmethod
+    def get_embedder_from_config(cls, config):
+        if cls._pyclass is None:
+            raise Exception(
+                "Embedder configuration class has self._pyclass = None. Should be a valid Embedder class"
+            )
+        check_openai_key_valid(config["openai_api_key"])
+        return cls._pyclass(**config)
 
 
 # https://python.langchain.com/en/latest/_modules/langchain/embeddings/openai.html#OpenAIEmbeddings
@@ -81,6 +91,15 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
             "description": "Configuration for Azure OpenAI embeddings",
         }
 
+    # instantiate an open ai Embedder from configuration with checking for the validity of the key
+    @classmethod
+    def get_embedder_from_config(cls, config):
+        if cls._pyclass is None:
+            raise Exception(
+                "Embedder configuration class has self._pyclass = None. Should be a valid Embedder class"
+            )
+        check_openai_key_valid(config["openai_api_key"])
+        return cls._pyclass(**config)
 
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str

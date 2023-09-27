@@ -22,7 +22,7 @@ from langchain.base_language import BaseLanguageModel
 from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.factory.custom_llm import CustomOpenAI
-
+from openai.error import RateLimitError
 
 MSG_TYPES = Literal["notification", "chat", "error"]
 
@@ -159,8 +159,11 @@ class CheshireCat:
 
             # obtain configuration and instantiate Embedder
             selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
-            embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
-
+            try:
+                embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
+            except Exception as e:
+                embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
+                log.log(f"A problem occured while loading the embedder, the default embadder will be used, {str(e)}", "WARNING")
             return embedder
 
         # OpenAI embedder

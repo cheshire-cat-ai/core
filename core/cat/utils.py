@@ -1,7 +1,7 @@
 """Various utiles used from the projects."""
 
 from datetime import timedelta
-
+import openai
 
 def to_camel_case(text :str ) -> str:
     """Format string to camel case.
@@ -67,3 +67,26 @@ def verbal_timedelta(td: timedelta) -> str:
         return "{} ago".format(abs_delta)
     else:
         return "{} ago".format(abs_delta)
+    
+def check_openai_key_valid(key):
+    """send a request to the openai api to test the key.
+
+    The fucntion send a request to the openai api using the given key and check the response, if the key is not valid an exception will be raised.
+
+    Parameters
+    ----------
+    key : str
+        openai key.
+
+    Returns
+    -------
+    str
+        response to the query.
+    """
+    openai.api_key = key
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt="test for the key",
+        max_tokens=5
+    )
+    return response

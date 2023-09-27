@@ -5,6 +5,9 @@ from fastapi import Request, APIRouter, Body, HTTPException
 from cat.factory.embedder import EMBEDDER_SCHEMAS, SUPPORTED_EMDEDDING_MODELS
 from cat.db import crud, models
 from cat.log import log
+from cat.utils import check_openai_key_valid
+
+import openai
 
 router = APIRouter()
 
@@ -105,6 +108,18 @@ def upsert_embedder_setting(
             }
         )
     
+    # check if the openai key is valid
+    if "openai_api_key" in payload:
+        try:
+            check_openai_key_valid(payload["openai_api_key"])
+        except Exception as e:
+            raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e)
+            }
+        )
+
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
         models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=payload)
@@ -129,3 +144,4 @@ def upsert_embedder_setting(
     ccat.mad_hatter.embed_tools()
 
     return status
+    
