@@ -97,9 +97,9 @@ def test_deactivate_plugin(plugin):
     assert len(plugin.tools) == 0
 
 
-def test_get_settings_schema(plugin):
+def test_settings_schema(plugin):
 
-    settings_schema = plugin.get_settings_schema()
+    settings_schema = plugin.settings_schema()
     assert type(settings_schema) == dict
     assert settings_schema["properties"] == {}
     assert settings_schema["title"] == "BaseModel"
