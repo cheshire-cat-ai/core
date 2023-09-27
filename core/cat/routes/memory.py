@@ -180,7 +180,7 @@ async def wipe_memory_point(
 
 
 @router.delete("/collections/{collection_id}/points")
-async def wipe_memory_points_by_source(
+async def wipe_memory_points_by_metadata(
         request: Request,
         collection_id: str,
         metadata: Dict = {},
