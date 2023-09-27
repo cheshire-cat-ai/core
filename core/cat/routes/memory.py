@@ -183,22 +183,18 @@ async def wipe_memory_point(
 async def wipe_memory_points_by_source(
         request: Request,
         collection_id: str,
-        source: str = Query(description="Source of the points that want to remove"),
+        metadata: Dict = {},
 ) -> Dict:
-    """Delete a specific point in memory"""
+    """Delete points in memory by filter"""
 
     ccat = request.app.state.ccat
     vector_memory = ccat.memory.vectors
 
-    metadata = {
-        "source": source
-    }
-
-    # delete point
-    points = vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
+    # delete points
+    vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
 
     return {
-        "deleted": points
+        "deleted": [] # TODO: Qdrant does not return deleted points?
     }
 
 
