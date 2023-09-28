@@ -173,7 +173,7 @@ class Plugin:
         req_file = os.path.join(self.path, "requirements.txt")
 
         if os.path.exists(req_file):
-            log.critical(f"Installing requirements for: {self.id}")
+            log.info(f"Installing requirements for: {self.id}")
             os.system(f'pip install --no-cache-dir -r "{req_file}"')
 
 
