@@ -35,6 +35,9 @@ def clean_up_mocks():
                 shutil.rmtree(tbr)
             else:
                 os.remove(tbr)
+    
+    # Uninstall mock plugin requirements
+    os.system("pip uninstall -y pip-install-test")
 
 
 @pytest.fixture(scope="function")
