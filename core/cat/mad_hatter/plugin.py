@@ -40,6 +40,8 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
+        self._install_requirements()
+
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
@@ -166,6 +168,14 @@ class Plugin:
         meta["version"] = json_file_data.get("version", "0.0.1")
 
         return meta
+    
+    def _install_requirements(self):
+        req_file = os.path.join(self.path, "requirements.txt")
+
+        if os.path.exists(req_file):
+            log.critical(f"Installing requirements for: {self.id}")
+            os.system(f'pip install --no-cache-dir -r "{req_file}"')
+
 
     # lists of hooks and tools
     def _load_decorated_functions(self):
