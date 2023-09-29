@@ -282,7 +282,7 @@ class MadHatter:
                     *deepcopy(args[1:]),
                     cat=self.ccat
                 )
-                log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
+                #log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
                     tea_cup = tea_spoon
             except Exception as e:

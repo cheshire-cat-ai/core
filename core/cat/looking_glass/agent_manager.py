@@ -1,5 +1,6 @@
-from datetime import timedelta
 import time
+import traceback
+from datetime import timedelta
 from typing import List, Dict
 
 from langchain.docstore.document import Document
@@ -166,8 +167,8 @@ class AgentManager:
                     return out
 
             except Exception as e:
-                error_description = str(e)
-                log.error(error_description)
+                log.error(e)
+                traceback.print_exc()
 
         #If an exeption occur in the execute_tool_agent or there is no allowed tools execute only the memory chain
 

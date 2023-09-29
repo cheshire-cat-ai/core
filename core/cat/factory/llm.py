@@ -96,7 +96,7 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "text-davinci-003"
+    model_name: str = "gpt-3.5-turbo-instruct" # used instead of text-davinci-003 since it deprecated
     _pyclass: PyObject = langchain.llms.OpenAI
 
     class Config:
@@ -139,8 +139,8 @@ class LLMAzureOpenAIConfig(LLMSettings):
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
     # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
     api_version: str = "2023-05-15"
-    deployment_name: str = "text-davinci-003"
-    model_name: str = "text-davinci-003"  # Use only completion models !
+    deployment_name: str = "gpt-35-turbo-instruct" # Model "comming soon" according to microsoft
+    model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
 
     _pyclass: PyObject = langchain.llms.AzureOpenAI
 
