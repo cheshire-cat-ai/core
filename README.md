@@ -52,7 +52,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 ### Install
 
 To make Cheshire Cat run on your machine, you just need [`docker`](https://docs.docker.com/get-docker/) and [`docker compose`](https://docs.docker.com/compose/install/) installed.
-Clone the repo:
+Clone the repo: 
 
 ```bash
 git clone https://github.com/cheshire-cat-ai/core.git cheshire-cat
