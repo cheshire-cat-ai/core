@@ -129,9 +129,12 @@ class VectorMemoryCollection(Qdrant):
             log.info(f'Collection "{self.collection_name}" has the same embedder')
         else:
             log.warning(f'Collection "{self.collection_name}" has different embedder')
-            # dump collection on disk before deleting
-            self.save_dump()
-            log.info(f'Dump "{self.collection_name}" completed')
+            # Memory snapshot saving can be turned off in the .env file with:
+            # SAVE_MEMORY_SNAPSHOTS=false
+            if os.getenv("SAVE_MEMORY_SNAPSHOTS") == "true":
+                # dump collection on disk before deleting
+                self.save_dump()
+                log.info(f'Dump "{self.collection_name}" completed')
 
             self.client.delete_collection(self.collection_name)
             log.warning(f'Collection "{self.collection_name}" deleted')
@@ -188,7 +191,14 @@ class VectorMemoryCollection(Qdrant):
         return self.recall_memories_from_embedding(
             query_embedding, metadata=metadata, k=k, threshold=threshold
         )
-    
+
+    def delete_points_by_metadata_filter(self, metadata=None):
+        res = self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=self._qdrant_filter_from_dict(metadata),
+        )
+        return res
+
     # delete point in collection
     def delete_points(self, points_ids):
         res = self.client.delete(

@@ -1,5 +1,8 @@
 import os
 import pytest
+import fnmatch
+import subprocess
+
 from inspect import isfunction
 
 from cat.mad_hatter.mad_hatter import Plugin
@@ -52,9 +55,15 @@ def test_create_plugin(plugin):
     assert plugin.manifest["name"] == "MockPlugin"
     assert "Description not found" in plugin.manifest["description"]
 
+    # Check if plugin requirement is installed
+    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
+    result = result.stdout.decode()
+    assert fnmatch.fnmatch(result, "*pip-install-test*")
+
     # hooks and tools
     assert plugin.hooks == []
     assert plugin.tools == []
+
 
 def test_activate_plugin(plugin):
 
@@ -97,9 +106,9 @@ def test_deactivate_plugin(plugin):
     assert len(plugin.tools) == 0
 
 
-def test_get_settings_schema(plugin):
+def test_settings_schema(plugin):
 
-    settings_schema = plugin.get_settings_schema()
+    settings_schema = plugin.settings_schema()
     assert type(settings_schema) == dict
     assert settings_schema["properties"] == {}
     assert settings_schema["title"] == "BaseModel"

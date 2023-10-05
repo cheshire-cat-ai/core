@@ -375,7 +375,7 @@ class CheshireCat:
         secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
         if secure != '':
             secure = 's'
-        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}'
+        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}/'
 
     def get_base_path(self):
         """Allows the Cat expose the base path."""
@@ -387,7 +387,7 @@ class CheshireCat:
 
     def get_static_url(self):
         """Allows the Cat expose the static server url."""
-        return self.get_base_url() + "/static"
+        return self.get_base_url() + "static/"
     
     def get_static_path(self):
         """Allows the Cat expose the static files path."""

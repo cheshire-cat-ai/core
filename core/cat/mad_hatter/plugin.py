@@ -8,7 +8,7 @@ from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel
 
-from cat.mad_hatter.decorators import CatTool, CatHook
+from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
 from cat.log import log, get_log_level
 
@@ -40,16 +40,23 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
+        self._install_requirements()
+
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
         self._hooks = [] 
         self._tools = []
+
+        # list of @plugin decorated functions overrriding default plugin behaviour
+        self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access
+
+        # plugin starts deactivated
         self._active = False
 
     def activate(self):
         # lists of hooks and tools
-        self._hooks, self._tools = self._load_hooks_and_tools()
+        self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
         self._active = True
 
     def deactivate(self):
@@ -64,14 +71,15 @@ class Plugin:
         
         self._hooks = []
         self._tools = []
+        self._plugin_overrides = []
         self._active = False
 
     # get plugin settings JSON schema
-    def get_settings_schema(self):
+    def settings_schema(self):
 
         # is "plugin_settings_schema" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_schema":
+        for h in self._plugin_overrides:
+            if h.name == "settings_schema":
                 return h.function()
 
         # default schema (empty)
@@ -81,8 +89,8 @@ class Plugin:
     def load_settings(self):
 
         # is "plugin_settings_load" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_load":
+        for h in self._plugin_overrides:
+            if h.name == "load_settings":
                 return h.function()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -107,8 +115,8 @@ class Plugin:
     def save_settings(self, settings: Dict):
 
         # is "plugin_settings_save" hook defined in the plugin?
-        for h in self._hooks:
-            if h.name == "plugin_settings_save":
+        for h in self._plugin_overrides:
+            if h.name == "save_settings":
                 return h.function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
@@ -160,11 +168,20 @@ class Plugin:
         meta["version"] = json_file_data.get("version", "0.0.1")
 
         return meta
+    
+    def _install_requirements(self):
+        req_file = os.path.join(self.path, "requirements.txt")
+
+        if os.path.exists(req_file):
+            log.info(f"Installing requirements for: {self.id}")
+            os.system(f'pip install --no-cache-dir -r "{req_file}"')
+
 
     # lists of hooks and tools
-    def _load_hooks_and_tools(self):
+    def _load_decorated_functions(self):
         hooks = []
         tools = []
+        plugin_overrides = []
 
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
@@ -176,6 +193,7 @@ class Plugin:
                 plugin_module = importlib.import_module(py_filename)
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
+                plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
                 log.error(f"Error in {py_filename}: {str(e)}")
                 traceback.print_exc()
@@ -184,8 +202,9 @@ class Plugin:
         # clean and enrich instances
         hooks = list(map(self._clean_hook, hooks))
         tools = list(map(self._clean_tool, tools))
+        plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
 
-        return hooks, tools
+        return hooks, tools, plugin_overrides
 
     def _clean_hook(self, hook):
         # getmembers returns a tuple
@@ -198,6 +217,10 @@ class Plugin:
         t = tool[1]
         t.plugin_id = self._id
         return t
+    
+    def _clean_plugin_override(self, plugin_override):
+        # getmembers returns a tuple
+        return plugin_override[1]
 
     # a plugin hook function has to be decorated with @hook
     # (which returns an instance of CatHook)
@@ -210,6 +233,12 @@ class Plugin:
     @staticmethod
     def _is_cat_tool(obj):
         return isinstance(obj, CatTool)
+    
+    # a plugin override function has to be decorated with @plugin
+    # (which returns an instance of CatPluginOverride)
+    @staticmethod
+    def _is_cat_plugin_override(obj):
+        return isinstance(obj, CatPluginOverride)
     
     @property
     def path(self):
