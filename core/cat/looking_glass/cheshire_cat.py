@@ -4,6 +4,7 @@ import traceback
 from typing import Literal, get_args
 import langchain
 import os
+import asyncio
 from cat.log import log
 from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
@@ -72,7 +73,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.ws_messages = []      
+        self.ws_messages = asyncio.Queue()     
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -359,16 +360,24 @@ class CheshireCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.ws_messages.append({
-                "type": msg_type,
-                "name": "GenericError",
-                "description": content
-            })
+            asyncio.run(
+                self.ws_messages.put( 
+                    {
+                        "type": msg_type,
+                        "name": "GenericError",
+                        "description": content
+                    }
+                )
+            )
         else:
-            self.ws_messages.append({
-                "type": msg_type,
-                "content": content
-            })
+            asyncio.run(
+                self.ws_messages.put(
+                    {
+                        "type": msg_type,
+                        "content": content
+                    }
+                )
+            )    
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""
