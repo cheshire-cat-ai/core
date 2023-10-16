@@ -64,5 +64,5 @@ jobs:
         with:
           context: core/
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ghcr.io/${{ github.event.repository.name }}:latest # ${{ steps.meta.outputs.tags }}
+#          labels: ${{ steps.meta.outputs.labels }}
