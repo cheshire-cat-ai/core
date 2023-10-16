@@ -2,7 +2,7 @@ import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
 
-from typing import Dict, List
+from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
 
@@ -12,7 +12,7 @@ from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
 # Base class to manage LLM configuration.
 class LLMSettings(BaseModel):
     # class instantiating the model
-    _pyclass: None
+    _pyclass: Type = None
 
     # This is related to pydantic, because "model_*" attributes are protected.
     # We deactivate the protection because langchain relies on several "model_*" named attributes
@@ -25,15 +25,14 @@ class LLMSettings(BaseModel):
     def get_llm_from_config(cls, config):
         if cls._pyclass is None:
             raise Exception(
-                "Language model configuration class has self._pyclass = None. "
-                "Should be a valid LLM class"
+                "Language model configuration class has self._pyclass==None. Should be a valid LLM class"
             )
-        return cls._pyclass(**config)
+        return cls._pyclass.default(**config)
     
 
 
 class LLMDefaultConfig(LLMSettings):
-    _pyclass = LLMDefault
+    _pyclass: Type = LLMDefault
 
     class Config:
         json_schema_extra = {
@@ -50,7 +49,7 @@ class LLMCustomConfig(LLMSettings):
     url: str
     auth_key: str = "optional_auth_key"
     options: str = "{}"
-    _pyclass = LLMCustom
+    _pyclass: Type = LLMCustom
 
     # instantiate Custom LLM from configuration
     @classmethod
@@ -83,7 +82,7 @@ class LLMLlamaCppConfig(LLMSettings):
     top_k: int = 40
     top_p: float = 0.95
     repeat_penalty: float = 1.1
-    _pyclass = CustomOpenAI
+    _pyclass: Type = CustomOpenAI
 
     class Config:
         json_schema_extra = {
@@ -95,7 +94,7 @@ class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
     temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
-    _pyclass = ChatOpenAI
+    _pyclass: Type = ChatOpenAI
 
     class Config:
         json_schema_extra = {
@@ -109,7 +108,7 @@ class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo-instruct" # used instead of text-davinci-003 since it deprecated
     temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
-    _pyclass = OpenAI
+    _pyclass: Type = OpenAI
 
     class Config:
         json_schema_extra = {
@@ -132,7 +131,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 
     deployment_name: str
 
-    _pyclass = AzureChatOpenAI
+    _pyclass: Type = AzureChatOpenAI
 
     class Config:
         json_schema_extra = {
@@ -154,7 +153,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
     deployment_name: str = "gpt-35-turbo-instruct" # Model "comming soon" according to microsoft
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
 
-    _pyclass = AzureOpenAI
+    _pyclass: Type = AzureOpenAI
 
     class Config:
         json_schema_extra = {
@@ -167,7 +166,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
-    _pyclass = langchain.llms.Cohere
+    _pyclass: Type = langchain.llms.Cohere
 
     class Config:
         json_schema_extra = {
@@ -186,7 +185,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     typical_p: float = 0.95
     temperature: float = 0.01
     repetition_penalty: float = 1.03
-    _pyclass = langchain.llms.HuggingFaceTextGenInference
+    _pyclass: Type = langchain.llms.HuggingFaceTextGenInference
 
     class Config:
         json_schema_extra = {
@@ -204,7 +203,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     # }
     repo_id: str
     huggingfacehub_api_token: str
-    _pyclass = langchain.llms.HuggingFaceHub
+    _pyclass: Type = langchain.llms.HuggingFaceHub
 
     class Config:
         json_schema_extra = {
@@ -218,7 +217,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
     task: str = "text2text-generation"
-    _pyclass = langchain.llms.HuggingFaceEndpoint
+    _pyclass: Type = langchain.llms.HuggingFaceEndpoint
 
     class Config:
         json_schema_extra = {
@@ -232,7 +231,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
 class LLMAnthropicConfig(LLMSettings):
     anthropic_api_key: str
     model: str = "claude-v1"
-    _pyclass = langchain.chat_models.ChatAnthropic
+    _pyclass: Type = langchain.chat_models.ChatAnthropic
 
     class Config:
         json_schema_extra = {
@@ -245,7 +244,7 @@ class LLMAnthropicConfig(LLMSettings):
 class LLMGooglePalmConfig(LLMSettings):
     google_api_key: str
     model_name: str = "models/text-bison-001"
-    _pyclass = langchain.llms.GooglePalm
+    _pyclass: Type = langchain.llms.GooglePalm
 
     class Config:
         json_schema_extra = {
@@ -275,7 +274,7 @@ SUPPORTED_LANGUAGE_MODELS = [
 # which fields are required to create the language model.
 LLM_SCHEMAS = {}
 for config_class in SUPPORTED_LANGUAGE_MODELS:
-    schema = config_class.schema()
+    schema = config_class.model_json_schema()
 
     # useful for clients in order to call the correct config endpoints
     schema["languageModelName"] = schema["title"]

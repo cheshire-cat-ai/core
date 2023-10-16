@@ -83,7 +83,7 @@ class Plugin:
                 return h.function()
 
         # default schema (empty)
-        return BaseModel.schema()
+        return BaseModel.model_json_schema()
 
     # load plugin settings
     def load_settings(self):

@@ -1,3 +1,4 @@
+from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
 
@@ -7,7 +8,7 @@ from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseModel):
     # class instantiating the embedder
-    _pyclass = None
+    _pyclass: Type = None
 
     # This is related to pydantic, because "model_*" attributes are protected.
     # We deactivate the protection because langchain relies on several "model_*" named attributes
@@ -20,14 +21,14 @@ class EmbedderSettings(BaseModel):
     def get_embedder_from_config(cls, config):
         if cls._pyclass is None:
             raise Exception(
-                "Embedder configuration class has self._pyclass = None. Should be a valid Embedder class"
+                "Embedder configuration class has self._pyclass==None. Should be a valid Embedder class"
             )
-        return cls._pyclass(**config)
+        return cls._pyclass.default(**config)
 
 
 class EmbedderFakeConfig(EmbedderSettings):
     size: int = 128
-    _pyclass = langchain.embeddings.FakeEmbeddings
+    _pyclass: Type = langchain.embeddings.FakeEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -38,7 +39,7 @@ class EmbedderFakeConfig(EmbedderSettings):
 
 class EmbedderDumbConfig(EmbedderSettings):
 
-    _pyclass = DumbEmbedder
+    _pyclass: Type = DumbEmbedder
 
     class Config:
         json_schema_extra = {
@@ -49,7 +50,7 @@ class EmbedderDumbConfig(EmbedderSettings):
 
 class EmbedderLlamaCppConfig(EmbedderSettings):
     url: str
-    _pyclass = CustomOpenAIEmbeddings
+    _pyclass: Type = CustomOpenAIEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -61,7 +62,7 @@ class EmbedderLlamaCppConfig(EmbedderSettings):
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str = "text-embedding-ada-002"
-    _pyclass = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -79,7 +80,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_version: str
     deployment: str
 
-    _pyclass = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -91,7 +92,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
     model: str = "embed-multilingual-v2.0"
-    _pyclass = langchain.embeddings.CohereEmbeddings
+    _pyclass: Type = langchain.embeddings.CohereEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -103,7 +104,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
     repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
     huggingfacehub_api_token: str
-    _pyclass = langchain.embeddings.HuggingFaceHubEmbeddings
+    _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
     class Config:
         json_schema_extra = {
@@ -126,7 +127,7 @@ SUPPORTED_EMDEDDING_MODELS = [
 # EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
 EMBEDDER_SCHEMAS = {}
 for config_class in SUPPORTED_EMDEDDING_MODELS:
-    schema = config_class.schema()
+    schema = config_class.model_json_schema()
 
     # useful for clients in order to call the correct config endpoints
     schema["languageEmbedderName"] = schema["title"]

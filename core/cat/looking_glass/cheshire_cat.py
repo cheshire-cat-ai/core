@@ -17,10 +17,9 @@ from cat.looking_glass.agent_manager import AgentManager
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
-from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
+from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
 from langchain.chat_models import ChatOpenAI
 from langchain.base_language import BaseLanguageModel
-from langchain import HuggingFaceHub
 from langchain.chat_models import AzureChatOpenAI
 from cat.factory.custom_llm import CustomOpenAI
 
