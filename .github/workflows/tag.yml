@@ -52,7 +52,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.event.repository.name }}
+          images: ghcr.io/${{ github.repository }}
 
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`.
       # If the build succeeds, it pushes the image to GitHub Packages.
@@ -64,5 +64,5 @@ jobs:
         with:
           context: core/
           push: true
-          tags: ghcr.io/${{ github.event.repository.name }}:latest # ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/${{ github.repository }}:latest # ${{ steps.meta.outputs.tags }}
 #          labels: ${{ steps.meta.outputs.labels }}
