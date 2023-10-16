@@ -1,13 +1,19 @@
 import langchain
-from pydantic import PyObject, BaseSettings
+from pydantic import BaseModel, ConfigDict
 
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
-class EmbedderSettings(BaseSettings):
+class EmbedderSettings(BaseModel):
     # class instantiating the embedder
-    _pyclass: None
+    _pyclass = None
+
+    # This is related to pydantic, because "model_*" attributes are protected.
+    # We deactivate the protection because langchain relies on several "model_*" named attributes
+    model_config = ConfigDict(
+        protected_namespaces=()
+    )
 
     # instantiate an Embedder from configuration
     @classmethod
@@ -21,10 +27,10 @@ class EmbedderSettings(BaseSettings):
 
 class EmbedderFakeConfig(EmbedderSettings):
     size: int = 128
-    _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
+    _pyclass = langchain.embeddings.FakeEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
         }
@@ -32,10 +38,10 @@ class EmbedderFakeConfig(EmbedderSettings):
 
 class EmbedderDumbConfig(EmbedderSettings):
 
-    _pyclass = PyObject = DumbEmbedder
+    _pyclass = DumbEmbedder
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
         }
@@ -43,10 +49,10 @@ class EmbedderDumbConfig(EmbedderSettings):
 
 class EmbedderLlamaCppConfig(EmbedderSettings):
     url: str
-    _pyclass = PyObject = CustomOpenAIEmbeddings
+    _pyclass = CustomOpenAIEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python embedder",
             "description": "Self-hosted llama-cpp-python embedder",
         }
@@ -55,10 +61,10 @@ class EmbedderLlamaCppConfig(EmbedderSettings):
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str = "text-embedding-ada-002"
-    _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
+    _pyclass = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
@@ -73,10 +79,10 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_version: str
     deployment: str
 
-    _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
+    _pyclass = langchain.embeddings.OpenAIEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
         }
@@ -85,10 +91,10 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
     model: str = "embed-multilingual-v2.0"
-    _pyclass: PyObject = langchain.embeddings.CohereEmbeddings
+    _pyclass = langchain.embeddings.CohereEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
         }
@@ -97,10 +103,10 @@ class EmbedderCohereConfig(EmbedderSettings):
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
     repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
     huggingfacehub_api_token: str
-    _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
+    _pyclass = langchain.embeddings.HuggingFaceHubEmbeddings
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
         }
