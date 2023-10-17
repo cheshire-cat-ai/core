@@ -6,6 +6,7 @@ from typing import List, Dict
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.callbacks.base import BaseCallbackHandler
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass import prompts
@@ -13,6 +14,13 @@ from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
 
+
+class NewTokenHandler(BaseCallbackHandler):
+
+    def __init__(self, cat):
+        self.cat = cat
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+        self.cat.send_ws_message(token, "chat_token")
 
 
 
@@ -85,7 +93,7 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input)
+        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat)])
         out["output"] = out["text"]
         del out["text"]
         return out

@@ -23,7 +23,7 @@ from langchain.base_language import BaseLanguageModel
 from cat.factory.custom_llm import CustomOpenAI
 
 
-MSG_TYPES = Literal["notification", "chat", "error"]
+MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
 class CheshireCat:
