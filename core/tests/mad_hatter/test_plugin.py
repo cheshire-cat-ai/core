@@ -111,7 +111,7 @@ def test_settings_schema(plugin):
     settings_schema = plugin.settings_schema()
     assert type(settings_schema) == dict
     assert settings_schema["properties"] == {}
-    assert settings_schema["title"] == "BaseModel"
+    assert settings_schema["title"] == "PluginSettingModel"
     assert settings_schema['type'] == 'object'
 
 
