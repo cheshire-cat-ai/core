@@ -1,8 +1,16 @@
-from typing import Dict
+from typing import Any, Dict, List, Optional, TypedDict
+from pydantic import BaseModel
 from fastapi import Query, Request, APIRouter, HTTPException
 
 router = APIRouter()
 
+class Vector(BaseModel):
+    embedder: str
+    collections: Dict[str, Any]
+
+class MemoryRecall(BaseModel):
+    query: Dict[str, Any]
+    vectors: Vector
 
 # GET memories from recall
 @router.get("/recall/")
@@ -11,7 +19,7 @@ async def recall_memories_from_text(
         text: str = Query(description="Find memories similar to this text."),
         k: int = Query(default=100, description="How many memories to return."),
         user_id: str = Query(default="user", description="User id."),
-) -> Dict:
+) -> MemoryRecall:
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat
@@ -179,7 +187,7 @@ async def wipe_memory_point(
     }
 
 
-@router.delete("/collections/{collection_id}/points")
+@router.delete("/collections/{collection_id}/points/")
 async def wipe_memory_points_by_metadata(
         request: Request,
         collection_id: str,
@@ -194,7 +202,7 @@ async def wipe_memory_points_by_metadata(
     vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
 
     return {
-        "deleted": [] # TODO: Qdrant does not return deleted points?
+        "deleted": True # TODO: Return list of deleted points by Qdrant
     }
 
 
