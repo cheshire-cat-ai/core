@@ -12,7 +12,16 @@ from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.callbacks.base import BaseCallbackHandler
 
+
+class MyCustomHandler(BaseCallbackHandler):
+
+    def __init__(self, cat):
+        self.cat = cat
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+        self.cat.send_ws_message(token, "chat_token")
 
 
 
@@ -85,7 +94,7 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input)
+        out = memory_chain(agent_input, callbacks=[MyCustomHandler(self.cat)])
         out["output"] = out["text"]
         del out["text"]
         return out
