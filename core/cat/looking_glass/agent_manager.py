@@ -9,11 +9,10 @@ from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass import prompts
+from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
-
-
 
 
 class AgentManager:
@@ -46,7 +45,11 @@ class AgentManager:
         )
 
         # main chain
-        agent_chain = LLMChain(prompt=prompt, llm=self.cat._llm, verbose=True)
+        agent_chain = LLMChain(
+            prompt=prompt,
+            llm=self.cat._llm,
+            verbose=True
+        )
 
         # init agent
         agent = LLMSingleActionAgent(
@@ -85,7 +88,7 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input)
+        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat)])
         out["output"] = out["text"]
         del out["text"]
         return out
