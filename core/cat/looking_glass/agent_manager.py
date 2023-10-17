@@ -6,17 +6,16 @@ from typing import List, Dict
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.callbacks.base import BaseCallbackHandler
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
 from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.callbacks.base import BaseCallbackHandler
 
 
-class MyCustomHandler(BaseCallbackHandler):
+class NewTokenHandler(BaseCallbackHandler):
 
     def __init__(self, cat):
         self.cat = cat
@@ -94,7 +93,7 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input, callbacks=[MyCustomHandler(self.cat)])
+        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat)])
         out["output"] = out["text"]
         del out["text"]
         return out
