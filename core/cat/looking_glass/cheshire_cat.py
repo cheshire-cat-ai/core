@@ -5,7 +5,7 @@ from typing import Literal, get_args
 import os
 import asyncio
 import langchain
-from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
+from langchain.llms import Cohere, OpenAI, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
 
@@ -163,7 +163,7 @@ class CheshireCat:
             return embedder
 
         # OpenAI embedder
-        if type(self._llm) in [OpenAI, OpenAIChat]:
+        if type(self._llm) in [OpenAI, ChatOpenAI]:
             embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
                 {
                     "openai_api_key": self._llm.openai_api_key,
