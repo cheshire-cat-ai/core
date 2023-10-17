@@ -62,7 +62,7 @@ class LLMCustomConfig(LLMSettings):
             else:
                 config["options"] = {}
 
-        return cls._pyclass(**config)
+        return cls._pyclass.default(**config)
 
     class Config:
         json_schema_extra = {

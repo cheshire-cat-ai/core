@@ -18,9 +18,8 @@ import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
 from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models import AzureChatOpenAI
 from cat.factory.custom_llm import CustomOpenAI
 
 
@@ -164,7 +163,7 @@ class CheshireCat:
             return embedder
 
         # OpenAI embedder
-        if type(self._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
+        if type(self._llm) in [OpenAI, OpenAIChat]:
             embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
                 {
                     "openai_api_key": self._llm.openai_api_key,
