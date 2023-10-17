@@ -34,7 +34,7 @@ class LLMSettings(BaseModel):
 class LLMDefaultConfig(LLMSettings):
     _pyclass: Type = LLMDefault
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Default Language Model",
             "description":
@@ -43,6 +43,7 @@ class LLMDefaultConfig(LLMSettings):
                 "once consumer hardware allows it.",
             "link": ""
         }
+    )
 
 
 class LLMCustomConfig(LLMSettings):
@@ -64,7 +65,7 @@ class LLMCustomConfig(LLMSettings):
 
         return cls._pyclass.default(**config)
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Custom LLM",
             "description":
@@ -72,6 +73,7 @@ class LLMCustomConfig(LLMSettings):
                 "See docs for examples.",
             "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/"
         }
+    )
 
 
 class LLMLlamaCppConfig(LLMSettings):
@@ -84,11 +86,12 @@ class LLMLlamaCppConfig(LLMSettings):
     repeat_penalty: float = 1.1
     _pyclass: Type = CustomOpenAI
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python",
             "description": "Self-hosted llama-cpp-python compatible LLM",
         }
+    )
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
@@ -96,12 +99,13 @@ class LLMOpenAIChatConfig(LLMSettings):
     temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
     _pyclass: Type = ChatOpenAI
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "OpenAI ChatGPT",
             "description": "Chat model from OpenAI",
             "link": "https://platform.openai.com/docs/models/overview"
         }
+    )
 
 
 class LLMOpenAIConfig(LLMSettings):
@@ -110,7 +114,7 @@ class LLMOpenAIConfig(LLMSettings):
     temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
     _pyclass: Type = OpenAI
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "OpenAI GPT-3",
             "description":
@@ -118,6 +122,7 @@ class LLMOpenAIConfig(LLMSettings):
                 "also more flexible than ChatGPT.",
             "link": "https://platform.openai.com/docs/models/overview"
         }
+    )
 
 
 # https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/reference#chat-completions
@@ -133,12 +138,13 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 
     _pyclass: Type = AzureChatOpenAI
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
             "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
         }
+    )
 
 
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
@@ -155,12 +161,13 @@ class LLMAzureOpenAIConfig(LLMSettings):
 
     _pyclass: Type = AzureOpenAI
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
             "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
         }
+    )
 
 
 class LLMCohereConfig(LLMSettings):
@@ -168,12 +175,13 @@ class LLMCohereConfig(LLMSettings):
     model: str = "command"
     _pyclass: Type = langchain.llms.Cohere
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Cohere",
             "description": "Configuration for Cohere language model",
             "link": "https://docs.cohere.com/docs/models"
         }
+    )
 
 
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/huggingface_textgen_inference.html
@@ -187,12 +195,13 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     repetition_penalty: float = 1.03
     _pyclass: Type = langchain.llms.HuggingFaceTextGenInference
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
             "link": "https://huggingface.co/text-generation-inference"
         }
+    )
 
 
 class LLMHuggingFaceHubConfig(LLMSettings):
@@ -205,12 +214,13 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     huggingfacehub_api_token: str
     _pyclass: Type = langchain.llms.HuggingFaceHub
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "HuggingFace Hub",
             "description": "Configuration for HuggingFace Hub language models",
             "link": "https://huggingface.co/models"
         }
+    )
 
 
 class LLMHuggingFaceEndpointConfig(LLMSettings):
@@ -219,13 +229,14 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     task: str = "text2text-generation"
     _pyclass: Type = langchain.llms.HuggingFaceEndpoint
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "HuggingFace Endpoint",
             "description":
                 "Configuration for HuggingFace Endpoint language models",
             "link": "https://huggingface.co/inference-endpoints"
         }
+    )
 
 
 class LLMAnthropicConfig(LLMSettings):
@@ -233,12 +244,13 @@ class LLMAnthropicConfig(LLMSettings):
     model: str = "claude-v1"
     _pyclass: Type = langchain.chat_models.ChatAnthropic
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Anthropic",
             "description": "Configuration for Anthropic language model",
             "link": "https://www.anthropic.com/product"
         }
+    )
 
 
 class LLMGooglePalmConfig(LLMSettings):
@@ -246,12 +258,13 @@ class LLMGooglePalmConfig(LLMSettings):
     model_name: str = "models/text-bison-001"
     _pyclass: Type = langchain.llms.GooglePalm
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Google PaLM",
             "description": "Configuration for Google PaLM language model",
             "link": "https://developers.generativeai.google/models/language"
         }
+    )
 
 
 SUPPORTED_LANGUAGE_MODELS = [

@@ -30,33 +30,36 @@ class EmbedderFakeConfig(EmbedderSettings):
     size: int = 128
     _pyclass: Type = langchain.embeddings.FakeEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
         }
+    )
 
 
 class EmbedderDumbConfig(EmbedderSettings):
 
     _pyclass: Type = DumbEmbedder
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
         }
+    )
 
 
 class EmbedderLlamaCppConfig(EmbedderSettings):
     url: str
     _pyclass: Type = CustomOpenAIEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python embedder",
             "description": "Self-hosted llama-cpp-python embedder",
         }
+    )
 
 
 class EmbedderOpenAIConfig(EmbedderSettings):
@@ -64,11 +67,12 @@ class EmbedderOpenAIConfig(EmbedderSettings):
     model: str = "text-embedding-ada-002"
     _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
+    )
 
 
 # https://python.langchain.com/en/latest/_modules/langchain/embeddings/openai.html#OpenAIEmbeddings
@@ -82,11 +86,12 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 
     _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
         }
+    )
 
 
 class EmbedderCohereConfig(EmbedderSettings):
@@ -94,11 +99,12 @@ class EmbedderCohereConfig(EmbedderSettings):
     model: str = "embed-multilingual-v2.0"
     _pyclass: Type = langchain.embeddings.CohereEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
         }
+    )
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
@@ -106,11 +112,12 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
     huggingfacehub_api_token: str
     _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
             "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
         }
+    )
 
 
 SUPPORTED_EMDEDDING_MODELS = [
