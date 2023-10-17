@@ -16,7 +16,7 @@ def generate_timestamp():
 class SettingBody(BaseModel):
     name: str
     value: Union[Dict, List]
-    category: Optional[str]
+    category: Optional[str] = None
 
 # actual setting class, with additional auto generated id and update time
 class Setting(SettingBody):

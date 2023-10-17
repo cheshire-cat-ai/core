@@ -12,6 +12,12 @@ from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
 from cat.log import log, get_log_level
 
+
+# Empty class to represent basic plugin Settings model
+class PluginSettingsModel(BaseModel):
+    pass
+
+
 # this class represents a plugin in memory
 # the plugin itsefl is managed as much as possible unix style
 #      (i.e. by saving information in the folder itself)
@@ -83,7 +89,7 @@ class Plugin:
                 return h.function()
 
         # default schema (empty)
-        return BaseModel.schema()
+        return PluginSettingsModel.model_json_schema()
 
     # load plugin settings
     def load_settings(self):

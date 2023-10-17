@@ -1,5 +1,6 @@
 from typing import Any, List, Union, Callable
 from inspect import signature
+from pydantic import ConfigDict
 
 from langchain.tools import BaseTool
 from langchain.agents import Tool
@@ -32,8 +33,13 @@ class CatTool(Tool):
         return self._run(input_by_llm, cat=self.cat)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
+    
     class Config:
         extra = "allow"
+    # TODO: should be:
+    # model_config = ConfigDict(
+    #     extra = "allow"
+    # )
 
 
 # @tool decorator, a modified version of a langchain Tool that also takes a Cat instance as argument

@@ -4,6 +4,7 @@ import traceback
 from typing import Literal, get_args
 import langchain
 import os
+import asyncio
 from cat.log import log
 from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
@@ -16,11 +17,9 @@ from cat.looking_glass.agent_manager import AgentManager
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.db import crud
-from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
-from langchain.chat_models import ChatOpenAI
+from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
-from langchain import HuggingFaceHub
-from langchain.chat_models import AzureChatOpenAI
 from cat.factory.custom_llm import CustomOpenAI
 
 
@@ -72,7 +71,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.ws_messages = []      
+        self.ws_messages = asyncio.Queue()     
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -164,7 +163,7 @@ class CheshireCat:
             return embedder
 
         # OpenAI embedder
-        if type(self._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
+        if type(self._llm) in [OpenAI, OpenAIChat]:
             embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
                 {
                     "openai_api_key": self._llm.openai_api_key,
@@ -359,16 +358,24 @@ class CheshireCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.ws_messages.append({
-                "type": msg_type,
-                "name": "GenericError",
-                "description": content
-            })
+            asyncio.run(
+                self.ws_messages.put( 
+                    {
+                        "type": msg_type,
+                        "name": "GenericError",
+                        "description": content
+                    }
+                )
+            )
         else:
-            self.ws_messages.append({
-                "type": msg_type,
-                "content": content
-            })
+            asyncio.run(
+                self.ws_messages.put(
+                    {
+                        "type": msg_type,
+                        "content": content
+                    }
+                )
+            )    
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""
