@@ -9,7 +9,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
+  packages: write
 
 jobs:
   tag:
