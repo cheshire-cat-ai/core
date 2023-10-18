@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
-from cat.log import log, get_log_level
+from cat.log import log
 
 
 # Empty class to represent basic plugin Settings model
@@ -83,7 +83,7 @@ class Plugin:
     # get plugin settings JSON schema
     def settings_schema(self):
 
-        # is "plugin_settings_schema" hook defined in the plugin?
+        # is "settings_schema" hook defined in the plugin?
         for h in self._plugin_overrides:
             if h.name == "settings_schema":
                 return h.function()
@@ -94,7 +94,7 @@ class Plugin:
     # load plugin settings
     def load_settings(self):
 
-        # is "plugin_settings_load" hook defined in the plugin?
+        # is "settings_load" hook defined in the plugin?
         for h in self._plugin_overrides:
             if h.name == "load_settings":
                 return h.function()
@@ -114,13 +114,14 @@ class Plugin:
             except Exception as e:
                 log.error(f"Unable to load plugin {self._id} settings")
                 log.error(e)
+                raise e
 
         return settings
     
     # save plugin settings
     def save_settings(self, settings: Dict):
 
-        # is "plugin_settings_save" hook defined in the plugin?
+        # is "settings_save" hook defined in the plugin?
         for h in self._plugin_overrides:
             if h.name == "save_settings":
                 return h.function(settings)
@@ -181,7 +182,6 @@ class Plugin:
         if os.path.exists(req_file):
             log.info(f"Installing requirements for: {self.id}")
             os.system(f'pip install --no-cache-dir -r "{req_file}"')
-
 
     # lists of hooks and tools
     def _load_decorated_functions(self):
