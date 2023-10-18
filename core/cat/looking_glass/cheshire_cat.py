@@ -335,7 +335,7 @@ class CheshireCat:
         # should we stream the tokens?
         callbacks = []
         if stream:
-            callbacks.append( NewTokenHandler(self) )
+            callbacks.append(NewTokenHandler(self))
 
         # Check if self._llm is a completion model and generate a response
         if isinstance(self._llm, langchain.llms.base.BaseLLM):

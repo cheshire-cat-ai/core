@@ -137,7 +137,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_version: str = "2023-05-15"
 
     deployment_name: str
-
+    streaming: bool = True
     _pyclass: Type = AzureChatOpenAI
 
     model_config = ConfigDict(
@@ -160,7 +160,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
     api_version: str = "2023-05-15"
     deployment_name: str = "gpt-35-turbo-instruct" # Model "comming soon" according to microsoft
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
-
+    streaming: bool = True
     _pyclass: Type = AzureOpenAI
 
     model_config = ConfigDict(
@@ -175,6 +175,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
+    streaming: bool = True
     _pyclass: Type = langchain.llms.Cohere
 
     model_config = ConfigDict(
@@ -214,6 +215,7 @@ class LLMHuggingFaceHubConfig(LLMSettings):
     # }
     repo_id: str
     huggingfacehub_api_token: str
+    streaming: bool = True
     _pyclass: Type = langchain.llms.HuggingFaceHub
 
     model_config = ConfigDict(
@@ -229,6 +231,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
     task: str = "text2text-generation"
+    streaming: bool = True
     _pyclass: Type = langchain.llms.HuggingFaceEndpoint
 
     model_config = ConfigDict(
@@ -258,6 +261,7 @@ class LLMAnthropicConfig(LLMSettings):
 class LLMGooglePalmConfig(LLMSettings):
     google_api_key: str
     model_name: str = "models/text-bison-001"
+    streaming: bool = True
     _pyclass: Type = langchain.llms.GooglePalm
 
     model_config = ConfigDict(
