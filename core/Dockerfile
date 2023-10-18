@@ -14,7 +14,7 @@ RUN apt-get -y update && apt-get install -y curl build-essential fastjar libmagi
 
 ### ADMIN (static build) ###
 WORKDIR /admin
-RUN curl -sL https://github.com/cheshire-cat-ai/admin-vue/releases/download/Admin/develop.zip | jar -xv
+RUN curl -sL https://github.com/cheshire-cat-ai/admin-vue/releases/download/Admin/release.zip | jar -xv
 
 ### INSTALL PYTHON DEPENDENCIES (Core and Plugins) ###
 WORKDIR /app
