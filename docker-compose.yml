@@ -22,6 +22,7 @@ services:
       - SAVE_MEMORY_SNAPSHOTS=${SAVE_MEMORY_SNAPSHOTS:-false}
     ports:
       - ${CORE_PORT:-1865}:80
+      - 5678:5678
     volumes:
       - ./core:/app
     command:

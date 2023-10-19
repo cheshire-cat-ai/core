@@ -6,7 +6,7 @@ from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
+from cat.factory.custom_llm import CustomOllama, LLMDefault, LLMCustom, CustomOpenAI
 
 
 # Base class to manage LLM configuration.
@@ -272,6 +272,24 @@ class LLMGooglePalmConfig(LLMSettings):
         }
     )
 
+class LLMCustomOllama(LLMSettings):
+    base_url: str
+    model: str = "llama2"
+    num_ctx: int = 2048
+    repeat_last_n: int = 64
+    repeat_penalty: float = 1.1
+    temperature: float = 0.8
+
+    _pyclass: Type = CustomOllama
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Ollama",
+            "description": "Configuration for Ollama",
+            "link": "https://ollama.ai/library"
+        }
+    )
+	
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
@@ -286,7 +304,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
-    LLMGooglePalmConfig
+    LLMGooglePalmConfig,
+    LLMCustomOllama
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know
