@@ -87,9 +87,26 @@ class Plugin:
         for h in self._plugin_overrides:
             if h.name == "settings_schema":
                 return h.function()
+            else:
+                # if the "settings_schema" is not defined but 
+                # "settings_model" is it get the schema from the model
+                if h.name == "settings_model":
+                    return h.function().model_json_schema()
 
         # default schema (empty)
         return PluginSettingsModel.model_json_schema()
+
+    # get plugin settings Pydantic model
+    def settings_model(self):
+
+        # is "settings_model" hook defined in the plugin?
+        for h in self._plugin_overrides:
+            if h.name == "settings_model":
+                return h.function()
+
+        # default schema (empty)
+        return PluginSettingsModel
+
 
     # load plugin settings
     def load_settings(self):
