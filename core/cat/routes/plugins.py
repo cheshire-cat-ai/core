@@ -104,7 +104,7 @@ async def install_plugin(
 async def install_plugin_from_registry(
     request: Request,
     background_tasks: BackgroundTasks,
-    payload: Dict = Body(example={"url": "https://github.com/plugin-dev-account/plugin-repo"})
+    payload: Dict = Body(examples={"url": "https://github.com/plugin-dev-account/plugin-repo"})
     ) -> Dict:
     """Install a new plugin from registry"""
 
@@ -267,7 +267,7 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
 async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
-    payload: Dict = Body(example={"setting_a": "some value", "setting_b": "another value"}),
+    payload: Dict = Body(examples={"setting_a": "some value", "setting_b": "another value"}),
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
