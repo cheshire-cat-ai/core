@@ -8,6 +8,8 @@ from cat.mad_hatter.registry import registry_search_plugins, registry_download_p
 from urllib.parse import urlparse
 import requests
 
+from pydantic import ValidationError
+
 router = APIRouter()
 
 
@@ -280,7 +282,21 @@ async def upsert_plugin_settings(
             detail = { "error": "Plugin not found" }
         )
     
-    final_settings = ccat.mad_hatter.plugins[plugin_id].save_settings(payload)
+    # Get the plugin object
+    plugin = ccat.mad_hatter.plugins[plugin_id]
+
+    try:
+        # Load the plugin settings Pydantic model
+        PluginSettingsModel = plugin.settings_model()
+        # Validate the settings
+        PluginSettingsModel.model_validate(payload)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code = 400,
+            detail = { "error": "\n".join(list( map((lambda x: x["msg"]), e.errors())))}
+        )
+
+    final_settings = plugin.save_settings(payload)
 
     return {
         "name": plugin_id,
