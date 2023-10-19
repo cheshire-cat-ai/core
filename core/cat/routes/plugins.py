@@ -219,15 +219,18 @@ async def get_plugins_settings(request: Request) -> Dict:
 
     # plugins are managed by the MadHatter class
     for plugin in ccat.mad_hatter.plugins.values():
-        plugin_settings = plugin.load_settings()
-        plugin_schema = plugin.settings_schema()
-        if plugin_schema['properties'] == {}:
-            plugin_schema = {}
-        settings.append({
-            "name": plugin.id,
-            "value": plugin_settings,
-            "schema": plugin_schema
-        })
+        try:
+            plugin_settings = plugin.load_settings()
+            plugin_schema = plugin.settings_schema()
+            if plugin_schema['properties'] == {}:
+                plugin_schema = {}
+            settings.append({
+                "name": plugin.id,
+                "value": plugin_settings,
+                "schema": plugin_schema
+            })
+        except:
+            log.error(f"Error loading {plugin} settings")
 
     return {
         "settings": settings,
