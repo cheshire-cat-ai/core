@@ -65,7 +65,7 @@ def update_setting(settingId: str, payload: models.SettingBody):
         )
     
     # complete the payload with setting_id and updated_at
-    payload = models.Setting(**payload.dict())
+    payload = models.Setting(**payload.model_dump())
     payload.setting_id = settingId # force this to be the setting_id
 
     # save to DB

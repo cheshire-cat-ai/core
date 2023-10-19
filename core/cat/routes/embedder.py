@@ -31,7 +31,7 @@ def get_embedders_settings(request: Request) -> Dict:
     # Deduce selected embedder:
     ccat = request.app.state.ccat
     for embedder_config_class in reversed(SUPPORTED_EMDEDDING_MODELS):
-        if embedder_config_class._pyclass == type(ccat.embedder):
+        if embedder_config_class._pyclass.default == type(ccat.embedder):
             selected = embedder_config_class.__name__
     
     saved_settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)
@@ -91,7 +91,7 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
-    payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
+    payload: Dict = Body(examples={"openai_api_key": "your-key-here"}),
 ) -> Dict:
     """Upsert the Embedder setting"""
     

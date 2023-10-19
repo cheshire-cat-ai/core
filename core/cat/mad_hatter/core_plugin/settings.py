@@ -33,7 +33,7 @@ def settings_schema():
     """
 
     # In core_plugin we pass an empty JSON schema    
-    return CorePluginSettings.schema()
+    return CorePluginSettings.model_json_schema()
 
 
 @plugin

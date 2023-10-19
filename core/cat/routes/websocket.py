@@ -70,13 +70,10 @@ async def check_messages(websocket: WebSocket, ccat):
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
     while True:
-        if ccat.ws_messages:
-            # extract from FIFO list websocket notification
-            notification = ccat.ws_messages.pop(0)
-            await manager.send_personal_message(notification, websocket)
 
-        # Sleep for the specified interval before checking for notifications again.
-        await asyncio.sleep(QUEUE_CHECK_INTERVAL)
+        # extract from FIFO list websocket notification
+        notification = await ccat.ws_messages.get()
+        await manager.send_personal_message(notification, websocket)
 
 
 @router.websocket_route("/ws")

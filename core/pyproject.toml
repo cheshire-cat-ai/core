@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.1.1"
+version = "1.2.0"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -9,13 +9,13 @@ authors = [
 ]
 dependencies = [
     "python-multipart==0.0.6",
-    "fastapi==0.93.0",
-    "fastapi-utils==0.2.1",
+    "pydantic==2.4.2",
+    "fastapi==0.103.2",
     "websockets==10.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
-    "qdrant_client==1.5.4",
-    "langchain==0.0.222",
+    "qdrant_client==1.6.2",
+    "langchain==0.0.315",
     "openai==0.27.5",
     "cohere==4.0.4",
     "huggingface-hub==0.13.2",
@@ -29,7 +29,7 @@ dependencies = [
     "google-generativeai==0.1.0rc3",
     "gunicorn==20.1.0",
     "uvicorn[standard]==0.20.0",
-    "text_generation==0.6.0",
+    "text_generation==0.6.1",
     "tinydb==4.8.0",
     "python-slugify==8.0.1",
     "autopep8",

@@ -2,29 +2,28 @@ import time
 from copy import deepcopy
 import traceback
 from typing import Literal, get_args
-import langchain
 import os
+import asyncio
+import langchain
+from langchain.llms import Cohere, OpenAI, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
+from langchain.base_language import BaseLanguageModel
+
 from cat.log import log
+from cat.db import crud
 from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
-
-# TODO: natural language dependencies; move to another file
+from cat.looking_glass.callbacks import NewTokenHandler
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
-from cat.db import crud
-from langchain.llms import Cohere, OpenAI, OpenAIChat, AzureOpenAI, HuggingFaceTextGenInference
-from langchain.chat_models import ChatOpenAI
-from langchain.base_language import BaseLanguageModel
-from langchain import HuggingFaceHub
-from langchain.chat_models import AzureChatOpenAI
 from cat.factory.custom_llm import CustomOpenAI
 
 
-MSG_TYPES = Literal["notification", "chat", "error"]
+MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
 class CheshireCat:
@@ -72,7 +71,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.ws_messages = []      
+        self.ws_messages = asyncio.Queue()     
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -164,7 +163,7 @@ class CheshireCat:
             return embedder
 
         # OpenAI embedder
-        if type(self._llm) in [OpenAI, OpenAIChat, ChatOpenAI]:
+        if type(self._llm) in [OpenAI, ChatOpenAI]:
             embedder = embedders.EmbedderOpenAIConfig.get_embedder_from_config(
                 {
                     "openai_api_key": self._llm.openai_api_key,
@@ -316,7 +315,7 @@ class CheshireCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories")
 
-    def llm(self, prompt: str) -> str:
+    def llm(self, prompt: str, chat: bool = False, stream: bool = False) -> str:
         """Generate a response using the LLM model.
 
         This method is useful for generating a response with both a chat and a completion model using the same syntax
@@ -332,13 +331,19 @@ class CheshireCat:
             The generated response.
 
         """
+
+        # should we stream the tokens?
+        callbacks = []
+        if stream:
+            callbacks.append(NewTokenHandler(self))
+
         # Check if self._llm is a completion model and generate a response
         if isinstance(self._llm, langchain.llms.base.BaseLLM):
-            return self._llm(prompt)
+            return self._llm(prompt, callbacks=callbacks)
 
         # Check if self._llm is a chat model and call it as a completion model
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
-            return self._llm.call_as_llm(prompt)
+            return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
@@ -359,16 +364,24 @@ class CheshireCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.ws_messages.append({
-                "type": msg_type,
-                "name": "GenericError",
-                "description": content
-            })
+            asyncio.run(
+                self.ws_messages.put( 
+                    {
+                        "type": msg_type,
+                        "name": "GenericError",
+                        "description": content
+                    }
+                )
+            )
         else:
-            self.ws_messages.append({
-                "type": msg_type,
-                "content": content
-            })
+            asyncio.run(
+                self.ws_messages.put(
+                    {
+                        "type": msg_type,
+                        "content": content
+                    }
+                )
+            )    
 
     def get_base_url(self):
         """Allows the Cat expose the base url."""
