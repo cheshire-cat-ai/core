@@ -120,5 +120,5 @@ async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None
             "description": str(e),
         }, user_id)
     finally:
-        # Always ensure the WebSocket is removed from the manager, regardless of how the above block exits.
-        manager.disconnect(ccat, websocket)
+        # Remove the WebSocket from the manager when the user disconnects.
+        manager.disconnect(ccat, user_id)
