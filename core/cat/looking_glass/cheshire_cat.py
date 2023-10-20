@@ -363,6 +363,9 @@ class CheshireCat:
 
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
+        
+        if user_id not in self.ws_messages:
+            self.ws_messages[user_id] = asyncio.Queue()
 
         if msg_type == "error":
             asyncio.run(
