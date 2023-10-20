@@ -1,5 +1,6 @@
 import traceback
 import asyncio
+from cat.looking_glass.cheshire_cat import CheshireCat
 from typing import Dict, Optional
 from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from cat.log import log
@@ -27,7 +28,7 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections[user_id] = websocket
 
-    def disconnect(self, ccat: object, user_id: str = "user"):
+    def disconnect(self, ccat: CheshireCat, user_id: str = "user"):
         """
         Remove the given WebSocket from the active connections list.
         """
@@ -54,11 +55,12 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-async def receive_message(ccat: object, user_id: str = "user"):
+async def receive_message(ccat: CheshireCat, user_id: str = "user"):
     """
     Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
     """
     while True:
+        # Receive the next message from the WebSocket.
         user_message = await manager.active_connections[user_id].receive_json()
 
         # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
@@ -68,16 +70,17 @@ async def receive_message(ccat: object, user_id: str = "user"):
         await manager.send_personal_message(cat_message, user_id)
 
 
-async def check_messages(ccat, user_id: str = "user"):
+async def check_messages(ccat: CheshireCat, user_id: str = "user"):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
+
+    # Initialize a Queue if the user_id is not present in the dictionary.
     if user_id not in ccat.ws_messages:
         ccat.ws_messages[user_id] = asyncio.Queue()
 
     while True:
-        # extract from FIFO list websocket notification
-        
+        # extract from websocket messages from user's queue
         notification = await ccat.ws_messages[user_id].get()
         await manager.send_personal_message(notification, user_id)
 
