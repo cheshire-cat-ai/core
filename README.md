@@ -25,7 +25,7 @@
 
 ## Production ready AI assistant framework
 
-The Cheshire Cat is a framework to build custom AIs on top of any language model.
+The Cheshire Cat is a framework to build custom AIs on top of any language model. 
 If you ever used systems like WordPress or Django to build web apps, imagine the Cat as a similar tool, but specific for AI.
 
 Why use the Cat:
