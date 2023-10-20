@@ -31,14 +31,17 @@ class ConnectionManager:
         """
         Remove the given WebSocket from the active connections list.
         """
-        del self.active_connections[user_id]
-        del ccat.ws_messages[user_id]
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+        if user_id in ccat.ws_messages:
+            del ccat.ws_messages[user_id]
 
     async def send_personal_message(self, message: str, user_id: str = "user"):
         """
         Send a personal message (in JSON format) to the specified WebSocket.
         """
-        await self.active_connections[user_id].send_json(message)
+        if user_id in self.active_connections:
+            await self.active_connections[user_id].send_json(message)
 
     async def broadcast(self, message: str):
         """
