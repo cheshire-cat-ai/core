@@ -55,26 +55,28 @@ async def receive_message(ccat: object, user_id: str = "user"):
     """
     Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
     """
-    ws = manager.active_connections[user_id]
     while True:
-        user_message = await ws.receive_json()
+        user_message = await manager.active_connections[user_id].receive_json()
 
         # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
         cat_message = await run_in_threadpool(ccat, user_message)
 
         # Send the response message back to the user.
-        await manager.send_personal_message(cat_message, ws)
+        await manager.send_personal_message(cat_message, user_id)
 
 
 async def check_messages(ccat, user_id: str = "user"):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
-    while True:
+    if user_id not in ccat.ws_messages:
+        ccat.ws_messages[user_id] = asyncio.Queue()
 
+    while True:
         # extract from FIFO list websocket notification
+        
         notification = await ccat.ws_messages[user_id].get()
-        await manager.send_personal_message(notification, manager.active_connections[user_id])
+        await manager.send_personal_message(notification, user_id)
 
 
 @router.websocket_route("/ws")
@@ -110,7 +112,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None
             "type": "error",
             "name": type(e).__name__,
             "description": str(e),
-        }, websocket)
+        }, user_id)
     finally:
         # Always ensure the WebSocket is removed from the manager, regardless of how the above block exits.
         manager.disconnect(ccat, websocket)
