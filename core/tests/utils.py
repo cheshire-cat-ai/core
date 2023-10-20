@@ -3,9 +3,9 @@ import shutil
 
 
 # utility function to communicate with the cat via websocket
-def send_websocket_message(msg, client):
+def send_websocket_message(msg, client, user_id: str = "user"):
 
-    with client.websocket_connect("/ws") as websocket:
+    with client.websocket_connect(f"/ws/{user_id}") as websocket:
         
         # sed ws message
         websocket.send_json(msg)
@@ -24,11 +24,11 @@ def send_n_websocket_messages(num_messages, client):
         message = {
             "text": f"Red Queen {m}"
         }
-        res = send_websocket_message(message, client)
+        res = send_websocket_message(message, client, f"user_{m}")
         responses.append(res)
 
     return responses
-            
+
 
 def key_in_json(key, json):
     return key in json.keys()

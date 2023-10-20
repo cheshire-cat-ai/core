@@ -98,6 +98,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None
     # If no user id is specified, use "user" as the default.
     user_id = user_id or "user"
 
+    if user_id in manager.active_connections:
+        # If the user already has an active WebSocket connection, close it.
+        await manager.active_connections[user_id].close()
+        manager.disconnect(ccat, user_id)
+
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket, user_id)
 
