@@ -86,4 +86,6 @@ class CustomOpenAI(OpenAI):
         
         self.url = kwargs['url']
         self.openai_api_base = os.path.join(self.url, "v1")
-        
+
+
+		
