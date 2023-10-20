@@ -1,6 +1,6 @@
 import traceback
 import asyncio
-from typing import Dict
+from typing import Dict, Optional
 from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from cat.log import log
 from fastapi.concurrency import run_in_threadpool
@@ -25,7 +25,7 @@ class ConnectionManager:
         Accept the incoming WebSocket connection and add it to the active connections list.
         """
         await websocket.accept()
-        self.active_connections[user_id].append(websocket)
+        self.active_connections[user_id] = websocket
 
     def disconnect(self, ccat: object, user_id: str = "user"):
         """
@@ -78,48 +78,17 @@ async def check_messages(ccat, user_id: str = "user"):
 
 
 @router.websocket_route("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """
-    Endpoint to handle incoming WebSocket connections, process messages, and check for messages.
-    """
-
-    # Retrieve the `ccat` instance from the application's state.
-    ccat = websocket.app.state.ccat
-
-    # Add the new WebSocket connection to the manager.
-    await manager.connect(websocket)
-
-    try:
-        # Process messages and check for notifications concurrently.
-        await asyncio.gather(
-            receive_message(ccat),
-            check_messages(ccat)
-        )
-    except WebSocketDisconnect:
-        # Handle the event where the user disconnects their WebSocket.
-        log.info("WebSocket connection closed")
-    except Exception as e:
-        # Log any unexpected errors and send an error message back to the user.
-        log.error(e)
-        traceback.print_exc()
-        await manager.send_personal_message({
-            "type": "error",
-            "name": type(e).__name__,
-            "description": str(e),
-        }, websocket)
-    finally:
-        # Always ensure the WebSocket is removed from the manager, regardless of how the above block exits.
-        manager.disconnect(ccat, websocket)
-
-
 @router.websocket_route("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str):
+async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None):
     """
-    Endpoint to handle incoming WebSocket connections by user id.
+    Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
 
     # Retrieve the `ccat` instance from the application's state.
     ccat = websocket.app.state.ccat
+
+    # If no user id is specified, use "user" as the default.
+    user_id = user_id or "user"
 
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket, user_id)
