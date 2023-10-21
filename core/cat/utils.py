@@ -84,10 +84,6 @@ def get_plugin_path():
     """Allows the Cat expose the plugins path."""
     return os.path.join(get_base_path(), "plugins/")
 
-def get_test_plugin_path():
-    """Allows the Cat expose the plugins path."""
-    return "tests/mocks/mock_plugin_folder/"
-
 def get_static_url():
     """Allows the Cat expose the static server url."""
     return get_base_url() + "static/"
