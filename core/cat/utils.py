@@ -1,5 +1,5 @@
 """Various utiles used from the projects."""
-
+import os
 from datetime import timedelta
 
 
@@ -67,3 +67,27 @@ def verbal_timedelta(td: timedelta) -> str:
         return "{} ago".format(abs_delta)
     else:
         return "{} ago".format(abs_delta)
+
+
+def get_base_url():
+    """Allows the Cat expose the base url."""
+    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+    if secure != '':
+        secure = 's'
+    return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}/'
+
+def get_base_path():
+    """Allows the Cat expose the base path."""
+    return "cat/"
+
+def get_plugin_path():
+    """Allows the Cat expose the plugins path."""
+    return os.path.join(get_base_path(), "plugins/")
+
+def get_static_url():
+    """Allows the Cat expose the static server url."""
+    return get_base_url() + "static/"
+
+def get_static_path():
+    """Allows the Cat expose the static files path."""
+    return os.path.join(get_base_path(), "static/")
