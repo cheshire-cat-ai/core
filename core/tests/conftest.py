@@ -8,15 +8,12 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from tinydb import Query
-from cat.db import models
+
 from cat.db.database import Database
 from cat.log import log
 
 import cat.utils as utils
 
-from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.mad_hatter.mad_hatter import MadHatter
 from qdrant_client import QdrantClient
 from cat.memory.vector_memory import VectorMemory
 
