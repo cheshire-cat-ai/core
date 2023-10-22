@@ -272,7 +272,10 @@ class LLMGooglePalmConfig(LLMSettings):
         }
     )
 
-
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> a9f8c18fec643825ce5e18515a9ebd59b4af7c19
 class LLMCustomOllama(LLMSettings):
     base_url: str
     model: str = "llama2"
@@ -290,7 +293,12 @@ class LLMCustomOllama(LLMSettings):
             "link": "https://ollama.ai/library"
         }
     )
-
+	
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> parent of ab78246 (Support Ollama)
+>>>>>>> a9f8c18fec643825ce5e18515a9ebd59b4af7c19
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
