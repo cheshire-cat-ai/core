@@ -10,17 +10,16 @@ router = APIRouter()
 
 
 # receive files via http endpoint
-# TODO: should we receive files also via websocket?
 @router.post("/")
 async def upload_file(
-        request: Request,
-        file: UploadFile,
-        background_tasks: BackgroundTasks,
-        chunk_size: int = Body(
-            default=400,
-            description="Maximum length of each chunk after the document is split (in characters)",
-        ),
-        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
+    request: Request,
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    chunk_size: int = Body(
+        default=400,
+        description="Maximum length of each chunk after the document is split (in characters)",
+    ),
+    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -58,16 +57,16 @@ async def upload_file(
 
 @router.post("/web/")
 async def upload_url(
-        request: Request,
-        background_tasks: BackgroundTasks,
-        url: str = Body(
-            description="URL of the website to which you want to save the content"
-        ),
-        chunk_size: int = Body(
-            default=400,
-            description="Maximum length of each chunk after the document is split (in characters)",
-        ),
-        chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
+    request: Request,
+    background_tasks: BackgroundTasks,
+    url: str = Body(
+        description="URL of the website to which you want to save the content"
+    ),
+    chunk_size: int = Body(
+        default=400,
+        description="Maximum length of each chunk after the document is split (in characters)",
+    ),
+    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -111,9 +110,9 @@ async def upload_url(
 
 @router.post("/memory/")
 async def upload_memory(
-        request: Request,
-        file: UploadFile,
-        background_tasks: BackgroundTasks
+    request: Request,
+    file: UploadFile,
+    background_tasks: BackgroundTasks
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
