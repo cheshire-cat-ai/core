@@ -1,12 +1,13 @@
 import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
+from langchain.llms.ollama import Ollama
 
 from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_llm import CustomOllama, LLMDefault, LLMCustom, CustomOpenAI
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
 
 
 # Base class to manage LLM configuration.
@@ -272,7 +273,7 @@ class LLMGooglePalmConfig(LLMSettings):
         }
     )
 
-class LLMCustomOllama(LLMSettings):
+class LLMOllamaConfig(LLMSettings):
     base_url: str
     model: str = "llama2"
     num_ctx: int = 2048
@@ -280,7 +281,7 @@ class LLMCustomOllama(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = CustomOllama
+    _pyclass: Type = Ollama
 
     model_config = ConfigDict(
         json_schema_extra = {
@@ -305,7 +306,7 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
     LLMGooglePalmConfig,
-    LLMCustomOllama
+    LLMOllamaConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know
