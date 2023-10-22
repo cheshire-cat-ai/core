@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from cat.log import log
 from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
-from cat.api_auth import check_api_key
+from cat.headers import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 
@@ -64,7 +64,7 @@ cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/emb
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(check_api_key)])
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(check_api_key)])
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
+cheshire_cat_api.include_router(websocket.router, tags=["WebSocket"])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
