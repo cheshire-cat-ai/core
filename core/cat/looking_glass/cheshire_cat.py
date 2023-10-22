@@ -237,7 +237,7 @@ class CheshireCat:
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
 
-    def recall_relevant_memories_to_working_memory(self):
+    def recall_relevant_memories_to_working_memory(self, working_memory):
         """Retrieve context from memory.
 
         The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
@@ -257,8 +257,8 @@ class CheshireCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        user_id = self.working_memory.get_user_id()
-        recall_query = self.working_memory["user_message_json"]["text"]
+        user_id = working_memory.get_user_id()
+        recall_query = working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query)
@@ -266,7 +266,7 @@ class CheshireCat:
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
-        self.working_memory["recall_query"] = recall_query
+        working_memory["recall_query"] = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories")
@@ -310,7 +310,7 @@ class CheshireCat:
             vector_memory = getattr(self.memory.vectors, memory_type)
             memories = vector_memory.recall_memories_from_embedding(**config)
 
-            self.working_memory[memory_key] = memories
+            working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories")
@@ -433,18 +433,20 @@ class CheshireCat:
         # Change working memory based on received user_id
         user_id = user_message_json.get('user_id', 'user')
         user_message_json['user_id'] = user_id
-        self.working_memory = self.working_memory_list.get_working_memory(user_id)
+        # ccat class working memory is the default "user" working memory
+        # self.working_memory = self.working_memory_list.get_working_memory(user_id)
+        user_working_memory = self.working_memory_list.get_working_memory(user_id)
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
         # store last message in working memory
-        self.working_memory["user_message_json"] = user_message_json
+        user_working_memory["user_message_json"] = user_message_json
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
         try:
-            self.recall_relevant_memories_to_working_memory()
+            self.recall_relevant_memories_to_working_memory(user_working_memory)
         except Exception as e:
             log.error(e)
             traceback.print_exc(e)
@@ -462,7 +464,7 @@ class CheshireCat:
         
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent()
+            cat_message = self.agent_manager.execute_agent(user_working_memory)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -476,7 +478,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input": self.working_memory["user_message_json"]["text"],
+                "input": user_working_memory["user_message_json"]["text"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }
@@ -485,9 +487,9 @@ class CheshireCat:
         log.info(cat_message)
 
         # update conversation history
-        user_message = self.working_memory["user_message_json"]["text"]
-        self.working_memory.update_conversation_history(who="Human", message=user_message)
-        self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
+        user_message = user_working_memory["user_message_json"]["text"]
+        user_working_memory.update_conversation_history(who="Human", message=user_message)
+        user_working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
@@ -498,9 +500,9 @@ class CheshireCat:
         )
 
         # build data structure for output (response and why with memories)
-        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["episodic_memories"]]
-        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
-        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
+        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["episodic_memories"]]
+        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["declarative_memories"]]
+        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["procedural_memories"]]
         
         final_output = {
             "type": "chat",

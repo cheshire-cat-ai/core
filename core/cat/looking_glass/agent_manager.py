@@ -94,7 +94,7 @@ class AgentManager:
         return out
 
 
-    def execute_agent(self):
+    def execute_agent(self, working_memory):
         """Instantiate the Agent with tools.
 
         The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
@@ -106,11 +106,10 @@ class AgentManager:
             Instance of the Agent provided with a set of tools.
         """
         mad_hatter = self.cat.mad_hatter
-        working_memory = self.cat.working_memory
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
-        agent_input = self.format_agent_input()
+        agent_input = self.format_agent_input(working_memory)
         agent_input = mad_hatter.execute_hook("before_agent_starts", agent_input)
         # should we ran the default agent?
         fast_reply = {}
@@ -182,7 +181,7 @@ class AgentManager:
 
         return out
     
-    def format_agent_input(self):
+    def format_agent_input(self, working_memory):
         """Format the input for the Agent.
 
         The method formats the strings of recalled memories and chat history that will be provided to the Langchain
@@ -206,7 +205,7 @@ class AgentManager:
         agent_prompt_chat_history
         """
 
-        working_memory = self.cat.working_memory
+
 
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.agent_prompt_episodic_memories(
