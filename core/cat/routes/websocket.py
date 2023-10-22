@@ -8,10 +8,6 @@ from fastapi.concurrency import run_in_threadpool
 
 router = APIRouter()
 
-# This constant sets the interval (in seconds) at which the system checks for notifications.
-QUEUE_CHECK_INTERVAL = 1  # seconds
-
-
 class ConnectionManager:
     """
     Manages active WebSocket connections.
@@ -32,8 +28,7 @@ class ConnectionManager:
         """
         Remove the given WebSocket from the active connections list.
         """
-        if user_id in self.active_connections:
-            del self.active_connections[user_id]
+        del self.active_connections[user_id]
         if user_id in ccat.ws_messages:
             del ccat.ws_messages[user_id]
 
@@ -85,9 +80,9 @@ async def check_messages(ccat: CheshireCat, user_id: str = "user"):
         await manager.send_personal_message(notification, user_id)
 
 
-@router.websocket_route("/ws")
-@router.websocket_route("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None):
+@router.websocket("/ws")
+@router.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
@@ -95,13 +90,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: Optional[str] = None
     # Retrieve the `ccat` instance from the application's state.
     ccat = websocket.app.state.ccat
 
-    # If no user id is specified, use "user" as the default.
-    user_id = user_id or "user"
-
     if user_id in manager.active_connections:
-        # If the user already has an active WebSocket connection, close it.
-        await manager.active_connections[user_id].close()
-        manager.disconnect(ccat, user_id)
+        # Skip the coroutine if the same user is already connected via WebSocket.
+        return
 
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket, user_id)
