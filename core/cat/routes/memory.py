@@ -201,8 +201,11 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history/")
 async def wipe_conversation_history(
     request: Request,
+    user_id: str = Query(default="user", description="User id."),
 ) -> Dict:
-    """Delete conversation history from working memory"""
+    """Delete the specified user's conversation history from working memory"""
+
+    # TODO: Add possibility to wipe the working memory of specified user id
 
     ccat = request.app.state.ccat
     ccat.working_memory["history"] = []
@@ -212,7 +215,7 @@ async def wipe_conversation_history(
     }
 
 
-# DELETE conversation history from working memory
+# GET conversation history from working memory
 @router.get("/conversation_history/")
 async def get_conversation_history(
     request: Request,

@@ -3,11 +3,8 @@ import time
 import shutil
 import os
 import traceback
-
 import cat.utils as utils
-
 from copy import deepcopy
-
 from cat.log import log
 from cat.db import crud
 from cat.db.models import Setting
