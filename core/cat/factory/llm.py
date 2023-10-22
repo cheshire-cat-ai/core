@@ -1,7 +1,7 @@
 import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
-from langchain.llms.ollama import Ollama
+
 from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
@@ -273,6 +273,7 @@ class LLMGooglePalmConfig(LLMSettings):
     )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
 >>>>>>> a9f8c18fec643825ce5e18515a9ebd59b4af7c19
@@ -299,6 +300,8 @@ class LLMCustomOllama(LLMSettings):
 =======
 >>>>>>> parent of ab78246 (Support Ollama)
 >>>>>>> a9f8c18fec643825ce5e18515a9ebd59b4af7c19
+=======
+>>>>>>> parent of a9f8c18 (Ollama Support)
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
