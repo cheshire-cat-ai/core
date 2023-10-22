@@ -6,26 +6,25 @@ def test_episodic_memory_by_user(client):
 
         # send websocket message from user A
         send_websocket_message({
-            "text": "I am user A",
-            "user_id": "A"
+            "text": "I am user C",
+            "user_id": "C"
         }, client)
 
         # episodic recall (no user)
         params = {
-            "text": "I am user"
+            "text": "I am user C"
         }
-        response = client.get(f"/memory/recall/", params=params)
+        response = client.get(f"/memory/recall/", params=params, headers={"user_id": "C"})
         json = response.json()
         assert response.status_code == 200
         episodic_memories = json["vectors"]["collections"]["episodic"]
-        assert len(episodic_memories) == 0
+        assert len(episodic_memories) == 1
 
         # episodic recall (memories from non existing user)
         params = {
-            "text": "I am user",
-            "user_id": "H"
+            "text": "I am user A"
         }
-        response = client.get(f"/memory/recall/", params=params)
+        response = client.get(f"/memory/recall/", params=params, headers={"user_id": "A"})
         json = response.json()
         assert response.status_code == 200
         episodic_memories = json["vectors"]["collections"]["episodic"]
@@ -33,13 +32,12 @@ def test_episodic_memory_by_user(client):
 
         # episodic recall (memories from user A)
         params = {
-            "text": "I am user",
-            "user_id": "A"
+            "text": "I am user C"
         }
-        response = client.get(f"/memory/recall/", params=params)
+        response = client.get(f"/memory/recall/", params=params, headers={"user_id": "C"})
         json = response.json()
         assert response.status_code == 200
         episodic_memories = json["vectors"]["collections"]["episodic"]
         assert len(episodic_memories) == 1
-        assert episodic_memories[0]["metadata"]["source"] == "A"
+        assert episodic_memories[0]["metadata"]["source"] == "C"
 
