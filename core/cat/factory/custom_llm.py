@@ -3,6 +3,7 @@ from typing import Optional, List, Any, Mapping, Dict
 import requests
 from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
+from langchain.llms.ollama import Ollama
 
 
 class LLMDefault(LLM):
@@ -86,4 +87,3 @@ class CustomOpenAI(OpenAI):
         
         self.url = kwargs['url']
         self.openai_api_base = os.path.join(self.url, "v1")
-        
