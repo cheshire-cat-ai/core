@@ -2,7 +2,7 @@ from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
+from cat.factory.custom_embedder import CustomFastembedEmbeddings, DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
@@ -119,6 +119,20 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
         }
     )
 
+class FastEmbedConfig(EmbedderSettings):
+    url: str
+    model: str = "BAAI/bge-base-en"
+    max_length: int = 512
+
+    _pyclass: Type = CustomFastembedEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Fast Embedder",
+            "description": "Configuration for Fast embeddings",
+        }
+    )
+
 
 SUPPORTED_EMDEDDING_MODELS = [
     EmbedderDumbConfig,
@@ -128,6 +142,7 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
+    FastEmbedConfig
 ]
 
 
