@@ -1,7 +1,8 @@
 import time
 from copy import deepcopy
 import traceback
-from typing import Literal, get_args
+from typing import Literal, get_args, Dict
+import langchain
 import os
 import asyncio
 import langchain
@@ -72,7 +73,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.ws_messages = asyncio.Queue()     
+        self.ws_messages: Dict[str, asyncio.Queue] = {}
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -345,7 +346,7 @@ class CheshireCat:
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification", user_id: str = "user"):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
@@ -362,10 +363,13 @@ class CheshireCat:
 
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
+        
+        if user_id not in self.ws_messages:
+            self.ws_messages[user_id] = asyncio.Queue()
 
         if msg_type == "error":
             asyncio.run(
-                self.ws_messages.put( 
+                self.ws_messages[user_id].put( 
                     {
                         "type": msg_type,
                         "name": "GenericError",
@@ -375,7 +379,7 @@ class CheshireCat:
             )
         else:
             asyncio.run(
-                self.ws_messages.put(
+                self.ws_messages[user_id].put(
                     {
                         "type": msg_type,
                         "content": content
