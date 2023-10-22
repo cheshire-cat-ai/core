@@ -9,6 +9,7 @@ from langchain.llms import Cohere, OpenAI, AzureOpenAI, HuggingFaceTextGenInfere
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
 
+import cat.utils as utils
 from cat.log import log
 from cat.db import crud
 from cat.db.database import Database
@@ -127,7 +128,6 @@ class CheshireCat:
                 llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         return llm
-
 
     def get_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
@@ -383,29 +383,6 @@ class CheshireCat:
                 )
             )    
 
-    def get_base_url(self):
-        """Allows the Cat expose the base url."""
-        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
-        if secure != '':
-            secure = 's'
-        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}/'
-
-    def get_base_path(self):
-        """Allows the Cat expose the base path."""
-        return "cat/"
-
-    def get_plugin_path(self):
-        """Allows the Cat expose the plugins path."""
-        return os.path.join(self.get_base_path(), "plugins/")
-
-    def get_static_url(self):
-        """Allows the Cat expose the static server url."""
-        return self.get_base_url() + "static/"
-    
-    def get_static_path(self):
-        """Allows the Cat expose the static files path."""
-        return os.path.join(self.get_base_path(), "static/")
-
     def __call__(self, user_message_json):
         """Call the Cat instance.
 
@@ -520,3 +497,34 @@ class CheshireCat:
         final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output)
 
         return final_output
+
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_base_url():
+        """Allows the Cat expose the base url."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_base_url()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_base_path():
+        """Allows the Cat expose the base path."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_base_path()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_plugin_path():
+        """Allows the Cat expose the plugins path."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_plugin_path()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_static_url():
+        """Allows the Cat expose the static server url."""
+        log.warning("This method will be removed, import cat.utils tu usit instead.")
+        return utils.get_static_url()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_static_path():
+        """Allows the Cat expose the static files path."""
+        log.warning("This method will be removed, import cat.utils tu usit instead.")
+        return utils.get_static_path()
