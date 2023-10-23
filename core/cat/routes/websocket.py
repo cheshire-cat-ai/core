@@ -54,9 +54,11 @@ async def receive_message(ccat: CheshireCat, user_id: str = "user"):
     """
     Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
     """
+
     while True:
         # Receive the next message from the WebSocket.
         user_message = await manager.active_connections[user_id].receive_json()
+        user_message["user_id"] = user_id
 
         # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
         cat_message = await run_in_threadpool(ccat, user_message)
@@ -65,20 +67,16 @@ async def receive_message(ccat: CheshireCat, user_id: str = "user"):
         await manager.send_personal_message(cat_message, user_id)
 
 
-async def check_messages(ccat: CheshireCat, user_id: str = "user"):
+async def check_messages(ccat, user_id='user'):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
 
-    # Initialize a Queue if the user_id is not present in the dictionary.
-    if user_id not in ccat.ws_messages:
-        ccat.ws_messages[user_id] = asyncio.Queue()
-
     while True:
-        # extract from websocket messages from user's queue
-        notification = await ccat.ws_messages[user_id].get()
+        # extract from FIFO list websocket notification
+        notification = await ccat.working_memory_list.get_working_memory(user_id).ws_messages.get()
         await manager.send_personal_message(notification, user_id)
-
+        
 
 @router.websocket("/ws")
 @router.websocket("/ws/{user_id}")
@@ -96,7 +94,6 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
 
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket, user_id)
-
     try:
         # Process messages and check for notifications concurrently.
         await asyncio.gather(

@@ -6,9 +6,8 @@ def test_episodic_memory_by_user(client):
 
         # send websocket message from user A
         send_websocket_message({
-            "text": "I am user A",
-            "user_id": "A"
-        }, client)
+            "text": "I am user A"
+        }, client, user_id="A")
 
         # episodic recall (no user)
         params = {
