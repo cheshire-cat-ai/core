@@ -2,8 +2,8 @@ import os
 import sys
 import json
 import glob
-import importlib
 import traceback
+from importlib import machinery
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel
@@ -207,18 +207,18 @@ class Plugin:
         plugin_overrides = []
 
         for py_file in self.py_files:
-            py_filename = py_file.replace("/", ".").replace(".py", "")  # this is UGLY I know. I'm sorry
+            module_name = os.path.splitext(os.path.basename(py_file))[0]
 
-            log.info(f"Import module {py_filename}")
+            log.info(f"Import module {py_file}")
 
             # save a reference to decorated functions
             try:
-                plugin_module = importlib.import_module(py_filename)
+                plugin_module = machinery.SourceFileLoader(module_name, py_file).load_module()
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
-                log.error(f"Error in {py_filename}: {str(e)}")
+                log.error(f"Error in {module_name}: {str(e)}")
                 traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}")
             
