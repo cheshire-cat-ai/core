@@ -1,4 +1,3 @@
-
 from tests.utils import send_websocket_message
 
 # episodic memories are saved having the correct user
@@ -7,8 +6,7 @@ def test_episodic_memory_by_user(client):
         # send websocket message from user A
         send_websocket_message({
             "text": "I am user C",
-            "user_id": "C"
-        }, client)
+        }, client, user_id="C")
 
         # episodic recall (no user)
         params = {

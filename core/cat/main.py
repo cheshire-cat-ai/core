@@ -14,7 +14,7 @@ from cat.routes import base, settings, llm, embedder, memory, plugins, upload, w
 from cat.routes.static import public, admin, static
 from cat.headers import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.looking_glass.cheshire_cat import CheshireCat 
 
 
 @asynccontextmanager

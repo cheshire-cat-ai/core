@@ -54,7 +54,6 @@ def test_memory_recall_success(client):
     episodic_memories = json["vectors"]["collections"]["episodic"]
     assert len(episodic_memories) == num_messages # all 3 retrieved
 
-
 # search with query and k
 def test_memory_recall_with_k_success(client):
 
