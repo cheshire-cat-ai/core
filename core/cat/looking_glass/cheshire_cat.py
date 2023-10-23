@@ -501,30 +501,30 @@ class CheshireCat:
 
     # TODO: remove this method in a few versions, current version 1.2.0
     def get_base_url():
-        """Allows the Cat expose the base url."""
+        """Allows the Cat exposing the base url."""
         log.warning("This method will be removed, import cat.utils tu use it instead.")
         return utils.get_base_url()
 
     # TODO: remove this method in a few versions, current version 1.2.0
     def get_base_path():
-        """Allows the Cat expose the base path."""
+        """Allows the Cat exposing the base path."""
         log.warning("This method will be removed, import cat.utils tu use it instead.")
         return utils.get_base_path()
 
     # TODO: remove this method in a few versions, current version 1.2.0
-    def get_plugin_path():
-        """Allows the Cat expose the plugins path."""
+    def get_plugins_path():
+        """Allows the Cat exposing the plugins path."""
         log.warning("This method will be removed, import cat.utils tu use it instead.")
-        return utils.get_plugin_path()
+        return utils.get_plugins_path()
 
     # TODO: remove this method in a few versions, current version 1.2.0
     def get_static_url():
-        """Allows the Cat expose the static server url."""
+        """Allows the Cat exposing the static server url."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_url()
 
     # TODO: remove this method in a few versions, current version 1.2.0
     def get_static_path():
-        """Allows the Cat expose the static files path."""
+        """Allows the Cat exposing the static files path."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_path()

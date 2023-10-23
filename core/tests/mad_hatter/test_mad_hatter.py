@@ -70,7 +70,7 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
 
     # archive extracted
     assert os.path.exists(
-        os.path.join(utils.get_plugin_path(), "mock_plugin")
+        os.path.join(utils.get_plugins_path(), "mock_plugin")
     )
 
     # plugins list updated
@@ -128,7 +128,7 @@ def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
 
     # directory removed
     assert not os.path.exists(
-        os.path.join(utils.get_plugin_path(), "mock_plugin")
+        os.path.join(utils.get_plugins_path(), "mock_plugin")
     )
 
     # plugins list updated
