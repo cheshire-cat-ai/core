@@ -387,7 +387,7 @@ class CheshireCat:
                         "content": content
                     }
                 )
-            )    
+            )
 
     def __call__(self, user_message_json):
         """Call the Cat instance.

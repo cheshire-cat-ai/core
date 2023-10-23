@@ -71,7 +71,7 @@ async def check_messages(ccat, user_id='user'):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
-    
+
     while True:
         # extract from FIFO list websocket notification
         notification = await ccat.working_memory_list.get_working_memory(user_id).ws_messages.get()
@@ -93,7 +93,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         return
 
     # Add the new WebSocket connection to the manager.
-    await manager.connect(websocket)
+    await manager.connect(websocket, user_id)
     try:
         # Process messages and check for notifications concurrently.
         await asyncio.gather(
