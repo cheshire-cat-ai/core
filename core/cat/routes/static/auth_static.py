@@ -7,6 +7,6 @@ class AuthStatic(StaticFiles):
         super().__init__(*args, **kwargs)
 
     async def __call__(self, scope, receive, send) -> None:
-        reqeust = Request(scope, receive=receive)
-        check_api_key(reqeust.headers.get("access_token"))
+        request = Request(scope, receive=receive)
+        check_api_key(request.headers.get("access_token"))
         await super().__call__(scope, receive, send)
