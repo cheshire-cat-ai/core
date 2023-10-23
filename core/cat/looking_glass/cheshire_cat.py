@@ -40,12 +40,13 @@ class CheshireCat():
 
     """
 
+    # CheshireCat is a singleton, this is the instance
     _instance = None
 
+    # get instance or create as the constructor is called
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
-            cls._instance = CheshireCat()
         return cls._instance
 
     def __init__(self):
@@ -544,5 +545,3 @@ class CheshireCat():
         """Allows the Cat expose the static files path."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_path()
-
-cat = CheshireCat()
