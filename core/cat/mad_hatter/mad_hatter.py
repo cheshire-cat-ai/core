@@ -32,7 +32,7 @@ class MadHatter:
 
         self.active_plugins = []
 
-        self.plugins_folder = utils.get_plugin_path()
+        self.plugins_folder = utils.get_plugins_path()
 
         self.find_plugins()
 

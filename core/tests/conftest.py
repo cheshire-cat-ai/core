@@ -49,7 +49,7 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     # Use mock utils plugin folder
     def get_test_plugin_folder():
         return "tests/mocks/mock_plugin_folder/"
-    utils.get_plugin_path = get_test_plugin_folder
+    utils.get_plugins_path = get_test_plugin_folder
 
     # Use in memory vector db
     def mock_connect_to_vector_memory(self, *args, **kwargs):
