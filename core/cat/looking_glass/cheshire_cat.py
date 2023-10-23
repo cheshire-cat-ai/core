@@ -28,7 +28,7 @@ from cat.factory.custom_llm import CustomOpenAI
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
-class CheshireCat:
+class CheshireCat():
     """The Cheshire Cat.
 
     This is the main class that manages everything.
@@ -39,6 +39,15 @@ class CheshireCat:
         List of notifications to be sent to the frontend.
 
     """
+
+    # CheshireCat is a singleton, this is the instance
+    _instance = None
+
+    # get instance or create as the constructor is called
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self):
         """Cat initialization.
