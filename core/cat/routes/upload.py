@@ -1,9 +1,7 @@
 import mimetypes
 import requests
 from typing import Dict
-
 from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
-
 from cat.log import log
 
 router = APIRouter()
@@ -19,7 +17,10 @@ async def upload_file(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
+    chunk_overlap: int = Body(
+        default=100, 
+        description="Chunk overlap (in characters)"
+    )
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -66,8 +67,11 @@ async def upload_url(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
-):
+    chunk_overlap: int = Body(
+        default=100, 
+        description="Chunk overlap (in characters)"
+    )
+) -> Dict:
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
     # check that URL is valid
@@ -89,7 +93,10 @@ async def upload_url(
             background_tasks.add_task(
                 ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap
             )
-            return {"url": url, "info": "URL is being ingested asynchronously"}
+            return {
+                "url": url, 
+                "info": "URL is being ingested asynchronously"
+            }
         else:
             raise HTTPException(
                 status_code=400,

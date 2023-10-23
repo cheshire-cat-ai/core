@@ -1,13 +1,9 @@
 import mimetypes
 from copy import deepcopy
 from typing import Dict
-from tempfile import NamedTemporaryFile
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
 from cat.log import log
 from cat.mad_hatter.registry import registry_search_plugins, registry_download_plugin
-from urllib.parse import urlparse
-import requests
-
 from pydantic import ValidationError
 
 router = APIRouter()
