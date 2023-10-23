@@ -1,5 +1,6 @@
 from typing import Dict
-from fastapi import Query, Request, APIRouter, HTTPException
+from cat.headers import check_user_id
+from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 router = APIRouter()
 
@@ -10,7 +11,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    user_id: str = Query(default="user", description="User id."),
+    user_id = Depends(check_user_id)
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -201,7 +202,7 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history/")
 async def wipe_conversation_history(
     request: Request,
-    user_id: str = Query(default="user", description="User id."),
+    user_id = Depends(check_user_id),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
@@ -219,7 +220,7 @@ async def wipe_conversation_history(
 @router.get("/conversation_history/")
 async def get_conversation_history(
     request: Request,
-    user_id: str = Query(default="user", description="User id."),
+    user_id = Depends(check_user_id),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
