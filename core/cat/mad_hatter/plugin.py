@@ -3,7 +3,7 @@ import sys
 import json
 import glob
 import traceback
-import imp
+from importlib import machinery
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel
@@ -213,7 +213,7 @@ class Plugin:
 
             # save a reference to decorated functions
             try:
-                plugin_module = imp.load_source(module_name, py_file)
+                plugin_module = machinery.SourceFileLoader(module_name, py_file).load_module()
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
