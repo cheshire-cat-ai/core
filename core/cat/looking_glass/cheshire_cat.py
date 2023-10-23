@@ -534,3 +534,5 @@ class CheshireCat():
         """Allows the Cat expose the static files path."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_path()
+
+cat = CheshireCat()
