@@ -28,7 +28,7 @@ from cat.factory.custom_llm import CustomOpenAI
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
-class CheshireCat:
+class CheshireCat():
     """The Cheshire Cat.
 
     This is the main class that manages everything.
@@ -39,6 +39,14 @@ class CheshireCat:
         List of notifications to be sent to the frontend.
 
     """
+
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+            cls._instance = CheshireCat()
+        return cls._instance
 
     def __init__(self):
         """Cat initialization.
@@ -536,3 +544,5 @@ class CheshireCat:
         """Allows the Cat expose the static files path."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_path()
+
+cat = CheshireCat()
