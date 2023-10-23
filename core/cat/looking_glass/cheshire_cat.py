@@ -14,7 +14,7 @@ from cat.db import crud
 from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemoryList
+from cat.memory.working_memory import WorkingMemoryList, WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 from cat.looking_glass.callbacks import NewTokenHandler
@@ -345,18 +345,21 @@ class CheshireCat:
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification", working_memory: WorkingMemory = None):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
 
         Parameters
         ----------
+        working_memory
         content : str
             The content of the message.
         msg_type : str
             The type of the message. Should be either `notification`, `chat` or `error`
         """
+        if working_memory is None:
+            working_memory = self.working_memory
 
         options = get_args(MSG_TYPES)
 
@@ -365,7 +368,7 @@ class CheshireCat:
 
         if msg_type == "error":
             asyncio.run(
-                self.ws_messages.put( 
+                working_memory.ws_messages.put(
                     {
                         "type": msg_type,
                         "name": "GenericError",
@@ -375,7 +378,7 @@ class CheshireCat:
             )
         else:
             asyncio.run(
-                self.ws_messages.put(
+                working_memory.ws_messages.put(
                     {
                         "type": msg_type,
                         "content": content

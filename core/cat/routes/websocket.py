@@ -55,6 +55,7 @@ async def receive_message(websocket: WebSocket, ccat: object):
     """
     Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
     """
+
     while True:
         user_message = await websocket.receive_json()
 
@@ -65,18 +66,20 @@ async def receive_message(websocket: WebSocket, ccat: object):
         await manager.send_personal_message(cat_message, websocket)
 
 
-async def check_messages(websocket: WebSocket, ccat):
+
+
+async def check_messages(websocket: WebSocket, ccat, user_id='user'):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
     while True:
-
         # extract from FIFO list websocket notification
-        notification = await ccat.ws_messages.get()
+        notification = await ccat.working_memory_list.get_working_memory(user_id).ws_messages.get()
         await manager.send_personal_message(notification, websocket)
 
 
 @router.websocket_route("/ws")
+@router.websocket_route("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket):
     """
     Endpoint to handle incoming WebSocket connections, process messages, and check for messages.
@@ -87,12 +90,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket)
-
+    user_id = websocket.path_params.get("user_id", "user")
+    log.error(user_id)
     try:
         # Process messages and check for notifications concurrently.
         await asyncio.gather(
             receive_message(websocket, ccat),
-            check_messages(websocket, ccat)
+            check_messages(websocket, ccat, user_id)
         )
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.

@@ -11,6 +11,7 @@ from langchain.agents import AgentExecutor, LLMSingleActionAgent
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
+from cat.memory.working_memory import WorkingMemory
 from cat.utils import verbal_timedelta
 from cat.log import log
 
@@ -72,10 +73,9 @@ class AgentManager:
         return out
     
 
-    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix):
+    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, working_memory: WorkingMemory):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
-        
         # memory chain (second step)
         memory_prompt = PromptTemplate(
             template = prompt_prefix + prompt_suffix,
@@ -88,7 +88,7 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat)])
+        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat, working_memory)])
         out["output"] = out["text"]
         del out["text"]
         return out
@@ -160,7 +160,7 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
 
                     # Execute the memory chain
-                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
+                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
 
                     # If some tools are used the intermediate step are added to the agent output
                     out["intermediate_steps"] = used_tools
@@ -177,7 +177,7 @@ class AgentManager:
         #Adding the tools_output key in agent input, needed by the memory chain
         agent_input["tools_output"] = ""
         # Execute the memory chain
-        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix)
+        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
 
         return out
     
