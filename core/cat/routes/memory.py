@@ -1,25 +1,18 @@
-from typing import Any, Dict, List, Optional, TypedDict
-from pydantic import BaseModel
-from fastapi import Query, Request, APIRouter, HTTPException
+from typing import Dict
+from cat.headers import check_user_id
+from cat.routes.types import ResponseMemoryRecall
+from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 router = APIRouter()
-
-class Vector(BaseModel):
-    embedder: str
-    collections: Dict[str, Any]
-
-class MemoryRecall(BaseModel):
-    query: Dict[str, Any]
-    vectors: Vector
 
 # GET memories from recall
 @router.get("/recall/")
 async def recall_memories_from_text(
-        request: Request,
-        text: str = Query(description="Find memories similar to this text."),
-        k: int = Query(default=100, description="How many memories to return."),
-        user_id: str = Query(default="user", description="User id."),
-) -> MemoryRecall:
+    request: Request,
+    text: str = Query(description="Find memories similar to this text."),
+    k: int = Query(default=100, description="How many memories to return."),
+    user_id = Depends(check_user_id)
+) -> ResponseMemoryRecall:
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat
@@ -60,13 +53,15 @@ async def recall_memories_from_text(
             memory_dict["vector"] = vector
             recalled[c].append(memory_dict)
 
-    return {
+    result = {
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__),  # TODO: should be the config class name
             "collections": recalled
         }
     }
+
+    return ResponseMemoryRecall(**result)
 
 
 # GET collection list with some metadata
@@ -95,7 +90,7 @@ async def get_collections(request: Request) -> Dict:
 # DELETE all collections
 @router.delete("/collections/")
 async def wipe_collections(
-        request: Request,
+    request: Request,
 ) -> Dict:
     """Delete and create all collections"""
 
@@ -119,8 +114,7 @@ async def wipe_collections(
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}/")
-async def wipe_single_collection(request: Request,
-                                 collection_id: str) -> Dict:
+async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     """Delete and recreate a collection"""
 
     ccat = request.app.state.ccat
@@ -151,9 +145,9 @@ async def wipe_single_collection(request: Request,
 # DELETE memories
 @router.delete("/collections/{collection_id}/points/{memory_id}/")
 async def wipe_memory_point(
-        request: Request,
-        collection_id: str,
-        memory_id: str
+    request: Request,
+    collection_id: str,
+    memory_id: str
 ) -> Dict:
     """Delete a specific point in memory"""
 
@@ -189,9 +183,9 @@ async def wipe_memory_point(
 
 @router.delete("/collections/{collection_id}/points/")
 async def wipe_memory_points_by_metadata(
-        request: Request,
-        collection_id: str,
-        metadata: Dict = {},
+    request: Request,
+    collection_id: str,
+    metadata: Dict = {},
 ) -> Dict:
     """Delete points in memory by filter"""
 
@@ -209,13 +203,34 @@ async def wipe_memory_points_by_metadata(
 # DELETE conversation history from working memory
 @router.delete("/conversation_history/")
 async def wipe_conversation_history(
-        request: Request,
+    request: Request,
+    user_id = Depends(check_user_id),
 ) -> Dict:
-    """Delete conversation history from working memory"""
+    """Delete the specified user's conversation history from working memory"""
+
+    # TODO: Add possibility to wipe the working memory of specified user id
 
     ccat = request.app.state.ccat
     ccat.working_memory["history"] = []
 
     return {
         "deleted": True,
+    }
+
+
+# GET conversation history from working memory
+@router.get("/conversation_history/")
+async def get_conversation_history(
+    request: Request,
+    user_id = Depends(check_user_id),
+) -> Dict:
+    """Get the specified user's conversation history from working memory"""
+
+    # TODO: Add possibility to get the working memory of specified user id
+
+    ccat = request.app.state.ccat
+    history = ccat.working_memory["history"]
+
+    return {
+        "history": history
     }

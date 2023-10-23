@@ -51,3 +51,11 @@ def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> 
             status_code=403,
             detail={"error": "Invalid API Key"}
         )
+
+
+def check_user_id(request: Request) -> str:
+    user_id = request.headers.get("user_id")
+    if user_id:
+        return user_id
+    else:
+        return "user"
