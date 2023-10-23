@@ -23,13 +23,11 @@ from cat.looking_glass.callbacks import NewTokenHandler
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
-from cat.looking_glass.singleton import singleton
 
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
-@singleton
 class CheshireCat():
     """The Cheshire Cat.
 
@@ -41,6 +39,14 @@ class CheshireCat():
         List of notifications to be sent to the frontend.
 
     """
+
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+            cls._instance = CheshireCat()
+        return cls._instance
 
     def __init__(self):
         """Cat initialization.
