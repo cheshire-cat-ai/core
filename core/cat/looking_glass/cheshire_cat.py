@@ -56,6 +56,7 @@ class CheshireCat():
         At init time the Cat executes the bootstrap.
         """
 
+        # If the CheshireCat is already instantiated skip the initialization
         if self.__initialized:
             return
 
