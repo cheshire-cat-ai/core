@@ -80,9 +80,6 @@ class CheshireCat():
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
-        # queue of cat messages not directly related to last user input
-        # i.e. finished uploading a file
-        self.ws_messages: Dict[str, asyncio.Queue] = {}
 
     def load_natural_language(self):
         """Load Natural Language related objects.
