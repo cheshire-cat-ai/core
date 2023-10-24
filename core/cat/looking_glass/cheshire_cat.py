@@ -47,6 +47,7 @@ class CheshireCat():
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
+            cls._instance.__initialized = False
         return cls._instance
 
     def __init__(self):
@@ -54,6 +55,9 @@ class CheshireCat():
 
         At init time the Cat executes the bootstrap.
         """
+
+        if self.__initialized:
+            return
 
         # bootstrap the cat!
         # reinstantiate MadHatter (reloads all plugins' hooks and tools)
@@ -80,6 +84,7 @@ class CheshireCat():
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap")
 
+        self.__initialized = True
 
     def load_natural_language(self):
         """Load Natural Language related objects.
