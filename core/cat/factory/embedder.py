@@ -119,7 +119,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
         }
     )
 
-class FastEmbedConfig(EmbedderSettings):
+class EmbedderFastEmbedConfig(EmbedderSettings):
     url: str
     model: str = "BAAI/bge-base-en"
     max_length: int = 512
@@ -142,7 +142,7 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
-    FastEmbedConfig
+    EmbedderFastEmbedConfig
 ]
 
 
