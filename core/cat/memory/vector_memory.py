@@ -10,7 +10,7 @@ from qdrant_client.qdrant_remote import QdrantRemote
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
-                                    BinaryQuantization, BinaryQuantizationConfig, ScalarType, QuantizationSearchParams, 
+                                    BinaryQuantization, BinaryQuantizationConfig, QuantizationSearchParams, 
                                     CreateAliasOperation, CreateAlias, OptimizersConfigDiff)
 
 
@@ -169,7 +169,6 @@ class VectorMemoryCollection(Qdrant):
                     always_ram=True
                 )
             ),
-            #shard_number=3,
         )
         
         self.client.update_collection_aliases(
