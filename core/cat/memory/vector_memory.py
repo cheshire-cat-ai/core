@@ -10,7 +10,7 @@ from qdrant_client.qdrant_remote import QdrantRemote
 from langchain.embeddings.base import Embeddings
 from langchain.vectorstores import Qdrant
 from qdrant_client.http.models import (Distance, VectorParams,  SearchParams, 
-                                    ScalarQuantization, ScalarQuantizationConfig, ScalarType, QuantizationSearchParams, 
+                                    BinaryQuantization, BinaryQuantizationConfig, ScalarType, QuantizationSearchParams, 
                                     CreateAliasOperation, CreateAlias, OptimizersConfigDiff)
 
 
@@ -159,13 +159,14 @@ class VectorMemoryCollection(Qdrant):
         self.client.recreate_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(
-                size=self.embedder_size, distance=Distance.COSINE),
-            #optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
-            quantization_config=ScalarQuantization(
-                scalar=ScalarQuantizationConfig(
-                    type=ScalarType.INT8,
-                    quantile=0.75,
-                    always_ram=False
+                size=self.embedder_size, distance=Distance.COSINE, on_disk=True,),
+            optimizers_config=models.OptimizersConfigDiff(
+              default_segment_number=5,
+              indexing_threshold=0,
+            ),
+            quantization_config=BinaryQuantization(
+                scalar=BinaryQuantizationConfig(
+                    always_ram=True
                 )
             ),
             #shard_number=3,
@@ -223,7 +224,7 @@ class VectorMemoryCollection(Qdrant):
                 quantization=QuantizationSearchParams(
                     ignore=False,
                     rescore=True,
-                    # oversampling=1.5 # Available as of v1.3.0
+                    oversampling=2.0,
                 )
             )
         )
