@@ -160,12 +160,12 @@ class VectorMemoryCollection(Qdrant):
             collection_name=self.collection_name,
             vectors_config=VectorParams(
                 size=self.embedder_size, distance=Distance.COSINE, on_disk=True,),
-            optimizers_config=models.OptimizersConfigDiff(
+            optimizers_config=OptimizersConfigDiff(
               default_segment_number=5,
               indexing_threshold=0,
             ),
             quantization_config=BinaryQuantization(
-                scalar=BinaryQuantizationConfig(
+                binary=BinaryQuantizationConfig(
                     always_ram=True
                 )
             ),
