@@ -121,7 +121,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 
 class EmbedderFastEmbedConfig(EmbedderSettings):
     url: str
-    model: str = "BAAI/bge-base-en"
+    model: str = "intfloat/multilingual-e5-large"
     max_length: int = 512
 
     _pyclass: Type = CustomFastembedEmbeddings
