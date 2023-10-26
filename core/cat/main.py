@@ -12,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from cat.log import log
 from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
-from cat.api_auth import check_api_key
+from cat.headers import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.looking_glass.cheshire_cat import CheshireCat 
 
 
 @asynccontextmanager
@@ -41,7 +41,6 @@ def custom_generate_unique_id(route: APIRoute):
 # REST API
 cheshire_cat_api = FastAPI(
     lifespan=lifespan,
-    dependencies=[Depends(check_api_key)],
     generate_unique_id_function=custom_generate_unique_id
 )
 
@@ -57,14 +56,15 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Status"])
-cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
-cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
-cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
-cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
-cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
+# TODO: To workaround the dependencies of the websocket, their are added manually in each router
+cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(websocket.router, tags=["WebSocket"])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:

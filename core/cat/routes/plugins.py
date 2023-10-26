@@ -67,9 +67,9 @@ async def get_available_plugins(
 
 @router.post("/upload/")
 async def install_plugin(
-        request: Request,
-        file: UploadFile,
-        background_tasks: BackgroundTasks
+    request: Request,
+    file: UploadFile,
+    background_tasks: BackgroundTasks
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
@@ -107,7 +107,7 @@ async def install_plugin_from_registry(
     request: Request,
     background_tasks: BackgroundTasks,
     payload: Dict = Body(examples={"url": "https://github.com/plugin-dev-account/plugin-repo"})
-    ) -> Dict:
+) -> Dict:
     """Install a new plugin from registry"""
 
     # access cat instance

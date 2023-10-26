@@ -3,13 +3,11 @@ import shutil
 
 
 # utility function to communicate with the cat via websocket
-def send_websocket_message(msg, client):
+def send_websocket_message(msg, client, user_id="user"):
 
-    with client.websocket_connect("/ws") as websocket:
-        
+    with client.websocket_connect(f"/ws/{user_id}") as websocket:
         # sed ws message
         websocket.send_json(msg)
-
         # get reply
         reply = websocket.receive_json()
     
@@ -20,15 +18,20 @@ def send_websocket_message(msg, client):
 def send_n_websocket_messages(num_messages, client):
 
     responses = []
-    for m in range(num_messages):
-        message = {
-            "text": f"Red Queen {m}"
-        }
-        res = send_websocket_message(message, client)
-        responses.append(res)
+
+    with client.websocket_connect(f"/ws") as websocket:
+        for m in range(num_messages):
+            message = {
+                "text": f"Red Queen {m}"
+            }
+            # sed ws message
+            websocket.send_json(message)
+            # get reply
+            reply = websocket.receive_json()
+            responses.append(reply)
 
     return responses
-            
+
 
 def key_in_json(key, json):
     return key in json.keys()
