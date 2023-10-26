@@ -108,7 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
+    repo_id: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     huggingfacehub_api_token: str
     _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
@@ -121,7 +121,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
 
 class EmbedderFastEmbedConfig(EmbedderSettings):
     url: str
-    model: str = "BAAI/bge-base-en"
+    model: str = "intfloat/multilingual-e5-large"
     max_length: int = 512
 
     _pyclass: Type = CustomFastembedEmbeddings
