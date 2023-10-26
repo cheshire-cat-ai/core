@@ -108,7 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
+    repo_id: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     huggingfacehub_api_token: str
     _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
