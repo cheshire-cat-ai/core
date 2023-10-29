@@ -34,6 +34,7 @@ class EmbedderFakeConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
+            "link": ""
         }
     )
 
@@ -46,6 +47,7 @@ class EmbedderDumbConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
+            "link": ""
         }
     )
 
@@ -58,6 +60,7 @@ class EmbedderLlamaCppConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python embedder",
             "description": "Self-hosted llama-cpp-python embedder",
+            "link" : ""
         }
     )
 
@@ -71,6 +74,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
+            "link": "https://platform.openai.com/docs/models/overview"
         }
     )
 
@@ -90,6 +94,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
         }
     )
 
@@ -103,6 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
+            "link": "https://docs.cohere.com/docs/models"
         }
     )
 
@@ -116,6 +122,7 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
+            "link": "https://huggingface.co/models"
         }
     )
 

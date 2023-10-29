@@ -90,6 +90,7 @@ class LLMLlamaCppConfig(LLMSettings):
         json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python",
             "description": "Self-hosted llama-cpp-python compatible LLM",
+            "link": ""
         }
     )
 
