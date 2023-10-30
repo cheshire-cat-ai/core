@@ -70,7 +70,7 @@ class CustomFastembedEmbeddings(Embeddings):
     """
     def __init__(self, url, model,max_length) -> None:
         self.url = url
-        output = httpx.post(f"{url}/embeddings", json={"model": model, "max_length": max_length})
+        output = httpx.post(f"{url}/embeddings", json={"model": model, "max_length": max_length}, follow_redirects=True, timeout=None)
         output.raise_for_status()
 
 
