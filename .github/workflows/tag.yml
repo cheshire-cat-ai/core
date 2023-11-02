@@ -45,7 +45,9 @@ jobs:
       - name: Set up docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms:
+            - linux/amd64
+            - linux/arm64
 
       # Uses the `docker/login-action`
       # action to log in to the Container registry using the account and password that will publish the packages.

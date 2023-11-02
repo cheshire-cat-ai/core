@@ -44,7 +44,8 @@ class WorkingMemory(dict):
         self["history"].append({"who": who, "message": message})
 
         # do not allow more than k messages in convo history (+2 which are the current turn)
-        k = 3
+        # TODO: allow infinite history, but only insert in prompts the last k messages
+        k = 5
         self["history"] = self["history"][(-k - 1):]
 
 
