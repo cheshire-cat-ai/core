@@ -1,8 +1,56 @@
 import time
 from tests.utils import send_websocket_message
 
+
+def test_convo_history_creation(client):
+
+    response = client.get(f"/memory/conversation_history/")
+    json = response.json()
+    assert response.status_code == 200
+    assert "history" in json
+    assert len(json["history"]) == 0
+
+
+def test_convo_history_update(client):
+
+    message = "It's late! It's late!"
+
+    # send websocket messages
+    res = send_websocket_message({
+        "text": message
+    }, client)
+
+    # check working memory update
+    response = client.get(f"/memory/conversation_history/")
+    json = response.json()
+    assert response.status_code == 200
+    assert "history" in json
+    assert len(json["history"]) == 2 # mex and reply
+    assert json["history"][0]["who"] == "Human"
+    assert json["history"][0]["message"] == message
+
+
+def test_convo_history_reset(client):
+
+    # send websocket messages
+    res = send_websocket_message({
+        "text": "It's late! It's late!"
+    }, client)
+
+    # delete convo history
+    response = client.delete(f"/memory/conversation_history/")
+    assert response.status_code == 200
+
+    # check working memory update
+    response = client.get(f"/memory/conversation_history/")
+    json = response.json()
+    assert response.status_code == 200
+    assert "history" in json
+    assert len(json["history"]) == 0
+
+
 # TODO: should be tested also with concurrency!
-def test_working_memory_update(client):
+def test_convo_history_by_user(client):
 
     convos = {
         # user_id: n_messages
@@ -34,3 +82,18 @@ def test_working_memory_update(client):
                 assert m["message"] == f"Mex n.{m_number_from_user} from {user_id}"
             else:
                 assert m["who"] == "AI"
+
+    # delete White Rabbit convo
+    response = client.delete(f"/memory/conversation_history/", headers={"user_id": "White Rabbit"})
+    assert response.status_code == 200
+
+    # check convo deletion per user
+    ### White Rabbit convo is empty
+    response = client.get(f"/memory/conversation_history/", headers={"user_id": "White Rabbit"})
+    json = response.json()
+    assert len(json["history"]) == 0
+    ### Alice convo still the same
+    response = client.get(f"/memory/conversation_history/", headers={"user_id": "Alice"})
+    json = response.json()
+    assert len(json["history"]) == convos["Alice"] * 2
+
