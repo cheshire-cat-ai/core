@@ -1,11 +1,10 @@
 import glob
-import json
 import time
 import shutil
 import os
 import traceback
+import cat.utils as utils
 from copy import deepcopy
-
 from cat.log import log
 from cat.db import crud
 from cat.db.models import Setting
@@ -33,14 +32,15 @@ class MadHatter:
 
         self.active_plugins = []
 
+        self.plugins_folder = utils.get_plugins_path()
+
         self.find_plugins()
 
     def install_plugin(self, package_plugin):
 
         # extract zip/tar file into plugin folder
-        plugins_folder = self.ccat.get_plugin_path()
         extractor = PluginExtractor(package_plugin)
-        plugin_path = extractor.extract(plugins_folder)
+        plugin_path = extractor.extract(self.plugins_folder)
 
         # remove zip after extraction
         os.remove(package_plugin)
@@ -82,10 +82,8 @@ class MadHatter:
         # plus the default core plugin s(where default hooks and tools are defined)
         core_plugin_folder = "cat/mad_hatter/core_plugin/"
 
-         # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
-        plugins_folder = self.ccat.get_plugin_path()
-
-        all_plugin_folders = [core_plugin_folder] + glob.glob(f"{plugins_folder}*/")
+        # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
+        all_plugin_folders = [core_plugin_folder] + glob.glob(f"{self.plugins_folder}*/")
 
         log.info("ACTIVE PLUGINS:")
         log.info(self.active_plugins)

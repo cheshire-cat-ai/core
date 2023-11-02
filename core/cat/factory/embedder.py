@@ -2,7 +2,7 @@ from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
+from cat.factory.custom_embedder import CustomFastembedEmbeddings, DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
@@ -108,7 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
+    repo_id: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     huggingfacehub_api_token: str
     _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
@@ -116,6 +116,20 @@ class EmbedderHuggingFaceHubConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
+        }
+    )
+
+class EmbedderFastEmbedConfig(EmbedderSettings):
+    url: str
+    model: str = "intfloat/multilingual-e5-large"
+    max_length: int = 512
+
+    _pyclass: Type = CustomFastembedEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Fast Embedder",
+            "description": "Configuration for Fast embeddings",
         }
     )
 
@@ -128,6 +142,7 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
+    EmbedderFastEmbedConfig
 ]
 
 

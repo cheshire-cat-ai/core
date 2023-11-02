@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
 
   cheshire-cat-vector-memory:
-    image: qdrant/qdrant:v1.1.1
+    image: qdrant/qdrant:v1.6.1
     container_name: cheshire_cat_vector_memory
     expose:
       - 6333

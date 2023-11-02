@@ -1,7 +1,8 @@
 import os
-import shutil
 import pytest
 from inspect import isfunction
+
+import cat.utils as utils
 
 from cat.mad_hatter.mad_hatter import MadHatter, Plugin
 from cat.mad_hatter.decorators import CatHook, CatTool
@@ -69,7 +70,7 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
 
     # archive extracted
     assert os.path.exists(
-        os.path.join(mad_hatter.ccat.get_plugin_path(), "mock_plugin")
+        os.path.join(utils.get_plugins_path(), "mock_plugin")
     )
 
     # plugins list updated
@@ -127,7 +128,7 @@ def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
 
     # directory removed
     assert not os.path.exists(
-        os.path.join(mad_hatter.ccat.get_plugin_path(), "mock_plugin")
+        os.path.join(utils.get_plugins_path(), "mock_plugin")
     )
 
     # plugins list updated

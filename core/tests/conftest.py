@@ -8,12 +8,12 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from tinydb import Query
-from cat.db import models
+
 from cat.db.database import Database
 from cat.log import log
 
-from cat.looking_glass.cheshire_cat import CheshireCat
+import cat.utils as utils
+
 from qdrant_client import QdrantClient
 from cat.memory.vector_memory import VectorMemory
 
@@ -46,10 +46,10 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     Create a new setup on each test case, with new mocks for both Qdrant and TinyDB
     """
 
-    # Use mock plugin folder
-    def mock_plugin_folder(self, *args, **kwargs):
+    # Use mock utils plugin folder
+    def get_test_plugin_folder():
         return "tests/mocks/mock_plugin_folder/"
-    monkeypatch.setattr(CheshireCat, "get_plugin_path", mock_plugin_folder)
+    utils.get_plugins_path = get_test_plugin_folder
 
     # Use in memory vector db
     def mock_connect_to_vector_memory(self, *args, **kwargs):

@@ -1,3 +1,5 @@
+import asyncio
+
 class WorkingMemory(dict):
     """Cat's volatile memory.
 
@@ -16,6 +18,8 @@ class WorkingMemory(dict):
 
     def __init__(self):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
+        # and the asyncio queue to manage the session notifications
+        self.ws_messages = asyncio.Queue()
         super().__init__(history=[])
 
     def get_user_id(self):
