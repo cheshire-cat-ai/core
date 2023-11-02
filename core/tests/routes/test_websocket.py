@@ -10,7 +10,7 @@ def test_websocket(client):
 
         # send websocket message
         res = send_websocket_message({
-            "text": "Your bald aunt with a wooden leg"
+            "text": "It's late! It's late"
         }, client)
 
         for k in ["type", "content", "why"]:

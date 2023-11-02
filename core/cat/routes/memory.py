@@ -209,7 +209,7 @@ async def wipe_conversation_history(
     # TODO: Add possibility to wipe the working memory of specified user id
 
     ccat = request.app.state.ccat
-    ccat.working_memory["history"] = []
+    ccat.working_memory_list[user_id]["history"] = []
 
     return {
         "deleted": True,
@@ -227,7 +227,7 @@ async def get_conversation_history(
     # TODO: Add possibility to get the working memory of specified user id
 
     ccat = request.app.state.ccat
-    history = ccat.working_memory["history"]
+    history = ccat.working_memory_list[user_id]["history"]
 
     return {
         "history": history
