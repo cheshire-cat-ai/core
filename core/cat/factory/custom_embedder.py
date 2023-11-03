@@ -64,4 +64,25 @@ class CustomOpenAIEmbeddings(Embeddings):
         ret = httpx.post(self.url, data=payload, timeout=None)
         ret.raise_for_status()
         return ret.json()['data'][0]['embedding']
+
+class CustomFastembedEmbeddings(Embeddings):
+    """Use Fastembed for embedding.
+    """
+    def __init__(self, url, model,max_length) -> None:
+        self.url = url
+        output = httpx.post(f"{url}/embeddings", json={"model": model, "max_length": max_length}, follow_redirects=True, timeout=None)
+        output.raise_for_status()
+
+
+    def embed_documents(self, texts: List[str]):
+        payload = json.dumps({"document": texts})
+        ret = httpx.post(f"{self.url}/embeddings/document", data=payload, timeout=None)
+        ret.raise_for_status()
+        return ret.json()
+
+    def embed_query(self, text: str) -> List[float]:
+        payload = json.dumps({"prompt": text})
+        ret = httpx.post(f"{self.url}/embeddings/prompt", data=payload, timeout=None)
+        ret.raise_for_status()
+        return ret.json()
     

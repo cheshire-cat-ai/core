@@ -1,6 +1,7 @@
 import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
+from langchain.llms.ollama import Ollama
 
 from typing import Dict, List, Type
 import json
@@ -273,6 +274,24 @@ class LLMGooglePalmConfig(LLMSettings):
         }
     )
 
+class LLMOllamaConfig(LLMSettings):
+    base_url: str
+    model: str = "llama2"
+    num_ctx: int = 2048
+    repeat_last_n: int = 64
+    repeat_penalty: float = 1.1
+    temperature: float = 0.8
+
+    _pyclass: Type = Ollama
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Ollama",
+            "description": "Configuration for Ollama",
+            "link": "https://ollama.ai/library"
+        }
+    )
+	
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
@@ -287,7 +306,8 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
     LLMAnthropicConfig,
-    LLMGooglePalmConfig
+    LLMGooglePalmConfig,
+    LLMOllamaConfig
 ]
 
 # LLM_SCHEMAS contains metadata to let any client know

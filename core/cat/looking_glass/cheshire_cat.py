@@ -1,7 +1,8 @@
 import time
 from copy import deepcopy
 import traceback
-from typing import Literal, get_args
+from typing import Literal, get_args, Dict
+import langchain
 import os
 import asyncio
 import langchain
@@ -9,12 +10,13 @@ from langchain.llms import Cohere, OpenAI, AzureOpenAI, HuggingFaceTextGenInfere
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
 
+import cat.utils as utils
 from cat.log import log
 from cat.db import crud
 from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemoryList
+from cat.memory.working_memory import WorkingMemoryList, WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
 from cat.looking_glass.agent_manager import AgentManager
 from cat.looking_glass.callbacks import NewTokenHandler
@@ -26,7 +28,7 @@ from cat.factory.custom_llm import CustomOpenAI
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # main class
-class CheshireCat:
+class CheshireCat():
     """The Cheshire Cat.
 
     This is the main class that manages everything.
@@ -37,6 +39,15 @@ class CheshireCat:
         List of notifications to be sent to the frontend.
 
     """
+
+    # CheshireCat is a singleton, this is the instance
+    _instance = None
+
+    # get instance or create as the constructor is called
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self):
         """Cat initialization.
@@ -71,7 +82,7 @@ class CheshireCat:
 
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
-        self.ws_messages = asyncio.Queue()     
+        self.ws_messages: Dict[str, asyncio.Queue] = {}
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -127,7 +138,6 @@ class CheshireCat:
                 llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         return llm
-
 
     def get_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
@@ -237,7 +247,7 @@ class CheshireCat:
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
 
-    def recall_relevant_memories_to_working_memory(self):
+    def recall_relevant_memories_to_working_memory(self, working_memory):
         """Retrieve context from memory.
 
         The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
@@ -257,8 +267,8 @@ class CheshireCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        user_id = self.working_memory.get_user_id()
-        recall_query = self.working_memory["user_message_json"]["text"]
+        user_id = working_memory.get_user_id()
+        recall_query = working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query)
@@ -266,7 +276,7 @@ class CheshireCat:
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
-        self.working_memory["recall_query"] = recall_query
+        working_memory["recall_query"] = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories")
@@ -297,8 +307,8 @@ class CheshireCat:
         # hooks to change recall configs for each memory
         recall_configs = [
             self.mad_hatter.execute_hook("before_cat_recalls_episodic_memories", default_episodic_recall_config),
-            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_procedural_recall_config),
-            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_declarative_recall_config)
+            self.mad_hatter.execute_hook("before_cat_recalls_declarative_memories", default_declarative_recall_config),
+            self.mad_hatter.execute_hook("before_cat_recalls_procedural_memories", default_procedural_recall_config)
         ]
 
         memory_types = self.memory.vectors.collections.keys()
@@ -310,7 +320,7 @@ class CheshireCat:
             vector_memory = getattr(self.memory.vectors, memory_type)
             memories = vector_memory.recall_memories_from_embedding(**config)
 
-            self.working_memory[memory_key] = memories
+            working_memory[memory_key] = memories
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories")
@@ -345,18 +355,23 @@ class CheshireCat:
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification", working_memory: WorkingMemory = None):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
 
         Parameters
         ----------
+        working_memory
         content : str
             The content of the message.
         msg_type : str
             The type of the message. Should be either `notification`, `chat` or `error`
         """
+
+        # no working memory passed, send message to default user
+        if working_memory is None:
+            working_memory = self.working_memory_list.get_working_memory()
 
         options = get_args(MSG_TYPES)
 
@@ -365,7 +380,7 @@ class CheshireCat:
 
         if msg_type == "error":
             asyncio.run(
-                self.ws_messages.put( 
+                working_memory.ws_messages.put(
                     {
                         "type": msg_type,
                         "name": "GenericError",
@@ -375,36 +390,13 @@ class CheshireCat:
             )
         else:
             asyncio.run(
-                self.ws_messages.put(
+                working_memory.ws_messages.put(
                     {
                         "type": msg_type,
                         "content": content
                     }
                 )
-            )    
-
-    def get_base_url(self):
-        """Allows the Cat expose the base url."""
-        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
-        if secure != '':
-            secure = 's'
-        return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}/'
-
-    def get_base_path(self):
-        """Allows the Cat expose the base path."""
-        return "cat/"
-
-    def get_plugin_path(self):
-        """Allows the Cat expose the plugins path."""
-        return os.path.join(self.get_base_path(), "plugins/")
-
-    def get_static_url(self):
-        """Allows the Cat expose the static server url."""
-        return self.get_base_url() + "static/"
-    
-    def get_static_path(self):
-        """Allows the Cat expose the static files path."""
-        return os.path.join(self.get_base_path(), "static/")
+            )
 
     def __call__(self, user_message_json):
         """Call the Cat instance.
@@ -433,18 +425,20 @@ class CheshireCat:
         # Change working memory based on received user_id
         user_id = user_message_json.get('user_id', 'user')
         user_message_json['user_id'] = user_id
-        self.working_memory = self.working_memory_list.get_working_memory(user_id)
+        # ccat class working memory is the default "user" working memory
+        # self.working_memory = self.working_memory_list.get_working_memory(user_id)
+        user_working_memory = self.working_memory_list.get_working_memory(user_id)
 
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
         # store last message in working memory
-        self.working_memory["user_message_json"] = user_message_json
+        user_working_memory["user_message_json"] = user_message_json
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
         try:
-            self.recall_relevant_memories_to_working_memory()
+            self.recall_relevant_memories_to_working_memory(user_working_memory)
         except Exception as e:
             log.error(e)
             traceback.print_exc(e)
@@ -462,7 +456,7 @@ class CheshireCat:
         
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent()
+            cat_message = self.agent_manager.execute_agent(user_working_memory)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -476,7 +470,7 @@ class CheshireCat:
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
             cat_message = {
-                "input": self.working_memory["user_message_json"]["text"],
+                "input": user_working_memory["user_message_json"]["text"],
                 "intermediate_steps": [],
                 "output": unparsable_llm_output
             }
@@ -485,9 +479,9 @@ class CheshireCat:
         log.info(cat_message)
 
         # update conversation history
-        user_message = self.working_memory["user_message_json"]["text"]
-        self.working_memory.update_conversation_history(who="Human", message=user_message)
-        self.working_memory.update_conversation_history(who="AI", message=cat_message["output"])
+        user_message = user_working_memory["user_message_json"]["text"]
+        user_working_memory.update_conversation_history(who="Human", message=user_message)
+        user_working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
@@ -498,9 +492,9 @@ class CheshireCat:
         )
 
         # build data structure for output (response and why with memories)
-        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["episodic_memories"]]
-        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
-        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
+        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["episodic_memories"]]
+        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["declarative_memories"]]
+        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in user_working_memory["procedural_memories"]]
         
         final_output = {
             "type": "chat",
@@ -520,3 +514,34 @@ class CheshireCat:
         final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output)
 
         return final_output
+
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_base_url():
+        """Allows the Cat exposing the base url."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_base_url()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_base_path():
+        """Allows the Cat exposing the base path."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_base_path()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_plugins_path():
+        """Allows the Cat exposing the plugins path."""
+        log.warning("This method will be removed, import cat.utils tu use it instead.")
+        return utils.get_plugins_path()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_static_url():
+        """Allows the Cat exposing the static server url."""
+        log.warning("This method will be removed, import cat.utils tu usit instead.")
+        return utils.get_static_url()
+
+    # TODO: remove this method in a few versions, current version 1.2.0
+    def get_static_path():
+        """Allows the Cat exposing the static files path."""
+        log.warning("This method will be removed, import cat.utils tu usit instead.")
+        return utils.get_static_path()

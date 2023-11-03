@@ -4,7 +4,7 @@ FROM python:3.10.11-slim-bullseye
 ### PREPARE BUILD WITH NECESSARY FILES AND FOLDERS ###
 RUN mkdir -p /app && mkdir -p /admin
 COPY ./pyproject.toml /app/pyproject.toml
-COPY ./cat/plugins /app/cat/plugins
+COPY ./cat /app/cat
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
 
 ### SYSTEM SETUP ###
@@ -23,7 +23,5 @@ RUN pip install -U pip && \
     python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')" &&\
     python3 install_plugin_dependencies.py
 
-
 ### FINISH ###
-# ready to go (docker-compose up)
-
+CMD python3 -m cat.main

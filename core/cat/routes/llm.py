@@ -85,7 +85,7 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,
-    payload: Dict = Body(example={"openai_api_key": "your-key-here"}),
+    payload: Dict = Body(examples={"openai_api_key": "your-key-here"}),
 ) -> Dict:
     """Upsert the Large Language Model setting"""
 
