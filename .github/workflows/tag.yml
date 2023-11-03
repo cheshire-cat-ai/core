@@ -45,6 +45,7 @@ jobs:
       - name: Set up docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
+          provenance: false
           platforms: linux/amd64,linux/arm64
 
       # Uses the `docker/login-action`
