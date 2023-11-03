@@ -10,6 +10,7 @@ from cat.db import crud
 from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
+import inspect
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -290,3 +291,10 @@ class MadHatter:
 
         # tea_cup has passed through all hooks. Return final output
         return tea_cup
+
+    def get_current_plugin_settings(self):
+        calling_frame = inspect.currentframe().f_back
+        path = utils.get_current_plugin_path(calling_frame)
+        name = path.split("/")[-1]
+
+        return self.plugins[name].load_settings()
