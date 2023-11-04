@@ -75,7 +75,9 @@ def get_base_url():
     secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
     if secure != '':
         secure = 's'
-    return f'http{secure}://{os.environ["CORE_HOST"]}:{os.environ["CORE_PORT"]}/'
+    cat_host = os.getenv("CORE_HOST", "localhost")
+    cat_port = os.getenv("CORE_PORT", "1865")
+    return f'http{secure}://{cat_host}:{cat_port}/'
 
 
 def get_base_path():
