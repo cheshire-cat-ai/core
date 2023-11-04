@@ -100,13 +100,13 @@ def get_static_path():
     return os.path.join(get_base_path(), "static/")
 
 
-def get_current_plugin_path():
-    """Allows accessing the current plugin path."""
-    # Get the current execution frame of the calling module,
-    # then the previous frame in the call stack
-    frame = inspect.currentframe().f_back
+def get_current_plugin_path(calling_frame=None):
+    if calling_frame is None:
+        # If calling_frame is not provided, use the current frame
+        calling_frame = inspect.currentframe().f_back
+
     # Get the module associated with the frame
-    module = inspect.getmodule(frame)
+    module = inspect.getmodule(calling_frame)
     # Get the absolute and then relative path of the calling module's file
     abs_path = inspect.getabsfile(module)
     rel_path = os.path.relpath(abs_path)
