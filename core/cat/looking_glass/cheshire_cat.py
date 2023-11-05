@@ -478,10 +478,7 @@ class CheshireCat():
         log.info("cat_message:")
         log.info(cat_message)
 
-        # update conversation history
         user_message = user_working_memory["user_message_json"]["text"]
-        user_working_memory.update_conversation_history(who="Human", message=user_message)
-        user_working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
@@ -512,6 +509,10 @@ class CheshireCat():
         }
 
         final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output)
+
+        # update conversation history
+        user_working_memory.update_conversation_history(who="Human", message=user_message)
+        user_working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
         return final_output
 
