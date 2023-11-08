@@ -123,7 +123,18 @@ def upsert_embedder_setting(
     # reload llm and embedder of the cat
     ccat.load_natural_language()
     # crete new collections (different embedder!)
-    ccat.load_memory()
+    try:
+        ccat.load_memory()
+    except Exception as e:
+        log.error(e)
+        crud.delete_settings_by_category(category=EMBEDDER_SELECTED_CATEGORY)
+        crud.delete_settings_by_category(category=EMBEDDER_CATEGORY)
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e)
+            }
+        )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()
