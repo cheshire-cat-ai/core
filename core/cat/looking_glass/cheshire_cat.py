@@ -398,7 +398,7 @@ class CheshireCat():
                 )
             )
 
-    def __call__(self, user_message_json):
+    async def __call__(self, user_message_json):
         """Call the Cat instance.
 
         This method is called on the user's message received from the client.
@@ -456,7 +456,7 @@ class CheshireCat():
         
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent(user_working_memory)
+            cat_message = await self.agent_manager.execute_agent(user_working_memory)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.

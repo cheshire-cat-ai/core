@@ -32,7 +32,7 @@ class AgentManager:
         self.cat = cat
 
 
-    def execute_tool_agent(self, agent_input, allowed_tools):
+    async def execute_tool_agent(self, agent_input, allowed_tools):
 
         allowed_tools_names = [t.name for t in allowed_tools]
         # TODO: dynamic input_variables as in the main prompt 
@@ -69,11 +69,11 @@ class AgentManager:
             verbose=True
         )
 
-        out = agent_executor(agent_input)
+        out = await agent_executor.acall(agent_input)
         return out
     
 
-    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, working_memory: WorkingMemory):
+    async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, working_memory: WorkingMemory):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
         # memory chain (second step)
@@ -88,13 +88,13 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat, working_memory)])
+        out = await memory_chain.acall(agent_input, callbacks=[NewTokenHandler(self.cat, working_memory)])
         out["output"] = out["text"]
         del out["text"]
         return out
 
 
-    def execute_agent(self, working_memory):
+    async def execute_agent(self, working_memory):
         """Instantiate the Agent with tools.
 
         The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
@@ -134,7 +134,7 @@ class AgentManager:
             log.debug(f"{len(allowed_tools)} allowed tools retrived.")
 
             try:
-                tools_result = self.execute_tool_agent(agent_input, allowed_tools)
+                tools_result = await self.execute_tool_agent(agent_input, allowed_tools)
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
@@ -177,7 +177,7 @@ class AgentManager:
         #Adding the tools_output key in agent input, needed by the memory chain
         agent_input["tools_output"] = ""
         # Execute the memory chain
-        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
+        out = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
 
         return out
     
