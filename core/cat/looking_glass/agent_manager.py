@@ -6,7 +6,9 @@ from typing import List, Dict
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.schema import BaseLLMOutputParser, BaseOutputParser
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
+from langchain.schema import AgentAction
 
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
@@ -14,6 +16,11 @@ from cat.looking_glass.output_parser import ToolOutputParser
 from cat.memory.working_memory import WorkingMemory
 from cat.utils import verbal_timedelta
 from cat.log import log
+
+
+# class ChooseToolOutputParser(BaseLLMOutputParser):
+
+#     def parse_result(self, result: List[Generation], *, partial: bool = False) -> T:
 
 
 class AgentManager:
@@ -31,47 +38,82 @@ class AgentManager:
     def __init__(self, cat):
         self.cat = cat
 
+    def choose_tool(self, agent_input, allowed_tools):
+        
+        allowed_tools_names = [t.name for t in allowed_tools]
 
+        tools_str = "\n".join([f"{tool.name}: {tool.description}" for tool in allowed_tools])
+
+        prompt = f"""Chose one of the following tools to respond to the user reqest:
+
+{tools_str}
+none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
+
+Human: What time is it?
+Tool: get_the_time
+
+{agent_input["chat_history"]}
+Human: {agent_input["input"]}
+Tool: """
+
+        output = self.cat.llm(prompt)
+        output = output.strip()
+
+        log.critical("TOOL CHOOSED")
+        print(output)
+
+        for t in allowed_tools:
+            if t.name in output:
+                return t
+            
+        return None
+
+    def extract_input(self, agent_input, choosed_tool):
+        prompt = f"""Given the following tool, extract the input from the following messages:
+
+get_the_time: get_the_time(tool_input) - Replies to "what time is it", "get the clock" and similar questions. Input is always None.
+        
+Human: What time is it?
+Input: 
+
+{choosed_tool.name}: {choosed_tool.description}   
+
+{agent_input["chat_history"]}
+Human: {agent_input["input"]}
+Input: """
+        
+        output = self.cat.llm(prompt)
+        output = output.strip()
+
+        log.debug("TOOL INPUT")
+        print(output)
+        return output
+    
     async def execute_tool_agent(self, agent_input, allowed_tools):
 
-        allowed_tools_names = [t.name for t in allowed_tools]
-        # TODO: dynamic input_variables as in the main prompt 
+        default_return = {
+                    "intermediate_steps": [],
+                    "output": None
+                }
 
-        prompt = prompts.ToolPromptTemplate(
-            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT),
-            tools=allowed_tools,
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
-            input_variables=["input", "intermediate_steps"]
-        )
+        try: 
+            choosed_tool = self.choose_tool(agent_input, allowed_tools)
 
-        # main chain
-        agent_chain = LLMChain(
-            prompt=prompt,
-            llm=self.cat._llm,
-            verbose=True
-        )
+            if choosed_tool is None:
+                return default_return
+            
+            tool_input = self.extract_input(agent_input, choosed_tool) 
 
-        # init agent
-        agent = LLMSingleActionAgent(
-            llm_chain=agent_chain,
-            output_parser=ToolOutputParser(),
-            stop=["\nObservation:"],
-            allowed_tools=allowed_tools_names,
-            verbose=True
-        )
+            output = choosed_tool.run(tool_input)
 
-        # agent executor
-        agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=agent,
-            tools=allowed_tools,
-            return_intermediate_steps=True,
-            verbose=True
-        )
-
-        out = await agent_executor.acall(agent_input)
-        return out
-    
+            return  {
+                "intermediate_steps": [(AgentAction(tool=choosed_tool.name, tool_input=tool_input, log=''), output)],
+                "output": output
+            }
+        except Exception as e:
+            log.error("Error in tool execution")
+            print(e)
+            return default_return    
 
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, working_memory: WorkingMemory):
 
@@ -92,7 +134,6 @@ class AgentManager:
         out["output"] = out["text"]
         del out["text"]
         return out
-
 
     async def execute_agent(self, working_memory):
         """Instantiate the Agent with tools.
@@ -134,11 +175,12 @@ class AgentManager:
             log.debug(f"{len(allowed_tools)} allowed tools retrived.")
 
             try:
+                # await self.choose_tool(agent_input, allowed_tools)
                 tools_result = await self.execute_tool_agent(agent_input, allowed_tools)
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
-                if tools_result["output"] != None:
+                if tools_result["output"] is not None:
                     
                     # Extract of intermediate steps in the format ((tool_name, tool_input), output)
                     used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
