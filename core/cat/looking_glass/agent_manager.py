@@ -160,7 +160,7 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
 
                     # Execute the memory chain
-                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
+                    out = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
 
                     # If some tools are used the intermediate step are added to the agent output
                     out["intermediate_steps"] = used_tools
