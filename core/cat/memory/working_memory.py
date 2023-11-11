@@ -1,3 +1,5 @@
+import asyncio
+
 class WorkingMemory(dict):
     """Cat's volatile memory.
 
@@ -16,6 +18,8 @@ class WorkingMemory(dict):
 
     def __init__(self):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
+        # and the asyncio queue to manage the session notifications
+        self.ws_messages = asyncio.Queue()
         super().__init__(history=[])
 
     def get_user_id(self):
@@ -23,7 +27,7 @@ class WorkingMemory(dict):
         
         return self["user_message_json"]["user_id"]
 
-    def update_conversation_history(self, who, message):
+    def update_conversation_history(self, who, message, why={}):
         """Update the conversation history.
 
         The methods append to the history key the last three conversation turns.
@@ -37,10 +41,11 @@ class WorkingMemory(dict):
         
         """
         # append latest message in conversation
-        self["history"].append({"who": who, "message": message})
+        self["history"].append({"who": who, "message": message, "why": why})
 
         # do not allow more than k messages in convo history (+2 which are the current turn)
-        k = 3
+        # TODO: allow infinite history, but only insert in prompts the last k messages
+        k = 5
         self["history"] = self["history"][(-k - 1):]
 
 

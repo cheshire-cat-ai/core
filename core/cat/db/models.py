@@ -1,31 +1,24 @@
-# SQLModel Models
-# Here we create for each table a database model that has the fields required to add a new record to the database.
 
-from typing import Dict, Union, Optional
 from datetime import datetime
+from uuid import uuid4
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Union, List
 
-from sqlmodel import Field, SQLModel
-from sqlalchemy import JSON, TIMESTAMP, Column, func
-from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
+
+def generate_uuid():
+    return str(uuid4())
+
+def generate_timestamp():
+    return int( datetime.now().timestamp() )
 
 
-class Setting(SQLModel, table=True):  # type: ignore
-    setting_id: Optional[str] = Field(
-        sa_column=Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)
-    )
-    name: str = Field(nullable=False)
-    value: Dict = Field(nullable=False, sa_column=Column(JSON))
-    category: Union[str, None] = Field(nullable=False, default="general")
-    enabled: bool = Field(nullable=False, default=True)
-    createdAt: Union[datetime, None] = Field(
-        sa_column=Column(
-            TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
-        )
-    )
-    updatedAt: Union[datetime, None] = Field(
-        sa_column=Column(
-            TIMESTAMP(timezone=True),
-            nullable=False,
-            server_default=func.now(),  # onupdate=func.now()
-        )
-    )
+# base class for setting, used to annotate fastAPI endpoints
+class SettingBody(BaseModel):
+    name: str
+    value: Union[Dict, List]
+    category: Optional[str] = None
+
+# actual setting class, with additional auto generated id and update time
+class Setting(SettingBody):
+    setting_id: str = Field(default_factory=generate_uuid)
+    updated_at: int = Field(default_factory=generate_timestamp)

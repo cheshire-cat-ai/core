@@ -34,7 +34,7 @@ def test_memory_recall_without_query_error(client):
 
     response = client.get(f"/memory/recall/")
     json = response.json()
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 # search with query
@@ -53,7 +53,6 @@ def test_memory_recall_success(client):
     assert response.status_code == 200
     episodic_memories = json["vectors"]["collections"]["episodic"]
     assert len(episodic_memories) == num_messages # all 3 retrieved
-
 
 # search with query and k
 def test_memory_recall_with_k_success(client):

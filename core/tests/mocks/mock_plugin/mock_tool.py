@@ -1,8 +1,8 @@
-from cat.mad_hatter.decorators import hook, tool
+from cat.mad_hatter.decorators import tool
 
 
 @tool(return_direct=True)
-def random_idea(topic, cat):
-    """Use to produce random ideas. Input is the topic."""
+def mock_tool(topic, cat):
+    """Used to test mock tools. Input is the topic."""
 
-    return f"A random idea about {topic} :)"
+    return f"A mock about {topic} :)"

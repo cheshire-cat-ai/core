@@ -1,9 +1,10 @@
 """Various utiles used from the projects."""
-
+import os
+import inspect
 from datetime import timedelta
 
 
-def to_camel_case(text :str ) -> str:
+def to_camel_case(text: str) -> str:
     """Format string to camel case.
 
     Takes a string of words separated by either hyphens or underscores and returns a string of words in camel case.
@@ -67,3 +68,51 @@ def verbal_timedelta(td: timedelta) -> str:
         return "{} ago".format(abs_delta)
     else:
         return "{} ago".format(abs_delta)
+
+
+def get_base_url():
+    """Allows exposing the base url."""
+    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+    if secure != '':
+        secure = 's'
+    cat_host = os.getenv("CORE_HOST", "localhost")
+    cat_port = os.getenv("CORE_PORT", "1865")
+    return f'http{secure}://{cat_host}:{cat_port}/'
+
+
+def get_base_path():
+    """Allows exposing the base path."""
+    return "cat/"
+
+
+def get_plugins_path():
+    """Allows exposing the plugins' path."""
+    return os.path.join(get_base_path(), "plugins/")
+
+
+def get_static_url():
+    """Allows exposing the static server url."""
+    return get_base_url() + "static/"
+
+
+def get_static_path():
+    """Allows exposing the static files' path."""
+    return os.path.join(get_base_path(), "static/")
+
+
+def get_current_plugin_path():
+    """Allows accessing the current plugin path."""
+    # Get the current execution frame of the calling module,
+    # then the previous frame in the call stack
+    frame = inspect.currentframe().f_back
+    # Get the module associated with the frame
+    module = inspect.getmodule(frame)
+    # Get the absolute and then relative path of the calling module's file
+    abs_path = inspect.getabsfile(module)
+    rel_path = os.path.relpath(abs_path)
+    # Replace the root and get only the current plugin folder
+    plugin_suffix = rel_path.replace(get_plugins_path(), "")
+    # Plugin's folder
+    folder_name = plugin_suffix.split("/")[0]
+    # Get current plugin's folder
+    return os.path.join(get_plugins_path(), folder_name)

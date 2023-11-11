@@ -98,10 +98,11 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/cheshi
 ### Your First Code Contribution
 
 1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request (if it contains lots of code, please discuss it beforehand opening a issue)
+2. Checkout the `develop` branch (`git checkout -b develop` and then `git pull origin develop`)
+3. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the Branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request against the `develop` branch (if it contains lots of code, please discuss it beforehand opening a issue)
 
 Try to keep your PRs small and in line with roadmap and issues.
 

@@ -1,43 +1,78 @@
+from typing import Type
 import langchain
-from pydantic import PyObject, BaseSettings
+from pydantic import BaseModel, ConfigDict
+
+from cat.factory.custom_embedder import CustomFastembedEmbeddings, DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
-class EmbedderSettings(BaseSettings):
+class EmbedderSettings(BaseModel):
     # class instantiating the embedder
-    _pyclass: None
+    _pyclass: Type = None
+
+    # This is related to pydantic, because "model_*" attributes are protected.
+    # We deactivate the protection because langchain relies on several "model_*" named attributes
+    model_config = ConfigDict(
+        protected_namespaces=()
+    )
 
     # instantiate an Embedder from configuration
     @classmethod
     def get_embedder_from_config(cls, config):
         if cls._pyclass is None:
             raise Exception(
-                "Embedder configuration class has self._pyclass = None. Should be a valid Embedder class"
+                "Embedder configuration class has self._pyclass==None. Should be a valid Embedder class"
             )
-        return cls._pyclass(**config)
+        return cls._pyclass.default(**config)
 
 
 class EmbedderFakeConfig(EmbedderSettings):
     size: int = 128
-    _pyclass: PyObject = langchain.embeddings.FakeEmbeddings
+    _pyclass: Type = langchain.embeddings.FakeEmbeddings
 
-    class Config:
-        schema_extra = {
-            "name_human_readable": "Default Embedder",
-            "description": "Configuration for default embedder. It just outputs random numbers XD",
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Default Embedder",
+            "description": "Configuration for default embedder. It just outputs random numbers.",
         }
+    )
+
+
+class EmbedderDumbConfig(EmbedderSettings):
+
+    _pyclass: Type = DumbEmbedder
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Dumb Embedder",
+            "description": "Configuration for default embedder. It encodes the pairs of characters",
+        }
+    )
+
+
+class EmbedderLlamaCppConfig(EmbedderSettings):
+    url: str
+    _pyclass: Type = CustomOpenAIEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Self-hosted llama-cpp-python embedder",
+            "description": "Self-hosted llama-cpp-python embedder",
+        }
+    )
 
 
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str = "text-embedding-ada-002"
-    _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
-    class Config:
-        schema_extra = {
-            "name_human_readable": "OpenAI Embedder",
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
         }
+    )
 
 
 # https://python.langchain.com/en/latest/_modules/langchain/embeddings/openai.html#OpenAIEmbeddings
@@ -45,56 +80,76 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str
     openai_api_base: str
-    api_type: str
-    api_version: str
+    openai_api_type: str
+    openai_api_version: str
     deployment: str
 
-    _pyclass: PyObject = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
-    class Config:
-        schema_extra = {
-            "name_human_readable": "Azure OpenAI Embedder",
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
         }
+    )
 
 
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
     model: str = "embed-multilingual-v2.0"
-    _pyclass: PyObject = langchain.embeddings.CohereEmbeddings
+    _pyclass: Type = langchain.embeddings.CohereEmbeddings
 
-    class Config:
-        schema_extra = {
-            "name_human_readable": "Cohere Embedder",
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
         }
+    )
 
 
 class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/all-MiniLM-L12-v2"
+    repo_id: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     huggingfacehub_api_token: str
-    _pyclass: PyObject = langchain.embeddings.HuggingFaceHubEmbeddings
+    _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
 
-    class Config:
-        schema_extra = {
-            "name_human_readable": "HuggingFace Hub Embedder",
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "HuggingFace Hub Embedder",
             "description": "Configuration for HuggingFace Hub embeddings",
         }
+    )
+
+class EmbedderFastEmbedConfig(EmbedderSettings):
+    url: str
+    model: str = "intfloat/multilingual-e5-large"
+    max_length: int = 512
+
+    _pyclass: Type = CustomFastembedEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Fast Embedder",
+            "description": "Configuration for Fast embeddings",
+        }
+    )
 
 
 SUPPORTED_EMDEDDING_MODELS = [
+    EmbedderDumbConfig,
     EmbedderFakeConfig,
+    EmbedderLlamaCppConfig,
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
     EmbedderHuggingFaceHubConfig,
+    EmbedderFastEmbedConfig
 ]
 
 
 # EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
 EMBEDDER_SCHEMAS = {}
 for config_class in SUPPORTED_EMDEDDING_MODELS:
-    schema = config_class.schema()
+    schema = config_class.model_json_schema()
 
     # useful for clients in order to call the correct config endpoints
     schema["languageEmbedderName"] = schema["title"]

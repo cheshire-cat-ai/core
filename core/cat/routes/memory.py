@@ -1,23 +1,8 @@
 from typing import Dict
-from fastapi import Query, Request, APIRouter
+from cat.headers import check_user_id
+from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 router = APIRouter()
-
-
-# DELETE memories
-@router.delete("/point/{memory_id}/")
-async def delete_element_in_memory(memory_id: str) -> Dict:
-    """Delete specific element in memory."""
-    
-    # post-implemented response
-    '''
-    return {
-        "status": "success",
-        "deleted": memory_id
-    }
-    '''
-
-    return {"error": "to be implemented"}
 
 
 # GET memories from recall
@@ -26,7 +11,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    user_id: str = Query(default="user", description="User id."),
+    user_id = Depends(check_user_id)
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -52,7 +37,7 @@ async def recall_memories_from_text(
             }
         else:
             user_filter = None
-            
+
         memories = vector_memory.collections[c].recall_memories_from_embedding(
             query_embedding,
             k=k,
@@ -60,18 +45,18 @@ async def recall_memories_from_text(
         )
 
         recalled[c] = []
-        for metadata, score, vector in memories:
+        for metadata, score, vector, id in memories:
             memory_dict = dict(metadata)
-            memory_dict.pop("lc_kwargs", None) # langchain stuff, not needed
+            memory_dict.pop("lc_kwargs", None)  # langchain stuff, not needed
+            memory_dict["id"] = id
             memory_dict["score"] = float(score)
             memory_dict["vector"] = vector
             recalled[c].append(memory_dict)
- 
+
     return {
-        "status": "success",
         "query": query,
         "vectors": {
-            "embedder": str(ccat.embedder.__class__.__name__), # TODO: should be the config class name
+            "embedder": str(ccat.embedder.__class__.__name__),  # TODO: should be the config class name
             "collections": recalled
         }
     }
@@ -96,36 +81,12 @@ async def get_collections(request: Request) -> Dict:
         }]
 
     return {
-        "status": "success",
-        "results": len(collections_metadata), 
         "collections": collections_metadata
     }
 
 
-# DELETE one collection
-@router.delete("/collections/{collection_id}")
-async def wipe_single_collection(request: Request, collection_id: str = "") -> Dict:
-    """Delete and recreate a collection"""
-
-    to_return = {}
-
-    if collection_id != "":
-        ccat = request.app.state.ccat
-        vector_memory = ccat.memory.vectors
-
-        ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
-        to_return[collection_id] = ret
-
-        ccat.bootstrap()  # recreate the long term memories
-
-    return {
-        "status": "success",
-        "deleted": to_return,
-    }
-
-
 # DELETE all collections
-@router.delete("/wipe-collections/")
+@router.delete("/collections/")
 async def wipe_collections(
     request: Request,
 ) -> Dict:
@@ -140,24 +101,130 @@ async def wipe_collections(
         ret = vector_memory.vector_db.delete_collection(collection_name=c)
         to_return[c] = ret
 
-    ccat.bootstrap()  # recreate the long term memories
+    ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
-        "status": "success",
         "deleted": to_return,
     }
 
-#DELETE conversation history from working memory
-@router.delete("/working-memory/conversation-history/")
-async def wipe_conversation_history(
-    request: Request,
-) -> Dict:
-    """Delete conversation history from working memory"""
+
+# DELETE one collection
+@router.delete("/collections/{collection_id}/")
+async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
+    """Delete and recreate a collection"""
 
     ccat = request.app.state.ccat
-    ccat.working_memory["history"] = []
+    vector_memory = ccat.memory.vectors
+
+    # check if collection exists
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Collection does not exist."}
+        )
+
+    to_return = {}
+
+    ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
+    to_return[collection_id] = ret
+
+    ccat.load_memory()  # recreate the long term memories
+    ccat.mad_hatter.find_plugins()
+    ccat.mad_hatter.embed_tools()
 
     return {
-        "status": "success",
-        "deleted": "true",
+        "deleted": to_return,
+    }
+
+
+# DELETE memories
+@router.delete("/collections/{collection_id}/points/{memory_id}/")
+async def wipe_memory_point(
+    request: Request,
+    collection_id: str,
+    memory_id: str
+) -> Dict:
+    """Delete a specific point in memory"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+
+    # check if collection exists
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Collection does not exist."}
+        )
+
+    # check if point exists
+    points = vector_memory.vector_db.retrieve(
+        collection_name=collection_id,
+        ids=[memory_id],
+    )
+    if points == []:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "Point does not exist."}
+        )
+
+    # delete point
+    vector_memory.collections[collection_id].delete_points([memory_id])
+
+    return {
+        "deleted": memory_id
+    }
+
+
+@router.delete("/collections/{collection_id}/points")
+async def wipe_memory_points_by_metadata(
+    request: Request,
+    collection_id: str,
+    metadata: Dict = {},
+) -> Dict:
+    """Delete points in memory by filter"""
+
+    ccat = request.app.state.ccat
+    vector_memory = ccat.memory.vectors
+
+    # delete points
+    vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
+
+    return {
+        "deleted": [] # TODO: Qdrant does not return deleted points?
+    }
+
+
+# DELETE conversation history from working memory
+@router.delete("/conversation_history/")
+async def wipe_conversation_history(
+    request: Request,
+    user_id = Depends(check_user_id),
+) -> Dict:
+    """Delete the specified user's conversation history from working memory"""
+
+    ccat = request.app.state.ccat
+    ccat.working_memory_list[user_id]["history"] = []
+
+    return {
+        "deleted": True,
+    }
+
+
+# GET conversation history from working memory
+@router.get("/conversation_history/")
+async def get_conversation_history(
+    request: Request,
+    user_id = Depends(check_user_id),
+) -> Dict:
+    """Get the specified user's conversation history from working memory"""
+
+    ccat = request.app.state.ccat
+    history = ccat.working_memory_list[user_id]["history"]
+
+    return {
+        "history": history
     }

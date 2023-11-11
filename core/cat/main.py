@@ -1,19 +1,20 @@
 import os
 from contextlib import asynccontextmanager
 
+import uvicorn
+
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
-from cat.log import log, welcome
-from cat.routes import base, memory, plugins, upload, websocket
+from cat.log import log
+from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
 from cat.routes.static import public, admin, static
-from cat.api_auth import check_api_key
+from cat.headers import check_api_key
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.routes.setting import llm_setting, general_setting, embedder_setting, prompt_setting
-from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.looking_glass.cheshire_cat import CheshireCat 
 
 
 @asynccontextmanager
@@ -28,17 +29,18 @@ async def lifespan(app: FastAPI):
     app.state.ccat = CheshireCat()
 
     # startup message with admin, public and swagger addresses
-    welcome()
+    log.welcome()
 
     yield
+
 
 def custom_generate_unique_id(route: APIRoute):
     return f"{route.name}"
 
+
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan, 
-    dependencies=[Depends(check_api_key)],
+    lifespan=lifespan,
     generate_unique_id_function=custom_generate_unique_id
 )
 
@@ -54,16 +56,15 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Status"])
-cheshire_cat_api.include_router(general_setting.router, tags=["Settings - General"], prefix="/settings")
-cheshire_cat_api.include_router(prompt_setting.router, tags=["Settings - Prompt"], prefix="/settings/prompt")
-cheshire_cat_api.include_router(llm_setting.router, tags=["Settings - Large Language Model"], prefix="/settings/llm")
-cheshire_cat_api.include_router(embedder_setting.router, tags=["Settings - Embedder"], prefix="/settings/embedder")
-cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
-cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
-cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
-
+# TODO: To workaround the dependencies of the websocket, their are added manually in each router
+cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(check_api_key)])
+cheshire_cat_api.include_router(websocket.router, tags=["WebSocket"])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
@@ -83,10 +84,29 @@ public.mount(cheshire_cat_api)
 @cheshire_cat_api.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     return JSONResponse(
-        status_code=422,
+        status_code=400,
         content={"error": exc.errors()},
     )
 
 
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
+
+# RUN!
+if __name__ == "__main__":
+
+    # debugging utilities, to deactivate put `DEBUG=false` in .env
+    debug_config = {}
+    if os.getenv("DEBUG", "true") == "true":
+        debug_config = {
+            "reload": True,
+            "reload_includes": ["plugin.json"],
+            "reload_excludes": ["*test_*.*", "*mock_*.*"]
+        }
+
+    uvicorn.run(
+        "cat.main:cheshire_cat_api",
+        host="0.0.0.0",
+        port=80,
+        **debug_config
+    )

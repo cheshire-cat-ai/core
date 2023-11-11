@@ -1,60 +1,9 @@
 from typing import Any, List, Union, Callable
 from inspect import signature
+from pydantic import ConfigDict
 
 from langchain.tools import BaseTool
 from langchain.agents import Tool
-
-
-# Cat hooks manager
-class CatHooks:
-    __hooks: List = []
-
-    @classmethod
-    def reset_hook_list(cls):
-        CatHooks.__hooks = []
-
-    @classmethod
-    def sort_hooks(cls):
-        # CatHooks.__hooks.sort(key=lambda x: x.count, reverse=True)
-        CatHooks.__hooks.sort(key=lambda x: x["priority"], reverse=True)
-        return CatHooks.__hooks
-
-    # append a hook
-    @classmethod
-    def add_hook(cls, hook):
-        CatHooks.__hooks.append(hook)
-
-    # get hook list
-    @classmethod
-    def get_hook_list(cls):
-        return CatHooks.__hooks
-
-
-# @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
-# @hook priority defaults to 1, the higher the more important. Hooks in the default core plugin have all priority=0 so they are automatically overwritten from plugins
-def hook(_func=None, priority=1) -> Any:
-    def decorator(func):
-        def cat_hook_wrapper(*args, **kargs):
-            return func(*args, **kargs)
-
-        doc_string = func.__doc__
-        if doc_string is None:
-            doc_string = ""
-        CatHooks.add_hook(
-            {
-                "hook_function": cat_hook_wrapper,
-                "hook_name": func.__name__,
-                "docstring": func.__doc__,
-                "priority": float(priority),
-                "count": len(CatHooks.get_hook_list()),
-            }
-        )
-
-    if _func is None:
-        return decorator
-    else:
-        return decorator(_func)
-
 
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
@@ -64,6 +13,8 @@ class CatTool(Tool):
     def augment_tool(self, cat_instance):
         
         self.cat = cat_instance
+
+        self.name = self.func.__name__
         
         # Tool docstring, is also available under self.func.__doc__
         self.docstring = self.func.__doc__
@@ -74,20 +25,21 @@ class CatTool(Tool):
         if cat_arg_signature in self.description:
             self.description = self.description.replace(cat_arg_signature, ")")
 
-        # Tool embedding is saved in the "procedural" vector DB collection. 
-        # During CheshireCat.bootstrap(), after memory is loaded, the mad_hatter will retrieve the embedding from memory or create one if not present, and assign this attribute
-        self.embedding = None
-
     def _run(self, input_by_llm):
         return self.func(input_by_llm, cat=self.cat)
 
     async def _arun(self, input_by_llm):
         # should be used for async Tools, just using sync here
-        return self._run(input_by_llm, cat=self.cat)
+        return self._run(input_by_llm)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
+    
     class Config:
         extra = "allow"
+    # TODO: should be:
+    # model_config = ConfigDict(
+    #     extra = "allow"
+    # )
 
 
 # @tool decorator, a modified version of a langchain Tool that also takes a Cat instance as argument

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 import tomli
 
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv("API_KEY", "")
 
 
 def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
@@ -12,11 +12,14 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
     def custom_openapi():
         if cheshire_cat_api.openapi_schema:
             return cheshire_cat_api.openapi_schema
-
+        
+        with open("pyproject.toml", "rb") as f:
+            project_toml = tomli.load(f)["project"]
+        
         openapi_schema = get_openapi(
-            title="😸 Cheshire-Cat API",
-            version=tomli.load(open("pyproject.toml", "rb"))["project"]["version"],
-            description="Customizable AI architecture",
+            title=f"😸 {project_toml['name']} API",
+            version=project_toml['version'],
+            description=project_toml['description'],
             routes=cheshire_cat_api.routes,
         )
 

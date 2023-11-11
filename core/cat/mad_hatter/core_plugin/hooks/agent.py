@@ -4,7 +4,7 @@ Here is a collection of methods to hook into the *Agent* execution pipeline.
 
 """
 
-from typing import List
+from typing import List, Union, Dict
 
 from langchain.tools.base import BaseTool
 from langchain.agents import load_tools
@@ -13,13 +13,76 @@ from cat.log import log
 
 
 @hook(priority=0)
-def agent_allowed_tools(cat) -> List[BaseTool]:
+def before_agent_starts(agent_input: Dict, cat) -> Dict:
+    """Hook to read and edit the agent input
+
+    Parameters
+    --------
+    agent_input: dict
+        Input that is about to be passed to the agent.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
+    response : Dict
+        Agent Input
+    """
+
+    return agent_input
+
+
+@hook(priority=0)
+def agent_fast_reply(fast_reply, cat) -> Union[None, Dict]:
+    """This hook is useful to shortcut the Cat response.
+    If you do not want the agent to run, return the final response from here and it will end up in the chat without the agent being executed.
+
+    Parameters
+    --------
+    fast_reply: dict
+        Input is dict (initially empty), which can be enriched whith an "output" key with the shortcut response.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
+    response : Union[None, Dict]
+        Cat response if you want to avoid using the agent, or None / {} if you want the agent to be executed.
+        See below for examples of Cat response
+
+    Examples
+    --------
+
+    Example 1: can't talk about this topic
+    ```python
+    # here you could use cat._llm to do topic evaluation
+    if "dog" in agent_input["input"]:
+        return {
+            "output": "You went out of topic. Can't talk about dog."
+        }
+    ```
+
+    Example 2: don't remember (no uploaded documents about topic)
+    ```python
+    num_declarative_memories = len( cat.working_memory["declarative_memories"] )
+    if num_declarative_memories == 0:
+        return {
+           "output": "Sorry, I have no memories about that."
+        }
+    ```
+    """
+
+    return fast_reply
+
+
+@hook(priority=0)
+def agent_allowed_tools(allowed_tools: List[str], cat) -> List[str]:
     """Hook the allowed tools.
 
     Allows to decide which tools end up in the *Agent* prompt.
 
-    To decide, you can filter the list of loaded tools, but you can also check the context in `cat.working_memory`
-    and launch custom chains with `cat.llm`.
+    To decide, you can filter the list of tools' names, but you can also check the context in `cat.working_memory`
+    and launch custom chains with `cat._llm`.
 
     Parameters
     ---------
@@ -28,48 +91,11 @@ def agent_allowed_tools(cat) -> List[BaseTool]:
 
     Returns
     -------
-    tools : List[BaseTool]
+    tools : List[str]
         List of allowed Langchain tools.
     """
 
-    # tools currently recalled in working memory
-    recalled_tools = cat.working_memory["procedural_memories"]
+    return allowed_tools
 
-    # Get the tools names only
-    tools_names = [t[0].metadata["name"] for t in recalled_tools]
-
-    # Get the LangChain BaseTool by name
-    tools = [i for i in cat.mad_hatter.tools if i.name in tools_names]
-
-    return tools
-
-
-@hook(priority=0)
-def before_agent_creates_prompt(input_variables, main_prompt, cat):
-    """Hook to dynamically define the input variables.
-
-    Allows to dynamically filter the input variables that end up in the main prompt by looking for which placeholders
-    there are in it starting from a fixed list.
-
-    Parameters
-    ----------
-    input_variables : List
-        List of placeholders to look for in the main prompt.
-    main_prompt: str
-        String made of the prompt prefix, the agent instructions and the prompt suffix.
-    cat : CheshireCat
-        Cheshire Cat instance.
-
-    Returns
-    -------
-    input_variables : List[str]
-        List of placeholders present in the main prompt.
-
-    """
-
-    # Loop the input variables and check if they are in the main prompt
-    input_variables = [i for i in input_variables if i in main_prompt]
-
-    return input_variables
 
 

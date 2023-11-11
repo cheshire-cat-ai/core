@@ -1,4 +1,3 @@
-**/node_modules
-**/npm-debug.log
-**/qdrant
-**/long_term_memory
+long_term_memory
+venv
+

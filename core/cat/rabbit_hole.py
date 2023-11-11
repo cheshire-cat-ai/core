@@ -1,38 +1,114 @@
 import os
 import time
-import tempfile
+import math
+import json
 import mimetypes
 from typing import List, Union
+from urllib.request import urlopen, Request
+from urllib.parse import urlparse
+from urllib.error import HTTPError
 
 from cat.log import log
 from starlette.datastructures import UploadFile
-from langchain.document_loaders import (
-    PDFMinerLoader,
-    UnstructuredURLLoader,
-    UnstructuredFileLoader,
-    UnstructuredMarkdownLoader,
-)
 from langchain.docstore.document import Document
+from qdrant_client.http import models
+
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.document_loaders.parsers import PDFMinerParser
+from langchain.document_loaders.parsers.generic import MimeTypeBasedParser
+from langchain.document_loaders.parsers.txt import TextParser
+from langchain.document_loaders.blob_loaders.schema import Blob
+from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
 
 class RabbitHole:
+    """Manages content ingestion. I'm late... I'm late!
     """
 
-    """
     def __init__(self, cat):
         self.cat = cat
 
+        file_handlers = {
+            "application/pdf": PDFMinerParser(),
+            "text/plain": TextParser(),
+            "text/markdown": TextParser(),
+            "text/html": BS4HTMLParser()
+        }
+
+        self.file_handlers = cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
+
+    def ingest_memory(self, file: UploadFile):
+        """Upload memories to the declarative memory from a JSON file.
+
+        Parameters
+        ----------
+        file : UploadFile
+            File object sent via `rabbithole/memory` hook.
+
+        Notes
+        -----
+        This method allows uploading a JSON file containing vector and text memories directly to the declarative memory.
+        When doing this, please, make sure the embedder used to export the memories is the same as the one used
+        when uploading.
+        The method also performs a check on the dimensionality of the embeddings (i.e. length of each vector).
+
+        """
+
+        # Get file bytes
+        file_bytes = file.file.read()
+
+        # Load fyle byte in a dict
+        memories = json.loads(file_bytes.decode("utf-8"))
+
+        # Check the embedder used for the uploaded memories is the same the Cat is using now
+        upload_embedder = memories["embedder"]
+        cat_embedder = str(self.cat.embedder.__class__.__name__)
+
+        if upload_embedder != cat_embedder:
+            message = f'Embedder mismatch: file embedder {upload_embedder} is different from {cat_embedder}'
+            raise Exception(message)
+
+        # Get Declarative memories in file
+        declarative_memories = memories["collections"]["declarative"]
+
+        # Store data to upload the memories in batch
+        ids = [i["id"] for i in declarative_memories]
+        payloads = [{
+            "page_content": p["page_content"],
+            "metadata": p["metadata"]
+        } for p in declarative_memories]
+        vectors = [v["vector"] for v in declarative_memories]
+
+        log.info(f"Preparing to load {len(vectors)} vector memories")
+
+        # Check embedding size is correct
+        embedder_size = self.cat.memory.vectors.embedder_size
+        len_mismatch = [len(v) == embedder_size for v in vectors]
+
+        if not any(len_mismatch):
+            message = f'Embedding size mismatch: vectors length should be {embedder_size}'
+            raise Exception(message)
+
+        # Upsert memories in batch mode # TODO: make a method for batch inserting inside vector memory
+        self.cat.memory.vectors.vector_db.upsert(
+            collection_name="declarative",
+            points=models.Batch(
+                ids=ids,
+                payloads=payloads,
+                vectors=vectors
+            )
+        )
+
     def ingest_file(
-        self,
-        file: Union[str, UploadFile],
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
+            self,
+            file: Union[str, UploadFile],
+            chunk_size: int = 400,
+            chunk_overlap: int = 100
     ):
         """Load a file in the Cat's declarative memory.
 
         The method splits and converts the file in Langchain `Document`. Then, it stores the `Document` in the Cat's
-        memory. Optionally, the document can be summarized and summaries are saved along with the original
-        content.
+        memory.
 
         Parameters
         ----------
@@ -50,7 +126,7 @@ class RabbitHole:
 
         See Also
         ----------
-        rabbithole_summarizes_documents
+        before_rabbithole_stores_documents
         """
 
         # split file into a list of docs
@@ -58,112 +134,30 @@ class RabbitHole:
             file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        # get summaries
-        summaries = self.cat.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
-
         # store in memory
         if isinstance(file, str):
             filename = file
         else:
             filename = file.filename
+
         self.store_documents(docs=docs, source=filename)
 
-    def ingest_url(
-        self,
-        url: str,
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-    ):
-        """Load a webpage in the Cat's declarative memory.
-
-        The method splits and converts a `.html` page to Langchain `Document`. Then, it stores the `Document` in
-        the Cat's memory. Optionally, the document can be summarized and summaries are saved along with the
-        original content.
-
-        Parameters
-        ----------
-        url : str
-            Url to the webpage.
-        chunk_size : int
-            Number of characters in each document chunk.
-        chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
-
-        See Also
-        ----------
-        rabbithole_summarizes_documents
-
-        """
-
-        # get website content and split into a list of docs
-        docs = self.url_to_docs(
-            url=url, chunk_size=chunk_size, chunk_overlap=chunk_overlap
-        )
-
-        # get summaries
-        summaries = self.cat.mad_hatter.execute_hook(
-            "rabbithole_summarizes_documents", docs
-        )
-        docs = summaries + docs
-
-        # store docs in memory
-        self.store_documents(docs=docs, source=url)
-
-    def url_to_docs(
-        self,
-        url: str,
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
-    ) -> List[Document]:
-        """Converts an url to Langchain `Document`.
-
-        The method loads and splits an url content in overlapped chunks of text.
-        The content is then converted to Langchain `Document`.
-
-        Parameters
-        ----------
-        url : str
-            Url to the webpage.
-        chunk_size : int
-            Number of characters in each document chunk.
-        chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
-
-        Returns
-        -------
-        docs : List[Document]
-            List of Langchain `Document` of chunked text.
-
-        """
-
-        # load text content of the website
-        loader = UnstructuredURLLoader(urls=[url])
-        text = loader.load()
-
-        docs = self.split_text(text, chunk_size, chunk_overlap)
-
-        return docs
-
     def file_to_docs(
-        self,
-        file: Union[str, UploadFile],
-        chunk_size: int = 400,
-        chunk_overlap: int = 100,
+            self,
+            file: Union[str, UploadFile],
+            chunk_size: int = 400,
+            chunk_overlap: int = 100,
     ) -> List[Document]:
-
         """Load and convert files to Langchain `Document`.
 
-        This method takes a file either from a Python script or from the `/rabbithole/` endpoint.
+        This method takes a file either from a Python script, from the `/rabbithole/` or `/rabbithole/web` endpoints.
         Hence, it loads it in memory and splits it in overlapped chunks of text.
 
         Parameters
         ----------
         file : str, UploadFile
-            The file can be either a string path if loaded programmatically or a FastAPI `UploadFile` if coming from
-            the `/rabbithole/` endpoint.
+            The file can be either a string path if loaded programmatically, a FastAPI `UploadFile`
+            if coming from the `/rabbithole/` endpoint or a URL if coming from the `/rabbithole/web` endpoint.
         chunk_size : int
             Number of characters in each document chunk.
         chunk_overlap : int
@@ -176,54 +170,64 @@ class RabbitHole:
 
         Notes
         -----
-        Currently supported formats are `.txt`, `.pdf` and `.md`.
+        This method is used by both `/rabbithole/` and `/rabbithole/web` endpoints.
+        Currently supported files are `.txt`, `.pdf`, `.md` and web pages.
+
         """
 
-        # Create temporary file
-        temp_file = tempfile.NamedTemporaryFile(dir="/tmp/", delete=False)
-        temp_name = temp_file.name
-
         # Check type of incoming file.
-        # It can be either UploadFile if coming from GUI
-        #   or an absolute path if auto-ingested be the Cat
         if isinstance(file, UploadFile):
-            # Get mime type of UploadFile
-            # content_type = file.content_type
+            # Get mime type and source of UploadFile
             content_type = mimetypes.guess_type(file.filename)[0]
+            source = file.filename
 
             # Get file bytes
             file_bytes = file.file.read()
-
         elif isinstance(file, str):
-            # Get mime type from file extension
-            content_type = mimetypes.guess_type(file)[0]
+            # Check if string file is a string or url
+            parsed_file = urlparse(file)
+            is_url = all([parsed_file.scheme, parsed_file.netloc])
 
-            # Get file bytes
-            with open(file, "rb") as f:
-                file_bytes = f.read()
+            if is_url:
+                # Define mime type and source of url
+                content_type = "text/html"
+                source = file
+
+                # Make a request with a fake browser name
+                request = Request(file, headers={"User-Agent": "Magic Browser"})
+
+                try:
+                    # Get binary content of url
+                    with urlopen(request) as response:
+                        file_bytes = response.read()
+                except HTTPError as e:
+                    log.error(e)
+            else:
+
+                # Get mime type from file extension and source
+                content_type = mimetypes.guess_type(file)[0]
+                source = os.path.basename(file)
+
+                # Get file bytes
+                with open(file, "rb") as f:
+                    file_bytes = f.read()
         else:
             raise ValueError(f"{type(file)} is not a valid type.")
 
-        # Open temp file in binary write mode
-        with open(temp_name, "wb") as temp_binary_file:
-            # Write bytes to file
-            temp_binary_file.write(file_bytes)
+        # Load the bytes in the Blob schema
+        blob = Blob(data=file_bytes,
+                    mimetype=content_type,
+                    source=source).from_data(data=file_bytes,
+                                             mime_type=content_type,
+                                             path=source)
+        # Parser based on the mime type
+        parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
-        # decide loader
-        if content_type == "text/plain":
-            loader = UnstructuredFileLoader(temp_name)
-        elif content_type == "text/markdown":
-            loader = UnstructuredMarkdownLoader(temp_name)
-        elif content_type == "application/pdf":
-            loader = PDFMinerLoader(temp_name)
-        else:
-            raise Exception("MIME type not supported for upload")
+        # Parse the text
+        self.cat.send_ws_message("I'm parsing the content. Big content could require some minutes...")
+        text = parser.parse(blob)
 
-        # extract text from file
-        text = loader.load()
-        # delete tmp file
-        os.remove(temp_name)
-
+        self.cat.send_ws_message(f"Parsing completed. Now let's go with reading process...")
         docs = self.split_text(text, chunk_size, chunk_overlap)
         return docs
 
@@ -250,10 +254,22 @@ class RabbitHole:
         before_rabbithole_insert_memory
         """
 
-        log(f"Preparing to memorize {len(docs)} vectors")
+        log.info(f"Preparing to memorize {len(docs)} vectors")
+
+        # hook the docs before they are stored in the vector memory
+        docs = self.cat.mad_hatter.execute_hook(
+            "before_rabbithole_stores_documents", docs
+        )
 
         # classic embed
+        time_last_notification = time.time()
+        time_interval = 10  # a notification every 10 secs
         for d, doc in enumerate(docs):
+            if time.time() - time_last_notification > time_interval:
+                time_last_notification = time.time()
+                perc_read = int(d / len(docs) * 100)
+                self.cat.send_ws_message(f"Read {perc_read}% of {source}")
+
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
             doc = self.cat.mad_hatter.execute_hook(
@@ -266,25 +282,18 @@ class RabbitHole:
                     [doc.metadata],
                 )
 
-                #log(f"Inserted into memory({inserting_info})", "INFO")
-                print(f"Inserted into memory({inserting_info})")
+                log.info(f"Inserted into memory({inserting_info})")
             else:
-                log(f"Skipped memory insertion of empty doc ({inserting_info})", "INFO")
+                log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
             time.sleep(0.1)
 
         # notify client
         finished_reading_message = f"Finished reading {source}, " \
-            f"I made {len(docs)} thoughts on it."
-        self.cat.web_socket_notifications.append(
-            {
-                "error": False,
-                "type": "notification",
-                "content": finished_reading_message,
-                "why": {},
-            }
-        )
+                                   f"I made {len(docs)} thoughts on it."
+
+        self.cat.send_ws_message(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 
@@ -326,9 +335,16 @@ class RabbitHole:
         )
 
         # split the documents using chunk_size and chunk_overlap
-        docs = self.cat.mad_hatter.execute_hook(
-            "rabbithole_splits_text", text, chunk_size, chunk_overlap
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
         )
+        # split text
+        docs = text_splitter.split_documents(text)
+        # remove short texts (page numbers, isolated words, etc.)
+        # TODO: join each short chunk with previous one, instead of deleting them
+        docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
         docs = self.cat.mad_hatter.execute_hook(

@@ -1,8 +1,8 @@
 import mimetypes
 import requests
 from typing import Dict
-from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks
-from fastapi.responses import JSONResponse
+
+from fastapi import Body, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
 from cat.log import log
 
@@ -10,7 +10,6 @@ router = APIRouter()
 
 
 # receive files via http endpoint
-# TODO: should we receive files also via websocket?
 @router.post("/")
 async def upload_file(
     request: Request,
@@ -20,7 +19,7 @@ async def upload_file(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
+    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -28,19 +27,19 @@ async def upload_file(
 
     ccat = request.app.state.ccat
 
-    content_type = mimetypes.guess_type(file.filename)[0]
-    log(f"Uploaded {content_type} down the rabbit hole", "INFO")
-    # list of admitted MIME types
+    # Check the file format is supported
+    admitted_types = ccat.rabbit_hole.file_handlers.keys()
 
-    admitted_mime_types = ["text/plain", "text/markdown", "application/pdf"]
+    # Get file mime type
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log.info(f"Uploaded {content_type} down the rabbit hole")
 
     # check if MIME type of uploaded file is supported
-    if content_type not in admitted_mime_types:
-        return JSONResponse(
-            status_code=422,
-            content={
-                "error": f'MIME type {file.content_type} not supported. Admitted types: {" - ".join(admitted_mime_types)}'
-            },
+    if content_type not in admitted_types:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'}
         )
 
     # upload file to long term memory, in the background
@@ -51,7 +50,7 @@ async def upload_file(
     # reply to client
     return {
         "filename": file.filename,
-        "content-type": file.content_type,
+        "content_type": file.content_type,
         "info": "File is being ingested asynchronously",
     }
 
@@ -67,14 +66,19 @@ async def upload_url(
         default=400,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)"),
+    chunk_overlap: int = Body(default=100, description="Chunk overlap (in characters)")
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
     # check that URL is valid
+
     try:
         # Send a HEAD request to the specified URL
-        response = requests.head(url)
+        response = requests.head(
+            url,
+            headers={"User-Agent": "Magic Browser"},
+            allow_redirects=True
+        )
         status_code = response.status_code
 
         if status_code == 200:
@@ -83,13 +87,25 @@ async def upload_url(
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_url, url, chunk_size, chunk_overlap
+                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap
             )
-            return {"url": url, "info": "Website is being ingested asynchronously"}
+            return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
-            return {"url": url, "info": "Invalid URL"}
-    except requests.exceptions.RequestException as e:
-        return {"url": url, "info": "Unable to reach the link"}
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Invalid URL",
+                    "url": url
+                },
+            )
+    except requests.exceptions.RequestException as _e:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Unable to reach the URL",
+                "url": url
+            },
+        )
 
 
 @router.post("/memory/")
@@ -103,4 +119,35 @@ async def upload_memory(
     # access cat instance
     ccat = request.app.state.ccat
 
-    return {"error": "to be implemented"}
+    # Get file mime type
+    content_type = mimetypes.guess_type(file.filename)[0]
+    log.info(f"Uploaded {content_type} down the rabbit hole")
+    if content_type != "application/json":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": f"MIME type {content_type} not supported. Admitted types: 'application/json'"
+            })
+
+    # Ingest memories in background and notify client
+    background_tasks.add_task(ccat.rabbit_hole.ingest_memory, file)
+
+    # reply to client
+    return {
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "info": "Memory is being ingested asynchronously"
+    }
+
+
+@router.get("/allowed-mimetypes/")
+async def get_allowed_mimetypes(request: Request) -> Dict:
+    """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
+
+    ccat = request.app.state.ccat
+
+    admitted_types = list(ccat.rabbit_hole.file_handlers.keys())
+
+    return {
+        "allowed": admitted_types
+    }

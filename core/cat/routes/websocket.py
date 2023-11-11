@@ -1,73 +1,123 @@
 import traceback
 import asyncio
-
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from cat.looking_glass.cheshire_cat import CheshireCat
+from typing import Dict
+from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from cat.log import log
+from fastapi.concurrency import run_in_threadpool
+from fastapi import WebSocketException, status
 
 router = APIRouter()
 
 class ConnectionManager:
+    """
+    Manages active WebSocket connections.
+    """
+
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        # List to store all active WebSocket connections.
+        self.active_connections: Dict[str, WebSocket] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket, user_id: str = "user"):
+        """
+        Accept the incoming WebSocket connection and add it to the active connections list.
+        """
         await websocket.accept()
-        self.active_connections.append(websocket)
+        self.active_connections[user_id] = websocket
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, ccat: CheshireCat, user_id: str = "user"):
+        """
+        Remove the given WebSocket from the active connections list.
+        """
+        del self.active_connections[user_id]
+        if user_id in ccat.ws_messages:
+            del ccat.ws_messages[user_id]
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_json(message)
+    async def send_personal_message(self, message: str, user_id: str = "user"):
+        """
+        Send a personal message (in JSON format) to the specified WebSocket.
+        """
+        if user_id in self.active_connections:
+            await self.active_connections[user_id].send_json(message)
 
     async def broadcast(self, message: str):
-        for connection in self.active_connections:
+        """
+        Send a message to all active WebSocket connections.
+        """
+        for connection in self.active_connections.values():
             await connection.send_json(message)
+
 
 manager = ConnectionManager()
 
-# main loop via websocket
-@router.websocket_route("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+
+async def receive_message(ccat: CheshireCat, user_id: str = "user"):
+    """
+    Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
+    """
+
+    while True:
+        # Receive the next message from the WebSocket.
+        user_message = await manager.active_connections[user_id].receive_json()
+        user_message["user_id"] = user_id
+
+        # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
+        cat_message = await ccat(user_message)
+
+        # Send the response message back to the user.
+        await manager.send_personal_message(cat_message, user_id)
+
+
+async def check_messages(ccat, user_id='user'):
+    """
+    Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
+    """
+
+    while True:
+        # extract from FIFO list websocket notification
+        notification = await ccat.working_memory_list.get_working_memory(user_id).ws_messages.get()
+        await manager.send_personal_message(notification, user_id)
+        
+
+@router.websocket("/ws")
+@router.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
+    """
+    Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
+    """
+
+    # Retrieve the `ccat` instance from the application's state.
     ccat = websocket.app.state.ccat
 
-    await manager.connect(websocket)
-
-    async def receive_message():
-        while True:
-            # message received from specific user
-            user_message = await websocket.receive_json()
-
-            # get response from the cat
-            cat_message = ccat(user_message)
-
-            # send output to specific user
-            await manager.send_personal_message(cat_message, websocket)
-
-    async def check_notification():
-        while True:
-            # chat notifications (i.e. finished uploading)
-            if len(ccat.web_socket_notifications) > 0:
-                notification = ccat.web_socket_notifications[-1]
-                ccat.web_socket_notifications = ccat.web_socket_notifications[:-1]
-                await manager.send_personal_message(notification, websocket)
-
-            await asyncio.sleep(1)  # wait for 1 seconds before checking again
-
-    try:
-        await asyncio.gather(receive_message(), check_notification())
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-        log("WebSocket connection closed", "INFO")
-    except Exception as e:
-        log(e, "ERROR")
-        traceback.print_exc()
-
-        # send error to specific user
-        await manager.send_personal_message(
-            {
-                "error": True,
-                "code": type(e).__name__,
-            },
-            websocket
+    # Skip the coroutine if the same user is already connected via WebSocket.
+    if user_id in manager.active_connections:
+        log.error(f"A websocket connection with ID '{user_id}' has already been opened.")
+        
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, 
+            reason=f"A websocket connection with ID '{user_id}' has already been opened."
         )
+
+    # Add the new WebSocket connection to the manager.
+    await manager.connect(websocket, user_id)
+    try:
+        # Process messages and check for notifications concurrently.
+        await asyncio.gather(
+            receive_message(ccat, user_id),
+            check_messages(ccat, user_id)
+        )
+    except WebSocketDisconnect:
+        # Handle the event where the user disconnects their WebSocket.
+        log.info("WebSocket connection closed")
+    except Exception as e:
+        # Log any unexpected errors and send an error message back to the user.
+        log.error(e)
+        traceback.print_exc()
+        await manager.send_personal_message({
+            "type": "error",
+            "name": type(e).__name__,
+            "description": str(e),
+        }, user_id)
+    finally:
+        # Remove the WebSocket from the manager when the user disconnects.
+        manager.disconnect(ccat, user_id)
