@@ -209,15 +209,6 @@ class CheshireCat():
                 }
             )
 
-        # HuggingFace
-        elif type(self._llm) in [HuggingFaceHub]:
-            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-                {
-                    "huggingfacehub_api_token": self._llm.huggingfacehub_api_token,
-                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
-                }
-            )
-
         # Llama-cpp-python
         elif type(self._llm) in [CustomOpenAI]:
             embedder = embedders.EmbedderLlamaCppConfig.get_embedder_from_config(

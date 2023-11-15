@@ -20,7 +20,7 @@ class LLMSettings(BaseModel):
     model_config = ConfigDict(
         protected_namespaces=()
     )
-    
+
     # instantiate an LLM from configuration
     @classmethod
     def get_llm_from_config(cls, config):
@@ -29,14 +29,13 @@ class LLMSettings(BaseModel):
                 "Language model configuration class has self._pyclass==None. Should be a valid LLM class"
             )
         return cls._pyclass.default(**config)
-    
 
 
 class LLMDefaultConfig(LLMSettings):
     _pyclass: Type = LLMDefault
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Default Language Model",
             "description":
                 "A dumb LLM just telling that the Cat is not configured. "
@@ -67,7 +66,7 @@ class LLMCustomConfig(LLMSettings):
         return cls._pyclass.default(**config)
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Custom LLM",
             "description":
                 "LLM on a custom endpoint. "
@@ -88,21 +87,22 @@ class LLMLlamaCppConfig(LLMSettings):
     _pyclass: Type = CustomOpenAI
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Self-hosted llama-cpp-python",
             "description": "Self-hosted llama-cpp-python compatible LLM",
         }
     )
 
+
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "OpenAI ChatGPT",
             "description": "Chat model from OpenAI",
             "link": "https://platform.openai.com/docs/models/overview"
@@ -112,13 +112,13 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "gpt-3.5-turbo-instruct" # used instead of text-davinci-003 since it deprecated
-    temperature: float = 0.7 # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    model_name: str = "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
     streaming: bool = True
     _pyclass: Type = OpenAI
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "OpenAI GPT-3",
             "description":
                 "OpenAI GPT-3. More expensive but "
@@ -142,7 +142,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
     _pyclass: Type = AzureChatOpenAI
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
             "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
@@ -159,13 +159,13 @@ class LLMAzureOpenAIConfig(LLMSettings):
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
     # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
     api_version: str = "2023-05-15"
-    deployment_name: str = "gpt-35-turbo-instruct" # Model "comming soon" according to microsoft
+    deployment_name: str = "gpt-35-turbo-instruct"  # Model "comming soon" according to microsoft
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
     streaming: bool = True
     _pyclass: Type = AzureOpenAI
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
             "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
@@ -180,7 +180,7 @@ class LLMCohereConfig(LLMSettings):
     _pyclass: Type = langchain.llms.Cohere
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Cohere",
             "description": "Configuration for Cohere language model",
             "link": "https://docs.cohere.com/docs/models"
@@ -200,30 +200,10 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     _pyclass: Type = langchain.llms.HuggingFaceTextGenInference
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
             "link": "https://huggingface.co/text-generation-inference"
-        }
-    )
-
-
-class LLMHuggingFaceHubConfig(LLMSettings):
-    # model_kwargs = {
-    #    "generation_config": {
-    #        "min_new_tokens": 10000
-    #    }
-    # }
-    repo_id: str
-    huggingfacehub_api_token: str
-    streaming: bool = True
-    _pyclass: Type = langchain.llms.HuggingFaceHub
-
-    model_config = ConfigDict(
-        json_schema_extra = {
-            "humanReadableName": "HuggingFace Hub",
-            "description": "Configuration for HuggingFace Hub language models",
-            "link": "https://huggingface.co/models"
         }
     )
 
@@ -236,7 +216,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     _pyclass: Type = langchain.llms.HuggingFaceEndpoint
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "HuggingFace Endpoint",
             "description":
                 "Configuration for HuggingFace Endpoint language models",
@@ -244,34 +224,6 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
         }
     )
 
-
-class LLMAnthropicConfig(LLMSettings):
-    anthropic_api_key: str
-    model: str = "claude-v1"
-    _pyclass: Type = langchain.chat_models.ChatAnthropic
-
-    model_config = ConfigDict(
-        json_schema_extra = {
-            "humanReadableName": "Anthropic",
-            "description": "Configuration for Anthropic language model",
-            "link": "https://www.anthropic.com/product"
-        }
-    )
-
-
-class LLMGooglePalmConfig(LLMSettings):
-    google_api_key: str
-    model_name: str = "models/text-bison-001"
-    streaming: bool = True
-    _pyclass: Type = langchain.llms.GooglePalm
-
-    model_config = ConfigDict(
-        json_schema_extra = {
-            "humanReadableName": "Google PaLM",
-            "description": "Configuration for Google PaLM language model",
-            "link": "https://developers.generativeai.google/models/language"
-        }
-    )
 
 class LLMOllamaConfig(LLMSettings):
     base_url: str
@@ -284,13 +236,13 @@ class LLMOllamaConfig(LLMSettings):
     _pyclass: Type = Ollama
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Ollama",
             "description": "Configuration for Ollama",
             "link": "https://ollama.ai/library"
         }
     )
-	
+
 
 SUPPORTED_LANGUAGE_MODELS = [
     LLMDefaultConfig,
@@ -299,13 +251,10 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMOpenAIChatConfig,
     LLMOpenAIConfig,
     LLMCohereConfig,
-    LLMHuggingFaceHubConfig,
     LLMHuggingFaceEndpointConfig,
     LLMHuggingFaceTextGenInferenceConfig,
     LLMAzureOpenAIConfig,
     LLMAzureChatOpenAIConfig,
-    LLMAnthropicConfig,
-    LLMGooglePalmConfig,
     LLMOllamaConfig
 ]
 
