@@ -74,7 +74,7 @@ class VectorMemory:
 
             # reconnect only if it's the first boot and not a reload
             if VectorMemory.local_vector_db is None:
-                VectorMemory.local_vector_db = QdrantClient(path=db_path)
+                VectorMemory.local_vector_db = QdrantClient(path=db_path, force_disable_check_same_thread=True)
 
             self.vector_db = VectorMemory.local_vector_db
         else:
