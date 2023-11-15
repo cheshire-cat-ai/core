@@ -107,18 +107,6 @@ class EmbedderCohereConfig(EmbedderSettings):
     )
 
 
-class EmbedderHuggingFaceHubConfig(EmbedderSettings):
-    repo_id: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    huggingfacehub_api_token: str
-    _pyclass: Type = langchain.embeddings.HuggingFaceHubEmbeddings
-
-    model_config = ConfigDict(
-        json_schema_extra = {
-            "humanReadableName": "HuggingFace Hub Embedder",
-            "description": "Configuration for HuggingFace Hub embeddings",
-        }
-    )
-
 class EmbedderFastEmbedConfig(EmbedderSettings):
     url: str
     model: str = "intfloat/multilingual-e5-large"
@@ -141,7 +129,6 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
-    EmbedderHuggingFaceHubConfig,
     EmbedderFastEmbedConfig
 ]
 
