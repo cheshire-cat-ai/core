@@ -75,14 +75,12 @@ class CustomFastembedEmbeddings(Embeddings):
 
 
     def embed_documents(self, texts: List[str]):
-        payload = json.dumps({"document": texts})
-        ret = httpx.post(f"{self.url}/embeddings/document", data=payload, timeout=None)
+        ret = httpx.post(f"{self.url}/embeddings/document", json={"document": texts}, timeout=None)
         ret.raise_for_status()
         return ret.json()
 
     def embed_query(self, text: str) -> List[float]:
-        payload = json.dumps({"prompt": text})
-        ret = httpx.post(f"{self.url}/embeddings/prompt", data=payload, timeout=None)
+        ret = httpx.post(f"{self.url}/embeddings/prompt", json={"prompt": text}, timeout=None)
         ret.raise_for_status()
         return ret.json()
     
