@@ -116,8 +116,8 @@ class AgentManager:
         fast_reply = mad_hatter.execute_hook("agent_fast_reply", fast_reply)
         if len(fast_reply.keys()) > 0:
             return fast_reply
-        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
-        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
+        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, working_memory)
+        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, working_memory)
 
 
         # tools currently recalled in working memory
