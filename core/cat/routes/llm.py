@@ -81,7 +81,6 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     }
     
 
-
 @router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
     request: Request,
