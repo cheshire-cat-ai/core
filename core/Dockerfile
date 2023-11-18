@@ -2,7 +2,6 @@
 FROM python:3.10.11-slim-bullseye
 
 ### PREPARE BUILD WITH NECESSARY FILES AND FOLDERS ###
-RUN mkdir -p /app && mkdir -p /admin
 COPY ./pyproject.toml /app/pyproject.toml
 COPY ./cat /app/cat
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
