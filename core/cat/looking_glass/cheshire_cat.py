@@ -84,6 +84,8 @@ class CheshireCat():
         # i.e. finished uploading a file
         self.ws_messages: Dict[str, asyncio.Queue] = {}
 
+        self._loop = asyncio.get_running_loop()
+
     def load_natural_language(self):
         """Load Natural Language related objects.
 
@@ -379,7 +381,7 @@ class CheshireCat():
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            asyncio.run(
+            self._loop.create_task(
                 working_memory.ws_messages.put(
                     {
                         "type": msg_type,
@@ -389,7 +391,7 @@ class CheshireCat():
                 )
             )
         else:
-            asyncio.run(
+            self._loop.create_task(
                 working_memory.ws_messages.put(
                     {
                         "type": msg_type,
