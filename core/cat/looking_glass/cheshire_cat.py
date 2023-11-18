@@ -84,7 +84,7 @@ class CheshireCat():
         # i.e. finished uploading a file
         self.ws_messages: Dict[str, asyncio.Queue] = {}
 
-        self._loop = asyncio.get_running_loop()
+        self._loop = asyncio.get_event_loop()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
