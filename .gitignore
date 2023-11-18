@@ -5,6 +5,7 @@ __pycache__
 
 # python local dev
 venv
+.venv
 
 .DS_Store
 .idea
