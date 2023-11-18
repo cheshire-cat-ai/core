@@ -108,7 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderFastEmbedConfig(EmbedderSettings):
-    model_name: str = "intfloat/multilingual-e5-large"
+    model_name: str = "BAAI/bge-base-en"
     max_length: int = 512 # Unknown behavior for values > 512.
     doc_embed_type: str = "passage" # as suggest on fastembed documentation, "passage" is the best option for documents.
     
