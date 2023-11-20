@@ -79,7 +79,7 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
         "value": setting,
         "schema": schema
     }
-
+    
 
 @router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
@@ -119,7 +119,19 @@ def upsert_llm_setting(
     # crete new collections
     # (in case embedder is not configured, it will be changed automatically and aligned to vendor)
     # TODO: should we take this feature away?
-    ccat.load_memory()
+    # Exception handling in case an incorrect key is loaded.
+    try:
+        ccat.load_memory()
+    except Exception as e:
+        log.error(e)
+        crud.delete_settings_by_category(category=LLM_SELECTED_CATEGORY)
+        crud.delete_settings_by_category(category=LLM_CATEGORY)
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e)
+            }
+        )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()
