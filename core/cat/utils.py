@@ -98,21 +98,3 @@ def get_static_url():
 def get_static_path():
     """Allows exposing the static files' path."""
     return os.path.join(get_base_path(), "static/")
-
-
-def get_current_plugin_path():
-    """Allows accessing the current plugin path."""
-    # Get the current execution frame of the calling module,
-    # then the previous frame in the call stack
-    frame = inspect.currentframe().f_back
-    # Get the module associated with the frame
-    module = inspect.getmodule(frame)
-    # Get the absolute and then relative path of the calling module's file
-    abs_path = inspect.getabsfile(module)
-    rel_path = os.path.relpath(abs_path)
-    # Replace the root and get only the current plugin folder
-    plugin_suffix = rel_path.replace(get_plugins_path(), "")
-    # Plugin's folder
-    folder_name = plugin_suffix.split("/")[0]
-    # Get current plugin's folder
-    return os.path.join(get_plugins_path(), folder_name)
