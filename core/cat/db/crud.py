@@ -51,6 +51,11 @@ def delete_setting_by_id(setting_id: str) -> None:
     get_db().remove(query.setting_id == setting_id)    
 
 
+def delete_settings_by_category(category: str) -> None:
+    query = Query()
+    get_db().remove(query.category == category)
+
+
 def update_setting_by_id(payload: models.Setting) -> Dict:
     
     query = Query()

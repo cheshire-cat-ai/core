@@ -26,6 +26,7 @@ from cat.factory.custom_llm import CustomOpenAI
 
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
+MAX_TEXT_INPUT = 500
 
 # main class
 class CheshireCat():
@@ -83,6 +84,8 @@ class CheshireCat():
         # queue of cat messages not directly related to last user input
         # i.e. finished uploading a file
         self.ws_messages: Dict[str, asyncio.Queue] = {}
+
+        self._loop = asyncio.get_event_loop()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -206,15 +209,6 @@ class CheshireCat():
                     "cohere_api_key": self._llm.cohere_api_key,
                     "model": "embed-multilingual-v2.0",
                     # Now the best model for embeddings is embed-multilingual-v2.0
-                }
-            )
-
-        # HuggingFace
-        elif type(self._llm) in [HuggingFaceHub]:
-            embedder = embedders.EmbedderHuggingFaceHubConfig.get_embedder_from_config(
-                {
-                    "huggingfacehub_api_token": self._llm.huggingfacehub_api_token,
-                    "repo_id": "sentence-transformers/all-mpnet-base-v2",
                 }
             )
 
@@ -379,7 +373,7 @@ class CheshireCat():
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            asyncio.run(
+            self._loop.create_task(
                 working_memory.ws_messages.put(
                     {
                         "type": msg_type,
@@ -389,7 +383,7 @@ class CheshireCat():
                 )
             )
         else:
-            asyncio.run(
+            self._loop.create_task(
                 working_memory.ws_messages.put(
                     {
                         "type": msg_type,
@@ -432,6 +426,19 @@ class CheshireCat():
         # hook to modify/enrich user input
         user_message_json = self.mad_hatter.execute_hook("before_cat_reads_message", user_message_json)
 
+        # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
+        if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+            index = MAX_TEXT_INPUT
+            char = user_message_json["text"][index]
+            while not char.isspace() and index > 0:
+                index -= 1
+                char = user_message_json["text"][index]
+            if index <= 0:
+                index = MAX_TEXT_INPUT
+            user_message_json["text"], to_declarative_memory = user_message_json["text"][:index], user_message_json["text"][index:]
+            docs = self.rabbit_hole.string_to_docs(to_declarative_memory, content_type="text/plain")
+            self.rabbit_hole.store_documents(docs=docs, source="")
+
         # store last message in working memory
         user_working_memory["user_message_json"] = user_message_json
 
@@ -465,7 +472,7 @@ class CheshireCat():
             error_description = str(e)
 
             log.error(error_description)
-            if not "Could not parse LLM output: `" in error_description:
+            if "Could not parse LLM output: `" not in error_description:
                 raise e
 
             unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
@@ -478,10 +485,7 @@ class CheshireCat():
         log.info("cat_message:")
         log.info(cat_message)
 
-        # update conversation history
         user_message = user_working_memory["user_message_json"]["text"]
-        user_working_memory.update_conversation_history(who="Human", message=user_message)
-        user_working_memory.update_conversation_history(who="AI", message=cat_message["output"])
 
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
@@ -512,6 +516,10 @@ class CheshireCat():
         }
 
         final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output)
+
+        # update conversation history
+        user_working_memory.update_conversation_history(who="Human", message=user_message)
+        user_working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
         return final_output
 

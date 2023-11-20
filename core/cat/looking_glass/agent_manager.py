@@ -138,7 +138,7 @@ class AgentManager:
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
-                if tools_result["output"] != None:
+                if tools_result["output"] is not None:
                     
                     # Extract of intermediate steps in the format ((tool_name, tool_input), output)
                     used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))

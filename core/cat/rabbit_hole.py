@@ -213,7 +213,47 @@ class RabbitHole:
                     file_bytes = f.read()
         else:
             raise ValueError(f"{type(file)} is not a valid type.")
+        return self.string_to_docs(
+            file_bytes,
+            source,
+            content_type,
+            chunk_size,
+            chunk_overlap
+        )
 
+    def string_to_docs(
+            self,
+            file_bytes: str,
+            source: str = None,
+            content_type: str = "text/plain",
+            chunk_size: int = 400,
+            chunk_overlap: int = 100
+        ) -> List[Document]:
+        """Convert string to Langchain `Document`.
+
+        Takes a string, converts it to langchain `Document`.
+        Hence, loads it in memory and splits it in overlapped chunks of text.
+
+        Parameters
+        ----------
+        file_bytes : str
+            The string to be converted.
+        source: str
+            Source filename.
+        content_type:
+            Mimetype of content.
+        chunk_size : int
+            Number of characters in each document chunk.
+        chunk_overlap : int
+            Number of overlapping characters between consecutive chunks.
+        send_message: bool
+            If true will send parsing message information to frontend.
+
+        Returns
+        -------
+        docs : List[Document]
+            List of Langchain `Document` of chunked text.
+        """
         # Load the bytes in the Blob schema
         blob = Blob(data=file_bytes,
                     mimetype=content_type,

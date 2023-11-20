@@ -105,6 +105,11 @@ def upsert_embedder_setting(
             }
         )
     
+    # get selected config if any
+    selected = crud.get_setting_by_name(name=EMBEDDER_SELECTED_NAME)
+    if selected is not None:
+        current_settings = crud.get_setting_by_name(name=selected["value"]["name"])
+
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
         models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=payload)
@@ -123,7 +128,31 @@ def upsert_embedder_setting(
     # reload llm and embedder of the cat
     ccat.load_natural_language()
     # crete new collections (different embedder!)
-    ccat.load_memory()
+    try:
+        ccat.load_memory()
+    except Exception as e:
+        log.error(e)
+        crud.delete_settings_by_category(category=EMBEDDER_SELECTED_CATEGORY)
+        crud.delete_settings_by_category(category=EMBEDDER_CATEGORY)
+
+        # if a selected config is present, restore it
+        if selected is not None:
+            languageEmbedderName = selected["value"]["name"]
+            crud.upsert_setting_by_name(
+                models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=current_settings["value"])
+            )
+            crud.upsert_setting_by_name(
+                models.Setting(name=EMBEDDER_SELECTED_NAME, category=EMBEDDER_SELECTED_CATEGORY, value={"name":languageEmbedderName})
+            )
+            # reload llm and embedder of the cat
+            ccat.load_natural_language()
+
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": str(e)
+            }
+        )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()

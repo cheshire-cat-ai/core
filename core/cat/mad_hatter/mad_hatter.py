@@ -10,6 +10,7 @@ from cat.db import crud
 from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
+import inspect
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -290,3 +291,20 @@ class MadHatter:
 
         # tea_cup has passed through all hooks. Return final output
         return tea_cup
+
+    # get plugin object (used from within a plugin)
+    # TODO: should we allow to take directly another plugins' obj?
+    # TODO: throw exception if this method is called from outside the plugins folder
+    def get_plugin(self):
+        # who's calling?
+        calling_frame = inspect.currentframe().f_back
+        # Get the module associated with the frame
+        module = inspect.getmodule(calling_frame)
+        # Get the absolute and then relative path of the calling module's file
+        abs_path = inspect.getabsfile(module)
+        rel_path = os.path.relpath(abs_path)
+        # Replace the root and get only the current plugin folder
+        plugin_suffix = rel_path.replace(utils.get_plugins_path(), "")
+        # Plugin's folder
+        name = plugin_suffix.split("/")[0]
+        return self.plugins[name]

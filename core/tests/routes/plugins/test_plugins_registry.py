@@ -1,6 +1,6 @@
 import os
 import shutil
-from tests.utils import get_embedded_tools
+from tests.utils import get_embedded_tools, create_mock_plugin_zip
 
 # TODO: registry responses here should be mocked, at the moment we are actually calling the service
 
@@ -40,37 +40,41 @@ def test_list_registry_plugins_by_query(client):
         assert params["query"] in plugin_text # verify searched text
 
 
-def test_plugin_install_from_registry(client):
+def test_plugin_install_from_registry(client, monkeypatch):
 
-    new_plugin_id = "ccat_summarization"
+    # Mock the download from the registry creating a zip on-the-fly
+    monkeypatch.setattr("cat.routes.plugins.registry_download_plugin", create_mock_plugin_zip)
+    
     # during tests, the cat uses a different folder for plugins
-    new_plugin_final_folder = f"tests/mocks/mock_plugin_folder/{new_plugin_id}"
+    new_plugin_final_folder = f"tests/mocks/mock_plugin_folder/mock_plugin"
+
     if os.path.exists(new_plugin_final_folder):
         shutil.rmtree(new_plugin_final_folder)
     assert not os.path.exists(new_plugin_final_folder)
     
     # install plugin from registry
     payload = {
-        "url": "https://github.com/Furrmidable-Crew/ccat_summarization"
+        "url": "https://mockup_url.com"
     }
     response = client.post("/plugins/upload/registry", json=payload)
+    
     assert response.status_code == 200
     assert response.json()["url"] == payload["url"]
     assert response.json()["info"] == "Plugin is being installed asynchronously"
     
     # GET plugin endpoint responds
-    response = client.get(f"/plugins/{new_plugin_id}")
+    response = client.get(f"/plugins/mock_plugin")
     assert response.status_code == 200
     json = response.json()
-    assert json["data"]["id"] == new_plugin_id
+    assert json["data"]["id"] == "mock_plugin"
     assert json["data"]["active"] == True
-
+    
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
     assert response.status_code == 200
     installed_plugins = response.json()["installed"]
     installed_plugins_names = list(map(lambda p: p["id"], installed_plugins))
-    assert new_plugin_id in installed_plugins_names
+    assert "mock_plugin" in installed_plugins_names
     # both core_plugin and new_plugin are active
     for p in installed_plugins:
         assert p["active"] == True
@@ -79,7 +83,7 @@ def test_plugin_install_from_registry(client):
     assert os.path.exists(new_plugin_final_folder)
 
     # TODO: check for tools and hooks creation
-
+    
     # cleanup
     shutil.rmtree(new_plugin_final_folder)
 

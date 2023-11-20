@@ -1,10 +1,11 @@
 import traceback
 import asyncio
 from cat.looking_glass.cheshire_cat import CheshireCat
-from typing import Dict, Optional
+from typing import Dict
 from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from cat.log import log
 from fastapi.concurrency import run_in_threadpool
+from fastapi import WebSocketException, status
 
 router = APIRouter()
 
@@ -88,9 +89,14 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
     # Retrieve the `ccat` instance from the application's state.
     ccat = websocket.app.state.ccat
 
+    # Skip the coroutine if the same user is already connected via WebSocket.
     if user_id in manager.active_connections:
-        # Skip the coroutine if the same user is already connected via WebSocket.
-        return
+        log.error(f"A websocket connection with ID '{user_id}' has already been opened.")
+        
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, 
+            reason=f"A websocket connection with ID '{user_id}' has already been opened."
+        )
 
     # Add the new WebSocket connection to the manager.
     await manager.connect(websocket, user_id)

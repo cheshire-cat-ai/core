@@ -44,7 +44,7 @@ This project is growing fast, refactorings and code changes happens very often, 
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
 - [Website](https://cheshirecat.ai/)
 - [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
-- [Tutorial - Write your first plugin](https://cheshirecat.ai/2023/06/17/write-your-first-plugin/)
+- [Tutorial - Write your first plugin](https://cheshirecat.ai/write-your-first-plugin/)
 
 ## Quickstart
 
