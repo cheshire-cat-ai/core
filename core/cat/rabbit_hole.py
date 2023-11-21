@@ -8,7 +8,6 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 
-from cat.log import log
 from starlette.datastructures import UploadFile
 from langchain.docstore.document import Document
 from qdrant_client.http import models
@@ -20,7 +19,10 @@ from langchain.document_loaders.parsers.txt import TextParser
 from langchain.document_loaders.blob_loaders.schema import Blob
 from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
+from cat.utils import singleton
+from cat.log import log
 
+@singleton
 class RabbitHole:
     """Manages content ingestion. I'm late... I'm late!
     """

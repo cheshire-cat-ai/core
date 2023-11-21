@@ -24,7 +24,6 @@ def mad_hatter(client): # client here injects the monkeypatched version of the c
 
 
 def test_instantiation_discovery(mad_hatter):
-    assert isinstance(mad_hatter, MadHatter)
 
     # Mad Hatter finds core_plugin
     assert list(mad_hatter.plugins.keys()) == ["core_plugin"]

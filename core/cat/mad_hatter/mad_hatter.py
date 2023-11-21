@@ -3,9 +3,10 @@ import time
 import shutil
 import os
 import traceback
-import cat.utils as utils
 from copy import deepcopy
+
 from cat.log import log
+import cat.utils as utils
 from cat.db import crud
 from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
@@ -22,6 +23,15 @@ class MadHatter:
     #   that is decorated or named properly
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
+
+    # CheshireCat is a singleton, this is the instance
+    _instance = None
+
+    # get instance or create as the constructor is called
+    def __new__(cls, ccat):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self, ccat):
         self.ccat = ccat
