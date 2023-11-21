@@ -16,6 +16,7 @@ import cat.utils as utils
 
 from qdrant_client import QdrantClient
 from cat.memory.vector_memory import VectorMemory
+from cat.mad_hatter.mad_hatter import MadHatter
 
 from cat.main import cheshire_cat_api
 
@@ -46,11 +47,6 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     Create a new setup on each test case, with new mocks for both Qdrant and TinyDB
     """
 
-    # Use mock utils plugin folder
-    def get_test_plugin_folder():
-        return "tests/mocks/mock_plugin_folder/"
-    utils.get_plugins_path = get_test_plugin_folder
-
     # Use in memory vector db
     def mock_connect_to_vector_memory(self, *args, **kwargs):
         self.vector_db = QdrantClient(":memory:")
@@ -60,6 +56,17 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     def mock_get_file_name(self, *args, **kwargs):
         return "tests/mocks/metadata-test.json"
     monkeypatch.setattr(Database, "get_file_name", mock_get_file_name)
+    
+    # Use mock utils plugin folder
+    def get_test_plugin_folder():
+        return "tests/mocks/mock_plugin_folder/"
+    utils.get_plugins_path = get_test_plugin_folder
+    
+    # clean up all plugins
+    mad_hatter = MadHatter()
+    plugins_names = list(mad_hatter.plugins.keys())
+    for plugin_name in plugins_names:
+        mad_hatter.uninstall_plugin(plugin_name)
 
     # clean up service files and mocks
     clean_up_mocks()

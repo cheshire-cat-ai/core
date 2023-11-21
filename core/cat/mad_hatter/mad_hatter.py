@@ -7,6 +7,7 @@ from copy import deepcopy
 
 from cat.log import log
 import cat.utils as utils
+from cat.utils import singleton
 from cat.db import crud
 from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
@@ -17,6 +18,7 @@ import inspect
 # - loading
 # - prioritizing
 # - executing
+@singleton
 class MadHatter:
     # loads and execute plugins
     # - enter into the plugin folder and loads everthing
@@ -24,14 +26,14 @@ class MadHatter:
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
 
-    # MadHatter is a singleton, this is the instance
-    _instance = None
+    # # MadHatter is a singleton, this is the instance
+    # _instance = None
 
-    # get instance or create as the constructor is called
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+    # # get instance or create as the constructor is called
+    # def __new__(cls):
+    #     if not cls._instance:
+    #         cls._instance = super().__new__(cls)
+    #     return cls._instance 
 
     def __init__(self):
 
@@ -50,7 +52,7 @@ class MadHatter:
         # this callback is set from outside to be notified when plugin sync is finished
         self.on_finish_plugins_sync_callback = lambda: None
 
-        self.find_plugins() # REFACTOR at the moment this happens twice during cat bootstrap 
+        self.find_plugins()
 
     def install_plugin(self, package_plugin):
 
@@ -72,7 +74,7 @@ class MadHatter:
         
     def uninstall_plugin(self, plugin_id):
 
-        if self.plugin_exists(plugin_id):
+        if self.plugin_exists(plugin_id) and (plugin_id != "core_plugin"):
 
             # deactivate plugin if it is active (will sync cache)
             if plugin_id in self.active_plugins:

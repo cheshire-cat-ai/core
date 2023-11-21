@@ -36,7 +36,7 @@ class RabbitHole:
 
     def __init__(self, cat):
         self.cat = cat
-        #self.mad_hatter = MadHatter()
+        self.mad_hatter = MadHatter() 
         log.warning(self.cat.mad_hatter.on_finish_plugins_sync_callback)
 
         file_handlers = {

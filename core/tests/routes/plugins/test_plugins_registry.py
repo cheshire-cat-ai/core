@@ -84,8 +84,6 @@ def test_plugin_install_from_registry(client, monkeypatch):
 
     # TODO: check for tools and hooks creation
     
-    # cleanup
-    shutil.rmtree(new_plugin_final_folder)
 
 
 # take away from the list of availbale registry plugins, the ones that are already installed

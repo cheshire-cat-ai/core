@@ -15,11 +15,9 @@ from tests.utils import create_mock_plugin_zip
 @pytest.fixture
 def mad_hatter(client): # client here injects the monkeypatched version of the cat
 
-    # setup before each unit
-    mh = MadHatter()
-
     # each test is given the mad_hatter instance
-    yield mh
+    yield MadHatter()
+    
 
 
 def test_instantiation_discovery(mad_hatter):
