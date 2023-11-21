@@ -34,13 +34,13 @@ class AgentManager:
         self.mad_hatter = MadHatter()
 
 
-    def execute_tool_agent(self, agent_input, allowed_tools):
+    def execute_tool_agent(self, agent_input, allowed_tools, session_cat):
 
         allowed_tools_names = [t.name for t in allowed_tools]
         # TODO: dynamic input_variables as in the main prompt 
 
         prompt = prompts.ToolPromptTemplate(
-            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=self.cat),
+            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=session_cat),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -75,7 +75,7 @@ class AgentManager:
         return out
     
 
-    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, working_memory: WorkingMemory):
+    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, session_cat):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
         # memory chain (second step)
@@ -90,13 +90,13 @@ class AgentManager:
             verbose=True
         )
 
-        out = memory_chain(agent_input, callbacks=[NewTokenHandler(self.cat, working_memory)])
+        out = memory_chain(agent_input, callbacks=[NewTokenHandler(session_cat)])
         out["output"] = out["text"]
         del out["text"]
         return out
 
 
-    def execute_agent(self, working_memory):
+    def execute_agent(self, session_cat):
         """Instantiate the Agent with tools.
 
         The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
@@ -110,22 +110,22 @@ class AgentManager:
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
-        agent_input = self.format_agent_input(working_memory)
-        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=self.cat)
+        agent_input = self.format_agent_input(session_cat.working_memory)
+        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=session_cat)
         # should we ran the default agent?
         fast_reply = {}
-        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=self.cat)
+        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=session_cat)
         if len(fast_reply.keys()) > 0:
             return fast_reply
-        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=self.cat)
-        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=self.cat)
+        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=session_cat)
+        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=session_cat)
 
 
         # tools currently recalled in working memory
-        recalled_tools = working_memory["procedural_memories"]
+        recalled_tools = session_cat.working_memory["procedural_memories"]
         # Get the tools names only
         tools_names = [t[0].metadata["name"] for t in recalled_tools]
-        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=self.cat)
+        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=session_cat)
         # Get tools with that name from mad_hatter
         allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]
 
@@ -135,7 +135,7 @@ class AgentManager:
             log.debug(f"{len(allowed_tools)} allowed tools retrived.")
 
             try:
-                tools_result = self.execute_tool_agent(agent_input, allowed_tools)
+                tools_result = self.execute_tool_agent(agent_input, allowed_tools, session_cat)
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
@@ -161,7 +161,7 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
 
                     # Execute the memory chain
-                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
+                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, session_cat)
 
                     # If some tools are used the intermediate step are added to the agent output
                     out["intermediate_steps"] = used_tools
@@ -178,7 +178,7 @@ class AgentManager:
         #Adding the tools_output key in agent input, needed by the memory chain
         agent_input["tools_output"] = ""
         # Execute the memory chain
-        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, working_memory)
+        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, session_cat)
 
         return out
     

@@ -531,7 +531,7 @@ class CheshireCat():
         
         # reply with agent
         try:
-            cat_message = self.agent_manager.execute_agent(session_cat.working_memory)
+            cat_message = self.agent_manager.execute_agent(session_cat)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
