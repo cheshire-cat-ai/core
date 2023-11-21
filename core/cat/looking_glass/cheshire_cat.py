@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 import traceback
-from typing import Literal, get_args, Dict
+from typing import Literal, Dict
 import langchain
 import os
 import asyncio
@@ -19,7 +19,7 @@ from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList, WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
-from cat.looking_glass.session_cat import SessionCat
+from cat.looking_glass.stray_cat import StrayCat
 from cat.looking_glass.agent_manager import AgentManager
 from cat.looking_glass.callbacks import NewTokenHandler
 import cat.factory.llm as llms
@@ -27,7 +27,7 @@ import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
 
 
-MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
+
 MAX_TEXT_INPUT = 500
 
 # main class
@@ -79,7 +79,7 @@ class CheshireCat():
         self.embed_tools()
 
         # Agent manager instance (for reasoning)
-        self.agent_manager = AgentManager(self)
+        self.agent_manager = AgentManager()
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)
@@ -87,11 +87,8 @@ class CheshireCat():
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
 
-        # queue of cat messages not directly related to last user input
-        # i.e. finished uploading a file
-        self.ws_messages: Dict[str, asyncio.Queue] = {}
-
-        self._loop = asyncio.get_event_loop()
+        # REFACTOR: should we use this and pass it around?
+        # self._loop = asyncio.get_event_loop()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -405,48 +402,23 @@ class CheshireCat():
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification", working_memory: WorkingMemory = None):
+    def send_ws_message(self, content: str, msg_type = "notification"):
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
 
         Parameters
         ----------
-        working_memory
         content : str
             The content of the message.
         msg_type : str
-            The type of the message. Should be either `notification`, `chat` or `error`
+            The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
         """
 
-        # no working memory passed, send message to default user
-        if working_memory is None:
-            working_memory = self.working_memory_list.get_working_memory()
+        # send ws message to admin
+        #working_memory = self.working_memory_list.get_working_memory(user_id='user')
+        log.warning("WS MESSAGE NOT IMPLEMENTED")
 
-        options = get_args(MSG_TYPES)
-
-        if msg_type not in options:
-            raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
-
-        if msg_type == "error":
-            self._loop.create_task(
-                working_memory.ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "name": "GenericError",
-                        "description": content
-                    }
-                )
-            )
-        else:
-            self._loop.create_task(
-                working_memory.ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "content": content
-                    }
-                )
-            )
 
     def __call__(self, user_message_json):
         """Call the Cat instance.
@@ -481,7 +453,7 @@ class CheshireCat():
         # Temporary conversation-based `cat` object as seen from hooks and tools.
         # Contains working_memory and utility pointers to main framework modules
         # It is passed to both memory recall and agent to read/write working memory
-        session_cat = SessionCat(
+        session_cat = StrayCat(
             user_id=user_working_memory["user_message_json"]['user_id'],
             working_memory=user_working_memory,
             llm=self.llm,
@@ -592,33 +564,3 @@ class CheshireCat():
 
         return final_output
 
-
-    # TODO: remove this method in a few versions, current version 1.2.0
-    def get_base_url():
-        """Allows the Cat exposing the base url."""
-        log.warning("This method will be removed, import cat.utils tu use it instead.")
-        return utils.get_base_url()
-
-    # TODO: remove this method in a few versions, current version 1.2.0
-    def get_base_path():
-        """Allows the Cat exposing the base path."""
-        log.warning("This method will be removed, import cat.utils tu use it instead.")
-        return utils.get_base_path()
-
-    # TODO: remove this method in a few versions, current version 1.2.0
-    def get_plugins_path():
-        """Allows the Cat exposing the plugins path."""
-        log.warning("This method will be removed, import cat.utils tu use it instead.")
-        return utils.get_plugins_path()
-
-    # TODO: remove this method in a few versions, current version 1.2.0
-    def get_static_url():
-        """Allows the Cat exposing the static server url."""
-        log.warning("This method will be removed, import cat.utils tu usit instead.")
-        return utils.get_static_url()
-
-    # TODO: remove this method in a few versions, current version 1.2.0
-    def get_static_path():
-        """Allows the Cat exposing the static files path."""
-        log.warning("This method will be removed, import cat.utils tu usit instead.")
-        return utils.get_static_path()

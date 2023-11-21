@@ -30,8 +30,9 @@ class ConnectionManager:
         Remove the given WebSocket from the active connections list.
         """
         del self.active_connections[user_id]
-        if user_id in ccat.ws_messages:
-            del ccat.ws_messages[user_id]
+        # REFACTOR 
+        #if user_id in ccat.ws_messages:
+        #    del ccat.ws_messages[user_id]
 
     async def send_personal_message(self, message: str, user_id: str = "user"):
         """

@@ -29,8 +29,7 @@ class AgentManager:
         Cheshire Cat instance.
 
     """
-    def __init__(self, cat):
-        self.cat = cat
+    def __init__(self):
         self.mad_hatter = MadHatter()
 
 
@@ -50,7 +49,7 @@ class AgentManager:
         # main chain
         agent_chain = LLMChain(
             prompt=prompt,
-            llm=self.cat._llm,
+            llm=session_cat._llm,
             verbose=True
         )
 
@@ -86,7 +85,7 @@ class AgentManager:
 
         memory_chain = LLMChain(
             prompt=memory_prompt,
-            llm=self.cat._llm,
+            llm=session_cat._llm,
             verbose=True
         )
 
