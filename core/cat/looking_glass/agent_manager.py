@@ -8,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
+from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
@@ -30,6 +31,7 @@ class AgentManager:
     """
     def __init__(self, cat):
         self.cat = cat
+        self.mad_hatter = MadHatter()
 
 
     def execute_tool_agent(self, agent_input, allowed_tools):
@@ -38,7 +40,7 @@ class AgentManager:
         # TODO: dynamic input_variables as in the main prompt 
 
         prompt = prompts.ToolPromptTemplate(
-            template = self.cat.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT),
+            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -105,28 +107,27 @@ class AgentManager:
         agent_executor : AgentExecutor
             Instance of the Agent provided with a set of tools.
         """
-        mad_hatter = self.cat.mad_hatter
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(working_memory)
-        agent_input = mad_hatter.execute_hook("before_agent_starts", agent_input)
+        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input)
         # should we ran the default agent?
         fast_reply = {}
-        fast_reply = mad_hatter.execute_hook("agent_fast_reply", fast_reply)
+        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply)
         if len(fast_reply.keys()) > 0:
             return fast_reply
-        prompt_prefix = mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
-        prompt_suffix = mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
+        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
+        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
 
 
         # tools currently recalled in working memory
         recalled_tools = working_memory["procedural_memories"]
         # Get the tools names only
         tools_names = [t[0].metadata["name"] for t in recalled_tools]
-        tools_names = mad_hatter.execute_hook("agent_allowed_tools", tools_names)
+        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names)
         # Get tools with that name from mad_hatter
-        allowed_tools = [i for i in mad_hatter.tools if i.name in tools_names]
+        allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]
 
         # Try to get information from tools if there is some allowed
         if len(allowed_tools) > 0:
