@@ -57,8 +57,8 @@ class CheshireCat():
         """
 
         # bootstrap the cat!
-        # reinstantiate MadHatter (reloads all plugins' hooks and tools)
-        self.mad_hatter = MadHatter(self)
+        # instantiate MadHatter (loads all plugins' hooks and tools)
+        self.mad_hatter = MadHatter()
 
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap")
@@ -70,7 +70,7 @@ class CheshireCat():
         self.load_memory()
 
         # After memory is loaded, we can get/create tools embeddings
-        self.mad_hatter.embed_tools()
+        self.embed_tools()
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager(self)
@@ -240,6 +240,51 @@ class CheshireCat():
         
         # Load default shared working memory user
         self.working_memory = self.working_memory_list.get_working_memory()
+
+    # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
+    def embed_tools(self):
+
+        # retrieve from vectorDB all tool embeddings
+        embedded_tools = self.memory.vectors.procedural.get_all_points()
+
+        # easy acces to (point_id, tool_description)
+        embedded_tools_ids = [t.id for t in embedded_tools]
+        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
+
+        # loop over mad_hatter tools
+        for tool in self.mad_hatter.tools:
+            # if the tool is not embedded 
+            if tool.description not in embedded_tools_descriptions:
+                # embed the tool and save it to DB
+                self.memory.vectors.procedural.add_texts(
+                    [tool.description],
+                    [{
+                        "source": "tool",
+                        "when": time.time(),
+                        "name": tool.name,
+                        "docstring": tool.docstring
+                    }],
+                )
+
+                log.warning(f"Newly embedded tool: {tool.description}")
+        
+        # easy access to mad hatter tools (found in plugins)
+        mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
+
+        # loop over embedded tools and delete the ones not present in active plugins
+        points_to_be_deleted = []
+        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
+            # if the tool is not active, it inserts it in the list of points to be deleted
+            if descr not in mad_hatter_tools_descriptions:
+                log.warning(f"Deleting embedded tool: {descr}")
+                points_to_be_deleted.append(id)
+
+        # delete not active tools
+        if len(points_to_be_deleted) > 0:
+            self.memory.vectors.vector_db.delete(
+                collection_name="procedural",
+                points_selector=points_to_be_deleted
+            )
 
     def recall_relevant_memories_to_working_memory(self, working_memory):
         """Retrieve context from memory.

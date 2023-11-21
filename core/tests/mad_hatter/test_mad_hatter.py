@@ -16,10 +16,9 @@ from tests.utils import create_mock_plugin_zip
 def mad_hatter(client): # client here injects the monkeypatched version of the cat
 
     # setup before each unit
-    cat = CheshireCat()
-    mh = MadHatter(cat) # trying out a fresh instance of the mad_hatter
+    mh = MadHatter()
 
-    # each test is given a brand new instance
+    # each test is given the mad_hatter instance
     yield mh
 
 
