@@ -40,7 +40,7 @@ class AgentManager:
         # TODO: dynamic input_variables as in the main prompt 
 
         prompt = prompts.ToolPromptTemplate(
-            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT),
+            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=self.cat),
             tools=allowed_tools,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
@@ -111,21 +111,21 @@ class AgentManager:
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(working_memory)
-        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input)
+        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=self.cat)
         # should we ran the default agent?
         fast_reply = {}
-        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply)
+        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=self.cat)
         if len(fast_reply.keys()) > 0:
             return fast_reply
-        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX)
-        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX)
+        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=self.cat)
+        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=self.cat)
 
 
         # tools currently recalled in working memory
         recalled_tools = working_memory["procedural_memories"]
         # Get the tools names only
         tools_names = [t[0].metadata["name"] for t in recalled_tools]
-        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names)
+        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=self.cat)
         # Get tools with that name from mad_hatter
         allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]
 

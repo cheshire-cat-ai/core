@@ -19,7 +19,7 @@ from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.working_memory import WorkingMemoryList, WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
-from cat.looking_glass.session_cat import Cat
+from cat.looking_glass.session_cat import SessionCat
 from cat.looking_glass.agent_manager import AgentManager
 from cat.looking_glass.callbacks import NewTokenHandler
 import cat.factory.llm as llms
@@ -31,7 +31,7 @@ MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 MAX_TEXT_INPUT = 500
 
 # main class
-#@singleton
+# @singleton REFACTOR: gives problems on ws messages (running in a different event loop)
 class CheshireCat():
     """The Cheshire Cat.
 
@@ -39,19 +39,20 @@ class CheshireCat():
 
     Attributes
     ----------
-    ws_messages : list
-        List of notifications to be sent to the frontend.
+    todo : list
+        TODO TODO TODO.
 
     """
 
+    # REFACTOR: prefer @singleton decorator over this
     # CheshireCat is a singleton, this is the instance
     _instance = None
-
     # get instance or create as the constructor is called
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
+
 
     def __init__(self):
         """Cat initialization.
@@ -242,9 +243,6 @@ class CheshireCat():
         
         # List working memory per user
         self.working_memory_list = WorkingMemoryList()
-        
-        # Load default shared working memory user
-        self.working_memory = self.working_memory_list.get_working_memory()
 
     # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
@@ -483,7 +481,7 @@ class CheshireCat():
         # Temporary conversation-based `cat` object as seen from hooks and tools.
         # Contains working_memory and utility pointers to main framework modules
         # It is passed to both memory recall and agent to read/write working memory
-        session_cat = Cat(
+        session_cat = SessionCat(
             user_id=user_working_memory["user_message_json"]['user_id'],
             working_memory=user_working_memory,
             llm=self.llm,

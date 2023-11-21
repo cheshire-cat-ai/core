@@ -1,6 +1,6 @@
 from cat.mad_hatter.mad_hatter import MadHatter
 
-class Cat:
+class SessionCat:
     """User/session based object containing working memory and a few utility pointers"""
 
     def __init__(

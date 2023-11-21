@@ -38,7 +38,7 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
+        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers, cat=self.cat)
 
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -301,7 +301,7 @@ class RabbitHole:
 
         # hook the docs before they are stored in the vector memory
         docs = self.mad_hatter.execute_hook(
-            "before_rabbithole_stores_documents", docs
+            "before_rabbithole_stores_documents", docs, cat=self.cat
         )
 
         # classic embed
@@ -316,7 +316,7 @@ class RabbitHole:
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
             doc = self.mad_hatter.execute_hook(
-                "before_rabbithole_insert_memory", doc
+                "before_rabbithole_insert_memory", doc, cat=self.cat
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
@@ -374,7 +374,7 @@ class RabbitHole:
         """
         # do something on the text before it is split
         text = self.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text
+            "before_rabbithole_splits_text", text, cat=self.cat
         )
 
         # split the documents using chunk_size and chunk_overlap
@@ -391,7 +391,7 @@ class RabbitHole:
 
         # do something on the text after it is split
         docs = self.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs
+            "after_rabbithole_splitted_text", docs, cat=self.cat
         )
 
         return docs
