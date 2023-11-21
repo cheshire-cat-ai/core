@@ -72,7 +72,7 @@ class CheshireCat():
         # After memory is loaded, we can get/create tools embeddings
         # every time the mad_hatter finishes syncing hooks and tools, it will notify the Cat (so it can embed tools in vector memory)
         self.mad_hatter.on_finish_plugins_sync_callback = self.embed_tools
-        self.mad_hatter.find_plugins()
+        self.embed_tools()
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager(self)

@@ -36,7 +36,8 @@ class RabbitHole:
 
     def __init__(self, cat):
         self.cat = cat
-        self.mad_hatter = MadHatter()
+        #self.mad_hatter = MadHatter()
+        log.warning(self.cat.mad_hatter.on_finish_plugins_sync_callback)
 
         file_handlers = {
             "application/pdf": PDFMinerParser(),
@@ -45,7 +46,7 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
+        self.file_handlers = self.cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
 
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -322,7 +323,7 @@ class RabbitHole:
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
-            doc = self.mad_hatter.execute_hook(
+            doc = self.cat.mad_hatter.execute_hook(
                 "before_rabbithole_insert_memory", doc
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
@@ -397,7 +398,7 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = self.mad_hatter.execute_hook(
+        docs = self.cat.mad_hatter.execute_hook(
             "after_rabbithole_splitted_text", docs
         )
 

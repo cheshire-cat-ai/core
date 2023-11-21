@@ -35,6 +35,9 @@ class MadHatter:
 
     def __init__(self):
 
+
+        log.error("instantiating mad_hatters")
+
         self.plugins = {} # plugins dictionary
 
         self.hooks = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
@@ -47,7 +50,7 @@ class MadHatter:
         # this callback is set from outside to be notified when plugin sync is finished
         self.on_finish_plugins_sync_callback = lambda: None
 
-        self.find_plugins() # REFACTOR at the moment this happens twice during cat bootstrap
+        self.find_plugins() # REFACTOR at the moment this happens twice during cat bootstrap 
 
     def install_plugin(self, package_plugin):
 
