@@ -20,24 +20,16 @@ from langchain.document_loaders.blob_loaders.schema import Blob
 from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.utils import singleton
 from cat.log import log
 
+@singleton
 class RabbitHole:
     """Manages content ingestion. I'm late... I'm late!"""
 
-    # RabbitHole is a singleton, this is the instance
-    _instance = None
-
-    # get instance or create as the constructor is called
-    def __new__(cls, cat):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
     def __init__(self, cat):
         self.cat = cat
-        self.mad_hatter = MadHatter() 
-        log.warning(self.cat.mad_hatter.on_finish_plugins_sync_callback)
+        self.mad_hatter = MadHatter()
 
         file_handlers = {
             "application/pdf": PDFMinerParser(),
@@ -46,7 +38,7 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-        self.file_handlers = self.cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
+        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers)
 
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -308,7 +300,7 @@ class RabbitHole:
         log.info(f"Preparing to memorize {len(docs)} vectors")
 
         # hook the docs before they are stored in the vector memory
-        docs = self.cat.mad_hatter.execute_hook(
+        docs = self.mad_hatter.execute_hook(
             "before_rabbithole_stores_documents", docs
         )
 
@@ -323,7 +315,7 @@ class RabbitHole:
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
-            doc = self.cat.mad_hatter.execute_hook(
+            doc = self.mad_hatter.execute_hook(
                 "before_rabbithole_insert_memory", doc
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
@@ -381,7 +373,7 @@ class RabbitHole:
 
         """
         # do something on the text before it is split
-        text = self.cat.mad_hatter.execute_hook(
+        text = self.mad_hatter.execute_hook(
             "before_rabbithole_splits_text", text
         )
 
@@ -398,7 +390,7 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = self.cat.mad_hatter.execute_hook(
+        docs = self.mad_hatter.execute_hook(
             "after_rabbithole_splitted_text", docs
         )
 
