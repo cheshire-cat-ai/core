@@ -19,13 +19,19 @@ from langchain.document_loaders.parsers.txt import TextParser
 from langchain.document_loaders.blob_loaders.schema import Blob
 from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
-from cat.utils import singleton
 from cat.log import log
 
-@singleton
 class RabbitHole:
-    """Manages content ingestion. I'm late... I'm late!
-    """
+    """Manages content ingestion. I'm late... I'm late!"""
+
+    # RabbitHole is a singleton, this is the instance
+    _instance = None
+
+    # get instance or create as the constructor is called
+    def __new__(cls, cat):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self, cat):
         self.cat = cat

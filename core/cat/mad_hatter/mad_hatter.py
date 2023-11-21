@@ -24,7 +24,7 @@ class MadHatter:
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
 
-    # CheshireCat is a singleton, this is the instance
+    # MadHatter is a singleton, this is the instance
     _instance = None
 
     # get instance or create as the constructor is called
