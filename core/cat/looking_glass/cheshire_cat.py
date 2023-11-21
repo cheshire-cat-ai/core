@@ -70,7 +70,9 @@ class CheshireCat():
         self.load_memory()
 
         # After memory is loaded, we can get/create tools embeddings
-        self.embed_tools()
+        # every time the mad_hatter finishes syncing hooks and tools, it will notify the Cat (so it can embed tools in vector memory)
+        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_tools
+        self.mad_hatter.find_plugins()
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager(self)
@@ -243,6 +245,11 @@ class CheshireCat():
 
     # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
+        
+        # fix tools so they have an instance of the cat # TODO: make the cat a singleton
+        for t in self.mad_hatter.tools:
+            # Prepare the tool to be used in the Cat (adding properties)
+            t.augment_tool(self) # REFACTOR: cat instance should not be given to tools here, but from within the agent
 
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()

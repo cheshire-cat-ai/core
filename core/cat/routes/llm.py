@@ -134,6 +134,5 @@ def upsert_llm_setting(
         )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()
-    ccat.embed_tools()
 
     return status

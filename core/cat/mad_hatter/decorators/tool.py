@@ -10,7 +10,9 @@ from langchain.agents import Tool
 class CatTool(Tool):
 
     # used by the MadHatter while loading plugins in order to let a Tool access the cat instance
-    def augment_tool(self):
+    def augment_tool(self, cat):
+
+        self.cat = cat # REFACTOR: agent should pass the cat to the tool
 
         self.name = self.func.__name__
         

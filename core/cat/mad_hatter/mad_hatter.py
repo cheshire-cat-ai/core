@@ -44,7 +44,10 @@ class MadHatter:
 
         self.plugins_folder = utils.get_plugins_path()
 
-        self.find_plugins()
+        # this callback is set from outside to be notified when plugin sync is finished
+        self.on_finish_plugins_sync_callback = lambda: None
+
+        self.find_plugins() # REFACTOR at the moment this happens twice during cat bootstrap
 
     def install_plugin(self, package_plugin):
 
@@ -133,11 +136,6 @@ class MadHatter:
             # load hooks and tools
             if plugin.id in self.active_plugins:
 
-                # fix tools so they have an instance of the cat # TODO: make the cat a singleton
-                for t in plugin.tools:
-                    # Prepare the tool to be used in the Cat (adding properties)
-                    t.augment_tool()
-
                 # cache tools
                 self.tools += plugin.tools
 
@@ -150,6 +148,9 @@ class MadHatter:
         # sort each hooks list by priority
         for hook_name in self.hooks.keys():
             self.hooks[hook_name].sort(key=lambda x: x.priority, reverse=True)
+
+        # notify sync has finished (the Cat will ensure all tools are embedded in vector memory)
+        self.on_finish_plugins_sync_callback()
                 
     # check if plugin exists
     def plugin_exists(self, plugin_id):
@@ -203,8 +204,6 @@ class MadHatter:
 
             # update cache and embeddings     
             self.sync_hooks_and_tools()
-            # REFACTOR: how and when do we embed tools?
-            # self.embed_tools()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
