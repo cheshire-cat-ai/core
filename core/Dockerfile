@@ -19,8 +19,8 @@ RUN pip install -U pip && \
     pip install --no-cache-dir . &&\
     python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')"
 
-### COPY PLUGINS ###
-COPY ./cat/plugins /app/cat/plugins
+### COPY CAT CODE INSIDE THE CONTAINER (so it can be run standalone) ###
+COPY ./cat /app/cat
 
 ### INSTALL PYTHON DEPENDENCIES (Plugins) ###
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
