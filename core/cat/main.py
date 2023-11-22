@@ -28,6 +28,8 @@ async def lifespan(app: FastAPI):
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
 
+    app.state.strays = {}
+
     # startup message with admin, public and swagger addresses
     log.welcome()
 

@@ -204,8 +204,16 @@ async def wipe_conversation_history(
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
-    ccat = request.app.state.ccat
-    ccat.working_memory_list[user_id]["history"] = []
+    strays =  request.app.state.strays
+
+    if user_id not in strays.keys():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No conversation history found for the user {user_id}"
+        )
+
+    stray = strays[user_id]
+    stray.working_memory["history"] = []
 
     return {
         "deleted": True,
@@ -220,8 +228,16 @@ async def get_conversation_history(
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    ccat = request.app.state.ccat
-    history = ccat.working_memory_list[user_id]["history"]
+    strays =  request.app.state.strays
+
+    if user_id not in strays.keys():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No conversation history found for the user {user_id}"
+        )
+
+    stray = strays[user_id]
+    history = stray.working_memory["history"]
 
     return {
         "history": history

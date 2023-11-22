@@ -3,8 +3,6 @@ from typing import get_args, Literal
 
 from cat.log import log
 
-MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
 class WorkingMemory(dict):
     """Cat's volatile memory.
 
@@ -24,19 +22,7 @@ class WorkingMemory(dict):
     def __init__(self):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
         # and the asyncio queue to manage the session notifications
-        super().__init__(history=[])
-
-        # asyncio event loop
-        try:
-            self._loop = asyncio.get_event_loop()
-        except RuntimeError as e:
-            # https://stackoverflow.com/a/72220058
-            if str(e).startswith('There is no current event loop in thread'):
-                self._loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(self._loop)
-        
-        # asyncio websocket messages queue
-        self.ws_messages = asyncio.Queue()
+        super().__init__(history=[])        
 
     def get_user_id(self):
         """Get current user id."""
@@ -63,46 +49,6 @@ class WorkingMemory(dict):
         # TODO: allow infinite history, but only insert in prompts the last k messages
         k = 5
         self["history"] = self["history"][(-k - 1):]
-
-    def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
-        
-        """Send a message via websocket.
-
-        This method is useful for sending a message via websocket directly without passing through the LLM
-
-        Parameters
-        ----------
-        content : str
-            The content of the message.
-        msg_type : str
-            The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
-        """
-        #self._loop = asyncio.get_event_loop()
-        options = get_args(MSG_TYPES)
-
-        if msg_type not in options:
-            raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
-
-        if msg_type == "error":
-            self._loop.create_task(
-                self.ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "name": "GenericError",
-                        "description": content
-                    }
-                )
-            )
-        else:
-            self._loop.create_task(
-                self.ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "content": content
-                    }
-                )
-            )
-
 
 class WorkingMemoryList(dict):
     """Cat's volatile memory (for all users).

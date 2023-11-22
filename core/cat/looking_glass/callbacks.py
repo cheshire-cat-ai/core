@@ -4,9 +4,9 @@ from langchain.callbacks.base import BaseCallbackHandler
 
 class NewTokenHandler(BaseCallbackHandler):
 
-    def __init__(self, cat):
+    def __init__(self, stray):
         # cat could be an instance of CheshireCat or StrayCat
-        self.cat = cat
+        self.stray = stray
         
     def on_llm_new_token(self, token: str, **kwargs) -> None:
-        self.cat.send_ws_message(token, msg_type="chat_token")
+        self.stray.send_ws_message(token, msg_type="chat_token")
