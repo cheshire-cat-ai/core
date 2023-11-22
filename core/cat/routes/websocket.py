@@ -30,9 +30,8 @@ class ConnectionManager:
         Remove the given WebSocket from the active connections list.
         """
         del self.active_connections[user_id]
-        # REFACTOR 
-        #if user_id in ccat.ws_messages:
-        #    del ccat.ws_messages[user_id]
+        if user_id in ccat.ws_messages:
+            del ccat.ws_messages[user_id]
 
     async def send_personal_message(self, message: str, user_id: str = "user"):
         """
@@ -78,7 +77,7 @@ async def check_messages(ccat, user_id='user'):
         # extract from FIFO list websocket notification
         notification = await ccat.working_memory_list.get_working_memory(user_id).ws_messages.get()
         await manager.send_personal_message(notification, user_id)
-        
+
 
 @router.websocket("/ws")
 @router.websocket("/ws/{user_id}")

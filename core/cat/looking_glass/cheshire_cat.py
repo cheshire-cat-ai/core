@@ -457,6 +457,7 @@ class CheshireCat():
             user_id=user_working_memory["user_message_json"]['user_id'],
             working_memory=user_working_memory,
             llm=self.llm,
+            _llm=self._llm,
             embedder=self.embedder
         )
 

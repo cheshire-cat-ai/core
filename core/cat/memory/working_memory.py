@@ -1,3 +1,7 @@
+import asyncio
+from typing import get_args, Literal
+
+MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 class WorkingMemory(dict):
     """Cat's volatile memory.
@@ -19,6 +23,10 @@ class WorkingMemory(dict):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
         # and the asyncio queue to manage the session notifications
         super().__init__(history=[])
+
+        # event loop and ws messages queue
+        # self._loop = asyncio.get_event_loop()
+        self.ws_messages = asyncio.Queue()
 
     def get_user_id(self):
         """Get current user id."""
@@ -45,6 +53,45 @@ class WorkingMemory(dict):
         # TODO: allow infinite history, but only insert in prompts the last k messages
         k = 5
         self["history"] = self["history"][(-k - 1):]
+
+    def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
+        
+        """Send a message via websocket.
+
+        This method is useful for sending a message via websocket directly without passing through the LLM
+
+        Parameters
+        ----------
+        content : str
+            The content of the message.
+        msg_type : str
+            The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
+        """
+        self._loop = asyncio.get_event_loop()
+        options = get_args(MSG_TYPES)
+
+        if msg_type not in options:
+            raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
+
+        if msg_type == "error":
+            self._loop.create_task(
+                self.ws_messages.put(
+                    {
+                        "type": msg_type,
+                        "name": "GenericError",
+                        "description": content
+                    }
+                )
+            )
+        else:
+            self._loop.create_task(
+                self.ws_messages.put(
+                    {
+                        "type": msg_type,
+                        "content": content
+                    }
+                )
+            )
 
 
 class WorkingMemoryList(dict):
