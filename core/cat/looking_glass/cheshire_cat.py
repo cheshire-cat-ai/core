@@ -27,9 +27,6 @@ import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
 
 
-
-MAX_TEXT_INPUT = 500
-
 # main class
 # @singleton REFACTOR: gives problems on ws messages (running in a different event loop)
 class CheshireCat():
@@ -87,8 +84,6 @@ class CheshireCat():
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
 
-        # REFACTOR: should we use this and pass it around?
-        # self._loop = asyncio.get_event_loop()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -108,6 +103,7 @@ class CheshireCat():
         # LLM and embedder
         self._llm = self.get_language_model()
         self.embedder = self.get_language_embedder()
+
 
     def get_language_model(self) -> BaseLanguageModel:
         """Large Language Model (LLM) selection at bootstrap time.
@@ -144,6 +140,7 @@ class CheshireCat():
                 llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         return llm
+
 
     def get_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
@@ -232,15 +229,13 @@ class CheshireCat():
 
         return embedder
 
+
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
         # Memory
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
         
-        # List working memory per user
-        self.working_memory_list = WorkingMemoryList()
-
     # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
         
@@ -290,269 +285,3 @@ class CheshireCat():
                 collection_name="procedural",
                 points_selector=points_to_be_deleted
             )
-
-    def recall_relevant_memories_to_working_memory(self, session_cat):
-        """Retrieve context from memory.
-
-        The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
-        Recalled memories are stored in the working memory.
-
-        Notes
-        -----
-        The user's message is used as a query to make a similarity search in the Cat's vector memories.
-        Five hooks allow to customize the recall pipeline before and after it is done.
-
-        See Also
-        --------
-        cat_recall_query
-        before_cat_recalls_memories
-        before_cat_recalls_episodic_memories
-        before_cat_recalls_declarative_memories
-        before_cat_recalls_procedural_memories
-        after_cat_recalls_memories
-        """
-        user_id = session_cat.working_memory.get_user_id()
-        recall_query = session_cat.working_memory["user_message_json"]["text"]
-
-        # We may want to search in memory
-        recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=session_cat)
-        log.info(f'Recall query: "{recall_query}"')
-
-        # Embed recall query
-        recall_query_embedding = self.embedder.embed_query(recall_query)
-        session_cat.working_memory["recall_query"] = recall_query
-
-        # hook to do something before recall begins
-        self.mad_hatter.execute_hook("before_cat_recalls_memories", cat=session_cat)
-
-        # Setting default recall configs for each memory
-        # TODO: can these data structures become instances of a RecallSettings class?
-        default_episodic_recall_config = {
-            "embedding": recall_query_embedding,
-            "k": 3,
-            "threshold": 0.7,
-            "metadata": {"source": user_id},
-        }
-
-        default_declarative_recall_config = {
-            "embedding": recall_query_embedding,
-            "k": 3,
-            "threshold": 0.7,
-            "metadata": None,
-        }
-
-        default_procedural_recall_config = {
-            "embedding": recall_query_embedding,
-            "k": 3,
-            "threshold": 0.7,
-            "metadata": None,
-        }
-
-        # hooks to change recall configs for each memory
-        recall_configs = [
-            self.mad_hatter.execute_hook(
-                "before_cat_recalls_episodic_memories", default_episodic_recall_config, cat=session_cat),
-            self.mad_hatter.execute_hook(
-                "before_cat_recalls_declarative_memories", default_declarative_recall_config, cat=session_cat),
-            self.mad_hatter.execute_hook(
-                "before_cat_recalls_procedural_memories", default_procedural_recall_config, cat=session_cat)
-        ]
-
-        memory_types = self.memory.vectors.collections.keys()
-
-        for config, memory_type in zip(recall_configs, memory_types):
-            memory_key = f"{memory_type}_memories"
-
-            # recall relevant memories for collection
-            vector_memory = getattr(self.memory.vectors, memory_type)
-            memories = vector_memory.recall_memories_from_embedding(**config)
-
-            session_cat.working_memory[memory_key] = memories
-
-        # hook to modify/enrich retrieved memories
-        self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=session_cat)
-
-    def llm(self, prompt: str, chat: bool = False, stream: bool = False) -> str:
-        """Generate a response using the LLM model.
-
-        This method is useful for generating a response with both a chat and a completion model using the same syntax
-
-        Parameters
-        ----------
-        prompt : str
-            The prompt for generating the response.
-
-        Returns
-        -------
-        str
-            The generated response.
-
-        """
-
-        # should we stream the tokens?
-        callbacks = []
-        if stream:
-            callbacks.append(NewTokenHandler(self))
-
-        # Check if self._llm is a completion model and generate a response
-        if isinstance(self._llm, langchain.llms.base.BaseLLM):
-            return self._llm(prompt, callbacks=callbacks)
-
-        # Check if self._llm is a chat model and call it as a completion model
-        if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
-            return self._llm.call_as_llm(prompt, callbacks=callbacks)
-
-    def send_ws_message(self, *args, **kwargs):
-        """Proxy method for WorkingMemory.send_ws_message
-        """
-
-        # send ws message to admin
-        working_memory = self.working_memory_list.get_working_memory(user_id='user')
-        working_memory.send_ws_message(*args, **kwargs)
-
-
-    def __call__(self, user_message_json):
-        """Call the Cat instance.
-
-        This method is called on the user's message received from the client.
-
-        Parameters
-        ----------
-        user_message_json : dict
-            Dictionary received from the Websocket client.
-
-        Returns
-        -------
-        final_output : dict
-            Dictionary with the Cat's answer to be sent to the client.
-
-        Notes
-        -----
-        Here happens the main pipeline of the Cat. Namely, the Cat receives the user's input and recall the memories.
-        The retrieved context is formatted properly and given in input to the Agent that uses the LLM to produce the
-        answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
-
-        """
-        log.info(user_message_json)
-
-        # set a few easy access variables
-        user_id = user_message_json.get('user_id', 'user')
-        user_working_memory = self.working_memory_list.get_working_memory(user_id)
-        user_working_memory["user_message_json"] = user_message_json
-        user_working_memory["user_message_json"]['user_id'] = user_id
-
-        # Temporary conversation-based `cat` object as seen from hooks and tools.
-        # Contains working_memory and utility pointers to main framework modules
-        # It is passed to both memory recall and agent to read/write working memory
-        session_cat = StrayCat(
-            user_id=user_working_memory["user_message_json"]['user_id'],
-            working_memory=user_working_memory,
-            llm=self.llm,
-            _llm=self._llm,
-            embedder=self.embedder
-        )
-
-        # hook to modify/enrich user input
-        session_cat.working_memory["user_message_json"] = self.mad_hatter.execute_hook(
-            "before_cat_reads_message",
-            session_cat.working_memory["user_message_json"],
-            cat=session_cat
-        )
-
-        # TODO: move inside a function
-        # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
-        if len(session_cat.working_memory["user_message_json"]["text"]) > MAX_TEXT_INPUT:
-            index = MAX_TEXT_INPUT
-            char = session_cat.working_memory["user_message_json"]["text"][index]
-            while not char.isspace() and index > 0:
-                index -= 1
-                char = session_cat.working_memory["user_message_json"]["text"][index]
-            if index <= 0:
-                index = MAX_TEXT_INPUT
-            session_cat.working_memory["user_message_json"]["text"], to_declarative_memory = session_cat.working_memory["user_message_json"]["text"][:index], session_cat.working_memory["user_message_json"]["text"][index:]
-            docs = self.rabbit_hole.string_to_docs(to_declarative_memory, content_type="text/plain")
-            self.rabbit_hole.store_documents(docs=docs, source="")
-
-
-        # recall episodic and declarative memories from vector collections
-        #   and store them in working_memory
-        try:
-            self.recall_relevant_memories_to_working_memory(session_cat)
-        except Exception as e:
-            log.error(e)
-            traceback.print_exc(e)
-
-            err_message = (
-                "You probably changed Embedder and old vector memory is not compatible. "
-                "Please delete `core/long_term_memory` folder."
-            )
-
-            return {
-                "type": "error",
-                "name": "VectorMemoryError",
-                "description": err_message,
-            }
-        
-        # reply with agent
-        try:
-            cat_message = self.agent_manager.execute_agent(session_cat)
-        except Exception as e:
-            # This error happens when the LLM
-            #   does not respect prompt instructions.
-            # We grab the LLM output here anyway, so small and
-            #   non instruction-fine-tuned models can still be used.
-            error_description = str(e)
-
-            log.error(error_description)
-            if "Could not parse LLM output: `" not in error_description:
-                raise e
-
-            unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
-            cat_message = {
-                "input": session_cat.working_memory["user_message_json"]["text"],
-                "intermediate_steps": [],
-                "output": unparsable_llm_output
-            }
-
-        log.info("cat_message:")
-        log.info(cat_message)
-
-        user_message = session_cat.working_memory["user_message_json"]["text"]
-
-        # store user message in episodic memory
-        # TODO: vectorize and store also conversation chunks
-        #   (not raw dialog, but summarization)
-        _ = self.memory.vectors.episodic.add_texts(
-            [user_message],
-            [{"source": user_id, "when": time.time()}],
-        )
-
-        # build data structure for output (response and why with memories)
-        # TODO: these 3 lines are a mess, simplify
-        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in session_cat.working_memory["episodic_memories"]]
-        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in session_cat.working_memory["declarative_memories"]]
-        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in session_cat.working_memory["procedural_memories"]]
-        
-        final_output = {
-            "type": "chat",
-            "user_id": user_id,
-            "content": cat_message.get("output"),
-            "why": {
-                "input": cat_message.get("input"),
-                "intermediate_steps": cat_message.get("intermediate_steps"),
-                "memory": {
-                    "episodic": episodic_report,
-                    "declarative": declarative_report,
-                    "procedural": procedural_report,
-                },
-            },
-        }
-
-        final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=session_cat)
-
-        # update conversation history
-        session_cat.working_memory.update_conversation_history(who="Human", message=user_message)
-        session_cat.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
-
-        return final_output
-
