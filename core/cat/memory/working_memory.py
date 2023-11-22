@@ -1,6 +1,8 @@
 import asyncio
 from typing import get_args, Literal
 
+from cat.log import log
+
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 class WorkingMemory(dict):
@@ -24,8 +26,16 @@ class WorkingMemory(dict):
         # and the asyncio queue to manage the session notifications
         super().__init__(history=[])
 
-        # event loop and ws messages queue
-        # self._loop = asyncio.get_event_loop()
+        # asyncio event loop
+        try:
+            self._loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            # https://stackoverflow.com/a/72220058
+            if str(e).startswith('There is no current event loop in thread'):
+                self._loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._loop)
+        
+        # asyncio websocket messages queue
         self.ws_messages = asyncio.Queue()
 
     def get_user_id(self):
@@ -67,7 +77,7 @@ class WorkingMemory(dict):
         msg_type : str
             The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
         """
-        self._loop = asyncio.get_event_loop()
+        #self._loop = asyncio.get_event_loop()
         options = get_args(MSG_TYPES)
 
         if msg_type not in options:

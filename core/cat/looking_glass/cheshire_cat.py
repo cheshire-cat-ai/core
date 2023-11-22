@@ -402,22 +402,13 @@ class CheshireCat():
         if isinstance(self._llm, langchain.chat_models.base.BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    def send_ws_message(self, content: str, msg_type = "notification"):
-        """Send a message via websocket.
-
-        This method is useful for sending a message via websocket directly without passing through the LLM
-
-        Parameters
-        ----------
-        content : str
-            The content of the message.
-        msg_type : str
-            The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
+    def send_ws_message(self, *args, **kwargs):
+        """Proxy method for WorkingMemory.send_ws_message
         """
 
         # send ws message to admin
-        #working_memory = self.working_memory_list.get_working_memory(user_id='user')
-        log.warning("WS MESSAGE NOT IMPLEMENTED")
+        working_memory = self.working_memory_list.get_working_memory(user_id='user')
+        working_memory.send_ws_message(*args, **kwargs)
 
 
     def __call__(self, user_message_json):
