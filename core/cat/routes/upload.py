@@ -27,6 +27,9 @@ async def upload_file(
 
     ccat = request.app.state.ccat
 
+    if "user" in request.app.state.strays.keys():
+        ccat = request.app.state.strays["user"]
+
     # Check the file format is supported
     admitted_types = ccat.rabbit_hole.file_handlers.keys()
 
@@ -44,7 +47,7 @@ async def upload_file(
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
-        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap
+        ccat.rabbit_hole.ingest_file, ccat, file, chunk_size, chunk_overlap
     )
 
     # reply to client
@@ -85,9 +88,12 @@ async def upload_url(
             # Access the `ccat` object from the FastAPI application state
             ccat = request.app.state.ccat
 
+            if "user" in request.app.state.strays.keys():
+                ccat = request.app.state.strays["user"]
+
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap
+                ccat.rabbit_hole.ingest_file, ccat, url, chunk_size, chunk_overlap
             )
             return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
@@ -119,6 +125,9 @@ async def upload_memory(
     # access cat instance
     ccat = request.app.state.ccat
 
+    if "user" in request.app.state.strays.keys():
+        ccat = request.app.state.strays["user"]
+
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
     log.info(f"Uploaded {content_type} down the rabbit hole")
@@ -130,7 +139,7 @@ async def upload_memory(
             })
 
     # Ingest memories in background and notify client
-    background_tasks.add_task(ccat.rabbit_hole.ingest_memory, file)
+    background_tasks.add_task(ccat.rabbit_hole.ingest_memory, ccat, file)
 
     # reply to client
     return {
