@@ -6,7 +6,6 @@ import cat.utils as utils
 
 from cat.mad_hatter.mad_hatter import MadHatter, Plugin
 from cat.mad_hatter.decorators import CatHook, CatTool
-from cat.looking_glass.cheshire_cat import CheshireCat
 
 from tests.utils import create_mock_plugin_zip
 
@@ -43,7 +42,7 @@ def test_instantiation_discovery(mad_hatter):
     tool = mad_hatter.tools[0]
     assert isinstance(tool, CatTool)
     assert tool.plugin_id == "core_plugin"
-    assert isinstance(tool.cat, CheshireCat)
+    assert tool.cat is None
     assert tool.name == "get_the_time"
     assert "get_the_time" in tool.description
     assert "what time is it" in tool.docstring

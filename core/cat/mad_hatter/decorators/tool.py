@@ -14,6 +14,9 @@ class CatTool(Tool):
         # call parent contructor
         super().__init__(**kwargs)
 
+        # StrayCat instance will be set by AgentManager
+        self.cat = None
+
         self.name = self.func.__name__
         
         # Tool docstring, is also available under self.func.__doc__
