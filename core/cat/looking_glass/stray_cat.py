@@ -234,8 +234,8 @@ class StrayCat:
                 if index <= 0:
                     index = MAX_TEXT_INPUT
                 self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
-                docs = self.rabbit_hole.string_to_docs(to_declarative_memory, content_type="text/plain")
-                self.rabbit_hole.store_documents(docs=docs, source="")
+                docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
+                self.rabbit_hole.store_documents(stray=self, docs=docs, source="")
 
 
             # recall episodic and declarative memories from vector collections

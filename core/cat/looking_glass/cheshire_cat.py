@@ -285,3 +285,6 @@ class CheshireCat():
                 collection_name="procedural",
                 points_selector=points_to_be_deleted
             )
+
+    def send_ws_message(self, content: str, msg_type = "notification"):
+        log.error("No websocket connection open")
