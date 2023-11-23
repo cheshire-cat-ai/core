@@ -30,7 +30,7 @@ If you ever used systems like WordPress or Django to build web apps, imagine the
 
 Why use the Cat:
 - 🌍 Supports any language model (works with OpenAI chatGPT, LLAMA2, HuggingFace models, custom)
-- 🐘 Rememebers conversations and documents and uses them in conversation
+- 🐘 Remembers conversations and documents and uses them in conversation
 - 🚀 Extensible via plugins (AI can connect to your APIs or execute custom python code)
 - 🐋 Production Ready - 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
