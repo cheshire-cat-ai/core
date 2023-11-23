@@ -22,7 +22,7 @@ from qdrant_client.http.models import (
     OptimizersConfigDiff,
 )
 
-
+# REFACTOR: should be @singleton and more clean (embedding done out)
 class VectorMemory:
     local_vector_db = None
 
@@ -200,16 +200,6 @@ class VectorMemoryCollection(Qdrant):
                     )
                 )
             ]
-        )
-
-    # retrieve similar memories from text
-    def recall_memories_from_text(self, text, metadata=None, k=5, threshold=None):
-        # embed the text
-        query_embedding = self.cat.embedder.embed_query(text)
-
-        # search nearest vectors
-        return self.recall_memories_from_embedding(
-            query_embedding, metadata=metadata, k=k, threshold=threshold
         )
 
     def delete_points_by_metadata_filter(self, metadata=None):

@@ -211,9 +211,7 @@ class MadHatter:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
         
     # execute requested hook
-    def execute_hook(self, hook_name, *args, cat=None):
-
-        # REFACTOR: take care of the cat argument, it now represents a session or (if there is no session) a utility obj
+    def execute_hook(self, hook_name, *args, cat):
 
         # check if hook is supported
         if hook_name not in self.hooks.keys():

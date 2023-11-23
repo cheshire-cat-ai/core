@@ -24,9 +24,9 @@ class StrayCat:
         self.working_memory = WorkingMemory()
         self._llm = _llm
         self.embedder = embedder
-        self.memory = memory #self.vector_memory = VectorMemory() # REFACTOR should be instantiated here
-        self.rabbit_hole = rabbit_hole #self.rabbit_hole = RabbitHole() # REFACTOR should be instantiated here
-        self.mad_hatter = mad_hatter#MadHatter()
+        self.memory = memory
+        self.rabbit_hole = rabbit_hole
+        self.mad_hatter = mad_hatter
 
         self.agent_manager = agent_manager
 

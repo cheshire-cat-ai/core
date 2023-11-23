@@ -2,13 +2,12 @@ import time
 from tests.utils import send_websocket_message
 
 
-def test_convo_history_creation(client):
+def test_convo_history_absent_if_no_ws_connection(client):
 
+    # no ws connection, so no convo history available
     response = client.get(f"/memory/conversation_history/")
     json = response.json()
-    assert response.status_code == 200
-    assert "history" in json
-    assert len(json["history"]) == 0
+    assert response.status_code == 404
 
 
 def test_convo_history_update(client):
