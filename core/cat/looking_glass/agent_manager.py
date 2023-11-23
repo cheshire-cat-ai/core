@@ -3,6 +3,8 @@ import traceback
 from datetime import timedelta
 from typing import List, Dict
 
+from copy import deepcopy
+
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
@@ -35,12 +37,18 @@ class AgentManager:
 
     def execute_tool_agent(self, agent_input, allowed_tools, stray):
 
-        allowed_tools_names = [t.name for t in allowed_tools]
+        # fix tools so they have an instance of the cat
+        allowed_tools_copy = deepcopy(allowed_tools)
+        for t in allowed_tools_copy:
+            # Prepare the tool to be used in the Cat (adding properties)
+            t.assign_cat(stray)
+
+        allowed_tools_names = [t.name for t in allowed_tools_copy]
         # TODO: dynamic input_variables as in the main prompt 
 
         prompt = prompts.ToolPromptTemplate(
             template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray),
-            tools=allowed_tools,
+            tools=allowed_tools_copy,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
             input_variables=["input", "intermediate_steps"]
@@ -56,7 +64,7 @@ class AgentManager:
         # init agent
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
-            output_parser=ToolOutputParser(stray=stray),
+            output_parser=ToolOutputParser(),
             stop=["\nObservation:"],
             allowed_tools=allowed_tools_names,
             verbose=True
@@ -65,7 +73,7 @@ class AgentManager:
         # agent executor
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
-            tools=allowed_tools,
+            tools=allowed_tools_copy,
             return_intermediate_steps=True,
             verbose=True
         )

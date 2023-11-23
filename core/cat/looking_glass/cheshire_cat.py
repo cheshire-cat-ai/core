@@ -239,11 +239,6 @@ class CheshireCat():
     # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
     def embed_tools(self):
         
-        # fix tools so they have an instance of the cat # TODO: make the cat a singleton
-        for t in self.mad_hatter.tools:
-            # Prepare the tool to be used in the Cat (adding properties)
-            t.augment_tool(self) # REFACTOR: cat instance should not be given to tools here, but from within the agent
-
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 

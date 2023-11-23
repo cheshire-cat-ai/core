@@ -9,10 +9,10 @@ from langchain.agents import Tool
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
 class CatTool(Tool):
 
-    # used by the MadHatter while loading plugins in order to let a Tool access the cat instance
-    def augment_tool(self, cat):
+    def __init__(self, **kwargs):
 
-        self.cat = cat # REFACTOR: agent should pass the cat to the tool
+        # call parent contructor
+        super().__init__(**kwargs)
 
         self.name = self.func.__name__
         
@@ -25,6 +25,10 @@ class CatTool(Tool):
         if cat_arg_signature in self.description:
             self.description = self.description.replace(cat_arg_signature, ")")
 
+    # used by the AgentManager to let a Tool access the cat instance
+    def assign_cat(self, cat):
+        self.cat = cat
+
     def _run(self, input_by_llm):
         return self.func(input_by_llm, cat=self.cat)
 
@@ -36,10 +40,10 @@ class CatTool(Tool):
     
     class Config:
         extra = "allow"
-    # TODO: should be:
-    # model_config = ConfigDict(
-    #     extra = "allow"
-    # )
+    # TODO should be: (but langchain does not support yet pydantic 2)
+    #model_config = ConfigDict(
+    #    extra = "allow"
+    #)
 
 
 # @tool decorator, a modified version of a langchain Tool that also takes a Cat instance as argument
