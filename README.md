@@ -26,7 +26,7 @@
 ## Production ready AI assistant framework
 
 The Cheshire Cat is a framework to build custom AIs on top of any language model. 
-If you ever used systems like WordPress or Django to build web apps, imagine the Cat as a similar tool, but specific for AI.
+If you have ever used systems like WordPress or Django to build web apps, imagine the Cat as a similar tool, but specific for AI.
 
 ## Quickstart
 
@@ -53,10 +53,10 @@ Enjoy the Cat!
 
 ## Why use the Cat
 
-- 🌍 Supports any language model (works with OpenAI chatGPT, LLAMA2, HuggingFace models, custom)
-- 🐘 Rememebers conversations and documents and uses them in conversation
+- 🌍 Supports any language model (works with OpenAI chatGPT, Llama2, HuggingFace models, custom)
+- 🐘 Remembers conversations and documents and uses them in conversation
 - 🚀 Extensible via plugins (AI can connect to your APIs or execute custom python code)
-- 🐋 Production Ready - 100% [dockerized](https://docs.docker.com/get-docker/)
+- 🐋 Production ready - 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
  
 We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./readme/CODE-OF-ETHICS.md). 
