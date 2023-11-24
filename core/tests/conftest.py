@@ -83,4 +83,5 @@ def client(app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
     """
     
     with TestClient(app) as client:
+        app.state.ccat.__init__()
         yield client
