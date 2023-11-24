@@ -6,7 +6,10 @@ from typing import Literal, get_args
 from langchain.llms.base import BaseLLM
 from langchain.chat_models.base import BaseChatModel
 
+from fastapi import WebSocket
+
 from cat.log import log
+from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
@@ -18,23 +21,21 @@ MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 class StrayCat:
     """User/session based object containing working memory and a few utility pointers"""
 
-    def __init__(self, _llm, embedder, memory, rabbit_hole, agent_manager, mad_hatter, ws, user_id="user"):
+    def __init__(self, cat: CheshireCat, ws: WebSocket, user_id: str = "user"):
         
+        self._loop = asyncio.get_running_loop()
+
         self.user_id = user_id
-        self.working_memory = WorkingMemory()
-        self._llm = _llm
-        self.embedder = embedder
-        self.memory = memory
-        self.rabbit_hole = rabbit_hole
-        self.mad_hatter = mad_hatter
-
-        self.agent_manager = agent_manager
-
+        self._ws = ws
         self.ws_messages = asyncio.Queue()
 
-        self._ws = ws
-
-        self._loop = asyncio.get_running_loop()
+        self.working_memory = WorkingMemory()
+        self._llm = cat._llm
+        self.embedder = cat.embedder
+        self.memory = cat.memory
+        self.rabbit_hole = cat.rabbit_hole
+        self.mad_hatter = cat.mad_hatter
+        self.agent_manager =cat.agent_manager      
 
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):

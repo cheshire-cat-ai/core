@@ -3,9 +3,8 @@ import asyncio
 
 from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from fastapi.concurrency import run_in_threadpool
-from fastapi import WebSocketException, status
 
-from cat.looking_glass.cheshire_cat import StrayCat
+from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
 
 router = APIRouter()
@@ -54,24 +53,15 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         stray = strays[user_id]
         #await stray._ws.close() # REFACTOR: handle ws closing
         stray._ws = websocket
-        #log.error(f"A websocket connection with ID '{user_id}' has already been opened.")
+        log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
         
-        # raise WebSocketException(
-        #     code=status.WS_1008_POLICY_VIOLATION, 
-        #     reason=f"A websocket connection with ID '{user_id}' has already been opened."
-        # )
     else:
         # Temporary conversation-based `cat` object as seen from hooks and tools.
         # Contains working_memory and utility pointers to main framework modules
         # It is passed to both memory recall and agent to read/write working memory
         stray = StrayCat(
             user_id=user_id,
-            _llm=ccat._llm,
-            embedder=ccat.embedder,
-            memory=ccat.memory,
-            agent_manager=ccat.agent_manager,
-            mad_hatter=ccat.mad_hatter,
-            rabbit_hole=ccat.rabbit_hole,
+            cat=ccat,
             ws=websocket
         )
         strays[user_id] = stray
@@ -98,5 +88,3 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         })
     # finally:
     #     del strays[user_id]
-        # Remove the WebSocket from the manager when the user disconnects.
-        #websocket.close()
