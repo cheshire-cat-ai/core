@@ -428,16 +428,7 @@ class CheshireCat():
 
         # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
         if len(user_message_json["text"]) > MAX_TEXT_INPUT:
-            index = MAX_TEXT_INPUT
-            char = user_message_json["text"][index]
-            while not char.isspace() and index > 0:
-                index -= 1
-                char = user_message_json["text"][index]
-            if index <= 0:
-                index = MAX_TEXT_INPUT
-            user_message_json["text"], to_declarative_memory = user_message_json["text"][:index], user_message_json["text"][index:]
-            docs = self.rabbit_hole.string_to_docs(to_declarative_memory, content_type="text/plain")
-            self.rabbit_hole.store_documents(docs=docs, source="")
+            self.store_long_input_to_declarative(user_message_json)
 
         # store last message in working memory
         user_working_memory["user_message_json"] = user_message_json
@@ -553,3 +544,15 @@ class CheshireCat():
         """Allows the Cat exposing the static files path."""
         log.warning("This method will be removed, import cat.utils tu usit instead.")
         return utils.get_static_path()
+
+    def store_long_input_to_declarative(self, user_message_json):
+        index = MAX_TEXT_INPUT
+        char = user_message_json["text"][index]
+        while not char.isspace() and index > 0:
+            index -= 1
+            char = user_message_json["text"][index]
+        if index <= 0:
+            index = MAX_TEXT_INPUT
+        user_message_json["text"], to_declarative_memory = user_message_json["text"][:index], user_message_json["text"][index:]
+        docs = self.rabbit_hole.string_to_docs(to_declarative_memory, content_type="text/plain")
+        self.rabbit_hole.store_documents(docs=docs, source="")
