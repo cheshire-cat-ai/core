@@ -26,15 +26,6 @@ class MadHatter:
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
 
-    # # MadHatter is a singleton, this is the instance
-    # _instance = None
-
-    # # get instance or create as the constructor is called
-    # def __new__(cls):
-    #     if not cls._instance:
-    #         cls._instance = super().__new__(cls)
-    #     return cls._instance 
-
     def __init__(self):
 
         self.plugins = {} # plugins dictionary

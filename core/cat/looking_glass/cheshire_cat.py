@@ -28,7 +28,7 @@ from cat.factory.custom_llm import CustomOpenAI
 
 
 # main class
-# @singleton REFACTOR: gives problems on ws messages (running in a different event loop)
+@singleton
 class CheshireCat():
     """The Cheshire Cat.
 
@@ -40,16 +40,6 @@ class CheshireCat():
         TODO TODO TODO.
 
     """
-
-    # REFACTOR: prefer @singleton decorator over this
-    # CheshireCat is a singleton, this is the instance
-    _instance = None
-    # get instance or create as the constructor is called
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
 
     def __init__(self):
         """Cat initialization.
