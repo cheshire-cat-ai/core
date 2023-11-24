@@ -1,5 +1,6 @@
 from typing import Dict
 from cat.headers import check_user_id
+from cat.routes.types import ResponseMemoryRecall, ResponseCollections, ResponseDelete, ResponseConversationHistory
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 router = APIRouter()
@@ -12,7 +13,7 @@ async def recall_memories_from_text(
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
     user_id = Depends(check_user_id)
-) -> Dict:
+) -> ResponseMemoryRecall:
     """Search k memories similar to given text."""
 
     ccat = request.app.state.ccat
@@ -53,7 +54,7 @@ async def recall_memories_from_text(
             memory_dict["vector"] = vector
             recalled[c].append(memory_dict)
 
-    return {
+    result = {
         "query": query,
         "vectors": {
             "embedder": str(ccat.embedder.__class__.__name__),  # TODO: should be the config class name
@@ -61,10 +62,12 @@ async def recall_memories_from_text(
         }
     }
 
+    return ResponseMemoryRecall(**result)
+
 
 # GET collection list with some metadata
 @router.get("/collections/")
-async def get_collections(request: Request) -> Dict:
+async def get_collections(request: Request) -> ResponseCollections:
     """Get list of available collections"""
 
     ccat = request.app.state.ccat
@@ -80,16 +83,16 @@ async def get_collections(request: Request) -> Dict:
             "vectors_count": coll_meta.vectors_count
         }]
 
-    return {
+    result = {
         "collections": collections_metadata
     }
+
+    return ResponseCollections(**result)
 
 
 # DELETE all collections
 @router.delete("/collections/")
-async def wipe_collections(
-    request: Request,
-) -> Dict:
+async def wipe_collections(request: Request) -> ResponseDelete:
     """Delete and create all collections"""
 
     ccat = request.app.state.ccat
@@ -105,14 +108,16 @@ async def wipe_collections(
     ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()
 
-    return {
+    result = {
         "deleted": to_return,
     }
+
+    return ResponseDelete(**result)
 
 
 # DELETE one collection
 @router.delete("/collections/{collection_id}/")
-async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
+async def wipe_single_collection(request: Request, collection_id: str) -> ResponseDelete:
     """Delete and recreate a collection"""
 
     ccat = request.app.state.ccat
@@ -135,9 +140,11 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     ccat.mad_hatter.find_plugins()
     ccat.mad_hatter.embed_tools()
 
-    return {
+    result = {
         "deleted": to_return,
     }
+
+    return ResponseDelete(**result)
 
 
 # DELETE memories
@@ -146,7 +153,7 @@ async def wipe_memory_point(
     request: Request,
     collection_id: str,
     memory_id: str
-) -> Dict:
+) -> ResponseDelete:
     """Delete a specific point in memory"""
 
     ccat = request.app.state.ccat
@@ -174,17 +181,19 @@ async def wipe_memory_point(
     # delete point
     vector_memory.collections[collection_id].delete_points([memory_id])
 
-    return {
+    result = {
         "deleted": memory_id
     }
 
+    return ResponseDelete(**result)
 
-@router.delete("/collections/{collection_id}/points")
+
+@router.delete("/collections/{collection_id}/points/")
 async def wipe_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-) -> Dict:
+) -> ResponseDelete:
     """Delete points in memory by filter"""
 
     ccat = request.app.state.ccat
@@ -193,9 +202,11 @@ async def wipe_memory_points_by_metadata(
     # delete points
     vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
 
-    return {
-        "deleted": [] # TODO: Qdrant does not return deleted points?
+    result = {
+        "deleted": True # TODO: Return list of deleted points by Qdrant
     }
+
+    return ResponseDelete(**result)
 
 
 # DELETE conversation history from working memory
@@ -203,15 +214,17 @@ async def wipe_memory_points_by_metadata(
 async def wipe_conversation_history(
     request: Request,
     user_id = Depends(check_user_id),
-) -> Dict:
+) -> ResponseDelete:
     """Delete the specified user's conversation history from working memory"""
 
     ccat = request.app.state.ccat
     ccat.working_memory_list[user_id]["history"] = []
 
-    return {
+    result = {
         "deleted": True,
     }
+
+    return ResponseDelete(**result)
 
 
 # GET conversation history from working memory
@@ -219,12 +232,14 @@ async def wipe_conversation_history(
 async def get_conversation_history(
     request: Request,
     user_id = Depends(check_user_id),
-) -> Dict:
+) -> ResponseConversationHistory:
     """Get the specified user's conversation history from working memory"""
 
     ccat = request.app.state.ccat
     history = ccat.working_memory_list[user_id]["history"]
 
-    return {
+    result = {
         "history": history
     }
+
+    return ResponseConversationHistory(**result)
