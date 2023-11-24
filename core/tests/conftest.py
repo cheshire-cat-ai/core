@@ -55,22 +55,18 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     # Use a different json settings db
     def mock_get_file_name(self, *args, **kwargs):
         return "tests/mocks/metadata-test.json"
-    monkeypatch.setattr(Database, "get_file_name", mock_get_file_name)
+    monkeypatch.setattr(Database().__class__, "get_file_name", mock_get_file_name)
     
     # Use mock utils plugin folder
     def get_test_plugin_folder():
         return "tests/mocks/mock_plugin_folder/"
     utils.get_plugins_path = get_test_plugin_folder
-    
-    # clean up all plugins
-    mad_hatter = MadHatter()
-    plugins_names = list(mad_hatter.plugins.keys())
-    for plugin_name in plugins_names:
-        mad_hatter.uninstall_plugin(plugin_name)
 
     # clean up service files and mocks
     clean_up_mocks()
-    Database._instance = None
+
+    # delete all singletons!!!
+    utils.singleton.instances = {}
     
     _app = cheshire_cat_api
     yield _app
@@ -83,5 +79,4 @@ def client(app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
     """
     
     with TestClient(app) as client:
-        app.state.ccat.__init__()
         yield client

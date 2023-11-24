@@ -100,11 +100,15 @@ def get_static_path():
     return os.path.join(get_base_path(), "static/")
 
 
-def singleton(class_):
-    """singleton decorator"""
+# This is our masterwork during tea time
+class singleton:
+  
     instances = {}
-    def getinstance(*args, **kwargs):
-        if class_ not in instances:
-            instances[class_] = class_(*args, **kwargs)
-        return instances[class_]
-    return getinstance
+
+    def __new__(cls, class_):
+        def getinstance(*args, **kwargs):
+            if class_ not in cls.instances:
+                cls.instances[class_] = class_(*args, **kwargs)
+            return cls.instances[class_]
+
+        return getinstance
