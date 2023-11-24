@@ -33,7 +33,7 @@ def test_instantiation_discovery(mad_hatter):
         h = hooks_list[0]
         assert isinstance(h, CatHook)
         assert h.plugin_id == "core_plugin"
-        assert type(h.name) == str
+        assert isinstance(h.name, str)
         assert isfunction(h.function)
         assert h.priority == 0.0
 

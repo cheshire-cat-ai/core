@@ -1,27 +1,16 @@
 import time
-from copy import deepcopy
-import traceback
-from typing import Literal, Dict
-import langchain
-import os
-import asyncio
-import langchain
-from langchain.llms import Cohere, OpenAI, AzureOpenAI, HuggingFaceTextGenInference, HuggingFaceHub
+
+from langchain.llms import Cohere, OpenAI, AzureOpenAI
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.base_language import BaseLanguageModel
 
-import cat.utils as utils
 from cat.utils import singleton
 from cat.log import log
 from cat.db import crud
-from cat.db.database import Database
 from cat.rabbit_hole import RabbitHole
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.memory.working_memory import WorkingMemoryList, WorkingMemory
 from cat.memory.long_term_memory import LongTermMemory
-from cat.looking_glass.stray_cat import StrayCat
 from cat.looking_glass.agent_manager import AgentManager
-from cat.looking_glass.callbacks import NewTokenHandler
 import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
@@ -46,6 +35,7 @@ class CheshireCat():
 
         At init time the Cat executes the bootstrap.
         """
+
 
         # bootstrap the cat!
         # instantiate MadHatter (loads all plugins' hooks and tools)
