@@ -14,7 +14,6 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
-from cat.memory.working_memory import WorkingMemory
 from cat.utils import verbal_timedelta
 from cat.log import log
 
