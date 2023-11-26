@@ -34,8 +34,11 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-        #REFACTORING: move this hook outside of the init
-        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers, cat=cat)
+        self.__reload_file_handlers()
+
+    def __reload_file_handlers(self):
+        self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
+
 
     def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -275,6 +278,8 @@ class RabbitHole:
             List of Langchain `Document` of chunked text.
         """
 
+        self.__reload_file_handlers()
+
         if notification_callback is None:
             notification_callback = self.__cat.send_ws_message
 
@@ -425,3 +430,8 @@ class RabbitHole:
         )
 
         return docs
+
+    @property
+    def file_handlers(self):
+        self.__reload_file_handlers()
+        return self.__file_handlers
