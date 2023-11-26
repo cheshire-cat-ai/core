@@ -39,9 +39,8 @@ class LLMDefaultConfig(LLMSettings):
             "humanReadableName": "Default Language Model",
             "description":
                 "A dumb LLM just telling that the Cat is not configured. "
-                "There will be a nice LLM here "
-                "once consumer hardware allows it.",
-            "link": ""
+                "There will be a nice LLM here once consumer hardware allows it.",
+            "link": "",
         }
     )
 
@@ -68,10 +67,8 @@ class LLMCustomConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "Custom LLM",
-            "description":
-                "LLM on a custom endpoint. "
-                "See docs for examples.",
-            "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/"
+            "description": "LLM on a custom endpoint. See docs for examples.",
+            "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/",
         }
     )
 
@@ -90,6 +87,7 @@ class LLMLlamaCppConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Self-hosted llama-cpp-python",
             "description": "Self-hosted llama-cpp-python compatible LLM",
+            "link": "",
         }
     )
 
@@ -105,7 +103,7 @@ class LLMOpenAIChatConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "OpenAI ChatGPT",
             "description": "Chat model from OpenAI",
-            "link": "https://platform.openai.com/docs/models/overview"
+            "link": "https://platform.openai.com/docs/models/overview",
         }
     )
 
@@ -120,10 +118,8 @@ class LLMOpenAIConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI GPT-3",
-            "description":
-                "OpenAI GPT-3. More expensive but "
-                "also more flexible than ChatGPT.",
-            "link": "https://platform.openai.com/docs/models/overview"
+            "description": "OpenAI GPT-3. More expensive but also more flexible than ChatGPT.",
+            "link": "https://platform.openai.com/docs/models/overview",
         }
     )
 
@@ -145,7 +141,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Azure OpenAI Chat Models",
             "description": "Chat model from Azure OpenAI",
-            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service",
         }
     )
 
@@ -168,7 +164,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Azure OpenAI Completion models",
             "description": "Configuration for Cognitive Services Azure OpenAI",
-            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service"
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service",
         }
     )
 
@@ -183,7 +179,7 @@ class LLMCohereConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Cohere",
             "description": "Configuration for Cohere language model",
-            "link": "https://docs.cohere.com/docs/models"
+            "link": "https://docs.cohere.com/docs/models",
         }
     )
 
@@ -203,7 +199,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "HuggingFace TextGen Inference",
             "description": "Configuration for HuggingFace TextGen Inference",
-            "link": "https://huggingface.co/text-generation-inference"
+            "link": "https://huggingface.co/text-generation-inference",
         }
     )
 
@@ -218,9 +214,8 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "HuggingFace Endpoint",
-            "description":
-                "Configuration for HuggingFace Endpoint language models",
-            "link": "https://huggingface.co/inference-endpoints"
+            "description": "Configuration for HuggingFace Endpoint language models",
+            "link": "https://huggingface.co/inference-endpoints",
         }
     )
 
@@ -239,7 +234,7 @@ class LLMOllamaConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Ollama",
             "description": "Configuration for Ollama",
-            "link": "https://ollama.ai/library"
+            "link": "https://ollama.ai/library",
         }
     )
 
