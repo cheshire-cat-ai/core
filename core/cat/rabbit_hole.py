@@ -18,28 +18,29 @@ from langchain.document_loaders.parsers.txt import TextParser
 from langchain.document_loaders.blob_loaders.schema import Blob
 from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
-from cat.mad_hatter.mad_hatter import MadHatter
 from cat.utils import singleton
 from cat.log import log
 
 @singleton
 class RabbitHole:
     """Manages content ingestion. I'm late... I'm late!"""
+    def __init__(self, cat) -> None:
+        self.__cat = cat
 
-    def __init__(self, cat):
-        self.mad_hatter = MadHatter()
-
-        file_handlers = {
+        self.__file_handlers = {
             "application/pdf": PDFMinerParser(),
             "text/plain": TextParser(),
             "text/markdown": TextParser(),
             "text/html": BS4HTMLParser()
         }
 
-        #REFACTORING: move this hook outside of the init
-        self.file_handlers = self.mad_hatter.execute_hook("rabbithole_instantiates_parsers", file_handlers, cat=cat)
+        self.__reload_file_handlers()
 
-    def ingest_memory(self, stray, file: UploadFile):
+    def __reload_file_handlers(self):
+        self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
+
+
+    def ingest_memory(self, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
 
         Parameters
@@ -64,7 +65,7 @@ class RabbitHole:
 
         # Check the embedder used for the uploaded memories is the same the Cat is using now
         upload_embedder = memories["embedder"]
-        cat_embedder = str(stray.embedder.__class__.__name__)
+        cat_embedder = str(self.__cat.embedder.__class__.__name__)
 
         if upload_embedder != cat_embedder:
             message = f'Embedder mismatch: file embedder {upload_embedder} is different from {cat_embedder}'
@@ -84,7 +85,7 @@ class RabbitHole:
         log.info(f"Preparing to load {len(vectors)} vector memories")
 
         # Check embedding size is correct
-        embedder_size = stray.memory.vectors.embedder_size
+        embedder_size = self.__cat.memory.vectors.embedder_size
         len_mismatch = [len(v) == embedder_size for v in vectors]
 
         if not any(len_mismatch):
@@ -92,7 +93,7 @@ class RabbitHole:
             raise Exception(message)
 
         # Upsert memories in batch mode # TODO: make a method for batch inserting inside vector memory
-        stray.memory.vectors.vector_db.upsert(
+        self.__cat.memory.vectors.vector_db.upsert(
             collection_name="declarative",
             points=models.Batch(
                 ids=ids,
@@ -101,12 +102,13 @@ class RabbitHole:
             )
         )
 
+    
     def ingest_file(
             self,
-            stray,
             file: Union[str, UploadFile],
             chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_overlap: int = 100,
+            notification_callback = None
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -132,12 +134,15 @@ class RabbitHole:
         before_rabbithole_stores_documents
         """
 
+        if notification_callback is None:
+            notification_callback = self.__cat.send_ws_message
+
         # split file into a list of docs
         docs = self.file_to_docs(
-            stray=stray,
             file=file, 
             chunk_size=chunk_size, 
-            chunk_overlap=chunk_overlap
+            chunk_overlap=chunk_overlap,
+            notification_callback=notification_callback
         )
 
         # store in memory
@@ -146,14 +151,19 @@ class RabbitHole:
         else:
             filename = file.filename
 
-        self.store_documents(stray=stray,docs=docs, source=filename)
+        self.store_documents(
+            docs=docs, 
+            source=filename,
+            notification_callback=notification_callback    
+        )
+
 
     def file_to_docs(
             self,
-            stray,
             file: Union[str, UploadFile],
             chunk_size: int = 400,
             chunk_overlap: int = 100,
+            notification_callback = None
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -181,6 +191,9 @@ class RabbitHole:
         Currently supported files are `.txt`, `.pdf`, `.md` and web pages.
 
         """
+
+        if notification_callback is None:
+            notification_callback = self.__cat.send_ws_message
 
         # Check type of incoming file.
         if isinstance(file, UploadFile):
@@ -221,22 +234,23 @@ class RabbitHole:
         else:
             raise ValueError(f"{type(file)} is not a valid type.")
         return self.string_to_docs(
-            stray,
-            file_bytes,
-            source,
-            content_type,
-            chunk_size,
-            chunk_overlap
+            file_bytes=file_bytes,
+            source=source,
+            content_type=content_type,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            notification_callback=notification_callback
         )
+
 
     def string_to_docs(
             self,
-            stray,
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
             chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_overlap: int = 100,
+            notification_callback = None
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -263,6 +277,12 @@ class RabbitHole:
         docs : List[Document]
             List of Langchain `Document` of chunked text.
         """
+
+        self.__reload_file_handlers()
+
+        if notification_callback is None:
+            notification_callback = self.__cat.send_ws_message
+
         # Load the bytes in the Blob schema
         blob = Blob(data=file_bytes,
                     mimetype=content_type,
@@ -273,19 +293,19 @@ class RabbitHole:
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
-        stray.send_ws_message("I'm parsing the content. Big content could require some minutes...")
+        notification_callback("I'm parsing the content. Big content could require some minutes...")
         text = parser.parse(blob)
 
-        stray.send_ws_message("Parsing completed. Now let's go with reading process...")
+        notification_callback("Parsing completed. Now let's go with reading process...")
         docs = self.__split_text(
-            stray=stray,
             text=text,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap
         )
         return docs
 
-    def store_documents(self, stray, docs: List[Document], source: str) -> None:
+
+    def store_documents(self, docs: List[Document], source: str, notification_callback = None) -> None:
         """Add documents to the Cat's declarative memory.
 
         This method loops a list of Langchain `Document` and adds some metadata. Namely, the source filename and the
@@ -308,11 +328,14 @@ class RabbitHole:
         before_rabbithole_insert_memory
         """
 
+        if notification_callback is None:
+            notification_callback = self.__cat.send_ws_message
+
         log.info(f"Preparing to memorize {len(docs)} vectors")
 
         # hook the docs before they are stored in the vector memory
-        docs = stray.mad_hatter.execute_hook(
-            "before_rabbithole_stores_documents", docs, cat=stray
+        docs = self.__cat.mad_hatter.execute_hook(
+            "before_rabbithole_stores_documents", docs, cat=self.__cat
         )
 
         # classic embed
@@ -322,16 +345,16 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                stray.send_ws_message(f"Read {perc_read}% of {source}")
+                notification_callback(f"Read {perc_read}% of {source}")
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
-            doc = stray.mad_hatter.execute_hook(
-                "before_rabbithole_insert_memory", doc, cat=stray
+            doc = self.__cat.mad_hatter.execute_hook(
+                "before_rabbithole_insert_memory", doc, cat=self.__cat
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
-                _ = stray.memory.vectors.declarative.add_texts(
+                _ = self.__cat.memory.vectors.declarative.add_texts(
                     [doc.page_content],
                     [doc.metadata],
                 )
@@ -347,11 +370,12 @@ class RabbitHole:
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
 
-        stray.send_ws_message(finished_reading_message)
+        notification_callback(finished_reading_message)
 
         print(f"\n\nDone uploading {source}")
 
-    def __split_text(self, stray, text, chunk_size, chunk_overlap):
+
+    def __split_text(self, text, chunk_size, chunk_overlap):
         """Split text in overlapped chunks.
 
         This method executes the `rabbithole_splits_text` to split the incoming text in overlapped
@@ -384,8 +408,8 @@ class RabbitHole:
 
         """
         # do something on the text before it is split
-        text = stray.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text, cat=stray
+        text = self.__cat.mad_hatter.execute_hook(
+            "before_rabbithole_splits_text", text, cat=self.__cat
         )
 
         # split the documents using chunk_size and chunk_overlap
@@ -401,8 +425,13 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = stray.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs, cat=stray
+        docs = self.__cat.mad_hatter.execute_hook(
+            "after_rabbithole_splitted_text", docs, cat=self.__cat
         )
 
         return docs
+
+    @property
+    def file_handlers(self):
+        self.__reload_file_handlers()
+        return self.__file_handlers

@@ -45,14 +45,13 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
     """
 
     # Retrieve the `ccat` instance from the application's state.
-    ccat = websocket.app.state.ccat
     strays = websocket.app.state.strays
 
     # Skip the coroutine if the same user is already connected via WebSocket.
     if user_id in strays.keys():
         stray = strays[user_id]
         #await stray._ws.close() # REFACTOR: handle ws closing
-        stray._ws = websocket
+        stray.ws = websocket
         log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
         
     else:
@@ -60,9 +59,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         # Contains working_memory and utility pointers to main framework modules
         # It is passed to both memory recall and agent to read/write working memory
         stray = StrayCat(
+            ws=websocket,
             user_id=user_id,
-            cat=ccat,
-            ws=websocket
         )
         strays[user_id] = stray
 

@@ -47,7 +47,7 @@ async def upload_file(
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
-        ccat.rabbit_hole.ingest_file, ccat, file, chunk_size, chunk_overlap
+        ccat.rabbit_hole.ingest_file, file, chunk_size, chunk_overlap, ccat.send_ws_message
     )
 
     # reply to client
@@ -93,7 +93,7 @@ async def upload_url(
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                ccat.rabbit_hole.ingest_file, ccat, url, chunk_size, chunk_overlap
+                ccat.rabbit_hole.ingest_file, url, chunk_size, chunk_overlap, ccat.send_ws_message
             )
             return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
@@ -139,7 +139,7 @@ async def upload_memory(
             })
 
     # Ingest memories in background and notify client
-    background_tasks.add_task(ccat.rabbit_hole.ingest_memory, ccat, file)
+    background_tasks.add_task(ccat.rabbit_hole.ingest_memory, file)
 
     # reply to client
     return {

@@ -1,5 +1,4 @@
 import glob
-import time
 import shutil
 import os
 import traceback
@@ -265,3 +264,4 @@ class MadHatter:
         # Plugin's folder
         name = plugin_suffix.split("/")[0]
         return self.plugins[name]
+

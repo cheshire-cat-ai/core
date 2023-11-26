@@ -59,7 +59,7 @@ class CheshireCat():
         self.agent_manager = AgentManager()
 
         # Rabbit Hole Instance
-        self.rabbit_hole = RabbitHole(self)
+        self.rabbit_hole = RabbitHole(self) # :(
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
@@ -216,8 +216,10 @@ class CheshireCat():
         vector_memory_config = {"cat": self, "verbose": True}
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
         
-    # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, it is created and saved
+
     def embed_tools(self):
+        # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
+        # it is created and saved
         
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()
@@ -260,6 +262,7 @@ class CheshireCat():
                 collection_name="procedural",
                 points_selector=points_to_be_deleted
             )
+
 
     def send_ws_message(self, content: str, msg_type = "notification"):
         log.error("No websocket connection open")
