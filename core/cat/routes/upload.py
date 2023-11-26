@@ -28,7 +28,7 @@ async def upload_file(
     ccat = request.app.state.ccat
 
     if "user" in request.app.state.strays.keys():
-        ccat = request.app.state.strays["user"][0]
+        ccat = request.app.state.strays["user"]
 
     # Check the file format is supported
     admitted_types = ccat.rabbit_hole.file_handlers.keys()
@@ -89,7 +89,7 @@ async def upload_url(
             ccat = request.app.state.ccat
 
             if "user" in request.app.state.strays.keys():
-                ccat = request.app.state.strays["user"][0]
+                ccat = request.app.state.strays["user"]
 
             # upload file to long term memory, in the background
             background_tasks.add_task(
@@ -126,7 +126,7 @@ async def upload_memory(
     ccat = request.app.state.ccat
 
     if "user" in request.app.state.strays.keys():
-        ccat = request.app.state.strays["user"][0]
+        ccat = request.app.state.strays["user"]
 
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
