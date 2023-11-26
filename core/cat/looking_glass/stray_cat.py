@@ -17,25 +17,18 @@ from cat.memory.working_memory import WorkingMemory
 MAX_TEXT_INPUT = 500
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
-# The Cheshire Cat goes around tools and hook, making troubles
+# The Stray cat goes around tools and hook, making troubles
 class StrayCat:
     """User/session based object containing working memory and a few utility pointers"""
 
-    def __init__(self, cat: CheshireCat, ws: WebSocket, user_id: str = "user"):
-        
-        self._loop = asyncio.get_running_loop()
-
-        self.user_id = user_id
-        self._ws = ws
-        self.ws_messages = asyncio.Queue()
-
+    def __init__(self, ws: WebSocket, user_id: str):
+        self.__user_id = user_id
+        self.__ws_messages = asyncio.Queue()
         self.working_memory = WorkingMemory()
-        self._llm = cat._llm
-        self.embedder = cat.embedder
-        self.memory = cat.memory
-        self.rabbit_hole = cat.rabbit_hole
-        self.mad_hatter = cat.mad_hatter
-        self.agent_manager =cat.agent_manager      
+
+        self.ws = ws
+
+        self.__loop = asyncio.get_running_loop()
 
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
@@ -57,8 +50,8 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self._loop.create_task(
-                self.ws_messages.put(
+            self.__loop.create_task(
+                self.__ws_messages.put(
                     {
                         "type": msg_type,
                         "name": "GenericError",
@@ -67,8 +60,8 @@ class StrayCat:
                 )
             )
         else:
-            self._loop.create_task(
-                self.ws_messages.put(
+            self.__loop.create_task(
+                self.__ws_messages.put(
                     {
                         "type": msg_type,
                         "content": content
@@ -158,6 +151,7 @@ class StrayCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
 
+
     def llm(self, prompt: str, stream: bool = False) -> str:
         """Generate a response using the LLM model.
 
@@ -187,6 +181,7 @@ class StrayCat:
         # Check if self._llm is a chat model and call it as a completion model
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
+
 
     def __call__(self, user_message_json):
             """Call the Cat instance.
@@ -236,7 +231,7 @@ class StrayCat:
                     index = MAX_TEXT_INPUT
                 self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
                 docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
-                self.rabbit_hole.store_documents(stray=self, docs=docs, source="")
+                self.rabbit_hole.store_documents(docs=docs, source="")
 
 
             # recall episodic and declarative memories from vector collections
@@ -321,3 +316,34 @@ class StrayCat:
 
             return final_output
 
+    @property
+    def user_id(self):
+        return self.__user_id
+    
+    @property
+    def ws_messages(self):
+        return self.__ws_messages
+
+    @property
+    def _llm(self):
+        return CheshireCat()._llm
+    
+    @property
+    def embedder(self):
+        return CheshireCat().embedder
+    
+    @property
+    def memory(self):
+        return CheshireCat().memory
+
+    @property
+    def rabbit_hole(self):
+        return CheshireCat().rabbit_hole
+
+    @property
+    def mad_hatter(self):
+        return CheshireCat().mad_hatter
+    
+    @property
+    def agent_manager(self):
+        return CheshireCat().agent_manager
