@@ -188,7 +188,7 @@ class MadHatter:
                 log.warning(f"Toggle plugin {plugin_id}: Activate")
                 # Activate the plugin
                 self.plugins[plugin_id].activate()
-                # Ass the plugin in the list of active plugins
+                # Add the plugin in the list of active plugins
                 self.active_plugins.append(plugin_id)
 
             # update DB with list of active plugins, delete duplicate plugins
