@@ -80,15 +80,6 @@ jobs:
         with:
          context: core/
          push: true
-         tags: ghcr.io/${{ github.repository }}:${{ needs.tag.outputs.tag }}
+         tags: ghcr.io/${{ github.repository }}:${{ needs.tag.outputs.tag }} ghcr.io/${{ github.repository }}:latest
          platforms: linux/amd64,linux/arm64
          provenance: false
-
-      -  name: Update latest tag
-         if: success()
-         run: |
-           if [ "${{ github.event_name }}" == "push" ]; then
-             echo "Updating latest tag"
-             docker tag ghcr.io/${{ github.repository }}:${{ needs.tag.outputs.tag }} ghcr.io/${{ github.repository }}:latest
-             docker push ghcr.io/${{ github.repository }}:latest
-           fi
