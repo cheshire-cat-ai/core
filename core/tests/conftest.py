@@ -50,7 +50,7 @@ def app(monkeypatch) -> Generator[FastAPI, Any, None]:
     # Use in memory vector db
     def mock_connect_to_vector_memory(self, *args, **kwargs):
         self.vector_db = QdrantClient(":memory:")
-    monkeypatch.setattr(VectorMemory, "connect_to_vector_memory", mock_connect_to_vector_memory)
+    monkeypatch.setattr(VectorMemory().__class__, "connect_to_vector_memory", mock_connect_to_vector_memory)
 
     # Use a different json settings db
     def mock_get_file_name(self, *args, **kwargs):

@@ -90,7 +90,7 @@ class StrayCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        user_id = self.working_memory.get_user_id()
+        user_id = self.working_memory.get_user_id() # REFACTOR: is user_id consistent between stray and working memory?
         recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
@@ -282,9 +282,11 @@ class StrayCat:
             # store user message in episodic memory
             # TODO: vectorize and store also conversation chunks
             #   (not raw dialog, but summarization)
-            _ = self.memory.vectors.episodic.add_texts(
-                [user_message],
-                [{"source": user_id, "when": time.time()}],
+            user_message_embedding = self.embedder.embed_documents([user_message])
+            _ = self.memory.vectors.episodic.add_point(
+                user_message,
+                user_message_embedding[0],
+                {"source": user_id, "when": time.time()},
             )
 
             # build data structure for output (response and why with memories)

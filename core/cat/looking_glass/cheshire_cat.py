@@ -213,7 +213,23 @@ class CheshireCat():
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
         # Memory
-        vector_memory_config = {"cat": self, "verbose": True}
+
+        # Get embedder size (langchain classes do not store it)
+        embedder_size = len(self.embedder.embed_query("hello world"))
+
+        # Get embedder name (useful for for vectorstore aliases)
+        if hasattr(self.embedder, "model"):
+            embedder_name = self.embedder.model
+        elif hasattr(self.embedder, "repo_id"):
+            embedder_name = self.embedder.repo_id
+        else:
+            embedder_name = "default_embedder"
+
+        # instantiate long term memory
+        vector_memory_config = {
+            "embedder_name": embedder_name,
+            "embedder_size": embedder_size,
+        }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
         
 
@@ -233,14 +249,16 @@ class CheshireCat():
             # if the tool is not embedded 
             if tool.description not in embedded_tools_descriptions:
                 # embed the tool and save it to DB
-                self.memory.vectors.procedural.add_texts(
-                    [tool.description],
-                    [{
+                tool_embedding = self.embedder.embed_documents([tool.description])
+                self.memory.vectors.procedural.add_point(
+                    tool.description,
+                    tool_embedding[0],
+                    {
                         "source": "tool",
                         "when": time.time(),
                         "name": tool.name,
                         "docstring": tool.docstring
-                    }],
+                    },
                 )
 
                 log.warning(f"Newly embedded tool: {tool.description}")

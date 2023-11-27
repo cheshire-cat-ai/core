@@ -354,9 +354,11 @@ class RabbitHole:
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
-                _ = self.__cat.memory.vectors.declarative.add_texts(
-                    [doc.page_content],
-                    [doc.metadata],
+                doc_embedding = self.__cat.embedder.embed_documents([doc.page_content])
+                _ = self.__cat.memory.vectors.declarative.add_point(
+                    doc.page_content,
+                    doc_embedding[0],
+                    doc.metadata,
                 )
 
                 log.info(f"Inserted into memory({inserting_info})")
