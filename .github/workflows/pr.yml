@@ -6,9 +6,9 @@ concurrency:
 
 on:
   pull_request:
-    branches: [main, develop, develop-ethlac-issue580]
+    branches: [main, develop]
   push:
-    branches: [main, develop, develop-ethlac-issue580]
+    branches: [main, develop]
 
 jobs:
   # pylint:
