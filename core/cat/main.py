@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-
+import asyncio
 import uvicorn
 
 from fastapi import Depends, FastAPI
@@ -30,6 +30,9 @@ async def lifespan(app: FastAPI):
 
     # Dict of pseudo-sessions (key is the user_id)
     app.state.strays = {}
+
+    # set a reference to asyncio event loop
+    app.state.event_loop = asyncio.get_running_loop()
 
     # startup message with admin, public and swagger addresses
     log.welcome()

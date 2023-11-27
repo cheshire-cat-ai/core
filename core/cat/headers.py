@@ -60,7 +60,8 @@ def session(request: Request) -> str:
 
     strays = request.app.state.strays
     user_id = request.headers.get("user_id")
+    event_loop = request.app.state.event_loop
     
     if user_id not in strays.keys():
-        strays[user_id] = StrayCat(user_id=user_id)
+        strays[user_id] = StrayCat(user_id=user_id, event_loop=event_loop)
     return strays[user_id]

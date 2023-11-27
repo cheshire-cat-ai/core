@@ -21,7 +21,12 @@ MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 class StrayCat:
     """User/session based object containing working memory and a few utility pointers"""
 
-    def __init__(self, user_id: str, ws: WebSocket = None):
+    def __init__(
+            self,
+            user_id: str,
+            ws: WebSocket = None,
+            event_loop = None
+        ):
         self.__user_id = user_id
         self.__ws_messages = asyncio.Queue()
         self.working_memory = WorkingMemory()
@@ -30,7 +35,10 @@ class StrayCat:
         self.ws = ws
 
         # event loop
-        self.__loop = asyncio.get_running_loop()
+        if event_loop is None:
+            self.__loop = asyncio.get_event_loop()
+        else:
+            self.__loop = event_loop
 
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):

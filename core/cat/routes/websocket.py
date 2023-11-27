@@ -1,7 +1,7 @@
 import traceback
 import asyncio
 
-from fastapi import APIRouter, WebSocketDisconnect, WebSocket
+from fastapi import Depends, APIRouter, WebSocketDisconnect, WebSocket
 from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
