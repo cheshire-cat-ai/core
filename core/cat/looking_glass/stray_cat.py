@@ -21,13 +21,15 @@ MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 class StrayCat:
     """User/session based object containing working memory and a few utility pointers"""
 
-    def __init__(self, ws: WebSocket, user_id: str):
+    def __init__(self, user_id: str, ws: WebSocket = None):
         self.__user_id = user_id
         self.__ws_messages = asyncio.Queue()
         self.working_memory = WorkingMemory()
 
+        # attribute to store ws connection
         self.ws = ws
 
+        # event loop
         self.__loop = asyncio.get_running_loop()
 
 
@@ -44,6 +46,11 @@ class StrayCat:
         msg_type : str
             The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
         """
+
+        if self.ws is None:
+            log.warning(f"No websocket connection is open for user {self.user_id}")
+            return
+
         options = get_args(MSG_TYPES)
 
         if msg_type not in options:

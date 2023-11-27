@@ -49,9 +49,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
 
     # Skip the coroutine if the same user is already connected via WebSocket.
     if user_id in strays.keys():
-        stray = strays[user_id]
-        #await stray._ws.close() # REFACTOR: handle ws closing
-        stray.ws = websocket
+        stray = strays[user_id]            
+        #await stray._ws.close() # REFACTOR: handle ws closing (coroutines remain open)
+        stray.ws = websocket # ws connection is overwritten
         log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
         
     else:
