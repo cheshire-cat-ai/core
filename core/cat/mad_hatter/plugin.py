@@ -133,12 +133,12 @@ class Plugin:
                 log.error(e)
                 raise e
         # settings.json does not exist # TODO: may be buggy or there is a better way via json_schema
-        else:
-            try:
-                # if all settings have a default, this should go fine
-                settings = self.settings_model()
-            except Exception as e:
-                settings == {}
+        #else:
+        #    try:
+        #        # if all settings have a default, this should go fine
+        #        settings = self.settings_model()
+        #    except Exception as e:
+        #        settings == {}
 
         return settings
     
