@@ -85,14 +85,14 @@ class RabbitHole:
         log.info(f"Preparing to load {len(vectors)} vector memories")
 
         # Check embedding size is correct
-        embedder_size = self.__cat.memory.vectors.embedder_size
+        embedder_size = self.__cat.memory.vectors.declarative.embedder_size
         len_mismatch = [len(v) == embedder_size for v in vectors]
 
         if not any(len_mismatch):
             message = f'Embedding size mismatch: vectors length should be {embedder_size}'
             raise Exception(message)
 
-        # Upsert memories in batch mode # TODO: make a method for batch inserting inside vector memory
+        # Upsert memories in batch mode # TODO REFACTOR: use VectorMemoryCollection.add_point
         self.__cat.memory.vectors.vector_db.upsert(
             collection_name="declarative",
             points=models.Batch(

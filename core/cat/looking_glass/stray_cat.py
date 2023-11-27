@@ -90,7 +90,6 @@ class StrayCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        user_id = self.working_memory.get_user_id() # REFACTOR: is user_id consistent between stray and working memory?
         recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
@@ -110,7 +109,7 @@ class StrayCat:
             "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
-            "metadata": {"source": user_id},
+            "metadata": {"source": self.user_id},
         }
 
         default_declarative_recall_config = {
@@ -208,9 +207,7 @@ class StrayCat:
             log.info(user_message_json)
 
             # set a few easy access variables
-            user_id = user_message_json.get('user_id', 'user')
             self.working_memory["user_message_json"] = user_message_json
-            self.working_memory["user_message_json"]['user_id'] = user_id
 
             # hook to modify/enrich user input
             self.working_memory["user_message_json"] = self.mad_hatter.execute_hook(
@@ -286,7 +283,7 @@ class StrayCat:
             _ = self.memory.vectors.episodic.add_point(
                 user_message,
                 user_message_embedding[0],
-                {"source": user_id, "when": time.time()},
+                {"source": self.user_id, "when": time.time()},
             )
 
             # build data structure for output (response and why with memories)
@@ -297,7 +294,7 @@ class StrayCat:
             
             final_output = {
                 "type": "chat",
-                "user_id": user_id,
+                "user_id": self.user_id,
                 "content": cat_message.get("output"),
                 "why": {
                     "input": cat_message.get("input"),
