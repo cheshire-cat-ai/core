@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [main,develop-ethlac-issue580-1]
+    branches: [main]
 
 permissions:
   contents: write
