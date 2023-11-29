@@ -5,22 +5,20 @@ import subprocess
 
 from inspect import isfunction
 
+from tests.conftest import clean_up_mocks
+
 from cat.mad_hatter.mad_hatter import Plugin
 from cat.mad_hatter.decorators import CatHook, CatTool
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
 # this fixture will give test functions a ready instantiated plugin
+# (and having the `client` fixture, a clean setup every unit)
 @pytest.fixture
-def plugin():
-
+def plugin(client):
+    
     p = Plugin(mock_plugin_path)
-    
     yield p
-    
-    settings_file = mock_plugin_path + "settings.json"
-    if os.path.exists(settings_file):
-        os.remove(settings_file)
 
 
 def test_create_plugin_wrong_folder():
@@ -54,11 +52,6 @@ def test_create_plugin(plugin):
     assert plugin.manifest["id"] == plugin.id
     assert plugin.manifest["name"] == "MockPlugin"
     assert "Description not found" in plugin.manifest["description"]
-
-    # Check if plugin requirement is installed
-    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
-    result = result.stdout.decode()
-    assert fnmatch.fnmatch(result, "*pip-install-test*")
 
     # hooks and tools
     assert plugin.hooks == []
@@ -131,3 +124,26 @@ def test_save_settings(plugin):
     settings = plugin.load_settings()
     assert settings["a"] == fake_settings["a"]
 
+
+# Check if plugin requirements have been installed
+# ATTENTION: not using `plugin` fixture here, we instantiate and cleanup manually
+#           to use the unmocked Plugin class
+def test_install_plugin_dependencies():
+
+    # manual cleanup
+    clean_up_mocks()
+    # Uninstall mock plugin requirements
+    os.system("pip uninstall -y pip-install-test")
+
+    # Install mock plugin
+    p = Plugin(mock_plugin_path)
+
+    # pip-install-test should have been installed
+    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
+    result = result.stdout.decode()
+    assert fnmatch.fnmatch(result, "*pip-install-test*")
+
+    # manual cleanup
+    clean_up_mocks()
+    # Uninstall mock plugin requirements
+    os.system("pip uninstall -y pip-install-test")
