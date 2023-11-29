@@ -14,9 +14,8 @@ from tests.utils import create_mock_plugin_zip
 @pytest.fixture
 def mad_hatter(client): # client here injects the monkeypatched version of the cat
 
-    # each test is given the mad_hatter instance
+    # each test is given the mad_hatter instance (it's a singleton)
     yield MadHatter()
-    
 
 
 def test_instantiation_discovery(mad_hatter):
@@ -74,24 +73,31 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     assert "mock_plugin" in mad_hatter.load_active_plugins_from_db() # plugin starts active
 
     # plugin is activated by default
-    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 1
+    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 2
     assert len(mad_hatter.plugins["mock_plugin"].tools) == 1
-    new_hook = mad_hatter.plugins["mock_plugin"].hooks[0]
+
+    # tool found
     new_tool = mad_hatter.plugins["mock_plugin"].tools[0]
-
-    # plugin reference
-    assert new_hook.plugin_id == "mock_plugin"
     assert new_tool.plugin_id == "mock_plugin"
+    assert id(new_tool) == id(mad_hatter.tools[1])  # cached and same object in memory!
 
+    # hooks found
+    new_hooks = mad_hatter.plugins["mock_plugin"].hooks
+    hooks_ram_addresses = []
+    for h in new_hooks:
+        assert h.plugin_id == "mock_plugin"
+        hooks_ram_addresses.append(id(h))
+    
     # found tool and hook have been cached
-    assert id(new_tool) == id(mad_hatter.tools[1])  # same object in memory!
     mock_hook_name = "before_cat_sends_message"
-    assert len(mad_hatter.hooks[mock_hook_name]) == 2
-    cached_hook = mad_hatter.hooks[mock_hook_name][0]  # correctly sorted by priority
-    assert cached_hook.name == mock_hook_name
-    assert cached_hook.plugin_id == "mock_plugin"
-    assert cached_hook.priority == 2
-    assert id(new_hook) == id(cached_hook)  # same object in memory!
+    assert len(mad_hatter.hooks[mock_hook_name]) == 3 # one in core, two in mock plugin
+    expected_priorities = [3, 2, 0]
+    for hook_idx, cached_hook in enumerate(mad_hatter.hooks[mock_hook_name]):
+        assert cached_hook.name == mock_hook_name
+        assert cached_hook.priority == expected_priorities[hook_idx] # correctly sorted by priority
+        if cached_hook.plugin_id != "core_plugin":
+            assert cached_hook.plugin_id == "mock_plugin"
+            assert id(cached_hook) in hooks_ram_addresses  # same object in memory!
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()

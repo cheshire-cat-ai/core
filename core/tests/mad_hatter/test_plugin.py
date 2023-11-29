@@ -66,13 +66,13 @@ def test_activate_plugin(plugin):
     assert plugin.active == True
 
     # hooks
-    assert len(plugin.hooks) == 1
+    assert len(plugin.hooks) == 2
     hook = plugin.hooks[0]
     assert isinstance(hook, CatHook)
     assert hook.plugin_id == "mock_plugin"
     assert hook.name == "before_cat_sends_message"
     assert isfunction(hook.function)
-    assert hook.priority == 2.0
+    assert hook.priority > 1 # not sorted yet (mad_hatter will sort them)
 
     # tools
     assert len(plugin.tools) == 1
@@ -83,6 +83,7 @@ def test_activate_plugin(plugin):
     assert "mock_tool" in tool.description
     assert isfunction(tool.func)
     assert tool.return_direct == True
+
 
 def test_deactivate_plugin(plugin):
 
