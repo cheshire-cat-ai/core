@@ -1,8 +1,10 @@
 import time
 
+from langchain.llms.base import BaseLLM
+from langchain.base_language import BaseLanguageModel
+from langchain.chat_models.base import BaseChatModel
 from langchain.llms import Cohere, OpenAI, AzureOpenAI
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
-from langchain.base_language import BaseLanguageModel
 
 from cat.utils import singleton
 from cat.log import log
@@ -81,11 +83,11 @@ class CheshireCat():
         agent_prompt_prefix
         """
         # LLM and embedder
-        self._llm = self.get_language_model()
-        self.embedder = self.get_language_embedder()
+        self._llm = self.load_language_model()
+        self.embedder = self.load_language_embedder()
 
 
-    def get_language_model(self) -> BaseLanguageModel:
+    def load_language_model(self) -> BaseLanguageModel:
         """Large Language Model (LLM) selection at bootstrap time.
 
         Returns
@@ -122,7 +124,7 @@ class CheshireCat():
         return llm
 
 
-    def get_language_embedder(self) -> embedders.EmbedderSettings:
+    def load_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
 
         Allows to modify how the Cat selects the embedder at bootstrap time.
@@ -284,3 +286,30 @@ class CheshireCat():
 
     def send_ws_message(self, content: str, msg_type = "notification"):
         log.error("No websocket connection open")
+
+    # REFACTOR: cat.llm should be available here, without streaming clearly
+    # (one could be interested in calling the LLM anytime, not only when there is a session)
+    def llm(self, prompt, *args, **kwargs) -> str:
+        """Generate a response using the LLM model.
+
+        This method is useful for generating a response with both a chat and a completion model using the same syntax
+
+        Parameters
+        ----------
+        prompt : str
+            The prompt for generating the response.
+
+        Returns
+        -------
+        str
+            The generated response.
+
+        """
+
+        # Check if self._llm is a completion model and generate a response
+        if isinstance(self._llm, BaseLLM):
+            return self._llm(prompt)
+
+        # Check if self._llm is a chat model and call it as a completion model
+        if isinstance(self._llm, BaseChatModel):
+            return self._llm.call_as_llm(prompt)

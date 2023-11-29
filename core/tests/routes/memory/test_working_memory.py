@@ -2,7 +2,7 @@ import time
 from tests.utils import send_websocket_message
 
 
-def test_convo_history_absent_if_no_ws_connection(client):
+def test_convo_history_absent(client):
 
     # no ws connection, so no convo history available
     response = client.get(f"/memory/conversation_history/")
