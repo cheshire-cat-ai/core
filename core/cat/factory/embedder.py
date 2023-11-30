@@ -1,8 +1,8 @@
 from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
-
-from cat.factory.custom_embedder import CustomFastembedEmbeddings, DumbEmbedder, CustomOpenAIEmbeddings
+from langchain.embeddings.fastembed import FastEmbedEmbeddings
+from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
@@ -107,19 +107,20 @@ class EmbedderCohereConfig(EmbedderSettings):
     )
 
 
-class EmbedderFastEmbedConfig(EmbedderSettings):
-    url: str
-    model: str = "intfloat/multilingual-e5-large"
-    max_length: int = 512
-
-    _pyclass: Type = CustomFastembedEmbeddings
+class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
+    model_name: str = "BAAI/bge-base-en"
+    max_length: int = 512 # Unknown behavior for values > 512.
+    doc_embed_type: str = "passage" # as suggest on fastembed documentation, "passage" is the best option for documents.
+    
+    _pyclass: Type = FastEmbedEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra = {
-            "humanReadableName": "Fast Embedder",
-            "description": "Configuration for Fast embeddings",
+            "humanReadableName": "Qdrant FastEmbed (Local)",
+            "description": "Configuration for Qdrant FastEmbed",
         }
     )
+    
 
 
 SUPPORTED_EMDEDDING_MODELS = [
@@ -129,7 +130,7 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
-    EmbedderFastEmbedConfig
+    EmbedderQdrantFastEmbedConfig
 ]
 
 
