@@ -78,3 +78,33 @@ def save_settings(settings):
 
     # In core_plugin we do nothing (for now).
     return {}
+
+
+@plugin
+def activated(plugin_id):
+    """
+
+    Parameters
+    ----------
+    plugin_id
+
+    Returns
+    -------
+
+    """
+    return None
+
+
+@plugin
+def deactivated(plugin_id):
+    """
+
+    Parameters
+    ----------
+    plugin_id
+
+    Returns
+    -------
+
+    """
+    return None
