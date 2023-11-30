@@ -81,30 +81,24 @@ def save_settings(settings):
 
 
 @plugin
-def activated(plugin_id):
-    """
+def activated(plugin):
+    """This method allows executing custom code right after a plugin is activated.
 
     Parameters
     ----------
-    plugin_id
-
-    Returns
-    -------
-
+    plugin
+        Plugin: Cat object representing the plugin instance in memory.
     """
     return None
 
 
 @plugin
-def deactivated(plugin_id):
-    """
+def deactivated(plugin):
+    """This method allows executing custom code right after a plugin is deactivated.
 
     Parameters
     ----------
-    plugin_id
-
-    Returns
-    -------
-
+    plugin
+        Plugin: Cat object representing the plugin instance in memory.
     """
     return None

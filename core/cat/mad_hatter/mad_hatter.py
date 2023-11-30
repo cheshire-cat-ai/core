@@ -186,7 +186,7 @@ class MadHatter:
                 # otherwise the hook will not be available in _plugin_overrides anymore
                 for hook in self.plugins[plugin_id]._plugin_overrides:
                     if hook.name == "deactivated":
-                        hook.function(plugin_id)
+                        hook.function(self.plugins[plugin_id])
 
                 # Deactivate the plugin
                 self.plugins[plugin_id].deactivate()
@@ -203,7 +203,7 @@ class MadHatter:
                 # otherwise the hook will still not be available in _plugin_overrides
                 for hook in self.plugins[plugin_id]._plugin_overrides:
                     if hook.name == "activated":
-                        hook.function(plugin_id)
+                        hook.function(self.plugins[plugin_id])
 
                 # Add the plugin in the list of active plugins
                 self.active_plugins.append(plugin_id)
