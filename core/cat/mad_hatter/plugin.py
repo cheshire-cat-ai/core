@@ -54,7 +54,7 @@ class Plugin:
         self._hooks = [] 
         self._tools = []
 
-        # list of @plugin decorated functions overrriding default plugin behaviour
+        # list of @plugin decorated functions overriding default plugin behaviour
         self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access
 
         # plugin starts deactivated
@@ -132,6 +132,13 @@ class Plugin:
                 log.error(f"Unable to load plugin {self._id} settings")
                 log.error(e)
                 raise e
+        # settings.json does not exist # TODO: may be buggy or there is a better way via json_schema
+        #else:
+        #    try:
+        #        # if all settings have a default, this should go fine
+        #        settings = self.settings_model()
+        #    except Exception as e:
+        #        settings == {}
 
         return settings
     

@@ -1,6 +1,6 @@
 import os
 from contextlib import asynccontextmanager
-
+import asyncio
 import uvicorn
 
 from fastapi import Depends, FastAPI
@@ -27,6 +27,12 @@ async def lifespan(app: FastAPI):
     # - Not using Depends because it only supports callables (not instances)
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
+
+    # Dict of pseudo-sessions (key is the user_id)
+    app.state.strays = {}
+
+    # set a reference to asyncio event loop
+    app.state.event_loop = asyncio.get_running_loop()
 
     # startup message with admin, public and swagger addresses
     log.welcome()
@@ -56,7 +62,6 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-# TODO: To workaround the dependencies of the websocket, their are added manually in each router
 cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(check_api_key)])
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(check_api_key)])
 cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(check_api_key)])
@@ -69,7 +74,6 @@ cheshire_cat_api.include_router(websocket.router, tags=["WebSocket"])
 # mount static files
 # this cannot be done via fastapi.APIrouter:
 # https://github.com/tiangolo/fastapi/discussions/9070
-
 # admin single page app
 admin.mount_admin_spa(cheshire_cat_api)
 # admin (static build)

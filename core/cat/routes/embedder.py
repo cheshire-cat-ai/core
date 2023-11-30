@@ -155,6 +155,5 @@ def upsert_embedder_setting(
         )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
 
     return status

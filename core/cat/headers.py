@@ -5,6 +5,8 @@ from fastapi import Request
 from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
+from cat.looking_glass.stray_cat import StrayCat
+
 API_KEY = [
     key.strip() for key in os.getenv("API_KEY", "").split("|") if key.strip()
 ]
@@ -53,9 +55,13 @@ def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> 
         )
 
 
-def check_user_id(request: Request) -> str:
+# get or create session (StrayCat)
+def session(request: Request) -> str:
+
+    strays = request.app.state.strays
     user_id = request.headers.get("user_id")
-    if user_id:
-        return user_id
-    else:
-        return "user"
+    event_loop = request.app.state.event_loop
+    
+    if user_id not in strays.keys():
+        strays[user_id] = StrayCat(user_id=user_id, event_loop=event_loop)
+    return strays[user_id]

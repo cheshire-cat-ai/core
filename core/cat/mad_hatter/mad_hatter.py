@@ -1,11 +1,12 @@
 import glob
-import time
 import shutil
 import os
 import traceback
-import cat.utils as utils
 from copy import deepcopy
+
 from cat.log import log
+import cat.utils as utils
+from cat.utils import singleton
 from cat.db import crud
 from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
@@ -16,6 +17,7 @@ import inspect
 # - loading
 # - prioritizing
 # - executing
+@singleton
 class MadHatter:
     # loads and execute plugins
     # - enter into the plugin folder and loads everthing
@@ -23,8 +25,7 @@ class MadHatter:
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
 
-    def __init__(self, ccat):
-        self.ccat = ccat
+    def __init__(self):
 
         self.plugins = {} # plugins dictionary
 
@@ -34,6 +35,9 @@ class MadHatter:
         self.active_plugins = []
 
         self.plugins_folder = utils.get_plugins_path()
+
+        # this callback is set from outside to be notified when plugin sync is finished
+        self.on_finish_plugins_sync_callback = lambda: None
 
         self.find_plugins()
 
@@ -57,7 +61,7 @@ class MadHatter:
         
     def uninstall_plugin(self, plugin_id):
 
-        if self.plugin_exists(plugin_id):
+        if self.plugin_exists(plugin_id) and (plugin_id != "core_plugin"):
 
             # deactivate plugin if it is active (will sync cache)
             if plugin_id in self.active_plugins:
@@ -124,11 +128,6 @@ class MadHatter:
             # load hooks and tools
             if plugin.id in self.active_plugins:
 
-                # fix tools so they have an instance of the cat # TODO: make the cat a singleton
-                for t in plugin.tools:
-                    # Prepare the tool to be used in the Cat (setting the cat instance, adding properties)
-                    t.augment_tool(self.ccat)
-
                 # cache tools
                 self.tools += plugin.tools
 
@@ -141,6 +140,9 @@ class MadHatter:
         # sort each hooks list by priority
         for hook_name in self.hooks.keys():
             self.hooks[hook_name].sort(key=lambda x: x.priority, reverse=True)
+
+        # notify sync has finished (the Cat will ensure all tools are embedded in vector memory)
+        self.on_finish_plugins_sync_callback()
                 
     # check if plugin exists
     def plugin_exists(self, plugin_id):
@@ -169,51 +171,6 @@ class MadHatter:
         new_setting = Setting(**new_setting)
         crud.upsert_setting_by_name(new_setting)
 
-    # loops over tools and assign an embedding each. If an embedding is not present in vectorDB, it is created and saved
-    def embed_tools(self):
-
-        # retrieve from vectorDB all tool embeddings
-        embedded_tools = self.ccat.memory.vectors.procedural.get_all_points()
-
-        # easy acces to (point_id, tool_description)
-        embedded_tools_ids = [t.id for t in embedded_tools]
-        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
-
-        # loop over mad_hatter tools
-        for tool in self.tools:
-            # if the tool is not embedded 
-            if tool.description not in embedded_tools_descriptions:
-                # embed the tool and save it to DB
-                self.ccat.memory.vectors.procedural.add_texts(
-                    [tool.description],
-                    [{
-                        "source": "tool",
-                        "when": time.time(),
-                        "name": tool.name,
-                        "docstring": tool.docstring
-                    }],
-                )
-
-                log.warning(f"Newly embedded tool: {tool.description}")
-        
-        # easy access to mad hatter tools (found in plugins)
-        mad_hatter_tools_descriptions = [t.description for t in self.tools]
-
-        # loop over embedded tools and delete the ones not present in active plugins
-        points_to_be_deleted = []
-        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
-            # if the tool is not active, it inserts it in the list of points to be deleted
-            if descr not in mad_hatter_tools_descriptions:
-                log.warning(f"Deleting embedded tool: {descr}")
-                points_to_be_deleted.append(id)
-
-        # delete not active tools
-        if len(points_to_be_deleted) > 0:
-            self.ccat.memory.vectors.vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
-            )
-
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         if self.plugin_exists(plugin_id):
@@ -231,7 +188,7 @@ class MadHatter:
                 log.warning(f"Toggle plugin {plugin_id}: Activate")
                 # Activate the plugin
                 self.plugins[plugin_id].activate()
-                # Ass the plugin in the list of active plugins
+                # Add the plugin in the list of active plugins
                 self.active_plugins.append(plugin_id)
 
             # update DB with list of active plugins, delete duplicate plugins
@@ -239,13 +196,12 @@ class MadHatter:
 
             # update cache and embeddings     
             self.sync_hooks_and_tools()
-            self.embed_tools()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
         
     # execute requested hook
-    def execute_hook(self, hook_name, *args):
+    def execute_hook(self, hook_name, *args, cat):
 
         # check if hook is supported
         if hook_name not in self.hooks.keys():
@@ -257,7 +213,7 @@ class MadHatter:
             for hook in self.hooks[hook_name]:
                 try:
                     log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
-                    hook.function(cat=self.ccat)
+                    hook.function(cat=cat)
                 except Exception as e:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
                     log.error(e)
@@ -279,7 +235,7 @@ class MadHatter:
                 tea_spoon = hook.function(
                     deepcopy(tea_cup),
                     *deepcopy(args[1:]),
-                    cat=self.ccat
+                    cat=cat
                 )
                 #log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
@@ -308,3 +264,4 @@ class MadHatter:
         # Plugin's folder
         name = plugin_suffix.split("/")[0]
         return self.plugins[name]
+

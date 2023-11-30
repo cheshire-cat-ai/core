@@ -98,3 +98,17 @@ def get_static_url():
 def get_static_path():
     """Allows exposing the static files' path."""
     return os.path.join(get_base_path(), "static/")
+
+
+# This is our masterwork during tea time
+class singleton:
+  
+    instances = {}
+
+    def __new__(cls, class_):
+        def getinstance(*args, **kwargs):
+            if class_ not in cls.instances:
+                cls.instances[class_] = class_(*args, **kwargs)
+            return cls.instances[class_]
+
+        return getinstance
