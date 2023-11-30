@@ -180,14 +180,31 @@ class MadHatter:
             # update list of active plugins
             if plugin_is_active:
                 log.warning(f"Toggle plugin {plugin_id}: Deactivate")
+
+                # Execute hook on plugin deactivation
+                # Deactivation hook must happen before actual deactivation,
+                # otherwise the hook will not be available in _plugin_overrides anymore
+                for hook in self.plugins[plugin_id]._plugin_overrides:
+                    if hook.name == "deactivated":
+                        hook.function(self.plugins[plugin_id])
+
                 # Deactivate the plugin
                 self.plugins[plugin_id].deactivate()
                 # Remove the plugin from the list of active plugins
                 self.active_plugins.remove(plugin_id)
             else:
                 log.warning(f"Toggle plugin {plugin_id}: Activate")
+
                 # Activate the plugin
                 self.plugins[plugin_id].activate()
+
+                # Execute hook on plugin activation
+                # Activation hook must happen before actual activation,
+                # otherwise the hook will still not be available in _plugin_overrides
+                for hook in self.plugins[plugin_id]._plugin_overrides:
+                    if hook.name == "activated":
+                        hook.function(self.plugins[plugin_id])
+
                 # Add the plugin in the list of active plugins
                 self.active_plugins.append(plugin_id)
 
