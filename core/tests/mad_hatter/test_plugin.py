@@ -5,22 +5,20 @@ import subprocess
 
 from inspect import isfunction
 
+from tests.conftest import clean_up_mocks
+
 from cat.mad_hatter.mad_hatter import Plugin
 from cat.mad_hatter.decorators import CatHook, CatTool
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
 # this fixture will give test functions a ready instantiated plugin
+# (and having the `client` fixture, a clean setup every unit)
 @pytest.fixture
-def plugin():
-
+def plugin(client):
+    
     p = Plugin(mock_plugin_path)
-    
     yield p
-    
-    settings_file = mock_plugin_path + "settings.json"
-    if os.path.exists(settings_file):
-        os.remove(settings_file)
 
 
 def test_create_plugin_wrong_folder():
@@ -55,11 +53,6 @@ def test_create_plugin(plugin):
     assert plugin.manifest["name"] == "MockPlugin"
     assert "Description not found" in plugin.manifest["description"]
 
-    # Check if plugin requirement is installed
-    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
-    result = result.stdout.decode()
-    assert fnmatch.fnmatch(result, "*pip-install-test*")
-
     # hooks and tools
     assert plugin.hooks == []
     assert plugin.tools == []
@@ -73,13 +66,13 @@ def test_activate_plugin(plugin):
     assert plugin.active == True
 
     # hooks
-    assert len(plugin.hooks) == 1
+    assert len(plugin.hooks) == 2
     hook = plugin.hooks[0]
     assert isinstance(hook, CatHook)
     assert hook.plugin_id == "mock_plugin"
     assert hook.name == "before_cat_sends_message"
     assert isfunction(hook.function)
-    assert hook.priority == 2.0
+    assert hook.priority > 1 # not sorted yet (mad_hatter will sort them)
 
     # tools
     assert len(plugin.tools) == 1
@@ -90,6 +83,7 @@ def test_activate_plugin(plugin):
     assert "mock_tool" in tool.description
     assert isfunction(tool.func)
     assert tool.return_direct == True
+
 
 def test_deactivate_plugin(plugin):
 
@@ -131,3 +125,26 @@ def test_save_settings(plugin):
     settings = plugin.load_settings()
     assert settings["a"] == fake_settings["a"]
 
+
+# Check if plugin requirements have been installed
+# ATTENTION: not using `plugin` fixture here, we instantiate and cleanup manually
+#           to use the unmocked Plugin class
+def test_install_plugin_dependencies():
+
+    # manual cleanup
+    clean_up_mocks()
+    # Uninstall mock plugin requirements
+    os.system("pip uninstall -y pip-install-test")
+
+    # Install mock plugin
+    p = Plugin(mock_plugin_path)
+
+    # pip-install-test should have been installed
+    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
+    result = result.stdout.decode()
+    assert fnmatch.fnmatch(result, "*pip-install-test*")
+
+    # manual cleanup
+    clean_up_mocks()
+    # Uninstall mock plugin requirements
+    os.system("pip uninstall -y pip-install-test")

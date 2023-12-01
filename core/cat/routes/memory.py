@@ -1,9 +1,8 @@
 from typing import Dict
-from cat.headers import check_user_id
+from cat.headers import session
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 router = APIRouter()
-
 
 # GET memories from recall
 @router.get("/recall/")
@@ -11,7 +10,6 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    user_id = Depends(check_user_id)
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -31,6 +29,7 @@ async def recall_memories_from_text(
     for c in collections:
 
         # only episodic collection has users
+        user_id = request.headers.get("user_id", "user")
         if c == "episodic":
             user_filter = {
                 'source': user_id
@@ -103,7 +102,6 @@ async def wipe_collections(
 
     ccat.load_memory()  # recreate the long term memories
     ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
 
     return {
         "deleted": to_return,
@@ -133,7 +131,6 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
 
     ccat.load_memory()  # recreate the long term memories
     ccat.mad_hatter.find_plugins()
-    ccat.mad_hatter.embed_tools()
 
     return {
         "deleted": to_return,
@@ -202,12 +199,20 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history/")
 async def wipe_conversation_history(
     request: Request,
-    user_id = Depends(check_user_id),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
-    ccat = request.app.state.ccat
-    ccat.working_memory_list[user_id]["history"] = []
+    strays =  request.app.state.strays
+    user_id = request.headers.get("user_id", "user") # is this expected?
+
+    if user_id not in strays.keys():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No conversation history found for the user {user_id}"
+        )
+
+    stray = strays[user_id]
+    stray.working_memory["history"] = []
 
     return {
         "deleted": True,
@@ -218,12 +223,20 @@ async def wipe_conversation_history(
 @router.get("/conversation_history/")
 async def get_conversation_history(
     request: Request,
-    user_id = Depends(check_user_id),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    ccat = request.app.state.ccat
-    history = ccat.working_memory_list[user_id]["history"]
+    strays =  request.app.state.strays
+    user_id = request.headers.get("user_id", "user") # is this expected?
+
+    if user_id not in strays.keys():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No conversation history found for the user {user_id}"
+        )
+
+    stray = strays[user_id]
+    history = stray.working_memory["history"]
 
     return {
         "history": history

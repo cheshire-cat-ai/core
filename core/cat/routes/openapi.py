@@ -25,7 +25,7 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
 
         # Image should be an url and it's mostly used for redoc
         openapi_schema["info"]["x-logo"] = {
-            "url": "https://github.com/cheshire-cat-ai/core/blob/main/cheshire-cat.jpeg?raw=true"
+            "url": "https://cheshirecat.ai/wp-content/uploads/2023/10/Logo-Cheshire-Cat.svg"
         }
 
         # force security None on endpoints if API_KEY is not present

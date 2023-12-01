@@ -1,8 +1,8 @@
 from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
-
-from cat.factory.custom_embedder import CustomFastembedEmbeddings, DumbEmbedder, CustomOpenAIEmbeddings
+from langchain.embeddings.fastembed import FastEmbedEmbeddings
+from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 
 
 # Base class to manage LLM configuration.
@@ -34,6 +34,7 @@ class EmbedderFakeConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
+            "link": "",
         }
     )
 
@@ -46,6 +47,7 @@ class EmbedderDumbConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
+            "link": "",
         }
     )
 
@@ -58,6 +60,7 @@ class EmbedderLlamaCppConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Self-hosted llama-cpp-python embedder",
             "description": "Self-hosted llama-cpp-python embedder",
+            "link": "",
         }
     )
 
@@ -71,6 +74,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
+            "link": "https://platform.openai.com/docs/models/overview",
         }
     )
 
@@ -90,6 +94,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
+            "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service",
         }
     )
 
@@ -103,23 +108,26 @@ class EmbedderCohereConfig(EmbedderSettings):
         json_schema_extra = {
             "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
+            "link": "https://docs.cohere.com/docs/models",
         }
     )
 
 
-class EmbedderFastEmbedConfig(EmbedderSettings):
-    url: str
-    model: str = "intfloat/multilingual-e5-large"
-    max_length: int = 512
-
-    _pyclass: Type = CustomFastembedEmbeddings
+class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
+    model_name: str = "BAAI/bge-base-en"
+    max_length: int = 512 # Unknown behavior for values > 512.
+    doc_embed_type: str = "passage" # as suggest on fastembed documentation, "passage" is the best option for documents.
+    
+    _pyclass: Type = FastEmbedEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra = {
-            "humanReadableName": "Fast Embedder",
-            "description": "Configuration for Fast embeddings",
+            "humanReadableName": "Qdrant FastEmbed (Local)",
+            "description": "Configuration for Qdrant FastEmbed",
+            "link": "https://qdrant.github.io/fastembed/",
         }
     )
+    
 
 
 SUPPORTED_EMDEDDING_MODELS = [
@@ -129,7 +137,7 @@ SUPPORTED_EMDEDDING_MODELS = [
     EmbedderOpenAIConfig,
     EmbedderAzureOpenAIConfig,
     EmbedderCohereConfig,
-    EmbedderFastEmbedConfig
+    EmbedderQdrantFastEmbedConfig
 ]
 
 

@@ -32,3 +32,6 @@ core/cat/plugins/*
 # tests plugin folder
 plugin_folder
 
+# cache embedder
+core/local_cache/*
+

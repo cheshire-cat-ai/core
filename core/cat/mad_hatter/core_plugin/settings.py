@@ -78,3 +78,27 @@ def save_settings(settings):
 
     # In core_plugin we do nothing (for now).
     return {}
+
+
+@plugin
+def activated(plugin):
+    """This method allows executing custom code right after a plugin is activated.
+
+    Parameters
+    ----------
+    plugin
+        Plugin: Cat object representing the plugin instance in memory.
+    """
+    return None
+
+
+@plugin
+def deactivated(plugin):
+    """This method allows executing custom code right after a plugin is deactivated.
+
+    Parameters
+    ----------
+    plugin
+        Plugin: Cat object representing the plugin instance in memory.
+    """
+    return None
