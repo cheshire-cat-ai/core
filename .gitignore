@@ -13,7 +13,7 @@ venv
 
 # DBs
 long_term_memory
-/core/local_vector_memory
+local_vector_memory
 /core/dormouse/*
 *metadata.db
 *metadata-v*.db

@@ -49,7 +49,7 @@ class VectorMemory:
             setattr(self, collection_name, collection)
 
     def connect_to_vector_memory(self) -> None:
-        db_path = "local_vector_memory/"
+        db_path = "cat/data/local_vector_memory/"
         qdrant_host = os.getenv("QDRANT_HOST", db_path)
 
         if len(qdrant_host) == 0 or qdrant_host == db_path:

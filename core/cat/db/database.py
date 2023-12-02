@@ -10,7 +10,7 @@ class Database:
         self.db = TinyDB(self.get_file_name())
 
     def get_file_name(self):
-        tinydb_file = os.getenv("METADATA_FILE", "metadata.json")
+        tinydb_file = os.getenv("METADATA_FILE", "cat/data/metadata.json")
         return tinydb_file
 
 def get_db():
