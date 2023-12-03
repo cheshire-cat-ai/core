@@ -25,13 +25,14 @@ class CatTool(Tool):
 
         self.examples = examples
         
-        self.docstring = self.func.__doc__
+        self.docstring = self.func.__doc__.strip()
 
         # remove cat argument from description signature so it does not end up in prompts
         self.description = self.description.replace(", cat)", ")")
 
     def __repr__(self) -> str:
-        return f"CatTool:\n - name: {self.name}, \n - return_direct: {self.return_direct}"
+        # f"CatTool: name={self.name} - return_direct={self.return_direct} - description={self.docstring}"
+        return f"CatTool: {self.description}"
 
     # used by the AgentManager to let a Tool access the cat instance
     def assign_cat(self, cat):
