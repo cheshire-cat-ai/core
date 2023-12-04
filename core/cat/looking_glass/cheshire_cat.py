@@ -242,7 +242,7 @@ class CheshireCat():
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 
-        # easy acces to (point_id, tool_description)
+        # easy access to (point_id, tool_description)
         embedded_tools_ids = [t.id for t in embedded_tools]
         embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
 
@@ -259,6 +259,7 @@ class CheshireCat():
                         "source": "tool",
                         "when": time.time(),
                         "name": tool.name,
+                        "examples": tool.examples,
                         "docstring": tool.docstring
                     },
                 )
