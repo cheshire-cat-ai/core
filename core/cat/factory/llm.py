@@ -8,7 +8,7 @@ import json
 from pydantic import BaseModel, ConfigDict
 
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
-
+from cat.mad_hatter.mad_hatter import MadHatter
 
 # Base class to manage LLM configuration.
 class LLMSettings(BaseModel):
@@ -239,7 +239,7 @@ class LLMOllamaConfig(LLMSettings):
     )
 
 
-SUPPORTED_LANGUAGE_MODELS = [
+list_llms_default = [
     LLMDefaultConfig,
     LLMCustomConfig,
     LLMLlamaCppConfig,
@@ -253,12 +253,26 @@ SUPPORTED_LANGUAGE_MODELS = [
     LLMOllamaConfig
 ]
 
-# LLM_SCHEMAS contains metadata to let any client know
-# which fields are required to create the language model.
-LLM_SCHEMAS = {}
-for config_class in SUPPORTED_LANGUAGE_MODELS:
-    schema = config_class.model_json_schema()
+list_llms = []
 
-    # useful for clients in order to call the correct config endpoints
-    schema["languageModelName"] = schema["title"]
-    LLM_SCHEMAS[schema["title"]] = schema
+def get_supported_language_models():
+    global list_llms
+    mad_hatter_instance = MadHatter()
+    list_llms = mad_hatter_instance.execute_hook("supported_llms_list", list_llms_default, cat=None)
+    return list_llms
+
+
+def get_llm_schemas():
+    
+    SUPPORTED_LANGUAGE_MODELS = get_supported_language_models()
+   
+    # LLM_SCHEMAS contains metadata to let any client know
+    # which fields are required to create the language model.
+    LLM_SCHEMAS = {}
+    for config_class in SUPPORTED_LANGUAGE_MODELS:
+        schema = config_class.model_json_schema()
+        # useful for clients in order to call the correct config endpoints
+        schema["languageModelName"] = schema["title"]
+        LLM_SCHEMAS[schema["title"]] = schema
+
+    return LLM_SCHEMAS
