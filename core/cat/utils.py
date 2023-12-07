@@ -114,6 +114,9 @@ HOW TO FIX: go to your OpenAI accont and add a credit card"""
 
     return error_description
 
+def plugin_specific_error_message(name, url):
+    return """To resolve any problem related to {} plugin,
+contact the creator using github issue at the link {}""".format(name, url)
 
 # This is our masterwork during tea time
 class singleton:

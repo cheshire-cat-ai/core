@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
 from cat.log import log
-
+from cat import utils
 
 # Empty class to represent basic plugin Settings model
 class PluginSettingsModel(BaseModel):
@@ -131,6 +131,8 @@ class Plugin:
             except Exception as e:
                 log.error(f"Unable to load plugin {self._id} settings")
                 log.error(e)
+                log.warning(utils.plugin_specific_error_message(self.manifest["name"], self.manifest["plugin_url"]))
+                traceback.print_exc()
                 raise e
         # settings.json does not exist # TODO: may be buggy or there is a better way via json_schema
         #else:
@@ -166,6 +168,8 @@ class Plugin:
                 json.dump(updated_settings, json_file, indent=4)
         except Exception:
             log.error(f"Unable to save plugin {self._id} settings")
+            log.warning(utils.plugin_specific_error_message(self.manifest["name"], self.manifest["plugin_url"]))
+            traceback.print_exc()
             return {}
     
         return updated_settings
@@ -226,6 +230,7 @@ class Plugin:
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
                 log.error(f"Error in {py_filename}: {str(e)}")
+                log.warning(utils.plugin_specific_error_message(self.manifest["name"], self.manifest["plugin_url"]))
                 traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}") 
 
