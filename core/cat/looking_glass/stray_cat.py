@@ -233,18 +233,8 @@ class StrayCat:
 
             # TODO: move inside a function
             # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
-            if len(self.working_memory["user_message_json"]["text"]) > MAX_TEXT_INPUT:
-                index = MAX_TEXT_INPUT
-                char = self.working_memory["user_message_json"]["text"][index]
-                while not char.isspace() and index > 0:
-                    index -= 1
-                    char = self.working_memory["user_message_json"]["text"][index]
-                if index <= 0:
-                    index = MAX_TEXT_INPUT
-                self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
-                docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
-                self.rabbit_hole.store_documents(self, docs=docs, source="")
-
+            if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+                self.store_long_input_to_declarative()
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -329,6 +319,18 @@ class StrayCat:
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
+
+    def store_long_input_to_declarative(self):
+        index = MAX_TEXT_INPUT
+        char = self.working_memory["user_message_json"]["text"][index]
+        while not char.isspace() and index > 0:
+            index -= 1
+            char = self.working_memory["user_message_json"]["text"][index]
+        if index <= 0:
+            index = MAX_TEXT_INPUT
+        self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
+        docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
+        self.rabbit_hole.store_documents(self, docs=docs, source="")
 
     @property
     def user_id(self):
