@@ -2,6 +2,7 @@
 import os
 import inspect
 from datetime import timedelta
+from cat.log import log
 
 
 def to_camel_case(text: str) -> str:
@@ -108,6 +109,8 @@ def explicit_error_message(e):
         error_description = """Your OpenAI key is not active or you did not add a payment method.
 You need a credit card - and money in it - to use OpenAI api.
 HOW TO FIX: go to your OpenAI accont and add a credit card"""
+
+        log.error(error_description) # just to make sure the message is read both front and backend
 
     return error_description
 
