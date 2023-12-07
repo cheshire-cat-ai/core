@@ -5,6 +5,7 @@ from fastapi import Request, APIRouter, Body, HTTPException
 from cat.factory.embedder import EMBEDDER_SCHEMAS, SUPPORTED_EMDEDDING_MODELS
 from cat.db import crud, models
 from cat.log import log
+from cat import utils
 
 router = APIRouter()
 
@@ -150,7 +151,7 @@ def upsert_embedder_setting(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": str(e)
+                "error": utils.explicit_error_message(e)
             }
         )
     # recreate tools embeddings

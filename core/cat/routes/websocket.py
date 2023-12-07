@@ -6,6 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
+from cat import utils
 
 router = APIRouter()
 
@@ -79,10 +80,14 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         # Log any unexpected errors and send an error message back to the user.
         log.error(e)
         traceback.print_exc()
+
         await websocket.send_json({
             "type": "error",
             "name": type(e).__name__,
-            "description": str(e)
+            "description": utils.explicit_error_message(e)
         })
     # finally:
     #     del strays[user_id]
+
+
+

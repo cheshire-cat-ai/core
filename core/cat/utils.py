@@ -2,6 +2,7 @@
 import os
 import inspect
 from datetime import timedelta
+from cat.log import log
 
 
 def to_camel_case(text: str) -> str:
@@ -98,6 +99,20 @@ def get_static_url():
 def get_static_path():
     """Allows exposing the static files' path."""
     return os.path.join(get_base_path(), "static/")
+
+
+def explicit_error_message(e):
+    # add more explicit info on "RateLimitError" by OpenAI, 'cause people can't get it
+    error_description = str(e)
+    if "billing details" in error_description:
+        # happens both when there are no credits or the key is not active
+        error_description = """Your OpenAI key is not active or you did not add a payment method.
+You need a credit card - and money in it - to use OpenAI api.
+HOW TO FIX: go to your OpenAI accont and add a credit card"""
+
+        log.error(error_description) # just to make sure the message is read both front and backend
+
+    return error_description
 
 
 # This is our masterwork during tea time
