@@ -5,6 +5,7 @@ from fastapi import Request, APIRouter, Body, HTTPException
 from cat.factory.llm import LLM_SCHEMAS
 from cat.db import crud, models
 from cat.log import log
+from cat import utils
 
 router = APIRouter()
 
@@ -129,7 +130,7 @@ def upsert_llm_setting(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": str(e)
+                "error": utils.explicit_error_message(e)
             }
         )
     # recreate tools embeddings
