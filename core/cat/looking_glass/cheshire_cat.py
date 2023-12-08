@@ -17,7 +17,7 @@ import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
 
-from cat.factory.llm import get_supported_language_models
+from cat.factory.llm import get_llm_from_name
 
 
 # main class
@@ -101,12 +101,6 @@ class CheshireCat():
 
         """
 
-        def get_class_by_name(class_list, class_name):
-            for cls in class_list:
-                if cls.__name__ == class_name:
-                    return cls
-            raise ValueError(f"Class with name '{class_name}' not found")
-
         selected_llm = crud.get_setting_by_name(name="llm_selected")
 
         if selected_llm is None:
@@ -114,11 +108,10 @@ class CheshireCat():
             llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         else:
-            list_llms = get_supported_language_models()
             # get LLM factory class
             selected_llm_class = selected_llm["value"]["name"]
-            FactoryClass = get_class_by_name(list_llms, selected_llm_class)
-            log.error(FactoryClass)
+            FactoryClass = get_llm_from_name(selected_llm_class)
+
             # obtain configuration and instantiate LLM
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             try:
@@ -126,6 +119,7 @@ class CheshireCat():
             except Exception as e:
                 import traceback
                 traceback.print_exc()
+                log.error(f"The class may not have the method get_llm_from_config")
                 llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         return llm

@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
 from cat.mad_hatter.mad_hatter import MadHatter
 
+
 # Base class to manage LLM configuration.
 class LLMSettings(BaseModel):
     # class instantiating the model
@@ -255,6 +256,7 @@ list_llms_default = [
 
 list_llms = []
 
+
 def get_supported_language_models():
     global list_llms
     mad_hatter_instance = MadHatter()
@@ -262,10 +264,17 @@ def get_supported_language_models():
     return list_llms
 
 
+def get_llm_from_name(name_llm: str):
+    """ Find the llm adapter class by name"""
+    for cls in list_llms:
+        if cls.__name__ == name_llm:
+            return cls
+    return None
+
+
 def get_llm_schemas():
-    
     SUPPORTED_LANGUAGE_MODELS = get_supported_language_models()
-   
+
     # LLM_SCHEMAS contains metadata to let any client know
     # which fields are required to create the language model.
     LLM_SCHEMAS = {}
