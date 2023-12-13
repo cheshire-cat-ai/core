@@ -1,4 +1,9 @@
-compose=docker-compose.yml
+normal=docker-compose.yml
+full=docker-compose-full.yml
+
+env=normal
+
+compose=$(if $(filter normal,${env}),${normal},${full})
 
 build:
 	docker compose -f ${compose} build --no-cache
