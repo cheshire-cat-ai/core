@@ -17,7 +17,7 @@ dependencies = [
     "qdrant_client==1.6.9",
     "langchain==0.0.336",
     "openai==0.27.5",
-    "cohere==4.0.4",
+    "cohere==4.39",
     "huggingface-hub==0.13.2",
     "beautifulsoup4==4.12.0",
     "pdfminer.six==20221105",
