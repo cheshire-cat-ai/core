@@ -217,9 +217,6 @@ class RabbitHole:
                 except HTTPError as e:
                     log.error(e)
             else:
-
-                # Get mime type from file extension and source
-                content_type = mimetypes.guess_type(file)[0]
                 source = os.path.basename(file)
 
                 # Get file bytes
