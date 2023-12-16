@@ -200,10 +200,11 @@ class RabbitHole:
             # Check if string file is a string or url
             parsed_file = urlparse(file)
             is_url = all([parsed_file.scheme, parsed_file.netloc])
+            content_type = mimetypes.guess_type(file)[0]
+            if content_type is None:
+                content_type = "text/html"
 
             if is_url:
-                # Define mime type and source of url
-                content_type = "text/html"
                 source = file
 
                 # Make a request with a fake browser name
