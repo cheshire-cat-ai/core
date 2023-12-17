@@ -2,8 +2,9 @@ import os
 import time
 import json
 import mimetypes
+import httpx
 from typing import List, Union
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 
@@ -200,23 +201,24 @@ class RabbitHole:
             # Check if string file is a string or url
             parsed_file = urlparse(file)
             is_url = all([parsed_file.scheme, parsed_file.netloc])
-            content_type = mimetypes.guess_type(file)[0]
-            if content_type is None:
-                content_type = "text/html"
 
             if is_url:
-                source = file
-
                 # Make a request with a fake browser name
-                request = Request(file, headers={"User-Agent": "Magic Browser"})
+                request = httpx.get(file, headers={"User-Agent": "Magic Browser"})
+
+                # Define mime type and source of url
+                content_type = request.headers["Content-Type"].split(";")[0]
+                source = file
 
                 try:
                     # Get binary content of url
-                    with urlopen(request) as response:
+                    with urlopen(file) as response:
                         file_bytes = response.read()
                 except HTTPError as e:
                     log.error(e)
             else:
+                # Get mime type from file extension and source
+                content_type = mimetypes.guess_type(file)[0]
                 source = os.path.basename(file)
 
                 # Get file bytes
