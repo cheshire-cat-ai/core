@@ -240,45 +240,41 @@ class LLMOllamaConfig(LLMSettings):
     )
 
 
-list_llms_default = [
-    LLMDefaultConfig,
-    LLMCustomConfig,
-    LLMLlamaCppConfig,
-    LLMOpenAIChatConfig,
-    LLMOpenAIConfig,
-    LLMCohereConfig,
-    LLMHuggingFaceEndpointConfig,
-    LLMHuggingFaceTextGenInferenceConfig,
-    LLMAzureOpenAIConfig,
-    LLMAzureChatOpenAIConfig,
-    LLMOllamaConfig
-]
-
-list_llms = []
-
-
-def get_supported_language_models():
-    global list_llms
+def get_allowed_language_models():
+    
+    list_llms_default = [
+        LLMDefaultConfig,
+        LLMCustomConfig,
+        LLMLlamaCppConfig,
+        LLMOpenAIChatConfig,
+        LLMOpenAIConfig,
+        LLMCohereConfig,
+        LLMHuggingFaceEndpointConfig,
+        LLMHuggingFaceTextGenInferenceConfig,
+        LLMAzureOpenAIConfig,
+        LLMAzureChatOpenAIConfig,
+        LLMOllamaConfig
+    ]
+    
     mad_hatter_instance = MadHatter()
-    list_llms = mad_hatter_instance.execute_hook("supported_llms_list", list_llms_default, cat=None)
+    list_llms = mad_hatter_instance.execute_hook("factory_allowed_llms", list_llms_default, cat=None)
     return list_llms
 
 
 def get_llm_from_name(name_llm: str):
     """ Find the llm adapter class by name"""
-    for cls in list_llms:
+    for cls in get_allowed_language_models():
         if cls.__name__ == name_llm:
             return cls
     return None
 
 
-def get_llm_schemas():
-    SUPPORTED_LANGUAGE_MODELS = get_supported_language_models()
+def get_llms_schemas():
 
     # LLM_SCHEMAS contains metadata to let any client know
     # which fields are required to create the language model.
     LLM_SCHEMAS = {}
-    for config_class in SUPPORTED_LANGUAGE_MODELS:
+    for config_class in get_allowed_language_models():
         schema = config_class.model_json_schema()
         # useful for clients in order to call the correct config endpoints
         schema["languageModelName"] = schema["title"]

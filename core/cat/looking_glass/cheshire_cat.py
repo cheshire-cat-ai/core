@@ -6,18 +6,17 @@ from langchain.chat_models.base import BaseChatModel
 from langchain.llms import Cohere, OpenAI, AzureOpenAI
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 
-from cat.utils import singleton
-from cat.log import log
 from cat.db import crud
-from cat.rabbit_hole import RabbitHole
+from cat.factory.custom_llm import CustomOpenAI
+import cat.factory.embedder as embedders
+from cat.factory.llm import LLMDefaultConfig
+from cat.factory.llm import get_llm_from_name
+from cat.looking_glass.agent_manager import AgentManager
+from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory
-from cat.looking_glass.agent_manager import AgentManager
-import cat.factory.llm as llms
-import cat.factory.embedder as embedders
-from cat.factory.custom_llm import CustomOpenAI
-
-from cat.factory.llm import get_llm_from_name
+from cat.rabbit_hole import RabbitHole
+from cat.utils import singleton
 
 
 # main class
@@ -105,7 +104,7 @@ class CheshireCat():
 
         if selected_llm is None:
             # return default LLM
-            llm = llms.LLMDefaultConfig.get_llm_from_config({})
+            llm = LLMDefaultConfig.get_llm_from_config({})
 
         else:
             # get LLM factory class
@@ -119,8 +118,8 @@ class CheshireCat():
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                log.error(f"The class may not have the method get_llm_from_config")
-                llm = llms.LLMDefaultConfig.get_llm_from_config({})
+                log.error(f"A problem occurred while instantiating the LLM")
+                llm = LLMDefaultConfig.get_llm_from_config({})
 
         return llm
 

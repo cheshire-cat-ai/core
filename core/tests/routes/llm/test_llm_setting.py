@@ -1,22 +1,24 @@
 
 from json import dumps
 from fastapi.encoders import jsonable_encoder
-from cat.factory.llm import LLM_SCHEMAS
+from cat.factory.llm import get_llms_schemas
 
 
 def test_get_all_llm_settings(client):
+
+    llms_schemas = get_llms_schemas()
     
     response = client.get("/llm/settings/")
     json = response.json()
 
     assert response.status_code == 200
     assert type(json["settings"]) == list
-    assert len(json["settings"]) == len(LLM_SCHEMAS)
+    assert len(json["settings"]) == len(llms_schemas)
 
     for setting in json["settings"]:
-        assert setting["name"] in LLM_SCHEMAS.keys()
+        assert setting["name"] in llms_schemas.keys()
         assert setting["value"] == {}
-        expected_schema = LLM_SCHEMAS[setting["name"]]
+        expected_schema = llms_schemas[setting["name"]]
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
     assert json["selected_configuration"] == None # no llm configured at startup
