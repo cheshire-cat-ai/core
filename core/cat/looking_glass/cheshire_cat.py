@@ -17,6 +17,8 @@ import cat.factory.llm as llms
 import cat.factory.embedder as embedders
 from cat.factory.custom_llm import CustomOpenAI
 
+from cat.factory.llm import get_llm_from_name
+
 
 # main class
 @singleton
@@ -37,7 +39,6 @@ class CheshireCat():
 
         At init time the Cat executes the bootstrap.
         """
-
 
         # bootstrap the cat!
         # instantiate MadHatter (loads all plugins' hooks and tools)
@@ -61,11 +62,10 @@ class CheshireCat():
         self.agent_manager = AgentManager()
 
         # Rabbit Hole Instance
-        self.rabbit_hole = RabbitHole(self) # :(
+        self.rabbit_hole = RabbitHole(self)  # :(
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
-
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -86,7 +86,6 @@ class CheshireCat():
         self._llm = self.load_language_model()
         self.embedder = self.load_language_embedder()
 
-
     def load_language_model(self) -> BaseLanguageModel:
         """Large Language Model (LLM) selection at bootstrap time.
 
@@ -101,6 +100,7 @@ class CheshireCat():
         the *Agent Manager* and the *Rabbit Hole*.
 
         """
+
         selected_llm = crud.get_setting_by_name(name="llm_selected")
 
         if selected_llm is None:
@@ -110,7 +110,7 @@ class CheshireCat():
         else:
             # get LLM factory class
             selected_llm_class = selected_llm["value"]["name"]
-            FactoryClass = getattr(llms, selected_llm_class)
+            FactoryClass = get_llm_from_name(selected_llm_class)
 
             # obtain configuration and instantiate LLM
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
@@ -119,10 +119,10 @@ class CheshireCat():
             except Exception as e:
                 import traceback
                 traceback.print_exc()
+                log.error(f"The class may not have the method get_llm_from_config")
                 llm = llms.LLMDefaultConfig.get_llm_from_config({})
 
         return llm
-
 
     def load_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
@@ -211,7 +211,6 @@ class CheshireCat():
 
         return embedder
 
-
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
         # Memory
@@ -233,12 +232,11 @@ class CheshireCat():
             "embedder_size": embedder_size,
         }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
-        
 
     def embed_tools(self):
         # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
         # it is created and saved
-        
+
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 
@@ -264,7 +262,7 @@ class CheshireCat():
                 )
 
                 log.warning(f"Newly embedded tool: {tool.description}")
-        
+
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
 
@@ -283,8 +281,7 @@ class CheshireCat():
                 points_selector=points_to_be_deleted
             )
 
-
-    def send_ws_message(self, content: str, msg_type = "notification"):
+    def send_ws_message(self, content: str, msg_type="notification"):
         log.error("No websocket connection open")
 
     # REFACTOR: cat.llm should be available here, without streaming clearly
