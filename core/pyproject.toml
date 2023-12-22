@@ -38,7 +38,7 @@ dependencies = [
     "pytest",
     "httpx",
     "fastembed==0.1.1",
-    "langchain-google-genai"
+    "langchain-google-genai",
 ]
 
 [tool.coverage.run]

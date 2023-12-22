@@ -287,7 +287,7 @@ def get_allowed_language_models():
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
         LLMOllamaConfig,
-        LLMGeminiChatConfig
+        LLMGeminiChatConfig,
     ]
     
     mad_hatter_instance = MadHatter()
