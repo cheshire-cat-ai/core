@@ -2,6 +2,7 @@ import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
 from langchain.llms.ollama import Ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from typing import Dict, List, Type
 import json
@@ -239,6 +240,25 @@ class LLMOllamaConfig(LLMSettings):
         }
     )
 
+class LLMGeminiChatConfig(LLMSettings):
+    google_api_key: str 
+    model: str = "gemini"
+    temperature: float =  0.1
+    top_p: int = 1
+    top_k: int =  1
+    max_output_tokens: int = 29000
+
+    _pyclass: Type = ChatGoogleGenerativeAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Gemini",
+            "description": "Configuration for Gemini",
+            "link": "https://deepmind.google/technologies/gemini",
+        }
+    )
+
+
 
 def get_allowed_language_models():
     
@@ -253,7 +273,8 @@ def get_allowed_language_models():
         LLMHuggingFaceTextGenInferenceConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
-        LLMOllamaConfig
+        LLMOllamaConfig,
+        LLMGeminiChatConfig
     ]
     
     mad_hatter_instance = MadHatter()
