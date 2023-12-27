@@ -6,7 +6,7 @@ import traceback
 import importlib
 from typing import Dict
 from inspect import getmembers
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
 from cat.utils import to_camel_case
@@ -120,27 +120,34 @@ class Plugin:
         #   in a JSON file called settings.json
         settings_file_path = os.path.join(self._path, "settings.json")
 
-        # default settings is an empty dictionary
-        settings = {}
-
         # load settings.json if exists
         if os.path.isfile(settings_file_path):
             try:
                 with open(settings_file_path, "r") as json_file:
                     settings = json.load(json_file)
+                    return settings
+
             except Exception as e:
                 log.error(f"Unable to load plugin {self._id} settings")
                 log.error(e)
                 raise e
-        # settings.json does not exist # TODO: may be buggy or there is a better way via json_schema
-        #else:
-        #    try:
-        #        # if all settings have a default, this should go fine
-        #        settings = self.settings_model()
-        #    except Exception as e:
-        #        settings == {}
+        else:
+            try:
+                model = self.settings_model()
+                # if some settings have no default value this will raise a ValidationError
+                settings = model().model_dump_json(indent=4)
 
-        return settings
+                # If each fild have a defautl value and the model is correct create a 
+                # defult settings file
+                with open(settings_file_path, "x") as json_file:
+                    json_file.write(settings)
+                    log.debug(f"{self.id} settings.json created with default values")
+                
+                return settings
+
+            except ValidationError:
+                return {}
+                
     
     # save plugin settings
     def save_settings(self, settings: Dict):
