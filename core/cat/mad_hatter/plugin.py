@@ -63,6 +63,15 @@ class Plugin:
     def activate(self):
         # lists of hooks and tools
         self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
+
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+
+        # Try to create setting.json
+        if not os.path.isfile(settings_file_path):
+            self._create_settings_from_model()
+
         self._active = True
 
     def deactivate(self):
@@ -107,7 +116,6 @@ class Plugin:
         # default schema (empty)
         return PluginSettingsModel
 
-
     # load plugin settings
     def load_settings(self):
 
@@ -120,6 +128,10 @@ class Plugin:
         #   in a JSON file called settings.json
         settings_file_path = os.path.join(self._path, "settings.json")
 
+        if not os.path.isfile(settings_file_path):
+            if not self._create_settings_from_model():
+                return {}
+
         # load settings.json if exists
         if os.path.isfile(settings_file_path):
             try:
@@ -128,27 +140,9 @@ class Plugin:
                     return settings
 
             except Exception as e:
-                log.error(f"Unable to load plugin {self._id} settings")
-                log.error(e)
+                log.error(f"Unable to load plugin {self._id} settings: {e}")
                 raise e
-        else:
-            try:
-                model = self.settings_model()
-                # if some settings have no default value this will raise a ValidationError
-                settings = model().model_dump_json(indent=4)
-
-                # If each fild have a defautl value and the model is correct create a 
-                # defult settings file
-                with open(settings_file_path, "x") as json_file:
-                    json_file.write(settings)
-                    log.debug(f"{self.id} settings.json created with default values")
-                
-                return settings
-
-            except ValidationError:
-                return {}
-                
-    
+                 
     # save plugin settings
     def save_settings(self, settings: Dict):
 
@@ -171,11 +165,33 @@ class Plugin:
         try:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
-        except Exception:
-            log.error(f"Unable to save plugin {self._id} settings")
-            return {}
-    
-        return updated_settings
+            
+            return updated_settings
+        except Exception as e:
+            log.error(f"Unable to save plugin {self._id} settings: {e}")
+            raise e
+
+    def _create_settings_from_model(self) -> bool:
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+
+        try:
+            model = self.settings_model()
+            # if some settings have no default value this will raise a ValidationError
+            settings = model().model_dump_json(indent=4)
+
+            # If each field have a default value and the model is correct,
+            # create the settings.json wiht default values
+            with open(settings_file_path, "x") as json_file:
+                json_file.write(settings)
+                log.debug(f"{self.id} have no settings.json, created with settings model default values")\
+
+            return True    
+                                
+        except ValidationError:
+            log.debug(f"{self.id} settings model have missing defaut values, no settings.json created")
+            return False
 
     def _load_manifest(self):
 
