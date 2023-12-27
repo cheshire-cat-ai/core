@@ -223,8 +223,8 @@ async def get_plugins_settings(request: Request) -> Dict:
                 "value": plugin_settings,
                 "schema": plugin_schema
             })
-        except:
-            log.error(f"Error loading {plugin} settings")
+        except Exception as e:
+            log.error(f"Error loading {plugin} settings: {e}")
 
     return {
         "settings": settings,
