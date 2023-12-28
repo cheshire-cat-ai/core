@@ -223,9 +223,9 @@ async def get_plugins_settings(request: Request) -> Dict:
                 "value": plugin_settings,
                 "schema": plugin_schema
             })
-        except:
-            log.error(f"Error loading {plugin} settings")
-
+        except Exception as e:
+            log.error(f"Error loading {plugin} settings. The result will not contain the settings for this plugin. Error details: {e}")
+    
     return {
         "settings": settings,
     }
@@ -244,9 +244,15 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
             detail = { "error": "Plugin not found" }
         )
 
-    # plugins are managed by the MadHatter class
-    settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
-    schema = ccat.mad_hatter.plugins[plugin_id].settings_schema()
+    try:
+        settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
+        schema = ccat.mad_hatter.plugins[plugin_id].settings_schema()
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = { "error": e }
+        )
+    
     if schema['properties'] == {}:
         schema = {}
 
