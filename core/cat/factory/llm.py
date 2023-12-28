@@ -265,7 +265,7 @@ class LLMGeminiChatConfig(LLMSettings):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Gemini",
+            "humanReadableName": "Google Gemini",
             "description": "Configuration for Gemini",
             "link": "https://deepmind.google/technologies/gemini",
         }
@@ -276,18 +276,18 @@ class LLMGeminiChatConfig(LLMSettings):
 def get_allowed_language_models():
     
     list_llms_default = [
-        LLMDefaultConfig,
-        LLMCustomConfig,
-        LLMLlamaCppConfig,
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
+        LLMGeminiChatConfig,
         LLMCohereConfig,
-        LLMHuggingFaceEndpointConfig,
-        LLMHuggingFaceTextGenInferenceConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
+        LLMHuggingFaceEndpointConfig,
+        LLMHuggingFaceTextGenInferenceConfig,
         LLMOllamaConfig,
-        LLMGeminiChatConfig,
+        LLMLlamaCppConfig,
+        LLMCustomConfig,
+        LLMDefaultConfig,
     ]
     
     mad_hatter_instance = MadHatter()
