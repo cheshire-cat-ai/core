@@ -232,7 +232,7 @@ class StrayCat:
             )
 
             if len(user_message_json["text"]) > MAX_TEXT_INPUT:
-                self.send_to_declarative()
+                self.send_long_message_to_declarative()
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -318,7 +318,7 @@ class StrayCat:
 
             return final_output
 
-    def send_to_declarative(self):
+    def send_long_message_to_declarative(self):
         #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
         index = MAX_TEXT_INPUT
         query = self.working_memory["user_message_json"]["text"]
@@ -328,7 +328,9 @@ class StrayCat:
             char = query[index]
         if index <= 0:
             index = MAX_TEXT_INPUT
-        query, to_declarative_memory = query[:index], query[index:]
+        query, to_declarative_memory = query[:index], query
+        self.working_memory["user_message_json"]["text"] = query # shortens working memory content
+
         docs = self.rabbit_hole.string_to_docs(
             stray=self,
             file_bytes=to_declarative_memory,
