@@ -2,6 +2,7 @@ import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
 from langchain.llms.ollama import Ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from typing import Dict, List, Type
 import json
@@ -239,21 +240,54 @@ class LLMOllamaConfig(LLMSettings):
         }
     )
 
+class LLMGeminiChatConfig(LLMSettings):
+    """Configuration for the Gemini large language model (LLM).
+
+    This class inherits from the `LLMSettings` class and provides default values for the following attributes:
+
+    * `google_api_key`: The Google API key used to access the Google Natural Language Processing (NLP) API.
+    * `model`: The name of the LLM model to use. In this case, it is set to "gemini".
+    * `temperature`: The temperature of the model, which controls the creativity and variety of the generated responses. 
+    * `top_p`: The top-p truncation value, which controls the probability of the generated words. 
+    * `top_k`: The top-k truncation value, which controls the number of candidate words to consider during generation. 
+    * `max_output_tokens`: The maximum number of tokens to generate in a single response.
+
+    The `LLMGeminiChatConfig` class is used to create an instance of the Gemini LLM model, which can be used to generate text in natural language.
+    """
+    google_api_key: str 
+    model: str = "gemini"
+    temperature: float =  0.1
+    top_p: int = 1
+    top_k: int =  1
+    max_output_tokens: int = 29000
+
+    _pyclass: Type = ChatGoogleGenerativeAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Google Gemini",
+            "description": "Configuration for Gemini",
+            "link": "https://deepmind.google/technologies/gemini",
+        }
+    )
+
+
 
 def get_allowed_language_models():
     
     list_llms_default = [
-        LLMDefaultConfig,
-        LLMCustomConfig,
-        LLMLlamaCppConfig,
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
+        LLMGeminiChatConfig,
         LLMCohereConfig,
-        LLMHuggingFaceEndpointConfig,
-        LLMHuggingFaceTextGenInferenceConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
-        LLMOllamaConfig
+        LLMHuggingFaceEndpointConfig,
+        LLMHuggingFaceTextGenInferenceConfig,
+        LLMOllamaConfig,
+        LLMLlamaCppConfig,
+        LLMCustomConfig,
+        LLMDefaultConfig,
     ]
     
     mad_hatter_instance = MadHatter()
