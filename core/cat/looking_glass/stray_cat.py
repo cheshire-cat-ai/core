@@ -14,7 +14,7 @@ from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
 
-MAX_TEXT_INPUT = 500
+MAX_TEXT_INPUT = 2000
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # The Stray cat goes around tools and hook, making troubles
@@ -232,6 +232,7 @@ class StrayCat:
             )
 
             if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+                # TODO: reflex hook!
                 self.send_long_message_to_declarative()
 
             # recall episodic and declarative memories from vector collections
@@ -331,6 +332,7 @@ class StrayCat:
         query, to_declarative_memory = query[:index], query
         self.working_memory["user_message_json"]["text"] = query # shortens working memory content
 
+        # TODO: can we run ingestion in the background?
         docs = self.rabbit_hole.string_to_docs(
             stray=self,
             file_bytes=to_declarative_memory,
