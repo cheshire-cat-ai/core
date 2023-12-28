@@ -234,6 +234,8 @@ class MadHatter:
                 except Exception as e:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
                     log.error(e)
+                    plugin_obj = self.plugins[hook.plugin_id]
+                    log.warning(plugin_obj.plugin_specific_error_message())
                     traceback.print_exc()
             return
             
@@ -260,6 +262,8 @@ class MadHatter:
             except Exception as e:
                 log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
                 log.error(e)
+                plugin_obj = self.plugins[hook.plugin_id]
+                log.warning(plugin_obj.plugin_specific_error_message())
                 traceback.print_exc()
 
         # tea_cup has passed through all hooks. Return final output
