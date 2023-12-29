@@ -8,7 +8,7 @@ from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel, ValidationError
 
-from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
+from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
 from cat.utils import to_camel_case
 from cat.log import log
 from cat import utils
@@ -297,10 +297,10 @@ class Plugin:
         return isinstance(obj, CatTool)
     
     # a plugin override function has to be decorated with @plugin
-    # (which returns an instance of CatPluginOverride)
+    # (which returns an instance of CatPluginDecorator)
     @staticmethod
     def _is_cat_plugin_override(obj):
-        return isinstance(obj, CatPluginOverride)
+        return isinstance(obj, CatPluginDecorator)
     
     @property
     def path(self):
