@@ -5,6 +5,8 @@ from langchain.base_language import BaseLanguageModel
 from langchain.chat_models.base import BaseChatModel
 from langchain.llms import Cohere, OpenAI, AzureOpenAI
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 
 from cat.db import crud
 from cat.factory.custom_llm import CustomOpenAI
@@ -198,6 +200,13 @@ class CheshireCat():
             embedder = embedders.EmbedderLlamaCppConfig.get_embedder_from_config(
                 {
                     "url": self._llm.url
+                }
+            )
+        elif type(self._llm) in [ChatGoogleGenerativeAI]:
+            embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
+                {
+                    "model": self.embedder.model_name,
+                    "google_api_key": self._llm.google_api_key
                 }
             )
 
