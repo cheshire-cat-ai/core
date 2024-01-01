@@ -3,7 +3,7 @@ import langchain
 from pydantic import BaseModel, ConfigDict
 from langchain.embeddings.fastembed import FastEmbedEmbeddings
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
-
+from cat.mad_hatter.mad_hatter import MadHatter
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseModel):
@@ -127,25 +127,44 @@ class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
             "link": "https://qdrant.github.io/fastembed/",
         }
     )
-    
 
 
-SUPPORTED_EMDEDDING_MODELS = [
-    EmbedderDumbConfig,
-    EmbedderFakeConfig,
-    EmbedderLlamaCppConfig,
-    EmbedderOpenAIConfig,
-    EmbedderAzureOpenAIConfig,
-    EmbedderCohereConfig,
-    EmbedderQdrantFastEmbedConfig
-]
+
+def get_allowed_embedder_models():
+
+    list_embedder_default = [
+        EmbedderDumbConfig,
+        EmbedderFakeConfig,
+        EmbedderLlamaCppConfig,
+        EmbedderOpenAIConfig,
+        EmbedderAzureOpenAIConfig,
+        EmbedderCohereConfig,
+        EmbedderQdrantFastEmbedConfig
+    ]
+
+    mad_hatter_instance = MadHatter()
+    list_embedder = mad_hatter_instance.execute_hook("factory_allowed_embedder", list_embedder_default, cat=None)
+    return list_embedder
 
 
-# EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
-EMBEDDER_SCHEMAS = {}
-for config_class in SUPPORTED_EMDEDDING_MODELS:
-    schema = config_class.model_json_schema()
+def get_embedder_from_name(name_embedder: str):
+    """ Find the llm adapter class by name"""
+    for cls in get_allowed_embedder_models():
+        if cls.__name__ == name_embedder:
+            return cls
+    return None
 
-    # useful for clients in order to call the correct config endpoints
-    schema["languageEmbedderName"] = schema["title"]
-    EMBEDDER_SCHEMAS[schema["title"]] = schema
+
+def get_embedders_schemas():
+
+    # EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
+    EMBEDDER_SCHEMAS = {}
+    for config_class in get_allowed_embedder_models():
+        schema = config_class.model_json_schema()
+        # useful for clients in order to call the correct config endpoints
+        schema["languageEmbedderName"] = schema["title"]
+        EMBEDDER_SCHEMAS[schema["title"]] = schema
+
+    return EMBEDDER_SCHEMAS
+
+
