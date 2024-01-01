@@ -5,7 +5,7 @@ services:
   cheshire-cat-core:
     build:
       context: ./core
-    container_name: cheshire_cat_core_fork_dev
+    container_name: cheshire_cat_core
     environment:
       - PYTHONUNBUFFERED=1
       - WATCHFILES_FORCE_POLLING=true
