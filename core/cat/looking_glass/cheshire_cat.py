@@ -206,7 +206,7 @@ class CheshireCat():
             embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
                 {
                     "model": self.embedder.model_name,
-                    "google_api_key": self._llm.google_api_key
+                    "google_api_key": self._llm.google_api_key,
                 }
             )
 
