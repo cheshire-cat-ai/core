@@ -12,6 +12,7 @@ async def registry_search_plugins(
     #author: str = None,
     #tag: str = None,
 ):
+    payload = None
     
     registry_url = get_registry_url()
 
@@ -32,6 +33,14 @@ async def registry_search_plugins(
                 "page_size": 1000,
             }
             response = requests.get(url, params=params)
+            
+            # check the status 
+            if response.status_code == 200:
+                return response.json()["plugins"]
+            else:
+                log.error(f"Error {response.status_code}: {response.text}")
+                return None
+
             return response.json()["plugins"]
         
     except Exception as e:
