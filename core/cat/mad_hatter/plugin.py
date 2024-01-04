@@ -6,12 +6,12 @@ import traceback
 import importlib
 from typing import Dict
 from inspect import getmembers
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
-from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginOverride
+from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
 from cat.utils import to_camel_case
 from cat.log import log
-
+from cat import utils
 
 # Empty class to represent basic plugin Settings model
 class PluginSettingsModel(BaseModel):
@@ -63,6 +63,15 @@ class Plugin:
     def activate(self):
         # lists of hooks and tools
         self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
+
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+
+        # Try to create setting.json
+        if not os.path.isfile(settings_file_path):
+            self._create_settings_from_model()
+
         self._active = True
 
     def deactivate(self):
@@ -107,7 +116,6 @@ class Plugin:
         # default schema (empty)
         return PluginSettingsModel
 
-
     # load plugin settings
     def load_settings(self):
 
@@ -120,28 +128,22 @@ class Plugin:
         #   in a JSON file called settings.json
         settings_file_path = os.path.join(self._path, "settings.json")
 
-        # default settings is an empty dictionary
-        settings = {}
+        if not os.path.isfile(settings_file_path):
+            if not self._create_settings_from_model():
+                return {}
 
         # load settings.json if exists
         if os.path.isfile(settings_file_path):
             try:
                 with open(settings_file_path, "r") as json_file:
                     settings = json.load(json_file)
-            except Exception as e:
-                log.error(f"Unable to load plugin {self._id} settings")
-                log.error(e)
-                raise e
-        # settings.json does not exist # TODO: may be buggy or there is a better way via json_schema
-        #else:
-        #    try:
-        #        # if all settings have a default, this should go fine
-        #        settings = self.settings_model()
-        #    except Exception as e:
-        #        settings == {}
+                    return settings
 
-        return settings
-    
+            except Exception as e:
+                log.error(f"Unable to load plugin {self._id} settings: {e}")
+                log.warning(self.plugin_specific_error_message())
+                raise e
+                 
     # save plugin settings
     def save_settings(self, settings: Dict):
 
@@ -164,11 +166,34 @@ class Plugin:
         try:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
-        except Exception:
-            log.error(f"Unable to save plugin {self._id} settings")
+            return updated_settings
+        except Exception as e:
+            log.error(f"Unable to save plugin {self._id} settings: {e}")
+            log.warning(self.plugin_specific_error_message())
+            traceback.print_exc()
             return {}
-    
-        return updated_settings
+
+    def _create_settings_from_model(self) -> bool:
+        # by default, plugin settings are saved inside the plugin folder
+        #   in a JSON file called settings.json
+        settings_file_path = os.path.join(self._path, "settings.json")
+
+        try:
+            model = self.settings_model()
+            # if some settings have no default value this will raise a ValidationError
+            settings = model().model_dump_json(indent=4)
+
+            # If each field have a default value and the model is correct,
+            # create the settings.json wiht default values
+            with open(settings_file_path, "x") as json_file:
+                json_file.write(settings)
+                log.debug(f"{self.id} have no settings.json, created with settings model default values")\
+
+            return True    
+                                
+        except ValidationError:
+            log.debug(f"{self.id} settings model have missing defaut values, no settings.json created")
+            return False
 
     def _load_manifest(self):
 
@@ -226,6 +251,7 @@ class Plugin:
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
                 log.error(f"Error in {py_filename}: {str(e)}")
+                log.warning(self.plugin_specific_error_message())
                 traceback.print_exc()
                 raise Exception(f"Unable to load the plugin {self._id}") 
 
@@ -236,6 +262,11 @@ class Plugin:
         plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
 
         return hooks, tools, plugin_overrides
+
+    def plugin_specific_error_message(self):
+        name = self.manifest.get("name")
+        url  = self.manifest.get("plugin_url")
+        return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
 
     def _clean_hook(self, hook):
         # getmembers returns a tuple
@@ -266,10 +297,10 @@ class Plugin:
         return isinstance(obj, CatTool)
     
     # a plugin override function has to be decorated with @plugin
-    # (which returns an instance of CatPluginOverride)
+    # (which returns an instance of CatPluginDecorator)
     @staticmethod
     def _is_cat_plugin_override(obj):
-        return isinstance(obj, CatPluginOverride)
+        return isinstance(obj, CatPluginDecorator)
     
     @property
     def path(self):

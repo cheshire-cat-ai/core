@@ -12,7 +12,7 @@ from loguru import logger
 
 def get_log_level():
     """Return the global LOG level."""
-    return os.getenv("LOG_LEVEL", "ERROR")
+    return os.getenv("LOG_LEVEL", "WARNING")
 
 
 class CatLogEngine:

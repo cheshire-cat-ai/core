@@ -25,11 +25,11 @@ def mount_admin_spa(cheshire_cat_api):
         # - CORE_HOST
         # - CORE_PORT
         # - CORE_USE_SECURE_PROTOCOLS
-        cat_core_config = json.dumps({
-            "CORE_HOST": os.getenv("CORE_HOST", "localhost"),
-            "CORE_PORT": os.getenv("CORE_PORT", "1865"),
-            "CORE_USE_SECURE_PROTOCOLS": os.getenv("CORE_USE_SECURE_PROTOCOLS", ""),
-        })
+        #cat_core_config = json.dumps({
+        #    "CORE_HOST": os.getenv("CORE_HOST", "localhost"),
+        #    "CORE_PORT": os.getenv("CORE_PORT", "1865"),
+        #    "CORE_USE_SECURE_PROTOCOLS": os.getenv("CORE_USE_SECURE_PROTOCOLS", ""),
+        #})
 
         # the admin sttic build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue
@@ -38,10 +38,10 @@ def mount_admin_spa(cheshire_cat_api):
             html = f.read()
 
         # TODO: this is ugly, should be done with beautiful soup or a template
-        regex = re.compile(
-            r"catCoreConfig = (\{.*?\})", flags=re.MULTILINE | re.DOTALL)
-        default_config = re.search(regex, html).group(1)
-        html = html.replace(default_config, cat_core_config)
+        #regex = re.compile(
+        #    r"catCoreConfig = (\{.*?\})", flags=re.MULTILINE | re.DOTALL)
+        #default_config = re.search(regex, html).group(1)
+        #html = html.replace(default_config, cat_core_config)
 
         return HTMLResponse(html)
 

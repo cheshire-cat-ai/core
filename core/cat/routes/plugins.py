@@ -69,7 +69,6 @@ async def get_available_plugins(
 async def install_plugin(
     request: Request,
     file: UploadFile,
-    background_tasks: BackgroundTasks
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
@@ -90,10 +89,7 @@ async def install_plugin(
     plugin_archive_path = f"/tmp/{file.filename}"
     with open(plugin_archive_path, "wb+") as f:
         f.write(file.file.read())
-
-    background_tasks.add_task(
-        ccat.mad_hatter.install_plugin, plugin_archive_path
-    )
+    ccat.mad_hatter.install_plugin(plugin_archive_path)
 
     return {
         "filename": file.filename,
@@ -105,7 +101,6 @@ async def install_plugin(
 @router.post("/upload/registry")
 async def install_plugin_from_registry(
     request: Request,
-    background_tasks: BackgroundTasks,
     payload: Dict = Body(examples={"url": "https://github.com/plugin-dev-account/plugin-repo"})
 ) -> Dict:
     """Install a new plugin from registry"""
@@ -116,17 +111,14 @@ async def install_plugin_from_registry(
     # download zip from registry
     try:
         tmp_plugin_path = registry_download_plugin( payload["url"] )
+        ccat.mad_hatter.install_plugin(tmp_plugin_path)
     except Exception as e:
         log.error("Could not download plugin form registry")
         log.error(e)
         raise HTTPException(
             status_code = 500,
             detail = { "error": str(e)}
-        ) 
-
-    background_tasks.add_task(
-        ccat.mad_hatter.install_plugin, tmp_plugin_path
-    )
+        )
 
     return {
         "url": payload["url"],
@@ -231,9 +223,9 @@ async def get_plugins_settings(request: Request) -> Dict:
                 "value": plugin_settings,
                 "schema": plugin_schema
             })
-        except:
-            log.error(f"Error loading {plugin} settings")
-
+        except Exception as e:
+            log.error(f"Error loading {plugin} settings. The result will not contain the settings for this plugin. Error details: {e}")
+    
     return {
         "settings": settings,
     }
@@ -252,9 +244,15 @@ async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
             detail = { "error": "Plugin not found" }
         )
 
-    # plugins are managed by the MadHatter class
-    settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
-    schema = ccat.mad_hatter.plugins[plugin_id].settings_schema()
+    try:
+        settings = ccat.mad_hatter.plugins[plugin_id].load_settings()
+        schema = ccat.mad_hatter.plugins[plugin_id].settings_schema()
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = { "error": e }
+        )
+    
     if schema['properties'] == {}:
         schema = {}
 
