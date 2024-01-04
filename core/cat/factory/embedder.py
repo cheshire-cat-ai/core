@@ -165,7 +165,7 @@ def get_allowed_embedder_models():
     ]
 
     mad_hatter_instance = MadHatter()
-    list_embedder = mad_hatter_instance.execute_hook("factory_allowed_embedder", list_embedder_default, cat=None)
+    list_embedder = mad_hatter_instance.execute_hook("factory_allowed_embedders", list_embedder_default, cat=None)
     return list_embedder
 
 

@@ -20,17 +20,17 @@ def factory_allowed_llms(allowed, cat) -> List:
     return allowed
 
 @hook(priority=0)
-def factory_allowed_embedder(allowed, cat) -> List:
-    """Hook to extend support of embedder.
+def factory_allowed_embedders(allowed, cat) -> List:
+    """Hook to extend list of supported embedders.
 
     Parameters
     ---------
     allowed : embedder of EmbedderSettings classes
-        list of allowed language models 
+        list of allowed embedders 
 
     Returns
     -------
     supported : List of EmbedderSettings classes
-        list of allowed language models 
+        list of allowed embedders 
     """
     return allowed
