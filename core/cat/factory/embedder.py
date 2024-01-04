@@ -2,8 +2,11 @@ from typing import Type
 import langchain
 from pydantic import BaseModel, ConfigDict
 from langchain.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
+
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseModel):
@@ -127,19 +130,38 @@ class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
             "link": "https://qdrant.github.io/fastembed/",
         }
     )
+    
 
+class EmbedderGeminiChatConfig(EmbedderSettings):
+    """Configuration for Gemini Chat Embedder.
+
+    This class contains the configuration for the Gemini Chat Embedder.
+    """
+
+    model_name: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+    
+    _pyclass: Type = GoogleGenerativeAIEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Gemini Chat Embedder",
+            "description": "Configuration for Gemini Chat Embedder",
+            "link": "https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings?hl=en",
+        }
+    )
 
 
 def get_allowed_embedder_models():
 
     list_embedder_default = [
-        EmbedderDumbConfig,
-        EmbedderFakeConfig,
-        EmbedderLlamaCppConfig,
+        EmbedderQdrantFastEmbedConfig,
         EmbedderOpenAIConfig,
         EmbedderAzureOpenAIConfig,
+        EmbedderGeminiChatConfig,
+        EmbedderLlamaCppConfig,
         EmbedderCohereConfig,
-        EmbedderQdrantFastEmbedConfig
+        EmbedderDumbConfig,
+        EmbedderFakeConfig,
     ]
 
     mad_hatter_instance = MadHatter()
