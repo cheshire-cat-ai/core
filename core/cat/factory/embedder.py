@@ -135,7 +135,7 @@ class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
 class EmbedderGeminiChatConfig(EmbedderSettings):
     """Configuration for Gemini Chat Embedder.
 
-    This class contains the configuration for the Gemini Chat Embedder.
+    This class contains the configuration for the Gemini Embedder.
     """
 
     model_name: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
@@ -144,8 +144,8 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
 
     model_config = ConfigDict(
         json_schema_extra = {
-            "humanReadableName": "Gemini Chat Embedder",
-            "description": "Configuration for Gemini Chat Embedder",
+            "humanReadableName": "Google Gemini Embedder",
+            "description": "Configuration for Gemini Embedder",
             "link": "https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings?hl=en",
         }
     )
