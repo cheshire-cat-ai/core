@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from cat.db import crud
 from cat.factory.custom_llm import CustomOpenAI
+from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
@@ -120,7 +121,6 @@ class CheshireCat():
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                log.error(f"A problem occurred while instantiating the LLM")
                 llm = LLMDefaultConfig.get_llm_from_config({})
 
         return llm
@@ -150,12 +150,16 @@ class CheshireCat():
         if selected_embedder is not None:
             # get Embedder factory class
             selected_embedder_class = selected_embedder["value"]["name"]
-            FactoryClass = getattr(embedders, selected_embedder_class)
+            FactoryClass = get_embedder_from_name(selected_embedder_class)
 
             # obtain configuration and instantiate Embedder
             selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
-            embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
-
+            try:
+                embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
+            except AttributeError as e:
+                import traceback
+                traceback.print_exc()
+                embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
             return embedder
 
         # OpenAI embedder

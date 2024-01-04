@@ -1,12 +1,12 @@
 import time
 from json import dumps
 from fastapi.encoders import jsonable_encoder
-from cat.factory.embedder import EMBEDDER_SCHEMAS
+from cat.factory.embedder import get_embedders_schemas
 from tests.utils import get_embedded_tools
 
 
 def test_get_all_embedder_settings(client):
-
+    EMBEDDER_SCHEMAS = get_embedders_schemas()
     response = client.get("/embedder/settings")
     json = response.json()
 
