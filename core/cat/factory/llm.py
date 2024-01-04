@@ -2,12 +2,14 @@ import langchain
 from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.llms import OpenAI, AzureOpenAI
 from langchain.llms.ollama import Ollama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
 
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
+from cat.mad_hatter.mad_hatter import MadHatter
 
 
 # Base class to manage LLM configuration.
@@ -238,27 +240,78 @@ class LLMOllamaConfig(LLMSettings):
         }
     )
 
+class LLMGeminiChatConfig(LLMSettings):
+    """Configuration for the Gemini large language model (LLM).
 
-SUPPORTED_LANGUAGE_MODELS = [
-    LLMDefaultConfig,
-    LLMCustomConfig,
-    LLMLlamaCppConfig,
-    LLMOpenAIChatConfig,
-    LLMOpenAIConfig,
-    LLMCohereConfig,
-    LLMHuggingFaceEndpointConfig,
-    LLMHuggingFaceTextGenInferenceConfig,
-    LLMAzureOpenAIConfig,
-    LLMAzureChatOpenAIConfig,
-    LLMOllamaConfig
-]
+    This class inherits from the `LLMSettings` class and provides default values for the following attributes:
 
-# LLM_SCHEMAS contains metadata to let any client know
-# which fields are required to create the language model.
-LLM_SCHEMAS = {}
-for config_class in SUPPORTED_LANGUAGE_MODELS:
-    schema = config_class.model_json_schema()
+    * `google_api_key`: The Google API key used to access the Google Natural Language Processing (NLP) API.
+    * `model`: The name of the LLM model to use. In this case, it is set to "gemini".
+    * `temperature`: The temperature of the model, which controls the creativity and variety of the generated responses. 
+    * `top_p`: The top-p truncation value, which controls the probability of the generated words. 
+    * `top_k`: The top-k truncation value, which controls the number of candidate words to consider during generation. 
+    * `max_output_tokens`: The maximum number of tokens to generate in a single response.
 
-    # useful for clients in order to call the correct config endpoints
-    schema["languageModelName"] = schema["title"]
-    LLM_SCHEMAS[schema["title"]] = schema
+    The `LLMGeminiChatConfig` class is used to create an instance of the Gemini LLM model, which can be used to generate text in natural language.
+    """
+    google_api_key: str 
+    model: str = "gemini-pro"
+    temperature: float =  0.1
+    top_p: int = 1
+    top_k: int =  1
+    max_output_tokens: int = 29000
+
+    _pyclass: Type = ChatGoogleGenerativeAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Google Gemini",
+            "description": "Configuration for Gemini",
+            "link": "https://deepmind.google/technologies/gemini",
+        }
+    )
+
+
+
+def get_allowed_language_models():
+    
+    list_llms_default = [
+        LLMOpenAIChatConfig,
+        LLMOpenAIConfig,
+        LLMGeminiChatConfig,
+        LLMCohereConfig,
+        LLMAzureOpenAIConfig,
+        LLMAzureChatOpenAIConfig,
+        LLMHuggingFaceEndpointConfig,
+        LLMHuggingFaceTextGenInferenceConfig,
+        LLMOllamaConfig,
+        LLMLlamaCppConfig,
+        LLMCustomConfig,
+        LLMDefaultConfig,
+    ]
+    
+    mad_hatter_instance = MadHatter()
+    list_llms = mad_hatter_instance.execute_hook("factory_allowed_llms", list_llms_default, cat=None)
+    return list_llms
+
+
+def get_llm_from_name(name_llm: str):
+    """ Find the llm adapter class by name"""
+    for cls in get_allowed_language_models():
+        if cls.__name__ == name_llm:
+            return cls
+    return None
+
+
+def get_llms_schemas():
+
+    # LLM_SCHEMAS contains metadata to let any client know
+    # which fields are required to create the language model.
+    LLM_SCHEMAS = {}
+    for config_class in get_allowed_language_models():
+        schema = config_class.model_json_schema()
+        # useful for clients in order to call the correct config endpoints
+        schema["languageModelName"] = schema["title"]
+        LLM_SCHEMAS[schema["title"]] = schema
+
+    return LLM_SCHEMAS

@@ -14,7 +14,7 @@ from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
 
-MAX_TEXT_INPUT = 500
+MAX_TEXT_INPUT = 2000
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # The Stray cat goes around tools and hook, making troubles
@@ -231,20 +231,9 @@ class StrayCat:
                 cat=self
             )
 
-            # TODO: move inside a function
-            # split text after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to declarative memory
-            if len(self.working_memory["user_message_json"]["text"]) > MAX_TEXT_INPUT:
-                index = MAX_TEXT_INPUT
-                char = self.working_memory["user_message_json"]["text"][index]
-                while not char.isspace() and index > 0:
-                    index -= 1
-                    char = self.working_memory["user_message_json"]["text"][index]
-                if index <= 0:
-                    index = MAX_TEXT_INPUT
-                self.working_memory["user_message_json"]["text"], to_declarative_memory = self.working_memory["user_message_json"]["text"][:index], self.working_memory["user_message_json"]["text"][index:]
-                docs = self.rabbit_hole.string_to_docs(stray=self, file_bytes=to_declarative_memory, content_type="text/plain")
-                self.rabbit_hole.store_documents(self, docs=docs, source="")
-
+            if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+                # TODO: reflex hook!
+                self.send_long_message_to_declarative()
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -329,6 +318,27 @@ class StrayCat:
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
+
+    def send_long_message_to_declarative(self):
+        #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
+        index = MAX_TEXT_INPUT
+        query = self.working_memory["user_message_json"]["text"]
+        char = query[index]
+        while not char.isspace() and index > 0:
+            index -= 1
+            char = query[index]
+        if index <= 0:
+            index = MAX_TEXT_INPUT
+        query, to_declarative_memory = query[:index], query
+        self.working_memory["user_message_json"]["text"] = query # shortens working memory content
+
+        # TODO: can we run ingestion in the background?
+        docs = self.rabbit_hole.string_to_docs(
+            stray=self,
+            file_bytes=to_declarative_memory,
+            content_type="text/plain"
+        )
+        self.rabbit_hole.store_documents(self, docs=docs, source="")
 
     @property
     def user_id(self):

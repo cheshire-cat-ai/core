@@ -1,4 +1,3 @@
-
 # Contributing to Cheshire Cat
 
 First off, thanks for joining the project as a contributor! ❤️
@@ -7,6 +6,7 @@ The community looks forward to your contributions. 🎉
 All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved.
 
 > If you like the project but just don't have time to contribute, there are other easy ways to support the project and show your appreciation:
+>
 > - Star the project
 > - Sharing on social media
 > - Refer this project in your project's readme
@@ -20,7 +20,6 @@ All types of contributions are encouraged and valued. See the [Table of Contents
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Improving The Documentation](#improving-the-documentation)
-
 
 ## I Have a Question
 
@@ -40,6 +39,7 @@ We have also a [Discord server](https://discord.gg/bHX5sNFCYU) to engage with th
 ## I Want To Contribute
 
 > ### Legal Notice
+>
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 
 ### Reporting Bugs
@@ -67,7 +67,7 @@ We use GitHub issues to track bugs and errors. If you run into an issue with the
 
 - Open an [Issue](https://github.com/cheshire-cat-ai/core/issues/new/choose). (Since we can't be sure at this point whether it is a bug or not, we ask you not to talk about a bug yet and not to label the issue.)
 - Explain the behavior you would expect and the actual behavior.
-- Please provide as much context as possible and describe the *reproduction steps* that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
+- Please provide as much context as possible and describe the _reproduction steps_ that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
 - Provide the information you collected in the previous section.
 
 Once it's filed, a team member will try to reproduce the issue with your provided steps and help finding a solution.
@@ -94,11 +94,10 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/cheshi
 - You may want to **include screenshots and animated GIFs** which help you demonstrate the steps or point out the part which the suggestion is related to. You can use [this tool](https://www.cockos.com/licecap/) to record GIFs on macOS and Windows, and [this tool](https://github.com/colinkeenan/silentcast) or [this tool](https://github.com/GNOME/byzanz) on Linux. <!-- this should only be included if the project has a GUI -->
 - **Explain why this enhancement would be useful** to most Cheshire Cat users. You may also want to point out the other projects that solved it better and which could serve as inspiration.
 
-
 ### Your First Code Contribution
 
-1. Fork the Project
-2. Checkout the `develop` branch (`git checkout -b develop` and then `git pull origin develop`)
+1. Fork the Project (all branches) and clone the forked repository to your machine (`git clone "url of repository"`), where the "url of repository" means the url of your fork of the project.
+2. Checkout the `develop` branch (`git checkout develop` and then `git pull origin develop`)
 3. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 5. Push to the Branch (`git push origin feature/AmazingFeature`)
@@ -111,6 +110,6 @@ Try to keep your PRs small and in line with roadmap and issues.
 Docs contribution are highly valuable for the project.
 See details on how to help with the docs [here](https://github.com/cheshire-cat-ai/docs/).
 
-
 ## Attribution
+
 This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!

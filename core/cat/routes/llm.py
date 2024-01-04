@@ -2,7 +2,7 @@ from typing import Dict
 
 from fastapi import Request, APIRouter, Body, HTTPException
 
-from cat.factory.llm import LLM_SCHEMAS
+from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models
 from cat.log import log
 from cat import utils
@@ -23,6 +23,7 @@ LLM_SELECTED_NAME = "llm_selected"
 @router.get("/settings/")
 def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
+    LLM_SCHEMAS = get_llms_schemas()
 
     # get selected LLM, if any
     selected = crud.get_setting_by_name(name=LLM_SELECTED_NAME)
@@ -56,6 +57,7 @@ def get_llms_settings() -> Dict:
 @router.get("/settings/{languageModelName}")
 def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     """Get settings and schema of the specified Large Language Model"""
+    LLM_SCHEMAS = get_llms_schemas()
 
     # check that languageModelName is a valid name
     allowed_configurations = list(LLM_SCHEMAS.keys())
@@ -89,6 +91,7 @@ def upsert_llm_setting(
     payload: Dict = Body(examples={"openai_api_key": "your-key-here"}),
 ) -> Dict:
     """Upsert the Large Language Model setting"""
+    LLM_SCHEMAS = get_llms_schemas()
 
     # check that languageModelName is a valid name
     allowed_configurations = list(LLM_SCHEMAS.keys())
