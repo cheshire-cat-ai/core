@@ -32,7 +32,14 @@ async def registry_search_plugins(
                 "page_size": 1000,
             }
             response = requests.get(url, params=params)
-            return response.json()["plugins"]
+            
+            # check the connection's status
+            if response.status_code == 200:
+                return response.json()["plugins"]
+            else:
+                log.error(f"Error {response.status_code}: {response.text}")
+                return None
+            
         
     except Exception as e:
         log.error(e)
