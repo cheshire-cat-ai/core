@@ -41,7 +41,8 @@ docker run --rm -it -p 1865:80 ghcr.io/cheshire-cat-ai/core:latest
 As a first thing, the Cat will ask you to configure your favourite language model.
 It can be done directly via the interface in the Settings page (top right in the admin).
 
-Enjoy the Cat!
+Enjoy the Cat!  
+Follow instructions on how to run it with [docker compose and volumes](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
 
 ## Docs and Resources
 
