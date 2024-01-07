@@ -7,6 +7,7 @@ import importlib
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel, ValidationError
+from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
 from cat.utils import to_camel_case
@@ -46,7 +47,8 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
-        self._install_requirements()
+        if os.getenv("CHECK_PLUGIN_DEPENDENCIES", "") == "true":
+            self._install_requirements()
 
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
@@ -62,6 +64,8 @@ class Plugin:
 
     def activate(self):
         # lists of hooks and tools
+        if os.getenv("CHECK_PLUGIN_DEPENDENCIES", "") == "false":
+            self._install_requirements()
         self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -227,10 +231,34 @@ class Plugin:
     
     def _install_requirements(self):
         req_file = os.path.join(self.path, "requirements.txt")
+        filtered_requirements = []
 
         if os.path.exists(req_file):
+            try:
+                with open(req_file, "r") as read_file:
+                    requirements = read_file.readlines()
+                for req in requirements:
+                    #req = req.strip()
+                    package_name = Requirement(req).name
+                    if importlib.util.find_spec(package_name) is None:
+                        log.info(package_name + " is not installed")
+                        filtered_requirements.append(req)
+                    try:
+                        importlib.import_module(package_name)
+                        log.info(f"{package_name} is already installed.")
+                    except ImportError:
+                        log.info(f"{package_name} is not installed.")
+                        filtered_requirements.append(req)
+            except Exception as e:
+                log.error(f"Error during requirements check: {e}, for {self.id}")
+            filtered_requirements = list(dict.fromkeys(filtered_requirements))
+            log.error(filtered_requirements)
+            with open(os.path.join(self.path, "filtered_requirements.txt"), "w") as write_file:
+                write_file.writelines(filtered_requirements)
             log.info(f"Installing requirements for: {self.id}")
-            os.system(f'pip install --no-cache-dir -r "{req_file}"')
+            filtered_req_file = os.path.join(self.path, "filtered_requirements.txt")
+            if len(filtered_requirements) > 0:
+                os.system(f'pip install --no-cache-dir -r "{filtered_req_file}"')
 
     # lists of hooks and tools
     def _load_decorated_functions(self):
