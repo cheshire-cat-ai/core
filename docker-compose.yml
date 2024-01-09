@@ -15,7 +15,6 @@ services:
       - API_KEY=${API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
       - DEBUG=${DEBUG:-true}
-      - CHECK_PLUGIN_DEPENDENCIES=${CHECK_PLUGIN_DEPENDENCIES:-false}
       - SAVE_MEMORY_SNAPSHOTS=${SAVE_MEMORY_SNAPSHOTS:-false}
     ports:
       - ${CORE_PORT:-1865}:80

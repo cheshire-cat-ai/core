@@ -4,6 +4,7 @@ import json
 import glob
 import traceback
 import importlib
+import tempfile
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel, ValidationError
@@ -47,9 +48,6 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
-        if os.getenv("CHECK_PLUGIN_DEPENDENCIES", "") == "true":
-            self._install_requirements()
-
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
@@ -63,9 +61,9 @@ class Plugin:
         self._active = False
 
     def activate(self):
+        # install plugin requirements on activation
+        self._install_requirements()
         # lists of hooks and tools
-        if os.getenv("CHECK_PLUGIN_DEPENDENCIES", "") == "false":
-            self._install_requirements()
         self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -238,12 +236,14 @@ class Plugin:
                 with open(req_file, "r") as read_file:
                     requirements = read_file.readlines()
                 for req in requirements:
-                    #req = req.strip()
+                    # get package name
                     package_name = Requirement(req).name
+                    # check if package is installed
                     if importlib.util.find_spec(package_name) is None:
                         log.info(package_name + " is not installed")
                         filtered_requirements.append(req)
                     try:
+                        # double check package installation, try to import it
                         importlib.import_module(package_name)
                         log.info(f"{package_name} is already installed.")
                     except ImportError:
@@ -251,14 +251,18 @@ class Plugin:
                         filtered_requirements.append(req)
             except Exception as e:
                 log.error(f"Error during requirements check: {e}, for {self.id}")
+            # filter list of requirements from doubles
             filtered_requirements = list(dict.fromkeys(filtered_requirements))
-            log.error(filtered_requirements)
-            with open(os.path.join(self.path, "filtered_requirements.txt"), "w") as write_file:
-                write_file.writelines(filtered_requirements)
-            log.info(f"Installing requirements for: {self.id}")
-            filtered_req_file = os.path.join(self.path, "filtered_requirements.txt")
-            if len(filtered_requirements) > 0:
-                os.system(f'pip install --no-cache-dir -r "{filtered_req_file}"')
+
+            # use temp file
+            with tempfile.TemporaryDirectory() as tmp:
+                f_name = os.path.join(tmp, 'tmp')
+                with open(f_name, 'w') as fh:
+                    for item in filtered_requirements:
+                        fh.write(item)
+                log.info(f"Installing requirements for: {self.id}")
+                if len(filtered_requirements) > 0:
+                    os.system(f'pip install --no-cache-dir -r "{f_name}"')
 
     # lists of hooks and tools
     def _load_decorated_functions(self):
