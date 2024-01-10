@@ -152,6 +152,10 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
     )
 
 class EmbedderJinaEmbeddingsConfig(EmbedderSettings):
+    """Configuration for Jina Embedder.
+
+    This class contains the configuration for the Jina Embedder.
+    """
     jina_api_key: str
     model_name: str = "jina-embeddings-v2-base-en"
     
