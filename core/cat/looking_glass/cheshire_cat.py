@@ -235,6 +235,8 @@ class CheshireCat():
             embedder_name = self.embedder.model
         elif hasattr(self.embedder, "repo_id"):
             embedder_name = self.embedder.repo_id
+        elif hasattr(self.embedder, "model_name"):
+            embedder_name = self.embedder.model_name
         else:
             embedder_name = "default_embedder"
 
