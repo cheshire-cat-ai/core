@@ -44,6 +44,33 @@ It can be done directly via the interface in the Settings page (top right in the
 Enjoy the Cat!  
 Follow instructions on how to run it with [docker compose and volumes](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
 
+## Minimal plugin example
+
+```python
+from cat.mad_hatter.decorators import tool, hook
+
+@hook
+def agent_prompt_prefix(prefix, cat):
+    prefix = """You are Marvin the socks seller, a poetic vendor of socks.
+You are an expert in socks, and you reply with exactly one rhyme.
+"""
+    return prefix
+
+
+@tool(return_direct=True)
+def socks_prices(color, cat):
+    """How much do socks cost? Input is the sock color."""
+    prices = {
+        "black": 5,
+        "white": 10,
+        "pink": 50,
+    }
+    if color not in prices.keys():
+        return f"No {color} socks"
+    else:
+        return f"{prices[color]} €" 
+```
+
 ## Docs and Resources
 
 - [Official Documentation](https://cheshire-cat-ai.github.io/docs/)
@@ -54,23 +81,20 @@ Follow instructions on how to run it with [docker compose and volumes](https://c
 
 ## Why use the Cat
 
-- 🌍 Supports any language model (works with OpenAI chatGPT, Llama2, HuggingFace models, custom)
-- 🐘 Remembers conversations and documents and uses them in conversation
+- ⚡️ API first, so you get a microservice to easily add a conversational layer to your app
 - 🚀 Extensible via plugins (AI can connect to your APIs or execute custom python code)
+- 🏛 Easy to use admin panel
+- 🌍 Supports any language model (works with OpenAI, Google, Ollama, HuggingFace, custom services)
+- 🐘 Remembers conversations and documents and uses them in conversation
 - 🐋 Production ready - 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
  
 We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./readme/CODE-OF-ETHICS.md). 
 
 
-## Roadmap
+## Roadmap & Contributing
 
-Detailed roadmap is [here](./readme/ROADMAP.md).
-Whilst for the current progress of development, take a look at the [projects](https://github.com/orgs/cheshire-cat-ai/projects) marked as open.
-
-## Contributing
-
-To get the full dev setup, follow [install instructions](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
+Detailed roadmap is [here](./readme/ROADMAP.md).  
 Send your pull request to the `develop` branch. Here is a [full guide to contributing](./readme/CONTRIBUTING.md).
 
 Join our [community on Discord](https://discord.gg/bHX5sNFCYU) and give the project a star ⭐!
