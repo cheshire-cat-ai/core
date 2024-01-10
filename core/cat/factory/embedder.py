@@ -138,7 +138,7 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
     This class contains the configuration for the Gemini Embedder.
     """
     google_api_key: str
-    model_name: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+    model: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
     
     _pyclass: Type = GoogleGenerativeAIEmbeddings
 
