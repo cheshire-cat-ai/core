@@ -3,6 +3,7 @@ import langchain
 from pydantic import BaseModel, ConfigDict
 from langchain.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.embeddings import JinaEmbeddings
 
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
@@ -150,10 +151,24 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
         }
     )
 
+class EmbedderJinaEmbeddingsConfig(EmbedderSettings):
+    jina_api_key: str
+    model_name: str = "jina-embeddings-v2-base-en"
+    
+    _pyclass: Type = JinaEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra = {
+            "humanReadableName": "Jina Embeddings",
+            "description": "Configuration for Jina",
+            "link": "https://jina.ai/embeddings/",
+        }
+    )
 
 def get_allowed_embedder_models():
 
     list_embedder_default = [
+        EmbedderJinaEmbeddingsConfig,
         EmbedderQdrantFastEmbedConfig,
         EmbedderOpenAIConfig,
         EmbedderAzureOpenAIConfig,
