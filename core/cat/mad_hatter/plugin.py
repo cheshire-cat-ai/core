@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import glob
+import tempfile
 import traceback
 import importlib
 import tempfile
@@ -229,7 +230,6 @@ class Plugin:
     
     def _install_requirements(self):
         req_file = os.path.join(self.path, "requirements.txt")
-        filtered_requirements = []
 
         if os.path.exists(req_file):
             try:
@@ -254,16 +254,20 @@ class Plugin:
             # filter list of requirements from doubles
             filtered_requirements = list(dict.fromkeys(filtered_requirements))
 
-            # use temp file
-            with tempfile.TemporaryDirectory() as tmp:
-                f_name = os.path.join(tmp, 'tmp')
-                with open(f_name, 'w') as fh:
-                    for item in filtered_requirements:
-                        fh.write(item)
-                log.info(f"Installing requirements for: {self.id}")
-                if len(filtered_requirements) > 0:
-                    os.system(f'pip install --no-cache-dir -r "{f_name}"')
 
+            if len(filtered_requirements) == 0:
+                return
+
+            with tempfile.NamedTemporaryFile(mode='w') as tmp:
+
+                tmp.write(''.join(filtered_requirements))
+                # If flush is not performed, when pip read the file is blank
+                tmp.flush()
+
+                try:
+                    subprocess.run(['pip', 'install', '--no-cache-dir', '-r', tmp.name], check=True)
+                except subprocess.CalledProcessError as e:
+                    log.error(f"Error during installing {self.id} requirements: {e}")
     # lists of hooks and tools
     def _load_decorated_functions(self):
         hooks = []
