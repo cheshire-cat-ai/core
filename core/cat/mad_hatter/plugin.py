@@ -5,7 +5,7 @@ import glob
 import tempfile
 import traceback
 import importlib
-import tempfile
+import subprocess
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel, ValidationError
@@ -14,7 +14,7 @@ from packaging.requirements import Requirement
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
 from cat.utils import to_camel_case
 from cat.log import log
-from cat import utils
+
 
 # Empty class to represent basic plugin Settings model
 class PluginSettingsModel(BaseModel):
@@ -229,15 +229,21 @@ class Plugin:
         return meta
     
     def _install_requirements(self):
+
+        log.info(f"Installing requirements for: {self.id}")
+
         req_file = os.path.join(self.path, "requirements.txt")
+        filtered_requirements = set()
 
         if os.path.exists(req_file):
             try:
                 with open(req_file, "r") as read_file:
                     requirements = read_file.readlines()
+
                 for req in requirements:
                     # get package name
                     package_name = Requirement(req).name
+
                     # check if package is installed
                     if importlib.util.find_spec(package_name) is None:
                         log.info(package_name + " is not installed")
@@ -251,9 +257,6 @@ class Plugin:
                         filtered_requirements.append(req)
             except Exception as e:
                 log.error(f"Error during requirements check: {e}, for {self.id}")
-            # filter list of requirements from doubles
-            filtered_requirements = list(dict.fromkeys(filtered_requirements))
-
 
             if len(filtered_requirements) == 0:
                 return
@@ -268,6 +271,7 @@ class Plugin:
                     subprocess.run(['pip', 'install', '--no-cache-dir', '-r', tmp.name], check=True)
                 except subprocess.CalledProcessError as e:
                     log.error(f"Error during installing {self.id} requirements: {e}")
+                
     # lists of hooks and tools
     def _load_decorated_functions(self):
         hooks = []
