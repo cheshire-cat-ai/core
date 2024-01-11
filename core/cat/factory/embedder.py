@@ -55,14 +55,14 @@ class EmbedderDumbConfig(EmbedderSettings):
     )
 
 
-class EmbedderLlamaCppConfig(EmbedderSettings):
+class EmbedderOpenAICompatibleConfig(EmbedderSettings):
     url: str
     _pyclass: Type = CustomOpenAIEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra = {
-            "humanReadableName": "Self-hosted llama-cpp-python embedder",
-            "description": "Self-hosted llama-cpp-python embedder",
+            "humanReadableName": "OpenAI-compatible API embedder",
+            "description": "Configuration for self-hosted OpenAI-compatible API embeddings",
             "link": "",
         }
     )
@@ -158,7 +158,7 @@ def get_allowed_embedder_models():
         EmbedderOpenAIConfig,
         EmbedderAzureOpenAIConfig,
         EmbedderGeminiChatConfig,
-        EmbedderLlamaCppConfig,
+        EmbedderOpenAICompatibleConfig,
         EmbedderCohereConfig,
         EmbedderDumbConfig,
         EmbedderFakeConfig,
