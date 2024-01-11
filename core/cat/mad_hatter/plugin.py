@@ -246,15 +246,10 @@ class Plugin:
 
                     # check if package is installed
                     if importlib.util.find_spec(package_name) is None:
-                        log.info(package_name + " is not installed")
-                        filtered_requirements.append(req)
-                    try:
-                        # double check package installation, try to import it
-                        importlib.import_module(package_name)
-                        log.info(f"{package_name} is already installed.")
-                    except ImportError:
-                        log.info(f"{package_name} is not installed.")
-                        filtered_requirements.append(req)
+                        filtered_requirements.add(req)
+                    else:
+                        log.info(f"{package_name} is alredy installed")
+
             except Exception as e:
                 log.error(f"Error during requirements check: {e}, for {self.id}")
 
