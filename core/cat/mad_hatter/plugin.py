@@ -230,12 +230,13 @@ class Plugin:
     
     def _install_requirements(self):
 
-        log.info(f"Installing requirements for: {self.id}")
-
         req_file = os.path.join(self.path, "requirements.txt")
         filtered_requirements = set()
 
         if os.path.exists(req_file):
+
+            installed_package = [x.name for x in importlib.metadata.distributions()]
+
             try:
                 with open(req_file, "r") as read_file:
                     requirements = read_file.readlines()
@@ -245,7 +246,7 @@ class Plugin:
                     package_name = Requirement(req).name
 
                     # check if package is installed
-                    if importlib.util.find_spec(package_name) is None:
+                    if package_name not in installed_package:
                         filtered_requirements.add(req)
                     else:
                         log.info(f"{package_name} is alredy installed")
@@ -256,10 +257,11 @@ class Plugin:
             if len(filtered_requirements) == 0:
                 return
 
+            log.info(f"Installing requirements for: {self.id}")
             with tempfile.NamedTemporaryFile(mode='w') as tmp:
 
                 tmp.write(''.join(filtered_requirements))
-                # If flush is not performed, when pip read the file is blank
+                # If flush is not performed, when pip reads the file it is empty
                 tmp.flush()
 
                 try:
