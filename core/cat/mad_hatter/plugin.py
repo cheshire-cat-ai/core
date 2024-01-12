@@ -231,11 +231,11 @@ class Plugin:
     def _install_requirements(self):
 
         req_file = os.path.join(self.path, "requirements.txt")
-        filtered_requirements = set()
+        filtered_requirements = []
 
         if os.path.exists(req_file):
 
-            installed_package = [x.name for x in importlib.metadata.distributions()]
+            installed_packages = {x.name for x in importlib.metadata.distributions()}
 
             try:
                 with open(req_file, "r") as read_file:
@@ -249,8 +249,8 @@ class Plugin:
                     package_name = Requirement(req).name
 
                     # check if package is installed
-                    if package_name not in installed_package:
-                        filtered_requirements.add(req)
+                    if package_name not in installed_packages:
+                        filtered_requirements.append(req)
                     else:
                         log.debug(f"{package_name} is alredy installed")
 
