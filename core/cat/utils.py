@@ -3,6 +3,7 @@ import os
 import inspect
 from datetime import timedelta
 from cat.log import log
+from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 
 
 def to_camel_case(text: str) -> str:
@@ -113,6 +114,15 @@ HOW TO FIX: go to your OpenAI accont and add a credit card"""
         log.error(error_description) # just to make sure the message is read both front and backend
 
     return error_description
+
+
+def levenshtein_distance(prediction: str, reference: str) -> int:
+    jaro_evaluator = load_evaluator(EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN)
+    result = jaro_evaluator.evaluate_strings(
+        prediction=prediction,
+        reference=reference,
+    )
+    return result['score']
 
 
 # This is our masterwork during tea time
