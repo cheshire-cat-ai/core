@@ -39,6 +39,7 @@ dependencies = [
     "pytest",
     "httpx",
     "fastembed==0.1.1",
+    "rapidfuzz==3.6.1",
 ]
 
 [tool.coverage.run]
