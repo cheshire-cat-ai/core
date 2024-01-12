@@ -242,6 +242,9 @@ class Plugin:
                     requirements = read_file.readlines()
 
                 for req in requirements:
+
+                    log.info(f"Installing requirements for: {self.id}")
+
                     # get package name
                     package_name = Requirement(req).name
 
@@ -249,7 +252,7 @@ class Plugin:
                     if package_name not in installed_package:
                         filtered_requirements.add(req)
                     else:
-                        log.info(f"{package_name} is alredy installed")
+                        log.debug(f"{package_name} is alredy installed")
 
             except Exception as e:
                 log.error(f"Error during requirements check: {e}, for {self.id}")
@@ -257,7 +260,6 @@ class Plugin:
             if len(filtered_requirements) == 0:
                 return
 
-            log.info(f"Installing requirements for: {self.id}")
             with tempfile.NamedTemporaryFile(mode='w') as tmp:
 
                 tmp.write(''.join(filtered_requirements))
@@ -278,7 +280,7 @@ class Plugin:
         for py_file in self.py_files:
             py_filename = py_file.replace(".py", "").replace("/", ".")
 
-            log.info(f"Import module {py_filename}")
+            log.debug(f"Import module {py_filename}")
 
             # save a reference to decorated functions
             try:
