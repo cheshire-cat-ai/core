@@ -108,9 +108,11 @@ if __name__ == "__main__":
             "reload_excludes": ["*test_*.*", "*mock_*.*"]
         }
 
+    log_level = os.getenv("LOG_LEVEL", "info")
     uvicorn.run(
         "cat.main:cheshire_cat_api",
         host="0.0.0.0",
         port=80,
+        log_level=log_level.lower(),
         **debug_config
     )
