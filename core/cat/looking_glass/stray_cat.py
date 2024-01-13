@@ -299,7 +299,7 @@ class StrayCat:
             final_output = {
                 "type": "chat",
                 "user_id": self.user_id,
-                "content": cat_message.get("output"),
+                "content": str(cat_message.get("output")),
                 "why": {
                     "input": cat_message.get("input"),
                     "intermediate_steps": cat_message.get("intermediate_steps"),
