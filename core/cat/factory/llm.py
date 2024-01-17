@@ -75,7 +75,7 @@ class LLMCustomConfig(LLMSettings):
     )
 
 
-class LLMLlamaCppConfig(LLMSettings):
+class LLMOpenAICompatibleConfig(LLMSettings):
     url: str
     temperature: float = 0.01
     max_tokens: int = 512
@@ -87,8 +87,8 @@ class LLMLlamaCppConfig(LLMSettings):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Self-hosted llama-cpp-python",
-            "description": "Self-hosted llama-cpp-python compatible LLM",
+            "humanReadableName": "OpenAI-compatible API",
+            "description": "Configuration for self-hosted OpenAI-compatible API server, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM",
             "link": "",
         }
     )
@@ -210,7 +210,6 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
     task: str = "text2text-generation"
-    streaming: bool = True
     _pyclass: Type = langchain.llms.HuggingFaceEndpoint
 
     model_config = ConfigDict(
@@ -285,7 +284,7 @@ def get_allowed_language_models():
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
         LLMOllamaConfig,
-        LLMLlamaCppConfig,
+        LLMOpenAICompatibleConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
     ]

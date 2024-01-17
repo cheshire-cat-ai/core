@@ -55,14 +55,14 @@ class EmbedderDumbConfig(EmbedderSettings):
     )
 
 
-class EmbedderLlamaCppConfig(EmbedderSettings):
+class EmbedderOpenAICompatibleConfig(EmbedderSettings):
     url: str
     _pyclass: Type = CustomOpenAIEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra = {
-            "humanReadableName": "Self-hosted llama-cpp-python embedder",
-            "description": "Self-hosted llama-cpp-python embedder",
+            "humanReadableName": "OpenAI-compatible API embedder",
+            "description": "Configuration for self-hosted OpenAI-compatible API embeddings",
             "link": "",
         }
     )
@@ -137,8 +137,8 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
 
     This class contains the configuration for the Gemini Embedder.
     """
-
-    model_name: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+    google_api_key: str
+    model: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
     
     _pyclass: Type = GoogleGenerativeAIEmbeddings
 
@@ -158,7 +158,7 @@ def get_allowed_embedder_models():
         EmbedderOpenAIConfig,
         EmbedderAzureOpenAIConfig,
         EmbedderGeminiChatConfig,
-        EmbedderLlamaCppConfig,
+        EmbedderOpenAICompatibleConfig,
         EmbedderCohereConfig,
         EmbedderDumbConfig,
         EmbedderFakeConfig,

@@ -209,7 +209,7 @@ class CheshireCat():
         elif type(self._llm) in [ChatGoogleGenerativeAI]:
             embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
                 {
-                    "model": self.embedder.model_name,
+                    "model": "models/embedding-001",
                     "google_api_key": self._llm.google_api_key,
                 }
             )

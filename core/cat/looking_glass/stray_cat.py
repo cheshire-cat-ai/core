@@ -85,11 +85,17 @@ class StrayCat:
             )
 
 
-    def recall_relevant_memories_to_working_memory(self):
+    def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
 
         The method retrieves the relevant memories from the vector collections that are given as context to the LLM.
         Recalled memories are stored in the working memory.
+
+        Parameters
+        ----------
+        query : str, optional
+        The query used to make a similarity search in the Cat's vector memories. If not provided, the query
+        will be derived from the user's message.
 
         Notes
         -----
@@ -105,7 +111,11 @@ class StrayCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
-        recall_query = self.working_memory["user_message_json"]["text"]
+        recall_query = query
+
+        if query is None:
+            # If query is not provided, use the user's message as the query
+            recall_query = self.working_memory["user_message_json"]["text"]
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=self)
@@ -299,7 +309,7 @@ class StrayCat:
             final_output = {
                 "type": "chat",
                 "user_id": self.user_id,
-                "content": cat_message.get("output"),
+                "content": str(cat_message.get("output")),
                 "why": {
                     "input": cat_message.get("input"),
                     "intermediate_steps": cat_message.get("intermediate_steps"),

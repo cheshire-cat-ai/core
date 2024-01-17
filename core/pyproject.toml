@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.4.5"
+version = "1.4.6"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -39,6 +39,7 @@ dependencies = [
     "pytest",
     "httpx",
     "fastembed==0.1.1",
+    "rapidfuzz==3.6.1",
 ]
 
 [tool.coverage.run]

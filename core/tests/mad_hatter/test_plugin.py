@@ -140,6 +140,9 @@ def test_install_plugin_dependencies():
     # Install mock plugin
     p = Plugin(mock_plugin_path)
 
+    # Dependencies are installed on plugin activation
+    p.activate()
+
     # pip-install-test should have been installed
     result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE)
     result = result.stdout.decode()

@@ -2,16 +2,19 @@ import os
 import sys
 import json
 import glob
+import tempfile
 import traceback
 import importlib
+import subprocess
 from typing import Dict
 from inspect import getmembers
 from pydantic import BaseModel, ValidationError
+from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
 from cat.utils import to_camel_case
 from cat.log import log
-from cat import utils
+
 
 # Empty class to represent basic plugin Settings model
 class PluginSettingsModel(BaseModel):
@@ -46,8 +49,6 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
-        self._install_requirements()
-
         # list of tools and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
@@ -61,6 +62,8 @@ class Plugin:
         self._active = False
 
     def activate(self):
+        # install plugin requirements on activation
+        self._install_requirements()
         # lists of hooks and tools
         self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
 
@@ -226,12 +229,48 @@ class Plugin:
         return meta
     
     def _install_requirements(self):
+
         req_file = os.path.join(self.path, "requirements.txt")
+        filtered_requirements = []
 
         if os.path.exists(req_file):
-            log.info(f"Installing requirements for: {self.id}")
-            os.system(f'pip install --no-cache-dir -r "{req_file}"')
 
+            installed_packages = {x.name for x in importlib.metadata.distributions()}
+
+            try:
+                with open(req_file, "r") as read_file:
+                    requirements = read_file.readlines()
+
+                for req in requirements:
+
+                    log.info(f"Installing requirements for: {self.id}")
+
+                    # get package name
+                    package_name = Requirement(req).name
+
+                    # check if package is installed
+                    if package_name not in installed_packages:
+                        filtered_requirements.append(req)
+                    else:
+                        log.debug(f"{package_name} is alredy installed")
+
+            except Exception as e:
+                log.error(f"Error during requirements check: {e}, for {self.id}")
+
+            if len(filtered_requirements) == 0:
+                return
+
+            with tempfile.NamedTemporaryFile(mode='w') as tmp:
+
+                tmp.write(''.join(filtered_requirements))
+                # If flush is not performed, when pip reads the file it is empty
+                tmp.flush()
+
+                try:
+                    subprocess.run(['pip', 'install', '--no-cache-dir', '-r', tmp.name], check=True)
+                except subprocess.CalledProcessError as e:
+                    log.error(f"Error during installing {self.id} requirements: {e}")
+                
     # lists of hooks and tools
     def _load_decorated_functions(self):
         hooks = []
@@ -241,7 +280,7 @@ class Plugin:
         for py_file in self.py_files:
             py_filename = py_file.replace(".py", "").replace("/", ".")
 
-            log.info(f"Import module {py_filename}")
+            log.debug(f"Import module {py_filename}")
 
             # save a reference to decorated functions
             try:
