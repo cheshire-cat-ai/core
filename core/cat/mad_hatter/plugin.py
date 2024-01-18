@@ -7,11 +7,12 @@ import traceback
 import importlib
 import subprocess
 from typing import Dict
-from inspect import getmembers
+from inspect import getmembers, isclass
 from pydantic import BaseModel, ValidationError
 from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
+from cat.mad_hatter.cat_form import CatForm
 from cat.utils import to_camel_case
 from cat.log import log
 
@@ -276,6 +277,7 @@ class Plugin:
         hooks = []
         tools = []
         plugin_overrides = []
+        forms = []
 
         for py_file in self.py_files:
             py_filename = py_file.replace(".py", "").replace("/", ".")
@@ -285,8 +287,10 @@ class Plugin:
             # save a reference to decorated functions
             try:
                 plugin_module = importlib.import_module(py_filename)
+
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
+                forms += getmembers(plugin_module, self._is_cat_form)
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
                 log.error(f"Error in {py_filename}: {str(e)}")
@@ -328,6 +332,10 @@ class Plugin:
     @staticmethod
     def _is_cat_hook(obj):
         return isinstance(obj, CatHook)
+    
+    @staticmethod
+    def _is_cat_form(obj):
+        return isclass(obj) and issubclass(obj, CatForm) and obj is not CatForm
 
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
