@@ -7,7 +7,7 @@ class CatFormConfig:
     # This are only examples of confings, we can define better what is necessary
     intent_examples: List[str]
     strict: bool = False
-    return_direct = True
+    return_direct: bool = True
 
 
 class CatForm:  # base model of forms
