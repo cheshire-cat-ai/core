@@ -201,7 +201,7 @@ class CheshireCat():
 
         # Llama-cpp-python
         elif type(self._llm) in [CustomOpenAI]:
-            embedder = embedders.EmbedderLlamaCppConfig.get_embedder_from_config(
+            embedder = embedders.EmbedderOpenAICompatibleConfig.get_embedder_from_config(
                 {
                     "url": self._llm.url
                 }
