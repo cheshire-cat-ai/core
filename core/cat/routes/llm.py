@@ -20,7 +20,7 @@ LLM_SELECTED_NAME = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
-@router.get("/settings/")
+@router.get("/settings")
 def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
     LLM_SCHEMAS = get_llms_schemas()

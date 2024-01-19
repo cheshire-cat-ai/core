@@ -20,7 +20,7 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 
 # get configured Embedders and configuration schemas
-@router.get("/settings/")
+@router.get("/settings")
 def get_embedders_settings(request: Request) -> Dict:
     """Get the list of the Embedders"""
 

@@ -5,7 +5,7 @@ from fixture_just_installed_plugin import just_installed_plugin
 # endpoint to get settings and settings schema
 def test_get_all_plugin_settings(client, just_installed_plugin):
     
-    response = client.get("/plugins/settings/")
+    response = client.get("/plugins/settings")
     json = response.json()
 
     installed_plugins = ["core_plugin", "mock_plugin"]
@@ -58,7 +58,7 @@ def test_save_plugin_settings(client, just_installed_plugin):
         assert json["value"]["fake_setting"] == fake_value
 
         # retrieve all plugins settings to check if it was saved in DB
-        response = client.get("/plugins/settings/")
+        response = client.get("/plugins/settings")
         json = response.json()
         assert response.status_code == 200
         saved_config = [ c for c in json["settings"] if c["name"] == "mock_plugin" ]

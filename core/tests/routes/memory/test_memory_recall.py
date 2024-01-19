@@ -32,7 +32,7 @@ def test_memory_recall_default_success(client):
 # search without query should throw error
 def test_memory_recall_without_query_error(client):
 
-    response = client.get(f"/memory/recall/")
+    response = client.get(f"/memory/recall")
     json = response.json()
     assert response.status_code == 400
 

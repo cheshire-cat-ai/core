@@ -65,7 +65,7 @@ async def get_available_plugins(
     }
 
 
-@router.post("/upload/")
+@router.post("/upload")
 async def install_plugin(
     request: Request,
     file: UploadFile,
@@ -202,7 +202,7 @@ async def delete_plugin(plugin_id: str, request: Request) -> Dict:
     }
 
 
-@router.get("/settings/")
+@router.get("/settings")
 async def get_plugins_settings(request: Request) -> Dict:
     """Returns the settings of all the plugins"""
 

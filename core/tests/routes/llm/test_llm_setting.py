@@ -8,7 +8,7 @@ def test_get_all_llm_settings(client):
 
     llms_schemas = get_llms_schemas()
     
-    response = client.get("/llm/settings/")
+    response = client.get("/llm/settings")
     json = response.json()
 
     assert response.status_code == 200
@@ -65,7 +65,7 @@ def test_upsert_llm_settings_success(client):
     assert json["value"]["url"] == invented_url
 
     # retrieve all LLMs settings to check if it was saved in DB
-    response = client.get("/llm/settings/")
+    response = client.get("/llm/settings")
     json = response.json()
     assert response.status_code == 200
     assert json["selected_configuration"] == new_llm
