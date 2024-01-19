@@ -4,6 +4,7 @@ import inspect
 from datetime import timedelta
 from cat.log import log
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
+from urllib.parse import urlparse
 
 
 def to_camel_case(text: str) -> str:
@@ -101,6 +102,19 @@ def get_static_path():
     """Allows exposing the static files' path."""
     return os.path.join(get_base_path(), "static/")
 
+def is_https(url):
+    try:
+        parsed_url = urlparse(url)
+        return parsed_url.scheme == 'https'
+    except Exception as e:
+        return False
+    
+def extract_domain_from_url(url):
+    try:
+        parsed_url = urlparse(url)        
+        return parsed_url.netloc + parsed_url.path
+    except Exception:
+        return url
 
 def explicit_error_message(e):
     # add more explicit info on "RateLimitError" by OpenAI, 'cause people can't get it
