@@ -5,7 +5,7 @@ from fastapi import Query, Request, APIRouter, HTTPException, Depends
 router = APIRouter()
 
 # GET memories from recall
-@router.get("/recall/")
+@router.get("/recall")
 async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
@@ -62,7 +62,7 @@ async def recall_memories_from_text(
 
 
 # GET collection list with some metadata
-@router.get("/collections/")
+@router.get("/collections")
 async def get_collections(request: Request) -> Dict:
     """Get list of available collections"""
 
@@ -85,7 +85,7 @@ async def get_collections(request: Request) -> Dict:
 
 
 # DELETE all collections
-@router.delete("/collections/")
+@router.delete("/collections")
 async def wipe_collections(
     request: Request,
 ) -> Dict:
@@ -109,7 +109,7 @@ async def wipe_collections(
 
 
 # DELETE one collection
-@router.delete("/collections/{collection_id}/")
+@router.delete("/collections/{collection_id}")
 async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     """Delete and recreate a collection"""
 
@@ -138,7 +138,7 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
 
 
 # DELETE memories
-@router.delete("/collections/{collection_id}/points/{memory_id}/")
+@router.delete("/collections/{collection_id}/points/{memory_id}")
 async def wipe_memory_point(
     request: Request,
     collection_id: str,
@@ -196,7 +196,7 @@ async def wipe_memory_points_by_metadata(
 
 
 # DELETE conversation history from working memory
-@router.delete("/conversation_history/")
+@router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
 ) -> Dict:
@@ -220,7 +220,7 @@ async def wipe_conversation_history(
 
 
 # GET conversation history from working memory
-@router.get("/conversation_history/")
+@router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
 ) -> Dict:

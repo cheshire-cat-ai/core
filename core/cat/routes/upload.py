@@ -55,7 +55,7 @@ async def upload_file(
     }
 
 
-@router.post("/web/")
+@router.post("/web")
 async def upload_url(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -107,7 +107,7 @@ async def upload_url(
         )
 
 
-@router.post("/memory/")
+@router.post("/memory")
 async def upload_memory(
     request: Request,
     file: UploadFile,
@@ -137,7 +137,7 @@ async def upload_memory(
     }
 
 
-@router.get("/allowed-mimetypes/")
+@router.get("/allowed-mimetypes")
 async def get_allowed_mimetypes(request: Request) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 

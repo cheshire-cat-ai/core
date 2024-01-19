@@ -5,7 +5,7 @@ from tests.utils import send_websocket_message
 def test_convo_history_absent(client):
 
     # no ws connection, so no convo history available
-    response = client.get(f"/memory/conversation_history/")
+    response = client.get(f"/memory/conversation_history")
     json = response.json()
     assert response.status_code == 404
 
@@ -20,7 +20,7 @@ def test_convo_history_update(client):
     }, client)
 
     # check working memory update
-    response = client.get(f"/memory/conversation_history/")
+    response = client.get(f"/memory/conversation_history")
     json = response.json()
     assert response.status_code == 200
     assert "history" in json
@@ -37,11 +37,11 @@ def test_convo_history_reset(client):
     }, client)
 
     # delete convo history
-    response = client.delete(f"/memory/conversation_history/")
+    response = client.delete(f"/memory/conversation_history")
     assert response.status_code == 200
 
     # check working memory update
-    response = client.get(f"/memory/conversation_history/")
+    response = client.get(f"/memory/conversation_history")
     json = response.json()
     assert response.status_code == 200
     assert "history" in json
