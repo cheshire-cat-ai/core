@@ -75,7 +75,13 @@ class CatLogEngine:
                 sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
             )
         else:
-            return logger.add(sys.stdout, colorize=True, format=log_format, filter=self.show_log_level)
+            return logger.add(
+                sys.stdout,
+                colorize=True,
+                format=log_format,
+                filter=self.show_log_level,
+                level=self.LOG_LEVEL
+            )
 
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
@@ -174,10 +180,6 @@ class CatLogEngine:
         level : str
             Logging level."""
 
-        global logger
-        logger.remove()
-
-        # Add real caller for the log
         (package, module, klass, caller, line) = self.get_caller_info()
         context = {
             "original_name": f"{package}.{module}",
@@ -186,47 +188,15 @@ class CatLogEngine:
             "original_caller": caller,
         }
 
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</cyan> => <level>{message}</level>"
-
         _logger = logger
 
         msg_body = pformat(msg)
         lines = msg_body.splitlines()
 
-        # On debug level print the traceback better
-        if self.LOG_LEVEL == "DEBUG":
-            if type(msg) is str and not msg.startswith("> "):
-                traceback_log_format = "<yellow>{extra[traceback]}</yellow>"
-                stack = ""
-                _logger.add(
-                    sys.stdout,
-                    colorize=True,
-                    format=traceback_log_format,
-                    backtrace=True,
-                    diagnose=True,
-                    filter=self.show_log_level,
-                )
-                frames = takewhile(lambda f: "/loguru/" not in f.filename, traceback.extract_stack())
-                for f in frames:
-                    if f.filename.startswith("/app/./cat"):
-                        filename = f.filename.replace("/app/./cat", "")
-                        if not filename.startswith("/log.py"):
-                            stack = "> " + "".join("{}:{}:{}".format(filename, f.name, f.lineno))
-                            context["traceback"] = stack
-
-                            _logger.bind(**context).log(level, "")
-                logger.remove()
-
-        _logger.add(
-            sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
-        )
-
         for line in lines:
             line = line.strip().replace("\\n", "")
             if line != "":
                 _logger.bind(**context).log(level, f"{line}")
-        # After our custom log we need to set again the logger as default for the other dependencies
-        self.default_log()
 
     def welcome(self):
         """Welcome message in the terminal."""
