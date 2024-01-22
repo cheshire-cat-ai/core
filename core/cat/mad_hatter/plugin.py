@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
-from cat.mad_hatter.cat_form import CatForm
+from cat.experimental.form import CatForm
 from cat.utils import to_camel_case
 from cat.log import log
 
@@ -55,6 +55,7 @@ class Plugin:
         #   but they are created and stored in each plugin instance
         self._hooks = [] 
         self._tools = []
+        self._forms = []
 
         # list of @plugin decorated functions overriding default plugin behaviour
         self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access
@@ -385,3 +386,7 @@ class Plugin:
     @property
     def tools(self):
         return self._tools
+    
+    @property
+    def forms(self):
+        return self._forms
