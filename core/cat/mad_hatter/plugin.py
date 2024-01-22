@@ -276,8 +276,8 @@ class Plugin:
     def _load_decorated_functions(self):
         hooks = []
         tools = []
-        plugin_overrides = []
         forms = []
+        plugin_overrides = []
 
         for py_file in self.py_files:
             py_filename = py_file.replace(".py", "").replace("/", ".")
@@ -311,17 +311,23 @@ class Plugin:
         url  = self.manifest.get("plugin_url")
         return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
 
-    def _clean_hook(self, hook):
+    def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple
         h = hook[1]
         h.plugin_id = self._id
         return h
 
-    def _clean_tool(self, tool):
+    def _clean_tool(self, tool: CatTool):
         # getmembers returns a tuple
         t = tool[1]
         t.plugin_id = self._id
         return t
+    
+    def _clean_form(self, form: CatForm):
+        # getmembers returns a tuple
+        f = form[1]
+        f.plugin_id = self._id
+        return f
     
     def _clean_plugin_override(self, plugin_override):
         # getmembers returns a tuple
