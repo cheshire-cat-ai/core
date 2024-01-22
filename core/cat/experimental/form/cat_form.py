@@ -1,21 +1,26 @@
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel
 
 @dataclass
-class CatFormConfig:
-    # This are only examples of confings, we can define better what is necessary
-    intent_examples: List[str]
-    strict: bool = False
-    return_direct: bool = True
-
+class FieldExample:
+    user_message: str
+    model_before: Dict
+    model_after: Dict
+    responces: List[str]
 
 class CatForm:  # base model of forms
 
-    # we can also set config attributes directly in CatForm's subclasses withouth using 
-    # a separate config dataclass
-    config: CatFormConfig
-    model: BaseModel = None
+    model: BaseModel
+    start_examples: List[str]
+    stop_examples: List[str]
+    dialog_examples: List[Dict[str, str]]
+
+    strict: bool = False 
+    ask_confirm: bool = False
+    return_direct: bool = True
+
+    _autopilot = False
 
     def __init__(self, cat) -> None:
         self._cat = cat
@@ -39,7 +44,7 @@ class CatForm:  # base model of forms
         """
         Action
         """
-        pass
+        raise NotImplementedError
 
     def clear():
         """
@@ -47,3 +52,6 @@ class CatForm:  # base model of forms
         """
         pass
 
+    @property
+    def cat(self):
+        return self._cat
