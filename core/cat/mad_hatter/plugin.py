@@ -66,8 +66,9 @@ class Plugin:
     def activate(self):
         # install plugin requirements on activation
         self._install_requirements()
-        # lists of hooks and tools
-        self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
+
+        # Load of hooks and tools
+        self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -301,11 +302,10 @@ class Plugin:
 
 
         # clean and enrich instances
-        hooks = list(map(self._clean_hook, hooks))
-        tools = list(map(self._clean_tool, tools))
-        plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
-
-        return hooks, tools, plugin_overrides
+        self._hooks = list(map(self._clean_hook, hooks))
+        self._tools = list(map(self._clean_tool, tools))
+        self._forms = list(map(self._clean_form, forms))
+        self._plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
 
     def plugin_specific_error_message(self):
         name = self.manifest.get("name")
