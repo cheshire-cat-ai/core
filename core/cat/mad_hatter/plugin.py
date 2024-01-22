@@ -335,7 +335,14 @@ class Plugin:
     
     @staticmethod
     def _is_cat_form(obj):
-        return isclass(obj) and issubclass(obj, CatForm) and obj is not CatForm
+
+        if not isclass(obj) or obj is CatForm:
+            return False
+
+        if not issubclass(obj, CatForm) or not obj._autopilot:
+            return False
+        
+        return True
 
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
