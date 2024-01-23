@@ -2,13 +2,10 @@ from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ValidationError
 
-from cat.mad_hatter.decorators import hook
 from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
 from enum import Enum
 from cat.log import log
 import json
-
-from qdrant_client.http.models import Distance, VectorParams, PointStruct
 
 from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
@@ -21,6 +18,7 @@ class FieldExample:
     user_message: str
     model_before: Dict
     model_after:  Dict
+    validation:   str
     responces:    List[str]
 
 
@@ -48,23 +46,16 @@ class CatForm:  # base model of forms
 
     def __init__(self, cat) -> None:
         self._state = CatFormState.INVALID
-        self.model = self.model_class.model_construct()
-        
-        #self.model_class = self.__class__.model
-        #self.model = self.model_class.model_construct()
+        self._model: Dict = Dict()
         
         self._cat = cat
 
-        self._is_valid = False
-        self._errors  = []
-        self._ask_for = []
+        self._errors   = []
+        self._ask_for  = []
 
         self._prompt_tpl_update   = None
         self._prompt_tpl_response = None
         self._load_dialog_examples_by_rag()
-        self._load_exit_intent_examples_by_rag()
-        
-        self._language = self.get_language()
 
         self._exit_threshold = 0.85
     
@@ -78,24 +69,12 @@ class CatForm:  # base model of forms
         return self._cat
     
     @property
-    def is_complete(self) -> bool:
-        return self._is_valid
-
-    @property
-    def is_valid(self) -> bool:
-        return self._is_valid
-    
-    @property
     def ask_for(self) -> []:
         return self._ask_for
     
     @property
     def errors(self) -> []:
         return self._errors
-    
-    @property
-    def language(self) -> str:
-        return self._language
 
 
     ##############################
@@ -116,32 +95,6 @@ class CatForm:  # base model of forms
         raise NotImplementedError
     
 
-    ##########################
-    ######## LANGUAGE ########
-    ##########################
-
-    # Get language
-    def get_language(self):
-
-        # Get user message
-        user_message = self.cat.working_memory["user_message_json"]["text"]
-
-        # Prompt
-        language_prompt = f"Identify the language of the following message \
-        and return only the language of the message, without other text.\n\
-        If you can't locate it, return 'English'.\n\
-        Message examples:\n\
-        'Ciao, come stai?', returns: 'Italian',\n\
-        'How do you go?', returns 'English',\n\
-        'Bonjour a tous', returns 'French'\n\n\
-        Message: '{user_message}'"
-        
-        # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(language_prompt)
-        log.critical(f'Language: {response}')
-        return response
-    
-
     ####################################
     ######## CHECK USER CONFIRM ########
     ####################################
@@ -150,7 +103,7 @@ class CatForm:  # base model of forms
     def confirm(self) -> bool:
         
         # Get user message
-        user_message = self.cat.working_memory["user_message_json"]["text"]
+        user_message = self._cat.working_memory["user_message_json"]["text"]
         
         # Confirm prompt
         confirm_prompt = f"Given a sentence that I will now give you,\n\
@@ -167,7 +120,7 @@ class CatForm:  # base model of forms
               "*"*10)
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(confirm_prompt)
+        response = self._cat.llm(confirm_prompt)
         log.critical(f'check_user_confirm: {response}')
         confirm = "NO" not in response and "YES" in response
         
@@ -179,57 +132,17 @@ class CatForm:  # base model of forms
     ######## CHECK EXIT INTENT ########
     ###################################
 
-    # Load exit intent examples
-    def _load_exit_intent_examples_by_rag(self):
-        
-        qclient = self.cat.memory.vectors.vector_db
-        self.exit_intent_collection = "exit_intent"
-        
-        # Get embedder size
-        embedder_size = len(self.cat.embedder.embed_query("hello world"))
-
-        # Create collection
-        qclient.recreate_collection(
-            collection_name=self.exit_intent_collection,
-            vectors_config=VectorParams(
-                size=embedder_size, 
-                distance=Distance.COSINE
-            )
-        )
-        
-        # Load context
-        examples = [ 
-            {"message": "I would like to exit the module"                   },
-            {"message": "I no longer want to continue filling out the form" },
-            {"message": "You go out"                                        },
-            {"message": "Return to normal conversation"                     },
-            {"message": "Stop and go out"                                   }
-        ]
-
-        # Insert training data into index
-        points = []
-        for i, data in enumerate(examples):
-            message = data["message"]
-            vector = self.cat.embedder.embed_query(message)
-            points.append(PointStruct(id=i, vector=vector, payload={}))
-            
-        operation_info = qclient.upsert(
-            collection_name=self.exit_intent_collection,
-            wait=True,
-            points=points,
-        )
-        #print(operation_info)
-
-
     # Check if the user wants to exit the intent
-    def check_exit_intent_rag(self) -> bool:
+    def check_exit_intent(self) -> bool:
         
+        #TODO: da riadattare
+
         # Get user message vector
-        user_message = self.cat.working_memory["user_message_json"]["text"]
-        user_message_vector = self.cat.embedder.embed_query(user_message)
+        user_message = self._cat.working_memory["user_message_json"]["text"]
+        user_message_vector = self._cat.embedder.embed_query(user_message)
         
         # Search for the vector most similar to the user message in the vector database and get distance
-        qclient = self.cat.memory.vectors.vector_db
+        qclient = self._cat.memory.vectors.vector_db
         search_results = qclient.search(
             self.exit_intent_collection, 
             user_message_vector, 
@@ -252,7 +165,7 @@ class CatForm:  # base model of forms
     def update(self):
 
         # User message to json details
-        json_details = self.user_message_to_json()
+        json_details = self.extract()
         if json_details is None:
             return False
         
@@ -262,7 +175,7 @@ class CatForm:  # base model of forms
         print("new_model", new_model)
         
         # Check if there is no information in the new_model that can update the form
-        if new_model == self.model.model_dump():
+        if new_model == self._model:
             return False
 
         # Validate new_details
@@ -273,17 +186,20 @@ class CatForm:  # base model of forms
             return False
 
         # Overrides the current model with the new_model
-        self.model = self.model.model_construct(**new_model)
+        self._model = new_model
 
-        log.critical(f'MODEL : {self.model.model_dump()}')
+        log.critical(f'MODEL : {self._model}')
         return True
 
 
     # Load dialog examples by RAG
     def _load_dialog_examples_by_rag(self):    
+        
+        #TODO: da rivedere
+        
         '''
         # Examples json format
-        self.model.examples = [
+        examples = [
             {
                 "user_message": "I want to order a pizza",
                 "model_before": "{{}}",
@@ -325,7 +241,7 @@ class CatForm:  # base model of forms
         
         # Create example selector
         example_selector = SemanticSimilarityExampleSelector.from_examples(
-            examples, self.cat.embedder, Qdrant, k=1, location=':memory:'
+            examples, self._cat.embedder, Qdrant, k=1, location=':memory:'
         )
 
         # Create example_update_model_prompt for formatting output
@@ -342,7 +258,7 @@ class CatForm:  # base model of forms
             suffix = "User Message: {user_message}\nModel: {model}\nUpdated Model: ",
             input_variables = ["user_message", "model"]
         )
-        #print(f"prompt_tpl_update: {self._prompt_tpl_update.format(user_message='user question', model=self.model.model_dump_json())}\n\n")
+        #print(f"prompt_tpl_update: {self._prompt_tpl_update.format(user_message='user question', model=self._model)}\n\n")
 
         # Create example_response_prompt for formatting output
         example_response_prompt = PromptTemplate(
@@ -367,7 +283,7 @@ class CatForm:  # base model of forms
         json_details = {key: value for key, value in json_details.items() if value not in [None, '', 'None', 'null', 'lower-case']}
 
         # update form
-        new_model = self.model.model_dump() | json_details
+        new_model = self._model | json_details
         
         # Clean json new_details
         new_model = {key: value for key, value in new_model.items() if value not in [None]}        
@@ -376,22 +292,22 @@ class CatForm:  # base model of forms
 
     # Extract model informations from user message
     def extract(self): 
-        user_message = self.cat.working_memory["user_message_json"]["text"]
+        user_message = self._cat.working_memory["user_message_json"]["text"]
         
         prompt = "Update the following JSON with information extracted from the Sentence:\n\n"
         
         if self._prompt_tpl_update:
             prompt += self._prompt_tpl_update.format(
                 user_message = user_message, 
-                model = self.model.model_dump_json()
+                model = json.dumps(self._model)
             )
         else:
             prompt += f"\
                 Sentence: {user_message}\n\
-                JSON:{json.dumps(self.model.dict(), indent=4)}\n\
+                JSON:{json.dumps(self._model, indent=4)}\n\
                 Updated JSON:"
             
-        json_str = self.cat.llm(prompt)
+        json_str = self._cat.llm(prompt)
         print(f"json after parser: {json_str}")
         user_response_json = json.loads(json_str)
         return user_response_json
@@ -406,8 +322,10 @@ class CatForm:  # base model of forms
         self._state = CatFormState.INVALID
                 
         try:
+            # TODO: in questo caso verrebbero sempre ignorati i campi optional
+
             # Pydantic model validate
-            self.model.model_validate(model)
+            self.model_class.model_validate(model)
 
             # If model is valid change state to VALID
             self._state = CatFormState.VALID
@@ -426,9 +344,6 @@ class CatForm:  # base model of forms
     ######### EXECUTE DIALOGUE #########
     ####################################
     
-    def next(self):
-        return self.dialog()
-
     # Execute the dialogue step
     def dialogue(self):
         # Based on the strict setting it decides whether to use a direct dialogue or involve the memory chain 
@@ -442,11 +357,8 @@ class CatForm:  # base model of forms
     def dialogue_action(self):
         log.critical(f"dialogue_action (state: {self._state})")
 
-        #self.cat.working_memory["episodic_memories"] = []
+        #self._cat.working_memory["episodic_memories"] = []
 
-        # Get settings
-        settings = self.cat.mad_hatter.get_plugin().load_settings()
-        
         # If the state is INVALID or UPDATE, execute model update (and change state based on validation result)
         if self._state in [CatFormState.INVALID, CatFormState.UPDATE]:
             self.update()
@@ -454,10 +366,10 @@ class CatForm:  # base model of forms
 
         # If state is VALID, ask confirm (or execute action directly)
         if self._state in [CatFormState.VALID]:
-            if settings["ask_confirm"] is False:
+            if self.ask_confirm is False:
                 log.warning("> EXECUTE ACTION")
-                del self.cat.working_memory[self.key]   
-                return self.submit(self.model)
+                self.close()
+                return self.submit(self._model)
             else:
                 self._state = CatFormState.WAIT_CONFIRM
                 log.warning("> STATE=WAIT_CONFIRM")
@@ -467,8 +379,8 @@ class CatForm:  # base model of forms
         if self._state in [CatFormState.WAIT_CONFIRM]:
             if self.confirm():
                 log.warning("> EXECUTE ACTION")
-                del self.cat.working_memory[self.key]   
-                return self.submit(self.model)
+                self.close()
+                return self.submit(self._model)
             else:
                 log.warning("> STATE=UPDATE")
                 self._state = CatFormState.UPDATE
@@ -488,7 +400,7 @@ class CatForm:  # base model of forms
         
         # Formatted texts
         formatted_model_class = ", ".join(class_descriptions)
-        formatted_model       = ", ".join([f"{key}: {value}" for key, value in self.model.model_dump().items()])
+        formatted_model       = ", ".join([f"{key}: {value}" for key, value in self._model.items()])
         formatted_ask_for     = ", ".join(self._ask_for) if self._ask_for else None
         formatted_errors      = ", ".join(self._errors) if self._errors else None
         
@@ -557,19 +469,18 @@ class CatForm:  # base model of forms
     def dialogue_direct(self):
 
         # check exit intent
-        if self.check_exit_intent_rag():
+        if self.check_exit_intent():
             log.critical(f'> Exit Intent {self.key}')
-            del self.cat.working_memory[self.key]
+            self.close()
             return None
     
         # Get dialog action
         response = self.dialogue_action()
         if not response:
             # Build prompt
-            user_message = self.cat.working_memory["user_message_json"]["text"]
-            prompt_prefix = self.cat.mad_hatter.execute_hook("agent_prompt_prefix", MAIN_PROMPT_PREFIX, cat=self.cat)
+            user_message = self._cat.working_memory["user_message_json"]["text"]
+            prompt_prefix = self._cat.mad_hatter.execute_hook("agent_prompt_prefix", MAIN_PROMPT_PREFIX, cat=self._cat)
             prompt_prefix = self.dialogue_prompt(prompt_prefix)
-            prompt_prefix += f"\nUse the {self._language} language to answer the question.\n\n"
             prompt = f"{prompt_prefix}\n\n\
                 User message: {user_message}\n\
                 AI:"
@@ -580,25 +491,6 @@ class CatForm:  # base model of forms
                   "*"*10)
 
             # Call LLM
-            response = self.cat.llm(prompt)
+            response = self._cat.llm(prompt)
 
         return response
-
-
-############################################################
-######### HOOKS FOR AUTOMATIC HANDLE CONVERSATION ##########
-############################################################
-
-@hook
-def agent_fast_reply(fast_reply: Dict, cat) -> Dict:
-    cform = None #- TODO: get form
-    if cform:
-        return cform.model.dialogue()
-    return fast_reply
-
-@hook
-def agent_prompt_prefix(prefix, cat) -> str:
-    cform = None # TODO: get form
-    if cform:
-        return cform.dialogue_prompt(prefix)
-    return prefix
