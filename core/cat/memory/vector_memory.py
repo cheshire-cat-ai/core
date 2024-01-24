@@ -4,6 +4,7 @@ import uuid
 import socket
 from typing import Any, List, Iterable, Optional
 import requests
+from cat.utils import extract_domain_from_url, is_https
 
 from qdrant_client import QdrantClient
 from qdrant_client.qdrant_remote import QdrantRemote
@@ -63,6 +64,9 @@ class VectorMemory:
             self.vector_db = VectorMemory.local_vector_db
         else:
             qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
+            qdrant_https = is_https(qdrant_host)
+            qdrant_host = extract_domain_from_url(qdrant_host)
+            qdrant_api_key = os.getenv("QDRANT_API_KEY")
 
             try:
                 s = socket.socket()
@@ -77,4 +81,6 @@ class VectorMemory:
             self.vector_db = QdrantClient(
                 host=qdrant_host,
                 port=qdrant_port,
+                https=qdrant_https,
+                api_key=qdrant_api_key
             )
