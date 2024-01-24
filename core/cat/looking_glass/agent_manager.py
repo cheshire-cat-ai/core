@@ -34,7 +34,7 @@ class AgentManager:
     def __init__(self):
         self.mad_hatter = MadHatter()
 
-        if os.getenv("LOG_LEVEL", "INFO") == "DEBUG" or os.getenv("LOG_LEVEL", "INFO") == "INFO":
+        if os.getenv("LOG_LEVEL", "INFO") in ["DEBUG", "INFO"]:
             self.verbose = True
         else:
             self.verbose = False
