@@ -102,7 +102,7 @@ class MadHatter:
             if plugin_id in self.active_plugins:
                 self.plugins[plugin_id].activate()
 
-        self.sync_hooks_and_tools()
+        self.sync_hooks_tools_and_forms()
 
     def load_plugin(self, plugin_path):
         # Instantiate plugin.
@@ -117,19 +117,23 @@ class MadHatter:
             # Print the error and go on with the others.
             log.error(str(e))
 
-    # Load hooks and tools of the active plugins into MadHatter 
-    def sync_hooks_and_tools(self):
+    # Load hooks, tools and forms of the active plugins into MadHatter 
+    def sync_hooks_tools_and_forms(self):
 
-        # emptying tools and hooks
+        # emptying tools, hooks and forms
         self.hooks = {}
         self.tools = []
+        self.forms = []
 
         for _, plugin in self.plugins.items():
-            # load hooks and tools
+            # load hooks, tools and forms from active plugins
             if plugin.id in self.active_plugins:
 
                 # cache tools
                 self.tools += plugin.tools
+
+                # cache forms
+                self.forms += plugin.forms
 
                 # cache hooks (indexed by hook name)
                 for h in plugin.hooks:
@@ -212,7 +216,7 @@ class MadHatter:
             self.save_active_plugins_to_db(list(set(self.active_plugins)))
 
             # update cache and embeddings     
-            self.sync_hooks_and_tools()
+            self.sync_hooks_tools_and_forms()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")

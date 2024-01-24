@@ -81,6 +81,11 @@ class AgentManager:
         return out
     
 
+    def execute_form_agent(self, agent_input, allowed_forms, stray):
+        #TODO: to be implemented
+        pass
+
+    
     def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
