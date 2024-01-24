@@ -135,7 +135,7 @@ class CatForm:  # base model of forms
     # Check if the user wants to exit the intent
     def check_exit_intent(self) -> bool:
         
-        #TODO: da riadattare
+        # TODO: To readjust the function code
 
         # Get user message vector
         user_message = self._cat.working_memory["user_message_json"]["text"]
@@ -179,7 +179,7 @@ class CatForm:  # base model of forms
             return False
 
         # Validate new_details
-        self.validate(new_model)
+        new_model = self.validate(new_model)
                     
         # If there are errors, return false
         if len(self._errors) > 0:
@@ -195,7 +195,7 @@ class CatForm:  # base model of forms
     # Load dialog examples by RAG
     def _load_dialog_examples_by_rag(self):    
         
-        #TODO: da rivedere
+        # TODO: The function code needs to be reviewed
         
         '''
         # Examples json format
@@ -322,10 +322,13 @@ class CatForm:  # base model of forms
         self._state = CatFormState.INVALID
                 
         try:
-            # TODO: in questo caso verrebbero sempre ignorati i campi optional
+            # TODO: In this case the optional fields are always ignored
 
             # Pydantic model validate
-            self.model_class.model_validate(model)
+            #self.model_class.model_validate(model)
+
+            # Attempts to create the model object to update the default values and validate it
+            model = self.model_class(**model).model_dump()
 
             # If model is valid change state to VALID
             self._state = CatFormState.VALID
@@ -339,6 +342,7 @@ class CatForm:  # base model of forms
                 else:
                     self._errors.append(error_message["msg"])
 
+        return model
 
     ####################################
     ######### EXECUTE DIALOGUE #########
