@@ -1,3 +1,4 @@
+import os
 import time
 import traceback
 from datetime import timedelta
@@ -33,6 +34,11 @@ class AgentManager:
     def __init__(self):
         self.mad_hatter = MadHatter()
 
+        if os.getenv("LOG_LEVEL", "INFO") in ["DEBUG", "INFO"]:
+            self.verbose = True
+        else:
+            self.verbose = False
+
 
     def execute_tool_agent(self, agent_input, allowed_tools, stray):
 
@@ -57,8 +63,8 @@ class AgentManager:
         agent_chain = LLMChain(
             prompt=prompt,
             llm=stray._llm,
-            verbose=True
-        ) 
+            verbose=self.verbose
+        )
 
         # init agent
         agent = LLMSingleActionAgent(
@@ -66,7 +72,7 @@ class AgentManager:
             output_parser=ToolOutputParser(),
             stop=["\nObservation:"],
             allowed_tools=allowed_tools_names,
-            verbose=True
+            verbose=self.verbose
         )
 
         # agent executor
@@ -74,7 +80,7 @@ class AgentManager:
             agent=agent,
             tools=allowed_tools_copy,
             return_intermediate_steps=True,
-            verbose=True
+            verbose=self.verbose
         )
 
         out = agent_executor(agent_input)
@@ -93,7 +99,7 @@ class AgentManager:
         memory_chain = LLMChain(
             prompt=memory_prompt,
             llm=stray._llm,
-            verbose=True
+            verbose=self.verbose
         )
 
         out = memory_chain(agent_input, callbacks=[NewTokenHandler(stray)])
@@ -118,7 +124,7 @@ class AgentManager:
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(stray.working_memory)
         agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=stray)
-        # should we ran the default agent?
+        # should we run the default agent?
         fast_reply = {}
         fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=stray)
         if len(fast_reply.keys()) > 0:
