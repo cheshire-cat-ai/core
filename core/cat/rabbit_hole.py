@@ -331,7 +331,9 @@ class RabbitHole:
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
-                stray.send_ws_message(f"Read {perc_read}% of {source}")
+                read_message = f"Read {perc_read}% of {source}"
+                stray.send_ws_message(read_message)
+                log.warning(read_message)
 
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
@@ -347,7 +349,7 @@ class RabbitHole:
                     doc.metadata,
                 )
 
-                log.info(f"Inserted into memory({inserting_info})")
+                log.info(f"Inserted into memory ({inserting_info})")
             else:
                 log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
@@ -360,7 +362,7 @@ class RabbitHole:
 
         stray.send_ws_message(finished_reading_message)
 
-        print(f"\n\nDone uploading {source}")
+        log.warning(f"Done uploading {source}")
 
 
     def __split_text(self, stray, text, chunk_size, chunk_overlap):

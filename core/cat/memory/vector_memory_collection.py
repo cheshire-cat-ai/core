@@ -52,7 +52,7 @@ class VectorMemoryCollection():
 
         # log collection info
         log.info(f"Collection {self.collection_name}:")
-        log.info(dict(self.client.get_collection(self.collection_name)))
+        log.info(self.client.get_collection(self.collection_name))
 
 
     def check_embedding_size(self):
