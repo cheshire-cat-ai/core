@@ -289,11 +289,9 @@ class Plugin:
                 tools += getmembers(plugin_module, self._is_cat_tool)
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
-                log.error(f"Error in {py_filename}: {str(e)}")
+                log.error(f"Error in {py_filename}: {str(e)}. Unable to load plugin {self._id}")
                 log.warning(self.plugin_specific_error_message())
                 traceback.print_exc()
-                raise Exception(f"Unable to load the plugin {self._id}") 
-
 
         # clean and enrich instances
         hooks = list(map(self._clean_hook, hooks))
