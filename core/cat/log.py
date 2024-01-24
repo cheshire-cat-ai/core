@@ -5,6 +5,7 @@ import sys
 import os
 import inspect
 import traceback
+import json
 from itertools import takewhile
 from pprint import pformat
 from loguru import logger
@@ -12,7 +13,7 @@ from loguru import logger
 
 def get_log_level():
     """Return the global LOG level."""
-    return os.getenv("LOG_LEVEL", "WARNING")
+    return os.getenv("LOG_LEVEL", "INFO")
 
 
 class CatLogEngine:
@@ -36,7 +37,7 @@ class CatLogEngine:
         - `ERROR`
         - `CRITICAL`
 
-    Default to `WARNING`.
+    Default to `INFO`.
 
     """
 
@@ -68,14 +69,31 @@ class CatLogEngine:
         Returns
         -------
         """
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{name}.py</cyan> <cyan>{line}</cyan> => <level>{message}</level>"
+
+        time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
+        level = "<level>{level: <6}</level>"
+        origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
+        message = "<level>{message}</level>"
+        log_format = f"{time} {level} {origin} \n{message}"
+
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
             return logger.add(
-                sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
+                sys.stdout,
+                colorize=True,
+                format=log_format,
+                backtrace=True,
+                diagnose=True,
+                filter=self.show_log_level
             )
         else:
-            return logger.add(sys.stdout, colorize=True, format=log_format, filter=self.show_log_level)
+            return logger.add(
+                sys.stdout,
+                colorize=True,
+                format=log_format,
+                filter=self.show_log_level,
+                level=self.LOG_LEVEL
+            )
 
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
@@ -174,59 +192,24 @@ class CatLogEngine:
         level : str
             Logging level."""
 
-        global logger
-        logger.remove()
-
-        # Add real caller for the log
         (package, module, klass, caller, line) = self.get_caller_info()
-        context = {
-            "original_name": f"{package}.{module}",
-            "original_line": line,
-            "original_class": klass,
-            "original_caller": caller,
-        }
 
-        log_format = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green> <level>{level: <6}</level> <cyan>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</cyan> => <level>{message}</level>"
-
-        _logger = logger
-
-        msg_body = pformat(msg)
-        lines = msg_body.splitlines()
-
-        # On debug level print the traceback better
-        if self.LOG_LEVEL == "DEBUG":
-            if type(msg) is str and not msg.startswith("> "):
-                traceback_log_format = "<yellow>{extra[traceback]}</yellow>"
-                stack = ""
-                _logger.add(
-                    sys.stdout,
-                    colorize=True,
-                    format=traceback_log_format,
-                    backtrace=True,
-                    diagnose=True,
-                    filter=self.show_log_level,
-                )
-                frames = takewhile(lambda f: "/loguru/" not in f.filename, traceback.extract_stack())
-                for f in frames:
-                    if f.filename.startswith("/app/./cat"):
-                        filename = f.filename.replace("/app/./cat", "")
-                        if not filename.startswith("/log.py"):
-                            stack = "> " + "".join("{}:{}:{}".format(filename, f.name, f.lineno))
-                            context["traceback"] = stack
-
-                            _logger.bind(**context).log(level, "")
-                logger.remove()
-
-        _logger.add(
-            sys.stdout, colorize=True, format=log_format, backtrace=True, diagnose=True, filter=self.show_log_level
+        custom_logger = logger.bind(
+            original_name=f"{package}.{module}",
+            original_line=line,
+            original_class=klass,
+            original_caller=caller,
         )
 
-        for line in lines:
-            line = line.strip().replace("\\n", "")
-            if line != "":
-                _logger.bind(**context).log(level, f"{line}")
-        # After our custom log we need to set again the logger as default for the other dependencies
-        self.default_log()
+        # prettify
+        # TODO: newlines lose coloring :(
+        if type(msg) in [dict, list, str]:
+            msg = json.dumps(msg, indent=4)
+        else:
+            msg = pformat(msg)
+
+        # actual log
+        custom_logger.log(level, msg)
 
     def welcome(self):
         """Welcome message in the terminal."""
@@ -242,9 +225,9 @@ class CatLogEngine:
             print(f.read())
 
         print('\n=============== ^._.^ ===============\n')
-        print(f'Cat REST API:\t{cat_address}/docs')
-        print(f'Cat PUBLIC:\t{cat_address}/public')
-        print(f'Cat ADMIN:\t{cat_address}/admin\n')
+        print(f'Cat REST API:   {cat_address}/docs')
+        print(f'Cat PUBLIC:     {cat_address}/public')
+        print(f'Cat ADMIN:      {cat_address}/admin\n')
         print('======================================')
 
 # logger instance
