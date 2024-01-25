@@ -30,7 +30,8 @@ class MadHatter:
         self.plugins = {} # plugins dictionary
 
         self.hooks = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
-        self.tools = [] # list of active plugins tools 
+        self.tools = [] # list of active plugins tools
+        self.forms = [] # list of active plugins forms
 
         self.active_plugins = []
 
