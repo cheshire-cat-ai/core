@@ -73,7 +73,7 @@ class AgentManager:
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
             tools=allowed_tools_copy,
-            return_intermediate_steps=True
+            return_intermediate_steps=True,
             verbose=True
         )
 
