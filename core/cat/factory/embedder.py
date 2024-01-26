@@ -117,8 +117,8 @@ class EmbedderCohereConfig(EmbedderSettings):
 
 
 class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
-    model_name: str = "BAAI/bge-base-en"
-    max_length: int = 512 # Unknown behavior for values > 512.
+    model_name: str = "BAAI/bge-small-en-v1.5"
+    max_length: int = 384 # Unknown behavior for values > 512.
     doc_embed_type: str = "passage" # as suggest on fastembed documentation, "passage" is the best option for documents.
     
     _pyclass: Type = FastEmbedEmbeddings
