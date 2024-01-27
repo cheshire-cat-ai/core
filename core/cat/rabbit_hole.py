@@ -108,8 +108,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 400,
-            chunk_overlap: int = 100,
+            chunk_size: int = 128,
+            chunk_overlap: int = 32,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -159,8 +159,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_size: int = 128,
+            chunk_overlap: int = 32
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -242,8 +242,8 @@ class RabbitHole:
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
-            chunk_size: int = 400,
-            chunk_overlap: int = 100
+            chunk_size: int = 128,
+            chunk_overlap: int = 32
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -403,11 +403,23 @@ class RabbitHole:
         )
 
         # split the documents using chunk_size and chunk_overlap
-        text_splitter = RecursiveCharacterTextSplitter(
+        # text_splitter = RecursiveCharacterTextSplitter(
+        #     chunk_size=chunk_size,
+        #     chunk_overlap=chunk_overlap,
+        #     separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+        #     encoding_name = "cl100k_base",
+        # )
+
+        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+            encoding_name = "cl100k_base",
+            keep_separator=True,
+            strip_whitespace = True
         )
+
+        log.info(f"Chunk size: {chunk_size}, chunk overlap: {chunk_overlap}")
         # split text
         docs = text_splitter.split_documents(text)
         # remove short texts (page numbers, isolated words, etc.)
