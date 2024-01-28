@@ -108,8 +108,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 128,
-            chunk_overlap: int = 32,
+            chunk_size: int = 512,
+            chunk_overlap: int = 128,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -159,8 +159,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 128,
-            chunk_overlap: int = 32
+            chunk_size: int = 512,
+            chunk_overlap: int = 128
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -242,8 +242,8 @@ class RabbitHole:
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
-            chunk_size: int = 128,
-            chunk_overlap: int = 32
+            chunk_size: int = 512,
+            chunk_overlap: int = 128
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
