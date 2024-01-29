@@ -402,14 +402,6 @@ class RabbitHole:
             "before_rabbithole_splits_text", text, cat=stray
         )
 
-        # split the documents using chunk_size and chunk_overlap
-        # text_splitter = RecursiveCharacterTextSplitter(
-        #     chunk_size=chunk_size,
-        #     chunk_overlap=chunk_overlap,
-        #     separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-        #     encoding_name = "cl100k_base",
-        # )
-
         text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
