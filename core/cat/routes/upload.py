@@ -17,10 +17,10 @@ async def upload_file(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     chunk_size: int = Body(
-        default=512,
+        default=256,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=128, description="Chunk overlap (in characters)"),
+    chunk_overlap: int = Body(default=64, description="Chunk overlap (in characters)"),
     stray = Depends(session),
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
@@ -63,10 +63,10 @@ async def upload_url(
         description="URL of the website to which you want to save the content"
     ),
     chunk_size: int = Body(
-        default=512,
+        default=256,
         description="Maximum length of each chunk after the document is split (in characters)",
     ),
-    chunk_overlap: int = Body(default=128, description="Chunk overlap (in characters)"),
+    chunk_overlap: int = Body(default=64, description="Chunk overlap (in characters)"),
     stray = Depends(session),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
