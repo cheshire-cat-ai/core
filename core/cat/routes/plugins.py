@@ -50,18 +50,14 @@ async def get_available_plugins(
         plugin_text = " ".join(plugin_text).lower()
         if (query is None) or (query.lower() in plugin_text):
             installed_plugins.append(manifest)
-
-        # Check if version of plugin installed is != to tegistry
+# Check Upgradable @sussi 29-01-2024-15:15
             for r in registry_plugins:
                 if r["plugin_url"] == p.manifest["plugin_url"]:
                     if r["version"] == p.manifest["version"]:
-                        to_be_upgrade = False
+                        p.manifest["upgradable"] = "False"
                     else:
-                        to_be_upgrade = True
-                        # need to send information to UI to prepare intergace to receive data.
-                        # info "PLUGIN UPGRADABLE"
-        # end
-        
+                        p.manifest["upgradable"] = "True"
+# end
         # do not show already installed plugins among registry plugins
         registry_plugins_index.pop(manifest["plugin_url"], None)
 
