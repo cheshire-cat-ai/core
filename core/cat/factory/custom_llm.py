@@ -1,9 +1,8 @@
 import os
 from typing import Optional, List, Any, Mapping, Dict
 import requests
-from langchain.llms.base import LLM
-from langchain.llms.openai import OpenAI
-from langchain.llms.ollama import Ollama
+from langchain_core.language_models.llms import LLM
+from langchain_openai.llms import OpenAI
 
 
 class LLMDefault(LLM):

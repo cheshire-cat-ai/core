@@ -1,7 +1,7 @@
 import pytest
 
-from langchain.llms.base import BaseLLM
-from langchain.embeddings.base import Embeddings
+from langchain_community.llms import BaseLLM
+from langchain_core.embeddings import Embeddings
 
 
 from cat.looking_glass.cheshire_cat import CheshireCat

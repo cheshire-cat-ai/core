@@ -1,10 +1,11 @@
 import time
 
-from langchain.llms.base import BaseLLM
+from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
-from langchain.chat_models.base import BaseChatModel
-from langchain.llms import Cohere, OpenAI, AzureOpenAI
-from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_community.llms import Cohere, OpenAI, AzureOpenAI
+from langchain_community.chat_models import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 

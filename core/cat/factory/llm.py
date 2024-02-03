@@ -1,10 +1,9 @@
-import langchain
-from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
-from langchain.llms import OpenAI, AzureOpenAI
-from langchain.llms.ollama import Ollama
+from langchain_community.chat_models import AzureChatOpenAI
+from langchain_community.llms import OpenAI, AzureOpenAI, Cohere, Ollama, HuggingFaceTextGenInference, HuggingFaceEndpoint
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from typing import Dict, List, Type
+from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
 
@@ -175,7 +174,7 @@ class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
     streaming: bool = True
-    _pyclass: Type = langchain.llms.Cohere
+    _pyclass: Type = Cohere
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -195,7 +194,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
     typical_p: float = 0.95
     temperature: float = 0.01
     repetition_penalty: float = 1.03
-    _pyclass: Type = langchain.llms.HuggingFaceTextGenInference
+    _pyclass: Type = HuggingFaceTextGenInference
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -210,7 +209,7 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
     task: str = "text2text-generation"
-    _pyclass: Type = langchain.llms.HuggingFaceEndpoint
+    _pyclass: Type = HuggingFaceEndpoint
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -238,6 +237,7 @@ class LLMOllamaConfig(LLMSettings):
             "link": "https://ollama.ai/library",
         }
     )
+
 
 class LLMGeminiChatConfig(LLMSettings):
     """Configuration for the Gemini large language model (LLM).
