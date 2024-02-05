@@ -5,6 +5,7 @@ Here is a collection of methods to hook into the Cat execution pipeline.
 """
 
 from cat.mad_hatter.decorators import hook
+from langchain.docstore.document import Document
 
 
 # Called before cat bootstrap
