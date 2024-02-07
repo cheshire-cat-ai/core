@@ -9,8 +9,10 @@ def test_get_base_path():
     assert utils.get_base_path() == 'cat/'
 
 
-# def test_get_plugin_path():
-#     assert utils.get_plugins_path() == 'cat/plugins/'
+def test_get_plugin_path():
+    # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
+    # assert utils.get_plugins_path() == 'cat/plugins/'
+    assert utils.get_plugins_path() == 'tests/mocks/mock_plugin_folder/'
 
 
 def test_get_static_path():
