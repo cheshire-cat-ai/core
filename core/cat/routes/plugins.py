@@ -50,7 +50,14 @@ async def get_available_plugins(
         plugin_text = " ".join(plugin_text).lower()
         if (query is None) or (query.lower() in plugin_text):
             installed_plugins.append(manifest)
-
+# Check Upgradable @sussi 29-01-2024-15:15
+            for r in registry_plugins:
+                if r["plugin_url"] == p.manifest["plugin_url"]:
+                    if r["version"] == p.manifest["version"]:
+                        p.manifest["upgradable"] = "False"
+                    else:
+                        p.manifest["upgradable"] = "True"
+# end
         # do not show already installed plugins among registry plugins
         registry_plugins_index.pop(manifest["plugin_url"], None)
 
