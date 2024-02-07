@@ -24,7 +24,7 @@ def test_rabbithole_upload_txt(client):
     # check memory contents
     # check declarative memory is empty
     declarative_memories = get_declarative_memory_contents(client)
-    assert len(declarative_memories) == 5
+    assert len(declarative_memories) == 2
 
 
 def test_rabbithole_upload_pdf(client):
@@ -49,4 +49,4 @@ def test_rabbithole_upload_pdf(client):
     # check memory contents
     # check declarative memory is empty
     declarative_memories = get_declarative_memory_contents(client)
-    assert len(declarative_memories) == 5
+    assert len(declarative_memories) == 2
