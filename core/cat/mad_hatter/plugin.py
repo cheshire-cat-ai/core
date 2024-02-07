@@ -225,11 +225,7 @@ class Plugin:
         meta["tags"] = json_file_data.get("tags", "unknown")
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
-# for check if is upgradable @sussi 29-01-2024-15:15
-        # i need only structure for next check and set
-        meta["upgradable"] = "unknown" # unknown = inizialization
-        meta["upgrade_priority"] = json_file_data.get("upgrade_priority", "unknown")
-# end
+
         return meta
     
     def _install_requirements(self):
