@@ -5,6 +5,7 @@ Here is a collection of methods to hook into the Cat execution pipeline.
 """
 
 from cat.mad_hatter.decorators import hook
+from langchain.docstore.document import Document
 
 
 # Called before cat bootstrap
@@ -304,3 +305,35 @@ def before_cat_sends_message(message: dict, cat) -> dict:
     """
 
     return message
+
+
+# Hook called just before of inserting the user message document in vector memory
+@hook(priority=0)
+def before_cat_stores_episodic_memory(doc: Document, cat) -> Document:
+    """Hook the user message `Document` before is inserted in the vector memory.
+
+    Allows editing and enhancing a single `Document` before the Cat add it to the episodic vector memory.
+
+    Parameters
+    ----------
+    doc : Document
+        Langchain `Document` to be inserted in memory.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    doc : Document
+        Langchain `Document` that is added in the episodic vector memory.
+
+    Notes
+    -----
+    The `Document` has two properties::
+
+        `page_content`: the string with the text to save in memory;
+        `metadata`: a dictionary with at least two keys:
+            `source`: where the text comes from;
+            `when`: timestamp to track when it's been uploaded.
+
+    """
+    return doc
