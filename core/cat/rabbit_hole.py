@@ -376,9 +376,9 @@ class RabbitHole:
         text : str
             Content of the loaded file.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Returns
         -------
