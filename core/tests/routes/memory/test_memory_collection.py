@@ -108,7 +108,7 @@ def test_memory_collections_wipe(client):
     collections_n_points = get_collections_names_and_point_count(client)
     assert collections_n_points["procedural"] == 1   # default tool
     assert collections_n_points["episodic"] == 1      # websocket msg
-    assert collections_n_points["declarative"] >= 1  # several chunks
+    assert collections_n_points["declarative"] >= 1  # several chunks #TODO change doc and this value
 
     # wipe out all memories
     response = client.delete("/memory/collections")

@@ -54,7 +54,7 @@ def test_point_deleted(client):
 def test_points_deleted_by_metadata(client):
 
     # expected_chunks = 5
-    expected_chunks = 1
+    expected_chunks = 1 #TODO change doc and this value
 
     # upload to rabbithole a document
     content_type = "application/pdf"
