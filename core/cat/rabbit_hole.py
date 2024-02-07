@@ -122,9 +122,9 @@ class RabbitHole:
             The file can be a path passed as a string or an `UploadFile` object if the document is ingested using the
             `rabbithole` endpoint.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Notes
         ----------
@@ -173,9 +173,9 @@ class RabbitHole:
             The file can be either a string path if loaded programmatically, a FastAPI `UploadFile`
             if coming from the `/rabbithole/` endpoint or a URL if coming from the `/rabbithole/web` endpoint.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
 
         Returns
         -------
@@ -259,9 +259,9 @@ class RabbitHole:
         content_type:
             Mimetype of content.
         chunk_size : int
-            Number of characters in each document chunk.
+            Number of tokens in each document chunk.
         chunk_overlap : int
-            Number of overlapping characters between consecutive chunks.
+            Number of overlapping tokens between consecutive chunks.
         send_message: bool
             If true will send parsing message information to frontend.
 
