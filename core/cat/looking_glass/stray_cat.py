@@ -4,8 +4,8 @@ import traceback
 from typing import Literal, get_args
 
 from langchain.docstore.document import Document
-from langchain.llms.base import BaseLLM
-from langchain.chat_models.base import BaseChatModel
+from langchain_community.llms import BaseLLM
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from fastapi import WebSocket
 

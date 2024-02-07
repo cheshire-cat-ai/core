@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import Type
 import langchain
+
 from pydantic import BaseModel, ConfigDict, Field
-from langchain.embeddings.fastembed import FastEmbedEmbeddings
+from langchain_community.embeddings import FakeEmbeddings, FastEmbedEmbeddings, CohereEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from fastembed.embedding import Embedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
@@ -32,7 +34,7 @@ class EmbedderSettings(BaseModel):
 
 class EmbedderFakeConfig(EmbedderSettings):
     size: int = 128
-    _pyclass: Type = langchain.embeddings.FakeEmbeddings
+    _pyclass: Type = FakeEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -71,7 +73,7 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str = "text-embedding-ada-002"
-    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = OpenAIEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -91,7 +93,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_version: str
     deployment: str
 
-    _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
+    _pyclass: Type = OpenAIEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -105,7 +107,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
 class EmbedderCohereConfig(EmbedderSettings):
     cohere_api_key: str
     model: str = "embed-multilingual-v2.0"
-    _pyclass: Type = langchain.embeddings.CohereEmbeddings
+    _pyclass: Type = CohereEmbeddings
 
     model_config = ConfigDict(
         json_schema_extra={

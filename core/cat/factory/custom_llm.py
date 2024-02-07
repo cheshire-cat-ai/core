@@ -3,13 +3,14 @@ from typing import Optional, List, Any, Mapping, Dict, Iterator, AsyncIterator
 
 import aiohttp
 import requests
-from langchain.llms.base import LLM
-from langchain.llms.openai import OpenAI
-from langchain.llms.ollama import Ollama
-from fastapi import HTTPException
-from cat.log import log
-from langchain_community.llms.ollama import OllamaEndpointNotFoundError
 
+from fastapi import HTTPException
+
+from langchain_core.language_models.llms import LLM
+from langchain_openai.llms import OpenAI
+from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError
+
+from cat.log import log
 
 class LLMDefault(LLM):
     @property
