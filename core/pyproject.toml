@@ -14,7 +14,7 @@ dependencies = [
     "websockets==10.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
-    "qdrant_client==1.6.9",
+    "qdrant_client==1.7.2",
     "langchain==0.0.354",
     "langchain-google-genai",
     "openai==0.27.5",
