@@ -19,7 +19,7 @@ dependencies = [
     "langchain-google-genai",
     "openai==0.27.5",
     "cohere==4.39",
-    "huggingface-hub==0.13.2",
+    "huggingface-hub==0.19.4",
     "beautifulsoup4==4.12.0",
     "pdfminer.six==20221105",
     "unstructured==0.5.7",
@@ -38,7 +38,7 @@ dependencies = [
     "pylint-actions",
     "pytest",
     "httpx",
-    "fastembed==0.1.1",
+    "fastembed==0.1.3",
     "rapidfuzz==3.6.1",
 ]
 

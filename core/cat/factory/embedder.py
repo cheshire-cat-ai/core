@@ -1,9 +1,10 @@
+from enum import Enum
 from typing import Type
 import langchain
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from langchain.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
+from fastembed.embedding import Embedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 
@@ -34,7 +35,7 @@ class EmbedderFakeConfig(EmbedderSettings):
     _pyclass: Type = langchain.embeddings.FakeEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Default Embedder",
             "description": "Configuration for default embedder. It just outputs random numbers.",
             "link": "",
@@ -43,11 +44,10 @@ class EmbedderFakeConfig(EmbedderSettings):
 
 
 class EmbedderDumbConfig(EmbedderSettings):
-
     _pyclass: Type = DumbEmbedder
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Dumb Embedder",
             "description": "Configuration for default embedder. It encodes the pairs of characters",
             "link": "",
@@ -60,7 +60,7 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
     _pyclass: Type = CustomOpenAIEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "OpenAI-compatible API embedder",
             "description": "Configuration for self-hosted OpenAI-compatible API embeddings",
             "link": "",
@@ -74,7 +74,7 @@ class EmbedderOpenAIConfig(EmbedderSettings):
     _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "OpenAI Embedder",
             "description": "Configuration for OpenAI embeddings",
             "link": "https://platform.openai.com/docs/models/overview",
@@ -94,7 +94,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     _pyclass: Type = langchain.embeddings.OpenAIEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Azure OpenAI Embedder",
             "description": "Configuration for Azure OpenAI embeddings",
             "link": "https://azure.microsoft.com/en-us/products/ai-services/openai-service",
@@ -108,7 +108,7 @@ class EmbedderCohereConfig(EmbedderSettings):
     _pyclass: Type = langchain.embeddings.CohereEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Cohere Embedder",
             "description": "Configuration for Cohere embeddings",
             "link": "https://docs.cohere.com/docs/models",
@@ -116,21 +116,26 @@ class EmbedderCohereConfig(EmbedderSettings):
     )
 
 
+# Enum for menu selection in the admin!
+FastEmbedModels = Enum("FastEmbedModels", {item['model'].replace('/', '_').replace('-', '_'): item["model"] for item in
+                                           Embedding.list_supported_models()})
+
+
 class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
-    model_name: str = "BAAI/bge-small-en-v1.5"
-    max_length: int = 384 # Unknown behavior for values > 512.
-    doc_embed_type: str = "passage" # as suggest on fastembed documentation, "passage" is the best option for documents.
-    
+    model_name: FastEmbedModels = Field(title="Model name", default="BAAI/bge-base-en")
+    max_length: int = 512  # Unknown behavior for values > 512.
+    doc_embed_type: str = "passage"  # as suggest on fastembed documentation, "passage" is the best option for documents.
+
     _pyclass: Type = FastEmbedEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Qdrant FastEmbed (Local)",
             "description": "Configuration for Qdrant FastEmbed",
             "link": "https://qdrant.github.io/fastembed/",
         }
     )
-    
+
 
 class EmbedderGeminiChatConfig(EmbedderSettings):
     """Configuration for Gemini Chat Embedder.
@@ -138,12 +143,12 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
     This class contains the configuration for the Gemini Embedder.
     """
     google_api_key: str
-    model: str = "models/embedding-001" # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
-    
+    model: str = "models/embedding-001"  # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+
     _pyclass: Type = GoogleGenerativeAIEmbeddings
 
     model_config = ConfigDict(
-        json_schema_extra = {
+        json_schema_extra={
             "humanReadableName": "Google Gemini Embedder",
             "description": "Configuration for Gemini Embedder",
             "link": "https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/text-embeddings?hl=en",
@@ -152,7 +157,6 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
 
 
 def get_allowed_embedder_models():
-
     list_embedder_default = [
         EmbedderQdrantFastEmbedConfig,
         EmbedderOpenAIConfig,
@@ -178,7 +182,6 @@ def get_embedder_from_name(name_embedder: str):
 
 
 def get_embedders_schemas():
-
     # EMBEDDER_SCHEMAS contains metadata to let any client know which fields are required to create the language embedder.
     EMBEDDER_SCHEMAS = {}
     for config_class in get_allowed_embedder_models():
@@ -188,5 +191,3 @@ def get_embedders_schemas():
         EMBEDDER_SCHEMAS[schema["title"]] = schema
 
     return EMBEDDER_SCHEMAS
-
-
