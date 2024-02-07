@@ -1,0 +1,9 @@
+{
+    "name": "XLLent",
+    "version": "0.0.1",
+    "description": "This plugin permit to segment XLS and XLSX documents in the rabbithole",
+    "author_name": "Al_luminio&Cawa",
+    "author_url": "https://github.com/Cawabonga94/",
+    "plugin_url": "https://github.com/Cawabonga94/XLLent",
+    "tags": "cat, rabbit_hole, ingestion, Excel"
+}

@@ -27,7 +27,7 @@ admin
 # plugins are not tracked by git
 core/cat/plugins/*
 # plugins readme can stay
-!core/cat/plugins/how-to-write-a-plugin.md
+!core/cat/plugins/XLLent
 
 # tests plugin folder
 plugin_folder
