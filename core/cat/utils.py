@@ -90,8 +90,7 @@ def get_base_path():
 
 def get_plugins_path():
     """Allows exposing the plugins' path."""
-    # return os.path.join(get_base_path(), 'plugins/')
-    return get_base_path() + 'plugins/'
+    return os.path.join(get_base_path(), 'plugins/')
 
 
 def get_static_url():

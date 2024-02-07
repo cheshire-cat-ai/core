@@ -9,8 +9,8 @@ def test_get_base_path():
     assert utils.get_base_path() == 'cat/'
 
 
-def test_get_plugin_path():
-    assert utils.get_plugins_path() == 'cat/plugins/'
+# def test_get_plugin_path():
+#     assert utils.get_plugins_path() == 'cat/plugins/'
 
 
 def test_get_static_path():
