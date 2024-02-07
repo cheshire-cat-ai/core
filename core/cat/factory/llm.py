@@ -8,7 +8,7 @@ from typing import Dict, List, Type
 import json
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
 from cat.mad_hatter.mad_hatter import MadHatter
 
 
@@ -229,7 +229,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = Ollama
+    _pyclass: Type = CustomOllama
 
     model_config = ConfigDict(
         json_schema_extra={
