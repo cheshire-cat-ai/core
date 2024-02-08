@@ -18,8 +18,7 @@ def _create_stream_patch(
         raise ValueError("`stop` found in both the input and default params.")
     elif self.stop is not None:
         stop = self.stop
-
-    print("sono dentro")
+        
     params = self._default_params
 
     if "model" in kwargs:
