@@ -212,8 +212,7 @@ class RabbitHole:
 
                 try:
                     # Get binary content of url
-                    with urlopen(file) as response:
-                        file_bytes = response.read()
+                    file_bytes = request.content
                 except HTTPError as e:
                     log.error(e)
             else:
