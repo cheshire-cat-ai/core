@@ -24,7 +24,7 @@ class ToolPromptTemplate(StringPromptTemplate):
         # Create a tools variable from the list of tools provided
         kwargs["tools"] = ""
         for tool in self.tools:
-            kwargs["tools"] += f" - {tool.name}: {tool.docstring}\n"
+            kwargs["tools"] += f" - {tool.description}\n"
             if len(tool.examples) > 0:
                 kwargs["tools"] += f"\tExamples of questions for {tool.name}:\n"
                 for example in tool.examples:
@@ -39,7 +39,7 @@ TOOL_PROMPT = """Answer the following question: `{input}`
 You can only reply using these tools:
 
 {tools}
- - none_of_the_others: Use this tool if none of the others tools help. Input is always None.
+ - none_of_the_others(): Use this tool if none of the others tools help. Input is always None.
 
 If you want to use tools, use the following format:
 Action: the name of the action to take, should be one of [{tool_names}]
