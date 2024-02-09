@@ -3,6 +3,7 @@ from langchain_community.llms import OpenAI, AzureOpenAI, Cohere, Ollama, Huggin
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from .ollama_utils import _create_stream_patch, _acreate_stream_patch
 from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
@@ -219,6 +220,10 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
         }
     )
 
+# monkey patch to fix stops sequences 
+ollama_fix: Type = CustomOllama
+ollama_fix._create_stream = _create_stream_patch
+ollama_fix._acreate_stream = _acreate_stream_patch
 
 class LLMOllamaConfig(LLMSettings):
     base_url: str
@@ -228,7 +233,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = CustomOllama
+    _pyclass: Type = ollama_fix
 
     model_config = ConfigDict(
         json_schema_extra={
