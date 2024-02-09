@@ -40,7 +40,6 @@ class CatTool(Tool):
         return self._run(input_by_llm)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
-    
     class Config:
         extra = "allow"
     # TODO should be: (but langchain does not support yet pydantic 2)
@@ -55,25 +54,23 @@ def tool(*args: Union[str, Callable], return_direct: bool = False, examples: Lis
     """
     Make tools out of functions, can be used with or without arguments.
     Requires:
-        - Function must be of type (str) -> str
+        - Function must be of type (str, cat) -> str
         - Function must have a docstring
     Examples:
         .. code-block:: python
             @tool
-            def search_api(query: str) -> str:
+            def search_api(query: str, cat) -> str:
                 # Searches the API for the query.
                 return "https://api.com/search?q=" + query
             @tool("search", return_direct=True)
-            def search_api(query: str) -> str:
+            def search_api(query: str, cat) -> str:
                 # Searches the API for the query.
                 return "https://api.com/search?q=" + query
     """
 
     def _make_with_name(tool_name: str) -> Callable:
-        def _make_tool(func: Callable[[str], str]) -> Tool:
+        def _make_tool(func: Callable[[str], str]) -> CatTool:
             assert func.__doc__, "Function must have a docstring"
-            # Description example:
-            #   search_api(query: str) - Searches the API for the query.
             description = f"{tool_name}{signature(func)} - {func.__doc__.strip()}"
             tool_ = CatTool(
                 name=tool_name,
