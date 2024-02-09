@@ -10,7 +10,7 @@ class CatHook:
         self.priority = priority
 
     def __repr__(self) -> str:
-        return f"CatHook: name={self.name}, priority={self.priority}"
+        return f"CatHook(name={self.name}, priority={self.priority})"
 
 # @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
 # @hook priority defaults to 1, the higher the more important. Hooks in the default core plugin have all priority=0 so they are automatically overwritten from plugins
