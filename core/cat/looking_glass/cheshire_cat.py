@@ -253,7 +253,7 @@ class CheshireCat():
         # retrieve from vectorDB all tool embeddings
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 
-        # easy acces to (point_id, tool_description)
+        # easy access to (point_id, tool_description)
         embedded_tools_ids = [t.id for t in embedded_tools]
         embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
 
@@ -270,11 +270,12 @@ class CheshireCat():
                         "source": "tool",
                         "when": time.time(),
                         "name": tool.name,
+                        "examples": tool.examples,
                         "docstring": tool.docstring
                     },
                 )
 
-                log.warning(f"Newly embedded tool: {tool.description}")
+                log.warning(f"Newly embedded {repr(tool)}")
 
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
@@ -284,7 +285,7 @@ class CheshireCat():
         for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
             # if the tool is not active, it inserts it in the list of points to be deleted
             if descr not in mad_hatter_tools_descriptions:
-                log.warning(f"Deleting embedded tool: {descr}")
+                log.warning(f"Deleting embedded CatTool: {descr}")
                 points_to_be_deleted.append(id)
 
         # delete not active tools

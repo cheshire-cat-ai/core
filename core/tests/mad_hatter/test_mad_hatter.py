@@ -47,6 +47,7 @@ def test_instantiation_discovery(mad_hatter):
     assert "what time is it" in tool.docstring
     assert isfunction(tool.func)
     assert tool.return_direct == False
+    assert tool.examples == []
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()
