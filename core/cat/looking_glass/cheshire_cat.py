@@ -276,7 +276,6 @@ class CheshireCat():
                 )
 
                 log.warning(f"Newly embedded {repr(tool)}")
-                log.warning(f"Newly embedded tool: {tool.description}")
 
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
