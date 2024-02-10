@@ -35,7 +35,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
 
     # check whether new tool has been embedded
     tools = get_embedded_tools(client)
-    assert len(tools) == 2
+    assert len(tools) == 4
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" in tool_names
     assert "get_the_time" in tool_names # from core_plugin
@@ -58,7 +58,7 @@ def test_plugin_uninstall(client, just_installed_plugin):
 
     # plugin tool disappeared
     tools = get_embedded_tools(client)
-    assert len(tools) == 1
+    assert len(tools) == 3
     tool_names = list(map(lambda t: t["metadata"]["name"], tools))
     assert "mock_tool" not in tool_names
     assert "get_the_time" in tool_names # from core_plugin
