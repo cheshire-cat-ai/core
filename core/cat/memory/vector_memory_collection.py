@@ -51,8 +51,8 @@ class VectorMemoryCollection():
         self.check_embedding_size()
 
         # log collection info
-        log.info(f"Collection {self.collection_name}:")
-        log.info(dict(self.client.get_collection(self.collection_name)))
+        log.debug(f"Collection {self.collection_name}:")
+        log.debug(self.client.get_collection(self.collection_name))
 
 
     def check_embedding_size(self):
@@ -70,7 +70,7 @@ class VectorMemoryCollection():
             .alias_name
             and same_size
         ):
-            log.info(f'Collection "{self.collection_name}" has the same embedder')
+            log.debug(f'Collection "{self.collection_name}" has the same embedder')
         else:
             log.warning(f'Collection "{self.collection_name}" has different embedder')
             # Memory snapshot saving can be turned off in the .env file with:
@@ -78,10 +78,10 @@ class VectorMemoryCollection():
             if os.getenv("SAVE_MEMORY_SNAPSHOTS") == "true":
                 # dump collection on disk before deleting
                 self.save_dump()
-                log.info(f'Dump "{self.collection_name}" completed')
+                log.info(f"Dump '{self.collection_name}' completed")
 
             self.client.delete_collection(self.collection_name)
-            log.warning(f'Collection "{self.collection_name}" deleted')
+            log.warning(f"Collection '{self.collection_name}' deleted")
             self.create_collection()
 
 
@@ -92,7 +92,7 @@ class VectorMemoryCollection():
             if c.name == self.collection_name:
                 # collection exists. Do nothing
                 log.info(
-                    f'Collection "{self.collection_name}" already present in vector store'
+                    f"Collection '{self.collection_name}' already present in vector store"
                 )
                 return
 
@@ -100,7 +100,7 @@ class VectorMemoryCollection():
 
     # create collection
     def create_collection(self):
-        log.warning(f"Creating collection {self.collection_name} ...")
+        log.warning(f"Creating collection '{self.collection_name}' ...")
         self.client.recreate_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(

@@ -4,7 +4,7 @@ from tests.utils import send_websocket_message, get_collections_names_and_point_
 def test_memory_collections_created(client):
 
     # get collections
-    response = client.get("/memory/collections/")
+    response = client.get("/memory/collections")
     json = response.json()
     assert response.status_code == 200
     
@@ -111,7 +111,7 @@ def test_memory_collections_wipe(client):
     assert collections_n_points["declarative"] > 1  # several chunks
 
     # wipe out all memories
-    response = client.delete("/memory/collections/")
+    response = client.delete("/memory/collections")
     json = response.json()
     assert response.status_code == 200
 

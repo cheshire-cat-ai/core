@@ -63,7 +63,7 @@ def test_upsert_embedder_settings(client):
     assert json["value"]["size"] == embedder_config["size"]
 
     # retrieve all embedders settings to check if it was saved in DB
-    response = client.get("/embedder/settings/")
+    response = client.get("/embedder/settings")
     json = response.json()
     assert response.status_code == 200
     assert json["selected_configuration"] == new_embedder

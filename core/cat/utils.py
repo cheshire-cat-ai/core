@@ -4,6 +4,7 @@ import inspect
 from datetime import timedelta
 from cat.log import log
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
+from urllib.parse import urlparse
 
 
 def to_camel_case(text: str) -> str:
@@ -77,30 +78,43 @@ def get_base_url():
     secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
     if secure != '':
         secure = 's'
-    cat_host = os.getenv("CORE_HOST", "localhost")
-    cat_port = os.getenv("CORE_PORT", "1865")
+    cat_host = os.getenv('CORE_HOST', 'localhost')
+    cat_port = os.getenv('CORE_PORT', '1865')
     return f'http{secure}://{cat_host}:{cat_port}/'
 
 
 def get_base_path():
     """Allows exposing the base path."""
-    return "cat/"
+    return 'cat/'
 
 
 def get_plugins_path():
     """Allows exposing the plugins' path."""
-    return os.path.join(get_base_path(), "plugins/")
+    return os.path.join(get_base_path(), 'plugins/')
 
 
 def get_static_url():
     """Allows exposing the static server url."""
-    return get_base_url() + "static/"
+    return get_base_url() + 'static/'
 
 
 def get_static_path():
     """Allows exposing the static files' path."""
-    return os.path.join(get_base_path(), "static/")
+    return os.path.join(get_base_path(), 'static/')
 
+def is_https(url):
+    try:
+        parsed_url = urlparse(url)
+        return parsed_url.scheme == 'https'
+    except Exception as e:
+        return False
+    
+def extract_domain_from_url(url):
+    try:
+        parsed_url = urlparse(url)        
+        return parsed_url.netloc + parsed_url.path
+    except Exception:
+        return url
 
 def explicit_error_message(e):
     # add more explicit info on "RateLimitError" by OpenAI, 'cause people can't get it

@@ -22,7 +22,13 @@ class ToolPromptTemplate(StringPromptTemplate):
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
-        kwargs["tools"] = "\n".join([f"{tool.name}: {tool.description}" for tool in self.tools])
+        kwargs["tools"] = ""
+        for tool in self.tools:
+            kwargs["tools"] += f" - {tool.description}\n"
+            if len(tool.examples) > 0:
+                kwargs["tools"] += f"\tExamples of questions for {tool.name}:\n"
+                for example in tool.examples:
+                    kwargs["tools"] += f"\t - \"{example}\"\n"
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join([tool.name for tool in self.tools])
 
@@ -33,7 +39,7 @@ TOOL_PROMPT = """Answer the following question: `{input}`
 You can only reply using these tools:
 
 {tools}
-none_of_the_others: none_of_the_others(None) - Use this tool if none of the others tools help. Input is always None.
+ - none_of_the_others(): Use this tool if none of the others tools help. Input is always None.
 
 If you want to use tools, use the following format:
 Action: the name of the action to take, should be one of [{tool_names}]

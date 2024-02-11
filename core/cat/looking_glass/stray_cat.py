@@ -3,8 +3,9 @@ import asyncio
 import traceback
 from typing import Literal, get_args
 
-from langchain.llms.base import BaseLLM
-from langchain.chat_models.base import BaseChatModel
+from langchain.docstore.document import Document
+from langchain_community.llms import BaseLLM
+from langchain_core.language_models.chat_models import BaseChatModel
 
 from fastapi import WebSocket
 
@@ -290,14 +291,24 @@ class StrayCat:
 
             user_message = self.working_memory["user_message_json"]["text"]
 
+            doc = Document(
+                page_content=user_message,
+                metadata={
+                    "source": self.user_id,
+                    "when": time.time()
+                }
+            )
+            doc = self.mad_hatter.execute_hook(
+                "before_cat_stores_episodic_memory", doc, cat=self
+            )
             # store user message in episodic memory
             # TODO: vectorize and store also conversation chunks
             #   (not raw dialog, but summarization)
             user_message_embedding = self.embedder.embed_documents([user_message])
             _ = self.memory.vectors.episodic.add_point(
-                user_message,
+                doc.page_content,
                 user_message_embedding[0],
-                {"source": self.user_id, "when": time.time()},
+                doc.metadata,
             )
 
             # build data structure for output (response and why with memories)

@@ -30,7 +30,6 @@ def test_list_registry_plugins_by_query(client):
     }
     response = client.get("/plugins", params=params)
     json = response.json()
-    print(json)
 
     assert response.status_code == 200
     assert json["filters"]["query"] == params["query"]

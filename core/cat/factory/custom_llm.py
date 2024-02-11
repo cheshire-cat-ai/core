@@ -1,9 +1,16 @@
 import os
-from typing import Optional, List, Any, Mapping, Dict
+from typing import Optional, List, Any, Mapping, Dict, Iterator, AsyncIterator
+
+import aiohttp
 import requests
-from langchain.llms.base import LLM
-from langchain.llms.openai import OpenAI
-from langchain.llms.ollama import Ollama
+
+from fastapi import HTTPException
+
+from langchain_core.language_models.llms import LLM
+from langchain_openai.llms import OpenAI
+from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError
+
+from cat.log import log
 
 
 class LLMDefault(LLM):
@@ -14,7 +21,7 @@ class LLMDefault(LLM):
     def _call(self, prompt, stop=None):
         return "AI: You did not configure a Language Model. " \
                "Do it in the settings!"
-    
+
     async def _acall(self, prompt, stop=None):
         return "AI: You did not configure a Language Model. " \
                "Do it in the settings!"
@@ -72,22 +79,36 @@ class LLMCustom(LLM):
 
 class CustomOpenAI(OpenAI):
     url: str
-    
+
     def __init__(self, **kwargs):
         model_kwargs = {
             'repeat_penalty': kwargs.pop('repeat_penalty'),
             'top_k': kwargs.pop('top_k')
         }
-        
+
         stop = kwargs.pop('stop', None)
         if stop:
             model_kwargs['stop'] = stop.split(',')
 
         super().__init__(
-                    openai_api_key=" ",  
-                    model_kwargs=model_kwargs,
-                    **kwargs
-                )
-        
+            openai_api_key=" ",
+            model_kwargs=model_kwargs,
+            **kwargs
+        )
+
         self.url = kwargs['url']
         self.openai_api_base = os.path.join(self.url, "v1")
+
+
+class CustomOllama(Ollama):
+    def __init__(self, **kwargs: Any) -> None:
+        if "localhost" in kwargs["base_url"]:
+            log.error(
+                "you cannot use localhost as host, use instead the machine ip. You can find it by using 'ifconfig' in "
+                "linux or 'ipconfig' in windows")
+            raise HTTPException(400,
+                                "you cannot use localhost as host, use instead the machine ip. You can find it by "
+                                "using 'ifconfig' in linux or 'ipconfig' in windows")
+        if kwargs["base_url"].endswith("/"):
+            kwargs["base_url"] = kwargs["base_url"][:-1]
+        super().__init__(**kwargs)

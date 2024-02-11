@@ -4,7 +4,7 @@ import json
 from typing import List
 from itertools import combinations
 from sklearn.feature_extraction.text import CountVectorizer
-from langchain.embeddings.base import Embeddings
+from langchain_core.embeddings import Embeddings
 import httpx
 
 

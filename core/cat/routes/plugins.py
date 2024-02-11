@@ -42,6 +42,7 @@ async def get_available_plugins(
         # get manifest
         manifest = deepcopy(p.manifest) # we make a copy to avoid modifying the plugin obj
         manifest["active"] = p.id in active_plugins # pass along if plugin is active or not
+        manifest["upgrade"] = None
         manifest["hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in p.hooks]
         manifest["tools"] = [{ "name": tool.name } for tool in p.tools]
         
@@ -49,6 +50,10 @@ async def get_available_plugins(
         plugin_text = [str(field) for field in manifest.values()]
         plugin_text = " ".join(plugin_text).lower()
         if (query is None) or (query.lower() in plugin_text):
+            for r in registry_plugins:
+                if r["plugin_url"] == p.manifest["plugin_url"]:
+                    if r["version"] != p.manifest["version"]:
+                        manifest["upgrade"] = r["version"]
             installed_plugins.append(manifest)
 
         # do not show already installed plugins among registry plugins
@@ -65,7 +70,7 @@ async def get_available_plugins(
     }
 
 
-@router.post("/upload/")
+@router.post("/upload")
 async def install_plugin(
     request: Request,
     file: UploadFile,
@@ -150,59 +155,10 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
         raise HTTPException(
             status_code = 500,
             detail = { "error": str(e)}
-        ) 
-
-
-@router.get("/{plugin_id}")
-async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
-    """Returns information on a single plugin"""
-
-    # access cat instance
-    ccat = request.app.state.ccat
-    
-    if not ccat.mad_hatter.plugin_exists(plugin_id):
-        raise HTTPException(
-            status_code = 404,
-            detail = { "error": "Plugin not found" }
-        )
-
-    active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
-
-    plugin = ccat.mad_hatter.plugins[plugin_id]
-
-    # get manifest and active True/False. We make a copy to avoid modifying the original obj
-    plugin_info = deepcopy(plugin.manifest)
-    plugin_info["active"] = plugin_id in active_plugins
-    plugin_info["hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in plugin.hooks]
-    plugin_info["tools"] = [{ "name": tool.name } for tool in plugin.tools]
-
-    return {
-        "data": plugin_info
-    }
-
-
-@router.delete("/{plugin_id}")
-async def delete_plugin(plugin_id: str, request: Request) -> Dict:
-    """Physically remove plugin."""
-
-    # access cat instance
-    ccat = request.app.state.ccat
-
-    if not ccat.mad_hatter.plugin_exists(plugin_id):
-        raise HTTPException(
-            status_code = 404,
-            detail = { "error": "Item not found" }
         )
     
-    # remove folder, hooks and tools
-    ccat.mad_hatter.uninstall_plugin(plugin_id)
 
-    return {
-        "deleted": plugin_id
-    }
-
-
-@router.get("/settings/")
+@router.get("/settings")
 async def get_plugins_settings(request: Request) -> Dict:
     """Returns the settings of all the plugins"""
 
@@ -299,4 +255,53 @@ async def upsert_plugin_settings(
     return {
         "name": plugin_id,
         "value": final_settings
+    }
+
+
+@router.get("/{plugin_id}")
+async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
+    """Returns information on a single plugin"""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+    
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Plugin not found" }
+        )
+
+    active_plugins = ccat.mad_hatter.load_active_plugins_from_db()
+
+    plugin = ccat.mad_hatter.plugins[plugin_id]
+
+    # get manifest and active True/False. We make a copy to avoid modifying the original obj
+    plugin_info = deepcopy(plugin.manifest)
+    plugin_info["active"] = plugin_id in active_plugins
+    plugin_info["hooks"] = [{ "name": hook.name, "priority": hook.priority } for hook in plugin.hooks]
+    plugin_info["tools"] = [{ "name": tool.name } for tool in plugin.tools]
+
+    return {
+        "data": plugin_info
+    }
+
+
+@router.delete("/{plugin_id}")
+async def delete_plugin(plugin_id: str, request: Request) -> Dict:
+    """Physically remove plugin."""
+
+    # access cat instance
+    ccat = request.app.state.ccat
+
+    if not ccat.mad_hatter.plugin_exists(plugin_id):
+        raise HTTPException(
+            status_code = 404,
+            detail = { "error": "Item not found" }
+        )
+    
+    # remove folder, hooks and tools
+    ccat.mad_hatter.uninstall_plugin(plugin_id)
+
+    return {
+        "deleted": plugin_id
     }
