@@ -1,46 +1,46 @@
 
-* **Version 2**
+* **Version 1.5**
 	* Technical 
 		* Plugins
-			* redesign hooks & tools signature
-			* tools with more than one arg (structured Tool)
-			* no cat argument
-			* registry online
+			* redesign hooks & tools signature (OK)
+			* tools with more than one arg (Ok, working on forms)
+			* no cat argument (OK, cat is a StrayCat)
+			* registry online (OK)
 		* Agent
 			* Custom hookable agent
 			* Async agent
 			* Output dictionary retry (guardrails, kor, guidance)
-			* (streaming?)
+			* Streaming (OK)
 		* Unit tests 
-			* Half coverage (main classes)
+			* Half coverage (OK)
 		* Admin
-			* sync / async calls consistent management
-			* adapt to design system
-			* show registry plugins (core should send them alongside the installed ones)
+			* sync / async calls consistent management (OK)
+			* adapt to design system (OK)
+			* show registry plugins (OK)
 			* filters for memory search
 		* Deploy
-			* docker image!
-			* compose with local LLM + embedder - ready to use
+			* docker image! (OK)
+			* compose with local LLM + embedder - ready to use (OK)
 			* (nginx?)
 		* LLM improvements
 			* explicit support for chat vs completion
 			* each LLM has its own default template
 		* User support (not management)
-			* fix bugs
-			* sessions
+			* fix bugs (OK)
+			* sessions (OK)
 	* Outreach
 		* Community
-			* 1 live event
-			* 4 meow talk
-			* 1 challenge
+			* 1 live event (OK)
+			* 4 meow talk (OK)
+			* 1 challenge (OK)
 		* Dissemination
 			* use cases examples
 			* tutorials on hooks
 			* hook discovery tool
-			* website analytics 
+			* website analytics (OK)
 		* Branding
-			* logo
-			* website + docs + admin design system
+			* logo (OK)
+			* website + docs + admin design system (OK)
 
 ---
 
