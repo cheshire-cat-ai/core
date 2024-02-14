@@ -202,7 +202,6 @@ class CatLogEngine:
         )
 
         # prettify
-        print(msg)
         if type(msg) in [dict, list, str]: # TODO: should be recursive
             try:
                 msg = json.dumps(msg, indent=4)
