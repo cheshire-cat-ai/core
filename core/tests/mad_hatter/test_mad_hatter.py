@@ -82,6 +82,10 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     new_tool = mad_hatter.plugins["mock_plugin"].tools[0]
     assert new_tool.plugin_id == "mock_plugin"
     assert id(new_tool) == id(mad_hatter.tools[1])  # cached and same object in memory!
+    # tool examples found
+    assert len(new_tool.examples) == 2
+    assert "mock tool example 1" in new_tool.examples
+    assert "mock tool example 2" in new_tool.examples
 
     # hooks found
     new_hooks = mad_hatter.plugins["mock_plugin"].hooks
