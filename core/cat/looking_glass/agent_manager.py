@@ -134,9 +134,14 @@ class AgentManager:
 
 
         # tools currently recalled in working memory
-        recalled_tools = stray.working_memory["procedural_memories"]
-        # Get the tools names only
-        tools_names = [t[0].metadata["name"] for t in recalled_tools]
+        recalled_procedures = stray.working_memory["procedural_memories"]
+        recalled_tools = []
+        for p in recalled_procedures:
+            procedure = p[0]
+            if procedure.metadata["source"] in ["tool", "tool_example"]:
+                recalled_tools.append(procedure.metadata["name"])
+        tools_names = list(set(recalled_tools)) # unique names! May be duplicated because of examples
+
         tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=stray)
         # Get tools with that name from mad_hatter
         allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]

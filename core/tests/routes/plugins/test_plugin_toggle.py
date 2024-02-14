@@ -1,5 +1,5 @@
 
-from tests.utils import get_embedded_tools
+from tests.utils import get_procedural_memory_contents
 from fixture_just_installed_plugin import just_installed_plugin
 
 
@@ -29,11 +29,16 @@ def test_deactivate_plugin(client, just_installed_plugin):
     assert response.json()["data"]["active"] == False
             
     # tool has been taken away
-    tools = get_embedded_tools(client)
-    assert len(tools) == 3
-    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "mock_tool" not in tool_names
-    assert "get_the_time" in tool_names # from core_plugin
+    procedures = get_procedural_memory_contents(client)
+    assert len(procedures) == 3
+    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    assert "mock_tool" not in procedures_names
+    assert "get_the_time" in procedures_names # from core_plugin
+
+    # only examples for core tool
+    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_sources.count("tool") == 1
+    assert procedures_sources.count("tool_example") == 2
     
 
 def test_reactivate_plugin(client, just_installed_plugin):
@@ -56,8 +61,12 @@ def test_reactivate_plugin(client, just_installed_plugin):
     assert response.json()["data"]["active"] == True
 
     # tool has been re-embedded
-    tools = get_embedded_tools(client)
-    assert len(tools) == 4
-    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "mock_tool" in tool_names
-    assert "get_the_time" in tool_names # from core_plugin
+    procedures = get_procedural_memory_contents(client)
+    assert len(procedures) == 6 # two tools and two examples each
+    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    assert "mock_tool" in procedures_names
+    assert "get_the_time" in procedures_names # from core_plugin
+
+    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_sources.count("tool") == 2
+    assert procedures_sources.count("tool_example") == 4

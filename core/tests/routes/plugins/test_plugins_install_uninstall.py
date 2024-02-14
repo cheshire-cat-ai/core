@@ -1,7 +1,7 @@
 import os
 import time
 import shutil
-from tests.utils import get_embedded_tools
+from tests.utils import get_procedural_memory_contents
 from fixture_just_installed_plugin import just_installed_plugin
 
 
@@ -34,11 +34,15 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     assert os.path.exists(mock_plugin_final_folder)
 
     # check whether new tool has been embedded
-    tools = get_embedded_tools(client)
-    assert len(tools) == 4
-    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "mock_tool" in tool_names
-    assert "get_the_time" in tool_names # from core_plugin
+    procedures = get_procedural_memory_contents(client)
+    assert len(procedures) == 6 # two tools, 4 tools examples
+    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    assert "mock_tool" in procedures_names
+    assert "get_the_time" in procedures_names # from core_plugin
+
+    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_sources.count("tool") == 2
+    assert procedures_sources.count("tool_example") == 4
 
 
 def test_plugin_uninstall(client, just_installed_plugin):
@@ -57,11 +61,16 @@ def test_plugin_uninstall(client, just_installed_plugin):
     assert not os.path.exists(mock_plugin_final_folder) # plugin folder removed from disk
 
     # plugin tool disappeared
-    tools = get_embedded_tools(client)
-    assert len(tools) == 3
-    tool_names = list(map(lambda t: t["metadata"]["name"], tools))
-    assert "mock_tool" not in tool_names
-    assert "get_the_time" in tool_names # from core_plugin
+    procedures = get_procedural_memory_contents(client)
+    assert len(procedures) == 3
+    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    assert "mock_tool" not in procedures_names
+    assert "get_the_time" in procedures_names # from core_plugin
+
+    # only examples for core tool
+    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_sources.count("tool") == 1
+    assert procedures_sources.count("tool_example") == 2
 
 
 

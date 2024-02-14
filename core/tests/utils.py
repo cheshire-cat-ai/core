@@ -58,7 +58,7 @@ def create_mock_plugin_zip(flat: bool):
 
 
 # utility to retrieve embedded tools from endpoint
-def get_embedded_tools(client):
+def get_procedural_memory_contents(client):
     params = {
         "text": "random"
     }
