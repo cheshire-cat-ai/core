@@ -65,10 +65,14 @@ def test_tools_embedded(cheshire_cat):
 
     # get embedded tools
     tools = cheshire_cat.memory.vectors.procedural.get_all_points()
-    assert len(tools) == 1
+    tools_descriptions = [t for t in tools if t.payload["metadata"]["source"] == "tool"]
+    tools_examples = [t for t in tools if t.payload["metadata"]["source"] == "tool_example"]
+    
+    assert len(tools_descriptions) == 1
+    assert len(tools_examples) == 2
 
     # some check on the embedding
-    assert "get_the_time" in tools[0].payload["page_content"]
-    assert isinstance(tools[0].vector, list)
+    assert "get_the_time" in tools_descriptions[0].payload["page_content"]
+    assert isinstance(tools_descriptions[0].vector, list)
     sample_embed = DumbEmbedder().embed_query("I'm smarter than a random embedder BTW")
-    assert len(tools[0].vector) == len(sample_embed) # right embed size
+    assert len(tools_descriptions[0].vector) == len(sample_embed) # right embed size

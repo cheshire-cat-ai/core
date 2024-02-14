@@ -3,7 +3,7 @@ import shutil
 import os
 import traceback
 from copy import deepcopy
-
+from typing import List, Dict
 from cat.log import log
 import cat.utils as utils
 from cat.utils import singleton
@@ -12,6 +12,8 @@ from cat.db.models import Setting
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
 import inspect
+from cat.mad_hatter.decorators.hook import CatHook
+from cat.mad_hatter.decorators.tool import CatTool
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -27,12 +29,12 @@ class MadHatter:
 
     def __init__(self):
 
-        self.plugins = {} # plugins dictionary
+        self.plugins: Dict[str, Plugin] = {} # plugins dictionary
 
-        self.hooks = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
-        self.tools = [] # list of active plugins tools 
+        self.hooks: Dict[str, List[CatHook]] = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
+        self.tools: List[CatTool] = [] # list of active plugins tools 
 
-        self.active_plugins = []
+        self.active_plugins: List[str] = []
 
         self.plugins_folder = utils.get_plugins_path()
 

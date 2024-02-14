@@ -82,7 +82,7 @@ def test_upsert_embedder_settings(client):
 def test_upsert_embedder_settings_updates_collections(client):
 
     tools = get_embedded_tools(client)
-    assert len(tools) == 1
+    assert len(tools) == 3
     assert len(tools[0]["vector"]) == 2367  # default embedder
     
     # set a different embedder from default one (same class different size)
@@ -93,7 +93,7 @@ def test_upsert_embedder_settings_updates_collections(client):
     assert response.status_code == 200
 
     tools = get_embedded_tools(client)
-    assert len(tools) == 1
+    assert len(tools) == 3
     assert len(tools[0]["vector"]) == embedder_config["size"]
 
 

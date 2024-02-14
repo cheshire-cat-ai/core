@@ -44,10 +44,11 @@ def test_instantiation_discovery(mad_hatter):
     assert tool.cat is None
     assert tool.name == "get_the_time"
     assert "get_the_time" in tool.description
-    assert "what time is it" in tool.docstring
     assert isfunction(tool.func)
     assert tool.return_direct == False
-    assert tool.examples == []
+    assert len(tool.examples) == 2
+    assert "what time is it" in tool.examples
+    assert "get the time" in tool.examples
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()
