@@ -3,7 +3,6 @@ from langchain_community.llms import (
     OpenAI,
     AzureOpenAI,
     Cohere,
-    Ollama,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
 )
@@ -101,9 +100,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = (
-        0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
-    )
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
@@ -118,12 +115,8 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = (
-        "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
-    )
-    temperature: float = (
-        0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
-    )
+    model_name: str = "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = OpenAI
 
@@ -167,9 +160,7 @@ class LLMAzureOpenAIConfig(LLMSettings):
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
     # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
     api_version: str = "2023-05-15"
-    azure_deployment: str = (
-        "gpt-35-turbo-instruct"  # Model "comming soon" according to microsoft
-    )
+    azure_deployment: str = "gpt-35-turbo-instruct"
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
     streaming: bool = True
     _pyclass: Type = AzureOpenAI
@@ -234,9 +225,9 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
 
 
 # monkey patch to fix stops sequences
-ollama_fix: Type = CustomOllama
-ollama_fix._create_stream = _create_stream_patch
-ollama_fix._acreate_stream = _acreate_stream_patch
+OllamaFix: Type = CustomOllama
+OllamaFix._create_stream = _create_stream_patch
+OllamaFix._acreate_stream = _acreate_stream_patch
 
 
 class LLMOllamaConfig(LLMSettings):
@@ -247,7 +238,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = ollama_fix
+    _pyclass: Type = OllamaFix
 
     model_config = ConfigDict(
         json_schema_extra={
