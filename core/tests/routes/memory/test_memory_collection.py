@@ -15,7 +15,7 @@ def test_memory_collections_created(client):
     # check correct number of default points
     collections_n_points = { c["name"]: c["vectors_count"] for c in json["collections"]}
     # there is at least an embedded tool in procedural collection
-    assert collections_n_points["procedural"] == 1
+    assert collections_n_points["procedural"] == 3
     # all other collections should be empty
     assert collections_n_points["episodic"] == 0
     assert collections_n_points["declarative"] == 0
@@ -76,7 +76,7 @@ def test_memory_collection_procedural_has_tools_after_clear(client):
 
     # procedural emmory contains one tool (get_the_time)
     collections_n_points = get_collections_names_and_point_count(client)
-    assert collections_n_points["procedural"] == 1
+    assert collections_n_points["procedural"] == 3
 
     # delete procedural memory
     response = client.delete("/memory/collections/procedural")
@@ -85,7 +85,7 @@ def test_memory_collection_procedural_has_tools_after_clear(client):
     
     # tool should be automatically re-embedded after memory deletion
     collections_n_points = get_collections_names_and_point_count(client)
-    assert collections_n_points["procedural"] == 1 # still 1!
+    assert collections_n_points["procedural"] == 3 # still 1!
 
 
 def test_memory_collections_wipe(client):
@@ -106,7 +106,7 @@ def test_memory_collections_wipe(client):
         response = client.post("/rabbithole/", files=files)
 
     collections_n_points = get_collections_names_and_point_count(client)
-    assert collections_n_points["procedural"] == 1   # default tool
+    assert collections_n_points["procedural"] == 3   # default tool
     assert collections_n_points["episodic"] == 1      # websocket msg
     assert collections_n_points["declarative"] > 1  # several chunks
 
@@ -116,6 +116,6 @@ def test_memory_collections_wipe(client):
     assert response.status_code == 200
 
     collections_n_points = get_collections_names_and_point_count(client)
-    assert collections_n_points["procedural"] == 1   # default tool is re-emebedded
+    assert collections_n_points["procedural"] == 3   # default tool is re-emebedded
     assert collections_n_points["episodic"] == 0
     assert collections_n_points["declarative"] == 0

@@ -254,9 +254,9 @@ class CheshireCat():
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 
         # easy access to (point_id, tool_description)
-        embedded_tools_ids = [t.id for t in embedded_tools]
-        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
-
+        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools if t.payload["metadata"]["source"] == "tool"]
+        embedded_tools_examples = [t.payload["page_content"] for t in embedded_tools if t.payload["metadata"]["source"] == "tool_example"]
+        
         # loop over mad_hatter tools
         for tool in self.mad_hatter.tools:
             # if the tool is not embedded 
@@ -270,23 +270,43 @@ class CheshireCat():
                         "source": "tool",
                         "when": time.time(),
                         "name": tool.name,
-                        "examples": tool.examples,
                         "docstring": tool.docstring
                     },
                 )
-
                 log.warning(f"Newly embedded {repr(tool)}")
+                
+            for example in tool.examples:
+                # if the example is not embedded
+                if example not in embedded_tools_examples:
+                    # embed the examples and save them to DB
+                    example_embedding = self.embedder.embed_documents([example])
+                    self.memory.vectors.procedural.add_point(
+                        example,
+                        example_embedding[0],
+                        {
+                            "source": "tool_example",
+                            "when": time.time(),
+                            "name": tool.name
+                        },
+                    )
+                    log.warning(f"Newly embedded example for {tool.name}: {example}")
 
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
+        mad_hatter_tools_examples = [e for t in self.mad_hatter.tools for e in t.examples]
 
         # loop over embedded tools and delete the ones not present in active plugins
         points_to_be_deleted = []
-        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
+        for emb_tool in embedded_tools:
+            content = emb_tool.payload["page_content"]
             # if the tool is not active, it inserts it in the list of points to be deleted
-            if descr not in mad_hatter_tools_descriptions:
-                log.warning(f"Deleting embedded CatTool: {descr}")
-                points_to_be_deleted.append(id)
+            if content not in mad_hatter_tools_descriptions and content in embedded_tools_descriptions:
+                log.warning(f"Deleting embedded CatTool: {content}")
+                points_to_be_deleted.append(emb_tool.id)
+            # if the example is of a non-active tool, it inserts it in the list of points to be deleted
+            elif content not in mad_hatter_tools_examples and content in embedded_tools_examples:
+                log.warning(f"Deleting embedded example: {content}")
+                points_to_be_deleted.append(emb_tool.id)
 
         # delete not active tools
         if len(points_to_be_deleted) > 0:

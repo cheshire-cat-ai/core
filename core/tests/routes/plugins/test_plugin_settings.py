@@ -1,4 +1,3 @@
-from tests.utils import get_embedded_tools
 from fixture_just_installed_plugin import just_installed_plugin
 
 

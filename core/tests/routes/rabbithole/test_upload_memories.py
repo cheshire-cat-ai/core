@@ -29,7 +29,7 @@ def test_upload_memory(client):
     # new declarative memory was saved
     collections_n_points = get_collections_names_and_point_count(client)
     assert collections_n_points["declarative"] == 1  # new declarative memory (just uploaded)
-    assert collections_n_points["procedural"] == 1  # default tool
+    assert collections_n_points["procedural"] == 3  # default tool
     assert collections_n_points["episodic"] == 0
 
 
