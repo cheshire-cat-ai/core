@@ -66,25 +66,22 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "name": "GenericError",
-                        "description": content
-                    }
-                )
+            self._loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "name": "GenericError",
+                    "description": content
+                }
             )
         else:
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "content": content
-                    }
-                )
+            self._loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "content": content
+                }
             )
-
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
@@ -175,7 +172,6 @@ class StrayCat:
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
-
 
     def llm(self, prompt: str, stream: bool = False) -> str:
         """Generate a response using the LLM model.
