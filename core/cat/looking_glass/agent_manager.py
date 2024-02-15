@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 import traceback
 from datetime import timedelta
 from typing import List, Dict
@@ -82,7 +83,7 @@ class AgentManager:
             verbose=self.verbose
         )
 
-        out = await stray._loop.run_in_executor(None, agent_executor, agent_input)
+        out = await stray.loop.run_in_executor(None, agent_executor, agent_input)
 
         return out
     
@@ -102,7 +103,7 @@ class AgentManager:
             output_key="output"
         )
 
-        out = await stray._loop.run_in_executor(None, memory_chain, agent_input, False, [NewTokenHandler(stray)])
+        out = await stray.loop.run_in_executor(None, memory_chain, agent_input, False, [NewTokenHandler(stray)])
 
         return out
 

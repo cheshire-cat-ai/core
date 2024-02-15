@@ -66,7 +66,7 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self._loop.call_soon_threadsafe(
+            self.__loop.call_soon_threadsafe(
                 self.__ws_messages.put_nowait,
                 {
                     "type": msg_type,
@@ -75,7 +75,7 @@ class StrayCat:
                 }
             )
         else:
-            self._loop.call_soon_threadsafe(
+            self.__loop.call_soon_threadsafe(
                 self.__ws_messages.put_nowait,
                 {
                     "type": msg_type,
@@ -387,3 +387,7 @@ class StrayCat:
     @property
     def agent_manager(self):
         return CheshireCat().agent_manager
+
+    @property
+    def loop(self):
+        return self.__loop
