@@ -91,7 +91,7 @@ class AgentManager:
         
         '''
         TODO:
-        After vectorizing (in cheshire_cat.embed_tools_and_forms) to procedural memory the start 
+        After vectorizing (in cheshire_cat.embed_procedures) to procedural memory the start 
         and stop of the catforms, and to episodic memory the catform examples ..
 
         1) Check working memory if there is an active form;

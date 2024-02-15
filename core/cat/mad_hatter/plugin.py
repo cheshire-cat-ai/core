@@ -6,7 +6,7 @@ import tempfile
 import traceback
 import importlib
 import subprocess
-from typing import Dict
+from typing import Dict, List
 from inspect import getmembers, isclass
 from pydantic import BaseModel, ValidationError
 from packaging.requirements import Requirement
@@ -50,12 +50,12 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
-        # list of tools and hooks contained in the plugin.
+        # list of tools, forms and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
-        self._hooks = [] 
-        self._tools = []
-        self._forms = []
+        self._hooks: List[CatHook] = [] # list of plugin hooks 
+        self._tools: List[CatTool] = [] # list of plugin tools 
+        self._forms: List[CatForm] = [] # list of plugin forms
 
         # list of @plugin decorated functions overriding default plugin behaviour
         self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access

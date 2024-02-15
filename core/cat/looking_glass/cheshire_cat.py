@@ -58,8 +58,8 @@ class CheshireCat():
 
         # After memory is loaded, we can get/create tools embeddings
         # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
-        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_tools_and_forms
-        self.embed_tools_and_forms()
+        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
+        self.embed_procedures() # first time launched manually
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager()
@@ -246,7 +246,7 @@ class CheshireCat():
         }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
-    def embed_tools_and_forms(self):
+    def embed_procedures(self):
 
         # TODO: to include the vectorization of the start and stop intents of the declared forms 
         #       in procedural memory and the vectorization of the form examples in episodic memory
