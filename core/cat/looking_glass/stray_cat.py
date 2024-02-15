@@ -203,8 +203,7 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-
-    def __call__(self, user_message_json):
+    async def __call__(self, user_message_json):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
@@ -263,7 +262,7 @@ class StrayCat:
             
             # reply with agent
             try:
-                cat_message = self.agent_manager.execute_agent(self)
+                cat_message = await self.agent_manager.execute_agent(self)
             except Exception as e:
                 # This error happens when the LLM
                 #   does not respect prompt instructions.
