@@ -21,7 +21,7 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
         user_message["user_id"] = stray.user_id
 
         # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
-        cat_message = await stray(user_message)
+        cat_message = await run_in_threadpool(stray.run, user_message)
 
         # Send the response message back to the user.
         await websocket.send_json(cat_message)

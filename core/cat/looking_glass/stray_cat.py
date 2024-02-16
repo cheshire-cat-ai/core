@@ -335,6 +335,9 @@ class StrayCat:
 
             return final_output
 
+    def run(self, user_message_json):
+        return self.loop.run_until_complete(self.__call__(user_message_json))
+
     def send_long_message_to_declarative(self):
         #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
         index = MAX_TEXT_INPUT
