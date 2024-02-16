@@ -113,6 +113,7 @@ if __name__ == "__main__":
         "cat.main:cheshire_cat_api",
         host="0.0.0.0",
         port=80,
+        use_colors=True,
         log_level=log_level.lower(),
         **debug_config
     )
