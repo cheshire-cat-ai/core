@@ -365,10 +365,6 @@ class StrayCat:
     @property
     def user_id(self):
         return self.__user_id
-    
-    @property
-    def ws_messages(self):
-        return self.__ws_messages
 
     @property
     def _llm(self):
