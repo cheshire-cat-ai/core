@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 import traceback
 from datetime import timedelta
 from typing import List, Dict
@@ -39,8 +40,7 @@ class AgentManager:
         else:
             self.verbose = False
 
-
-    def execute_tool_agent(self, agent_input, allowed_tools, stray):
+    async def execute_tool_agent(self, agent_input, allowed_tools, stray):
 
         # fix tools so they have an instance of the cat
         allowed_tools_copy = deepcopy(allowed_tools)
@@ -83,9 +83,9 @@ class AgentManager:
             verbose=self.verbose
         )
 
-        out = agent_executor(agent_input)
+        out = await agent_executor.acall(agent_input)
+
         return out
-    
 
     def execute_form_agent(self, agent_input, allowed_forms, stray):
         
@@ -125,7 +125,7 @@ class AgentManager:
         return None
     
     
-    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
+    async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
         # memory chain (second step)
@@ -137,16 +137,15 @@ class AgentManager:
         memory_chain = LLMChain(
             prompt=memory_prompt,
             llm=stray._llm,
-            verbose=self.verbose
+            verbose=self.verbose,
+            output_key="output"
         )
 
-        out = memory_chain(agent_input, callbacks=[NewTokenHandler(stray)])
-        out["output"] = out["text"]
-        del out["text"]
+        out = await memory_chain.acall(agent_input, callbacks=[NewTokenHandler(stray)])
+
         return out
 
-
-    def execute_agent(self, stray):
+    async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
 
         The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
@@ -219,7 +218,7 @@ class AgentManager:
             log.debug(f"{len(allowed_tools)} allowed tools retrived.")
 
             try:
-                tools_result = self.execute_tool_agent(agent_input, allowed_tools, stray)
+                tools_result = await self.execute_tool_agent(agent_input, allowed_tools, stray)
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
@@ -245,7 +244,7 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
 
                     # Execute the memory chain
-                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
+                    out = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
 
                     # If some tools are used the intermediate step are added to the agent output
                     out["intermediate_steps"] = used_tools
@@ -262,7 +261,7 @@ class AgentManager:
         #Adding the tools_output key in agent input, needed by the memory chain
         agent_input["tools_output"] = ""
         # Execute the memory chain
-        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
+        out = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
 
         return out
     
