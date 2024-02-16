@@ -25,8 +25,8 @@ class StrayCat:
     def __init__(
             self,
             user_id: str,
+            main_loop,
             ws: WebSocket = None,
-            event_loop = None
         ):
         self.__user_id = user_id
         self.__ws_messages = asyncio.Queue()
@@ -35,12 +35,9 @@ class StrayCat:
         # attribute to store ws connection
         self.ws = ws
 
-        # event loop
-        if event_loop is None:
-            self.__loop = asyncio.get_event_loop()
-        else:
-            self.__loop = event_loop
+        self.__main_loop = main_loop
 
+        self.__loop = asyncio.new_event_loop()
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
         
@@ -336,7 +333,9 @@ class StrayCat:
             return final_output
 
     def run(self, user_message_json):
-        return self.loop.run_until_complete(self.__call__(user_message_json))
+        return self.loop.run_until_complete(
+            self.__call__(user_message_json)
+        )
 
     def send_long_message_to_declarative(self):
         #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
