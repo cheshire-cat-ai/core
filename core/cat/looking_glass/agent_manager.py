@@ -83,7 +83,7 @@ class AgentManager:
             verbose=self.verbose
         )
 
-        out = await stray.loop.run_in_executor(None, agent_executor, agent_input)
+        out = await agent_executor.acall(agent_input)
 
         return out
     
@@ -103,7 +103,7 @@ class AgentManager:
             output_key="output"
         )
 
-        out = await stray.loop.run_in_executor(None, memory_chain, agent_input, False, [NewTokenHandler(stray)])
+        out = await memory_chain.acall(agent_input, callbacks=[NewTokenHandler(stray)])
 
         return out
 
