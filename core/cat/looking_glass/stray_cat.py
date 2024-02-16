@@ -63,7 +63,11 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.__loop.call_soon_threadsafe(
+
+            # Call put_nowait in the uvicorn main loop is necessary
+            # as the ws_mesages queue
+
+            self.__main_loop.call_soon_threadsafe(
                 self.__ws_messages.put_nowait,
                 {
                     "type": msg_type,
@@ -72,7 +76,7 @@ class StrayCat:
                 }
             )
         else:
-            self.__loop.call_soon_threadsafe(
+            self.__main_loop.call_soon_threadsafe(
                 self.__ws_messages.put_nowait,
                 {
                     "type": msg_type,
