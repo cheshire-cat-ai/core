@@ -1,4 +1,6 @@
-from typing import Union, Callable, List
+import inspect
+
+from typing import Union, Callable, List 
 from inspect import signature
 
 from langchain.agents import Tool
@@ -33,11 +35,21 @@ class CatTool(Tool):
         self.cat = cat
 
     def _run(self, input_by_llm):
+        if inspect.iscoroutinefunction(self.func):
+            raise NotImplementedError("Tool does not support sync")
+
         return self.func(input_by_llm, cat=self.cat)
 
     async def _arun(self, input_by_llm):
-        # should be used for async Tools, just using sync here
-        return self._run(input_by_llm)
+        if inspect.iscoroutinefunction(self.func):
+            return await self.func(input_by_llm, cat=self.cat)
+        
+        return await self.cat.loop.run_in_executor(
+            None,
+            self.func,
+            input_by_llm,
+            self.cat
+        )
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:
