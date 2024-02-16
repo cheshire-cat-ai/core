@@ -57,9 +57,9 @@ class CheshireCat():
         self.load_memory()
 
         # After memory is loaded, we can get/create tools embeddings
-        # every time the mad_hatter finishes syncing hooks and tools, it will notify the Cat (so it can embed tools in vector memory)
-        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_tools
-        self.embed_tools()
+        # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
+        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
+        self.embed_procedures() # first time launched manually
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager()
@@ -246,7 +246,12 @@ class CheshireCat():
         }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
-    def embed_tools(self):
+    def embed_procedures(self):
+
+        # TODO: to include the vectorization of the start and stop intents of the declared forms 
+        #       in procedural memory and the vectorization of the form examples in episodic memory
+
+
         # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
         # it is created and saved
 
@@ -254,9 +259,9 @@ class CheshireCat():
         embedded_tools = self.memory.vectors.procedural.get_all_points()
 
         # easy access to (point_id, tool_description)
-        embedded_tools_ids = [t.id for t in embedded_tools]
-        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
-
+        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools if t.payload["metadata"]["source"] == "tool"]
+        embedded_tools_examples = [t.payload["page_content"] for t in embedded_tools if t.payload["metadata"]["source"] == "tool_example"]
+        
         # loop over mad_hatter tools
         for tool in self.mad_hatter.tools:
             # if the tool is not embedded 
@@ -270,23 +275,43 @@ class CheshireCat():
                         "source": "tool",
                         "when": time.time(),
                         "name": tool.name,
-                        "examples": tool.examples,
                         "docstring": tool.docstring
                     },
                 )
-
                 log.warning(f"Newly embedded {repr(tool)}")
+                
+            for example in tool.examples:
+                # if the example is not embedded
+                if example not in embedded_tools_examples:
+                    # embed the examples and save them to DB
+                    example_embedding = self.embedder.embed_documents([example])
+                    self.memory.vectors.procedural.add_point(
+                        example,
+                        example_embedding[0],
+                        {
+                            "source": "tool_example",
+                            "when": time.time(),
+                            "name": tool.name
+                        },
+                    )
+                    log.warning(f"Newly embedded example for {tool.name}: {example}")
 
         # easy access to mad hatter tools (found in plugins)
         mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
+        mad_hatter_tools_examples = [e for t in self.mad_hatter.tools for e in t.examples]
 
         # loop over embedded tools and delete the ones not present in active plugins
         points_to_be_deleted = []
-        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
+        for emb_tool in embedded_tools:
+            content = emb_tool.payload["page_content"]
             # if the tool is not active, it inserts it in the list of points to be deleted
-            if descr not in mad_hatter_tools_descriptions:
-                log.warning(f"Deleting embedded CatTool: {descr}")
-                points_to_be_deleted.append(id)
+            if content not in mad_hatter_tools_descriptions and content in embedded_tools_descriptions:
+                log.warning(f"Deleting embedded CatTool: {content}")
+                points_to_be_deleted.append(emb_tool.id)
+            # if the example is of a non-active tool, it inserts it in the list of points to be deleted
+            elif content not in mad_hatter_tools_examples and content in embedded_tools_examples:
+                log.warning(f"Deleting embedded example: {content}")
+                points_to_be_deleted.append(emb_tool.id)
 
         # delete not active tools
         if len(points_to_be_deleted) > 0:

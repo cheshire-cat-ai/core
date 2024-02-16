@@ -118,7 +118,7 @@ class StrayCat:
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=self)
-        log.info(f'Recall query: "{recall_query}"')
+        log.info(f"Recall query: '{recall_query}'")
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)

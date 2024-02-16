@@ -86,6 +86,44 @@ class AgentManager:
         out = await agent_executor.acall(agent_input)
 
         return out
+
+    def execute_form_agent(self, agent_input, allowed_forms, stray):
+        
+        '''
+        TODO:
+        After vectorizing (in cheshire_cat.embed_procedures) to procedural memory the start 
+        and stop of the catforms, and to episodic memory the catform examples ..
+
+        1) Check working memory if there is an active form;
+        
+        2) if there is an active form, check from procedural memory whether 
+           the form stop has been invoked;
+        
+        3) if the form stop has not been invoked, follow the dialogue,
+           considering that if strict is False any tools must also be executed
+           (classic memory chain with cform.dialog_action and cform.dialog_prompt);
+        
+        4) if there is no active form, check from procedural memory whether 
+           start has been invoked of a form and if so start it.
+        '''
+
+
+
+        '''
+        # Acquires the current form from working memory
+        CURRENT_FORM_KEY = "CURRENT_FORM"
+        if CURRENT_FORM_KEY in stray.working_memory:
+            cat_form = stray.working_memory[CURRENT_FORM_KEY]
+            
+            if cat_form.strict is True:
+                response = cat_form.dialogue_direct()
+            else:
+                #...
+
+        return response
+        '''
+        return None
+    
     
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
@@ -133,9 +171,14 @@ class AgentManager:
 
 
         # tools currently recalled in working memory
-        recalled_tools = stray.working_memory["procedural_memories"]
-        # Get the tools names only
-        tools_names = [t[0].metadata["name"] for t in recalled_tools]
+        recalled_procedures = stray.working_memory["procedural_memories"]
+        recalled_tools = []
+        for p in recalled_procedures:
+            procedure = p[0]
+            if procedure.metadata["source"] in ["tool", "tool_example"]:
+                recalled_tools.append(procedure.metadata["name"])
+        tools_names = list(set(recalled_tools)) # unique names! May be duplicated because of examples
+
         tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=stray)
         # Get tools with that name from mad_hatter
         allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]

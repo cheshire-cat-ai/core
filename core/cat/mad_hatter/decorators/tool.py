@@ -13,8 +13,7 @@ class CatTool(Tool):
                  return_direct: bool = False, examples: List[str] = []):
 
         # call parent contructor
-        super().__init__(name=name, func=func, description=description, 
-                         return_direct=return_direct)
+        super().__init__(name=name, func=func, description=description, return_direct=return_direct)
 
         # StrayCat instance will be set by AgentManager
         self.cat = None
@@ -25,7 +24,7 @@ class CatTool(Tool):
         self.examples = examples
         self.docstring = self.func.__doc__.strip()
         # remove cat argument from description signature so it does not end up in prompts
-        self.description = self.description.replace(", cat)", ")")
+        self.description = description.replace(", cat)", ")")
 
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.docstring})"
@@ -83,7 +82,7 @@ def tool(*args: Union[str, Callable], return_direct: bool = False, examples: Lis
     def _make_with_name(tool_name: str) -> Callable:
         def _make_tool(func: Callable[[str], str]) -> CatTool:
             assert func.__doc__, "Function must have a docstring"
-            description = f"{tool_name}{signature(func)} - {func.__doc__.strip()}"
+            description = f"{tool_name}{signature(func)}: {func.__doc__.strip()}"
             tool_ = CatTool(
                 name=tool_name,
                 func=func,

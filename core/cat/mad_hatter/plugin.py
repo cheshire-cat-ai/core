@@ -6,12 +6,13 @@ import tempfile
 import traceback
 import importlib
 import subprocess
-from typing import Dict
-from inspect import getmembers
+from typing import Dict, List
+from inspect import getmembers, isclass
 from pydantic import BaseModel, ValidationError
 from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
+from cat.experimental.form import CatForm
 from cat.utils import to_camel_case
 from cat.log import log
 
@@ -49,11 +50,12 @@ class Plugin:
         # plugin manifest (name, decription, thumb, etc.)
         self._manifest = self._load_manifest()
 
-        # list of tools and hooks contained in the plugin.
+        # list of tools, forms and hooks contained in the plugin.
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
-        self._hooks = [] 
-        self._tools = []
+        self._hooks: List[CatHook] = [] # list of plugin hooks 
+        self._tools: List[CatTool] = [] # list of plugin tools 
+        self._forms: List[CatForm] = [] # list of plugin forms
 
         # list of @plugin decorated functions overriding default plugin behaviour
         self._plugin_overrides = [] # TODO: make this a dictionary indexed by func name, for faster access
@@ -64,8 +66,9 @@ class Plugin:
     def activate(self):
         # install plugin requirements on activation
         self._install_requirements()
-        # lists of hooks and tools
-        self._hooks, self._tools, self._plugin_overrides = self._load_decorated_functions()
+
+        # Load of hooks and tools
+        self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -275,6 +278,7 @@ class Plugin:
     def _load_decorated_functions(self):
         hooks = []
         tools = []
+        forms = []
         plugin_overrides = []
 
         for py_file in self.py_files:
@@ -285,8 +289,10 @@ class Plugin:
             # save a reference to decorated functions
             try:
                 plugin_module = importlib.import_module(py_filename)
+
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
+                forms += getmembers(plugin_module, self._is_cat_form)
                 plugin_overrides += getmembers(plugin_module, self._is_cat_plugin_override)
             except Exception as e:
                 log.error(f"Error in {py_filename}: {str(e)}. Unable to load plugin {self._id}")
@@ -294,28 +300,33 @@ class Plugin:
                 traceback.print_exc()
 
         # clean and enrich instances
-        hooks = list(map(self._clean_hook, hooks))
-        tools = list(map(self._clean_tool, tools))
-        plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
-
-        return hooks, tools, plugin_overrides
+        self._hooks = list(map(self._clean_hook, hooks))
+        self._tools = list(map(self._clean_tool, tools))
+        self._forms = list(map(self._clean_form, forms))
+        self._plugin_overrides = list(map(self._clean_plugin_override, plugin_overrides))
 
     def plugin_specific_error_message(self):
         name = self.manifest.get("name")
         url  = self.manifest.get("plugin_url")
         return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
 
-    def _clean_hook(self, hook):
+    def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple
         h = hook[1]
         h.plugin_id = self._id
         return h
 
-    def _clean_tool(self, tool):
+    def _clean_tool(self, tool: CatTool):
         # getmembers returns a tuple
         t = tool[1]
         t.plugin_id = self._id
         return t
+    
+    def _clean_form(self, form: CatForm):
+        # getmembers returns a tuple
+        f = form[1]
+        f.plugin_id = self._id
+        return f
     
     def _clean_plugin_override(self, plugin_override):
         # getmembers returns a tuple
@@ -326,6 +337,17 @@ class Plugin:
     @staticmethod
     def _is_cat_hook(obj):
         return isinstance(obj, CatHook)
+    
+    @staticmethod
+    def _is_cat_form(obj):
+
+        if not isclass(obj) or obj is CatForm:
+            return False
+
+        if not issubclass(obj, CatForm) or not obj._autopilot:
+            return False
+        
+        return True
 
     # a plugin tool function has to be decorated with @tool
     # (which returns an instance of CatTool)
@@ -362,3 +384,7 @@ class Plugin:
     @property
     def tools(self):
         return self._tools
+    
+    @property
+    def forms(self):
+        return self._forms
