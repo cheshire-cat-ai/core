@@ -174,10 +174,39 @@ class AgentManager:
         # tools currently recalled in working memory
         recalled_procedures = stray.working_memory["procedural_memories"]
         recalled_tools = []
+        recalled_forms = []
         for p in recalled_procedures:
             procedure = p[0]
             if procedure.metadata["source"] in ["tool", "tool_example"]:
                 recalled_tools.append(procedure.metadata["name"])
+            if procedure.metadata["source"] in ["form", "form_example"]:
+                recalled_forms.append(procedure.metadata["name"])
+        
+        """
+        #################################
+        # TODO: here we only deal with forms
+        active_form = stray.working_memory.get("forms", None)
+        if active_form:
+            return {
+                "output": active_form.next()
+            }
+        
+        recalled_forms = ["PizzaForm"] ### DANGER ZONE
+
+        if len(recalled_forms) > 0:
+            form_name = recalled_forms[0]
+            for FormClass in self.mad_hatter.forms:
+                log.warning(FormClass)
+                if form_name == FormClass.__name__:
+                    log.warning(FormClass)
+                    form = FormClass(stray)
+                    stray.working_memory["forms"] = form
+                    return {
+                        "output": form.next()
+                    }
+        ############### TODO END
+        """
+        
         tools_names = list(set(recalled_tools)) # unique names! May be duplicated because of examples
 
         tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=stray)
