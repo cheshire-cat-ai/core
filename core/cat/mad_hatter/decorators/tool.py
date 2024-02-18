@@ -3,31 +3,31 @@ import inspect
 from typing import Union, Callable, List 
 from inspect import signature
 
-from langchain.agents import Tool
+from langchain_core.tools import BaseTool
 
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
-class CatTool(Tool):
+class CatTool(BaseTool):
 
-    def __init__(self, name: str, func: Callable, description: str, 
-                 return_direct: bool = False, examples: List[str] = []):
+    def __init__(self, name: str, func: Callable, return_direct: bool = False, examples: List[str] = []):
 
+        description = func.__doc__.strip()
         # call parent contructor
         super().__init__(name=name, func=func, description=description, return_direct=return_direct)
 
         # StrayCat instance will be set by AgentManager
         self.cat = None
 
-        self.name = name
-        self.return_direct = return_direct
         self.func = func
-        self.examples = examples
-        self.docstring = self.func.__doc__.strip()
-        # remove cat argument from description signature so it does not end up in prompts
-        self.description = description.replace(", cat)", ")")
+        self.name = name
+        self.description = description
+        self.return_direct = return_direct
+        self.start_examples = examples
+        # remove cat argument from signature so it does not end up in prompts
+        self.signature = f"{signature(self.func)}".replace(", cat)", ")")
 
     def __repr__(self) -> str:
-        return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.docstring})"
+        return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
     # used by the AgentManager to let a Tool access the cat instance
     def assign_cat(self, cat):
@@ -82,11 +82,9 @@ def tool(*args: Union[str, Callable], return_direct: bool = False, examples: Lis
     def _make_with_name(tool_name: str) -> Callable:
         def _make_tool(func: Callable[[str], str]) -> CatTool:
             assert func.__doc__, "Function must have a docstring"
-            description = f"{tool_name}{signature(func)}: {func.__doc__.strip()}"
             tool_ = CatTool(
                 name=tool_name,
                 func=func,
-                description=description,
                 return_direct=return_direct,
                 examples=examples,
             )
