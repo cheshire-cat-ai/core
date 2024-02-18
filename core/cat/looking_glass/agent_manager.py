@@ -1,23 +1,27 @@
 import os
 import time
-import asyncio
 import traceback
 from datetime import timedelta
 from typing import List, Dict
 
 from copy import deepcopy
 
+from langchain_core.runnables import RunnableConfig
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
+from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
+
+from cat.experimental.form import CatForm
 
 
 class AgentManager:
@@ -40,20 +44,50 @@ class AgentManager:
         else:
             self.verbose = False
 
-    async def execute_tool_agent(self, agent_input, allowed_tools, stray):
+    async def execute_tool_agent(self, agent_input, stray):
 
-        # fix tools so they have an instance of the cat
-        allowed_tools_copy = deepcopy(allowed_tools)
-        for t in allowed_tools_copy:
-            # Prepare the tool to be used in the Cat (adding properties)
-            t.assign_cat(stray)
+        recalled_procedures_names = set()
+        for p in stray.working_memory["procedural_memories"]:
+            procedure = p[0]
+            if procedure.metadata["source"] in ["tool", "tool_example", "form", "form_example"]:
+                recalled_procedures_names.add(procedure.metadata["name"])
 
-        allowed_tools_names = [t.name for t in allowed_tools_copy]
+        log.critical(recalled_procedures_names)
+            
+        # tools currently recalled in working memory
+        
+        # Get tools with that name from mad_hatter
+        allowed_procedures_names = []
+        allowed_procedures = []
+        allowed_tools = []
+        for p in self.mad_hatter.procedures:
+            if Plugin._is_cat_tool(p):
+                if p.name in recalled_procedures_names:
+                    # Prepare the tool to be used in the Cat (adding properties)
+                    tool = deepcopy(p)
+                    tool.assign_cat(stray)
+                    allowed_tools.append(tool)
+                    allowed_procedures.append(tool)
+                    allowed_procedures_names.append(tool.name)
+                    log.critical(f"Added: {p.name}")
+            
+            if Plugin._is_cat_form(p):
+                if p.__name__ in recalled_procedures_names:
+                    allowed_procedures.append(p)
+                    allowed_procedures_names.append(p.__name__)
+                    log.critical(f"Added: {p.__name__}")
+
+        
+        log.warning(allowed_procedures)
+
+        #recalled_tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_tools_names, cat=stray)
+
         # TODO: dynamic input_variables as in the main prompt 
 
         prompt = prompts.ToolPromptTemplate(
             template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray),
-            tools=allowed_tools_copy,
+            procedures=allowed_procedures,
+            procedures_names=allowed_procedures_names,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
             input_variables=["input", "intermediate_steps"]
@@ -71,19 +105,29 @@ class AgentManager:
             llm_chain=agent_chain,
             output_parser=ToolOutputParser(),
             stop=["\nObservation:"],
-            allowed_tools=allowed_tools_names,
+            #allowed_tools=allowed_procedures_names,
             verbose=self.verbose
         )
 
         # agent executor
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
-            tools=allowed_tools_copy,
+            tools=allowed_tools,
             return_intermediate_steps=True,
             verbose=self.verbose
         )
 
-        out = await agent_executor.acall(agent_input)
+        out = await agent_executor.ainvoke(agent_input)
+
+        if "form" in out.keys():
+            for Form in self.mad_hatter.forms:
+                if Form.__name__ == out["form"]:
+                    form = Form(stray)
+                    stray.working_memory["forms"] = form
+                    return {
+                        "output": form.next(),
+                        "intermediate_steps": []
+                    }
 
         return out
 
@@ -124,7 +168,6 @@ class AgentManager:
         '''
         return None
     
-    
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
@@ -141,7 +184,7 @@ class AgentManager:
             output_key="output"
         )
 
-        out = await memory_chain.acall(agent_input, callbacks=[NewTokenHandler(stray)])
+        out = await memory_chain.ainvoke(agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
 
         return out
 
@@ -168,66 +211,49 @@ class AgentManager:
             return fast_reply
         prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=stray)
         prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray)
-
-
-        # tools currently recalled in working memory
-        recalled_procedures = stray.working_memory["procedural_memories"]
-        recalled_tools = []
-        recalled_forms = []
-        for p in recalled_procedures:
-            procedure = p[0]
-            if procedure.metadata["source"] in ["tool", "tool_example"]:
-                recalled_tools.append(procedure.metadata["name"])
-            if procedure.metadata["source"] in ["form", "form_example"]:
-                recalled_forms.append(procedure.metadata["name"])
         
-        """
+        
         #################################
         # TODO: here we only deal with forms
         active_form = stray.working_memory.get("forms", None)
         if active_form:
-            return {
-                "output": active_form.next()
-            }
-        
-        recalled_forms = ["PizzaForm"] ### DANGER ZONE
-
-        if len(recalled_forms) > 0:
-            form_name = recalled_forms[0]
-            for FormClass in self.mad_hatter.forms:
-                log.warning(FormClass)
-                if form_name == FormClass.__name__:
-                    log.warning(FormClass)
-                    form = FormClass(stray)
-                    stray.working_memory["forms"] = form
-                    return {
-                        "output": form.next()
-                    }
+            form_output = active_form.next()
+            if form_output:
+                return {
+                    "output": form_output
+                }
+            else:
+                del stray.working_memory["forms"]
         ############### TODO END
-        """
-        
-        tools_names = list(set(recalled_tools)) # unique names! May be duplicated because of examples
-
-        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=stray)
-        # Get tools with that name from mad_hatter
-        allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]
 
         # Try to get information from tools if there is some allowed
-        if len(allowed_tools) > 0:
+        procedural_memories = stray.working_memory["procedural_memories"]
+        if len(procedural_memories) > 0:
 
-            log.debug(f"{len(allowed_tools)} allowed tools retrived.")
+            log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                tools_result = await self.execute_tool_agent(agent_input, allowed_tools, stray)
+                tools_result = await self.execute_tool_agent(agent_input, stray)
+
+                #################################
+                # TODO: here we only deal with forms
+                active_form = stray.working_memory.get("forms", None)
+                if active_form:
+                    return tools_result
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
-                if tools_result["output"] is not None:
-                    
+                if tools_result["output"] and tools_result["intermediate_steps"]:
                     # Extract of intermediate steps in the format ((tool_name, tool_input), output)
                     used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
 
                     # Get the name of the tools that have return_direct
+                    recalled_tools_names = set()
+                    for p in stray.working_memory["procedural_memories"]:
+                        procedure = p[0]
+                        if procedure.metadata["source"] in ["tool", "tool_example"]:
+                            recalled_tools_names.add(procedure.metadata["name"])
+                    allowed_tools = [t for t in self.mad_hatter.tools if t.name in recalled_tools_names]
                     return_direct_tools = []
                     for t in allowed_tools:
                         if t.return_direct:
