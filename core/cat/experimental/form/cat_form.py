@@ -20,9 +20,10 @@ class FieldExample:
 
 # Conversational Form State
 class CatFormState(Enum):
-    INVALID         = 0
-    VALID           = 1
-    WAIT_CONFIRM    = 2
+    INCOMPLETE   = "incomplete"
+    COMPLETE     = "complete"
+    WAIT_CONFIRM = "wait_confirm"
+    CLOSED       = "closed"
 
 
 class CatForm:  # base model of forms
@@ -38,7 +39,7 @@ class CatForm:  # base model of forms
     
 
     def __init__(self, cat) -> None:
-        self._state = CatFormState.INVALID
+        self._state = CatFormState.INCOMPLETE
         self._model: Dict = {}
         
         self._cat = cat
@@ -61,13 +62,6 @@ class CatForm:  # base model of forms
     def errors(self) -> List:
         return self._errors
 
-
-    def close(self):
-        """
-        Clear Form on working memory
-        """
-        #TODO
-        pass
 
     def submit(self, form_data) -> str:
         """
@@ -145,31 +139,31 @@ JSON:
         #self.cat.working_memory["episodic_memories"] = []
 
         if self.check_exit_intent():
-            self.close()
-            return "`Form closed.`"
+            self._state = CatFormState.CLOSED
+            return None
 
         # If state is WAIT_CONFIRM, check user confirm response..
         if self._state == CatFormState.WAIT_CONFIRM:
             if self.confirm():
-                self.close()
+                self._state = CatFormState.CLOSED
                 return self.submit(self._model)
             else:
-                self._state = CatFormState.INVALID
+                self._state = CatFormState.INCOMPLETE
 
-        # If the state is INVALID, execute model update
+        # If the state is INCOMPLETE, execute model update
         # (and change state based on validation result)
-        if self._state == CatFormState.INVALID:
+        if self._state == CatFormState.INCOMPLETE:
             self._model = self.update()
 
-        # If state is VALID, ask confirm (or execute action directly)
-        if self._state == CatFormState.VALID:
+        # If state is COMPLETE, ask confirm (or execute action directly)
+        if self._state == CatFormState.COMPLETE:
             if self.ask_confirm:
                 self._state = CatFormState.WAIT_CONFIRM
             else:
-                self.close() # TODO?
+                self._state = CatFormState.CLOSED
                 return self.submit(self._model) # TODO?
             
-        # if state is still INVALID, recap and ask for new info
+        # if state is still INCOMPLETE, recap and ask for new info
         return self.message()
 
 
@@ -191,20 +185,33 @@ JSON:
     
     
     def message(self):
+        log.critical(".........")
+        print(self._model)
 
-        if self._state == CatFormState.INVALID:
-            out = f"""Info until now:
+        separator = "\n - "
+        missing_fields = ""
+        if self._ask_for:
+            missing_fields = "\nMissing fields:"
+            missing_fields += separator + separator.join(self._ask_for)
+        invalid_fields = ""
+        if self._errors:
+            invalid_fields = "\nInvalid fields:"
+            invalid_fields += separator + separator.join(self._errors)
+
+        out = f"""Info until now:
 
 ```json
 {json.dumps(self._model, indent=4)}
 ```
-
-I need //missing_fields//"""
+{missing_fields}
+{invalid_fields}
+"""
         
+        if self._state == CatFormState.INCOMPLETE:
             return out
-        
+    
         if self._state == CatFormState.WAIT_CONFIRM:
-            return "Confirm? Yes or no?" 
+            return out + "\n --> Confirm? Yes or no?"
 
     
 
@@ -229,7 +236,7 @@ I need //missing_fields//"""
                 description = field.description
             else:
                 description = ""
-            JSON_structure += f'\n\t"{field_name}": // {description} Must be of type `{field.annotation.__name__}`' # field.required?
+            JSON_structure += f'\n\t"{field_name}": // {description} Must be of type `{field.annotation.__name__}` or `null`' # field.required?
         JSON_structure += "\n}"
     
         # TODO: reintroduce examples
@@ -283,7 +290,8 @@ Updated JSON:
     def sanitize(self, model):
 
         # preserve only non-null fields
-        model = {key: value for key, value in model.items() if value not in [None, '', 'None', 'null', 'lower-case']}
+        null_fields = [None, '', 'None', 'null', 'lower-case', 'unknown', 'missing']
+        model = {key: value for key, value in model.items() if value not in null_fields}
 
         return model
 
@@ -298,98 +306,25 @@ Updated JSON:
             # INFO TODO: In this case the optional fields are always ignored
 
             # Attempts to create the model object to update the default values and validate it
-            model = self.model_class(**model).model_dump()
+            model = self.model_class(**model).model_dump(mode="json")
 
-            # If model is valid change state to VALID
-            self._state = CatFormState.VALID
+            # If model is valid change state to COMPLETE
+            self._state = CatFormState.COMPLETE
 
         except ValidationError as e:
-            
             # Collect ask_for and errors messages
             for error_message in e.errors():
+                field_name = error_message['loc'][0]
                 if error_message['type'] == 'missing':
-                    self._ask_for.append(error_message['loc'][0])
+                    self._ask_for.append(field_name)
                 else:
-                    self._errors.append(error_message["msg"])
+                    self._errors.append(f'{field_name}: {error_message["msg"]}')
+                    del model[field_name]
 
-            # Set state to INVALID
-            self._state = CatFormState.INVALID
-
+            # Set state to INCOMPLETE
+            self._state = CatFormState.INCOMPLETE
+        
         return model
-
-
-    # execute dialog prompt prefix
-    def dialogue_prompt(self, prompt_prefix):
-        log.critical(f"dialogue_prompt (state: {self._state})")
-
-        # Get class fields descriptions
-        class_descriptions = []
-        for key, value in self.model_class.model_fields.items():
-            class_descriptions.append(f"{key}: {value.description}")
-        
-        # Formatted texts
-        formatted_model_class = ", ".join(class_descriptions)
-        formatted_model       = ", ".join([f"{key}: {value}" for key, value in self._model.items()])
-        formatted_ask_for     = ", ".join(self._ask_for) if self._ask_for else None
-        formatted_errors      = ", ".join(self._errors) if self._errors else None
-        
-        formatted_validation  = ""
-        if self._ask_for:
-            formatted_validation  = f"information to ask: {formatted_ask_for}"
-        if self._errors:
-            formatted_validation  = f"there is an error: {formatted_errors}"
-
-        prompt = prompt_prefix
-
-        # If state is INVALID ask missing informations..
-        if self._state in [CatFormState.INVALID]:
-            # PROMPT ASK MISSING INFO
-            prompt = \
-                f"Your goal is to have the user fill out a form containing the following fields:\n\
-                {formatted_model_class}\n\n\
-                you have currently collected the following values:\n\
-                {formatted_model}\n\n"
-
-            if self._errors:
-                prompt += \
-                    f"and in the validation you got the following errors:\n\
-                    {formatted_errors}\n\n"
-
-            if self._ask_for:    
-                prompt += \
-                    f"and the following fields are still missing:\n\
-                    {formatted_ask_for}\n\n"
-
-            prompt += \
-                f"ask the user to give you the necessary information."
-            
-            if self._prompt_tpl_response:
-                prompt += "\n\n" + self._prompt_tpl_response.format(validation = formatted_validation)
-                
-        # If state is WAIT_CONFIRM (previous VALID), show summary and ask the user for confirmation..
-        if self._state in [CatFormState.WAIT_CONFIRM]:
-            # PROMPT SHOW SUMMARY
-            prompt = f"Your goal is to have the user fill out a form containing the following fields:\n\
-                {formatted_model_class}\n\n\
-                you have collected all the available data:\n\
-                {formatted_model}\n\n\
-                show the user the data and ask them to confirm that it is correct.\n"
-
-        # If state is UPDATE asks the user to change some information present in the model..
-        if self._state in [CatFormState.UPDATE]:
-            # PROMPT ASK CHANGE INFO
-            prompt = f"Your goal is to have the user fill out a form containing the following fields:\n\
-                {formatted_model_class}\n\n\
-                you have collected all the available data:\n\
-                {formatted_model}\n\n\
-                show the user the data and ask him to provide the updated data.\n"
-
-
-        # Print prompt prefix
-        print(prompt)
-
-        # Return prompt
-        return prompt
 
 
 """

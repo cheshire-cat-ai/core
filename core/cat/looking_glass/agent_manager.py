@@ -217,9 +217,13 @@ class AgentManager:
         # TODO: here we only deal with forms
         active_form = stray.working_memory.get("forms", None)
         if active_form:
-            return {
-                "output": active_form.next()
-            }
+            form_output = active_form.next()
+            if form_output:
+                return {
+                    "output": form_output
+                }
+            else:
+                del stray.working_memory["forms"]
         ############### TODO END
 
         # Try to get information from tools if there is some allowed
@@ -235,10 +239,7 @@ class AgentManager:
                 # TODO: here we only deal with forms
                 active_form = stray.working_memory.get("forms", None)
                 if active_form:
-                    return {
-                        "output": active_form.next()
-                    }
-                ############### TODO END
+                    return tools_result
 
                 # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
                 # so no relevant information has been obtained from the tools.
