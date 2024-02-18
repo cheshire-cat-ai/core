@@ -2,7 +2,7 @@ from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
+#from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
 from enum import Enum
 from cat.log import log
 import json
