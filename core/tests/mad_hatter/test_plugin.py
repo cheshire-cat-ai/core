@@ -85,9 +85,9 @@ def test_activate_plugin(plugin):
     assert isfunction(tool.func)
     assert tool.return_direct is True
     # tool examples found
-    assert len(tool.examples) == 2
-    assert "mock tool example 1" in tool.examples
-    assert "mock tool example 2" in tool.examples
+    assert len(tool.start_examples) == 2
+    assert "mock tool example 1" in tool.start_examples
+    assert "mock tool example 2" in tool.start_examples
 
 
 def test_deactivate_plugin(plugin):

@@ -20,7 +20,7 @@ class CatTool(BaseTool):
 
         self.func = func
         self.name = name
-        self.description = description
+        self.description = f"{self.name}: {description}"
         self.return_direct = return_direct
         self.start_examples = examples
         # remove cat argument from signature so it does not end up in prompts
