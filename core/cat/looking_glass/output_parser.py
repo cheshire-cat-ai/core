@@ -3,6 +3,9 @@ from langchain.agents import AgentOutputParser
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
 from typing import Union
 
+from cat.mad_hatter.mad_hatter import MadHatter
+from cat.log import log
+
 
 class ToolOutputParser(AgentOutputParser):
 
@@ -34,6 +37,18 @@ class ToolOutputParser(AgentOutputParser):
                 return_values={"output": None},
                 log=llm_output,
             )
+
+        mh = MadHatter()
+
+        for Form in mh.forms:
+            if Form.__name__ == action:
+                return AgentFinish(
+                    return_values={
+                        "output": None,
+                        "form": action
+                    },
+                    log=llm_output,
+                )
 
         # Return the action and action input
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
