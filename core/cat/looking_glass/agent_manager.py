@@ -7,17 +7,22 @@ from typing import List, Dict
 
 from copy import deepcopy
 
+from langchain_core.runnables import RunnableConfig
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
+from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
+
+from cat.experimental.form import CatForm
 
 
 class AgentManager:
@@ -141,7 +146,7 @@ class AgentManager:
             output_key="output"
         )
 
-        out = await memory_chain.acall(agent_input, callbacks=[NewTokenHandler(stray)])
+        out = await memory_chain.ainvoke(agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
 
         return out
 
