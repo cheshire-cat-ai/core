@@ -1,19 +1,24 @@
+import os
 import glob
 import shutil
-import os
+import inspect
 import traceback
 from copy import deepcopy
 from typing import List, Dict
+
 from cat.log import log
+
 import cat.utils as utils
 from cat.utils import singleton
+
 from cat.db import crud
 from cat.db.models import Setting
+
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
-import inspect
 from cat.mad_hatter.decorators.hook import CatHook
 from cat.mad_hatter.decorators.tool import CatTool
+
 from cat.experimental.form import CatForm
 
 # This class is responsible for plugins functionality:
@@ -136,7 +141,6 @@ class MadHatter:
                 # cache tools
                 self.tools += plugin.tools
 
-                # cache forms
                 self.forms += plugin.forms
 
                 # cache hooks (indexed by hook name)
@@ -294,3 +298,6 @@ class MadHatter:
         name = plugin_suffix.split("/")[0]
         return self.plugins[name]
 
+    @property
+    def procedures(self):
+        return self.tools + self.forms
