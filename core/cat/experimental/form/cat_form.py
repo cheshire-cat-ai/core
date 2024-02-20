@@ -2,6 +2,9 @@ from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from langchain.chains import LLMChain
+from langchain_core.prompts.prompt import PromptTemplate
+
 #from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
 from enum import Enum
 from cat.log import log
@@ -273,15 +276,35 @@ Updated JSON:
 #            
         
         print(prompt)
-        json_str = self.cat.llm(prompt, stream=True)
-        # TODO: extract between '{' and '}' with regex
-        json_str.replace("```", "") # TODO regex
 
+        '''
+        # Invoke direct llm
+        json_str = self.cat.llm(prompt, stream=True)
+        
+        # workaround: in case the answer contains other information
+        end_json_index = json_str.find("```")
+        json_str = json_str[:end_json_index]
+        '''
+
+        # Invoke LLM chain
+        prompt_escaped = prompt.replace("{", "{{").replace("}", "}}")
+        extraction_chain = LLMChain(
+            prompt     = PromptTemplate.from_template(prompt_escaped),
+            llm        = self._cat._llm,
+            verbose    = True,
+            output_key = "output"
+        )
+        json_str = extraction_chain.invoke({"stop": ["```"]})["output"]
+        
         print(f"json after parser:\n{json_str}")
+
+        # json parser
         try:
             output_model = json.loads(json_str)
-        except:
+        except Exception as e:
             output_model = {} 
+            log.warning(e)
+
         return output_model
 
 
