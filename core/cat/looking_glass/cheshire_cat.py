@@ -1,4 +1,6 @@
 import time
+from typing import List, Dict
+from typing_extensions import Protocol
 
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
@@ -7,7 +9,6 @@ from langchain_community.llms import Cohere, OpenAI, AzureOpenAI
 from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 from cat.db import crud
 from cat.factory.custom_llm import CustomOpenAI
@@ -22,6 +23,11 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 
+class Procedure(Protocol):
+    name: str
+    description: str
+    source: str
+    triggers_map: Dict[str, List[str]] # stimula
 
 # main class
 @singleton
@@ -247,156 +253,64 @@ class CheshireCat():
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
     def embed_procedures(self):
+        # Retrieve from vectorDB all tool embeddings
+        embedded_procedures = self.memory.vectors.procedural.get_all_points()
+        embedded_procedures_names = set(p.payload["metadata"]["name"] for p in embedded_procedures)
 
-        # retrieve from vectorDB all tool embeddings
-        procedures = self.memory.vectors.procedural.get_all_points()
+        # Easy access to active procedures 
+        active_procedures_dict = {p.name:p for p in self.mad_hatter.procedures}
 
-        self.embed_tools(procedures)
-        self.embedd_forms(procedures)
+        # TODO: Procedures should be re-embedded also if description or examples change
 
-    def embed_tools(self, procedures):
+        proc_names_to_delete = embedded_procedures_names - active_procedures_dict.keys()
+        proc_names_to_embed = active_procedures_dict.keys() - embedded_procedures_names
 
-        # TODO: to include the vectorization of the start and stop intents of the declared forms 
-        #       in procedural memory and the vectorization of the form examples in episodic memory
+        for proc_name in proc_names_to_embed:
+            # embed the tool and save it to DB
+            self.embed_and_save(active_procedures_dict[proc_name])
+                
+        # Remove embedded procedures not in mad_hatter
+        for proc_name in proc_names_to_delete:
+            log.warning(f"Removing the procedure {proc_name} not found in mad_hatter, removed.")
+            self.memory.vectors.procedural.delete_points_by_metadata_filter(
+                metadata={
+                    "name":proc_name # TODO: fix support for filter by list
+                }
+            )        
 
-        # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
-        # it is created and saved
+    def embed_and_save(self, procedure: Procedure):
+        # Embed the procedure description and save it to the database
+        proc_string_emb = f"{procedure.name}: {procedure.description}"
+        proc_embedding = self.embedder.embed_documents([proc_string_emb])
+        self.memory.vectors.procedural.add_point(
+            proc_string_emb,
+            proc_embedding[0],
+            {
+                "source": procedure.source,
+                "type": "description",
+                "name": procedure.name,
+                "when": time.time(),
+            },
+        )
+        log.warning(f"Newly embedded {procedure.source}: {procedure.name}, {procedure.description}")
 
-        # easy access to (point_id, tool_description)
-        embedded_tools_descriptions = [t.payload["page_content"] for t in procedures if t.payload["metadata"]["source"] == "tool"]
-        embedded_tools_examples = [t.payload["page_content"] for t in procedures if t.payload["metadata"]["source"] == "tool_example"]
-        
-        # loop over mad_hatter tools
-        for tool in self.mad_hatter.tools:
-            # if the tool is not embedded 
-            if tool.description not in embedded_tools_descriptions:
-                # embed the tool and save it to DB
-                tool_embedding = self.embedder.embed_documents([tool.description])
+        # Embed the procedure triggers and save it to the database
+        for trigger_type, triggers in procedure.triggers_map.items():
+            for trigger in triggers:
+                # Embed the examples and save them to the database
+                trigger_embedding = self.embedder.embed_documents([trigger])
                 self.memory.vectors.procedural.add_point(
-                    tool.description,
-                    tool_embedding[0],
+                    trigger,
+                    trigger_embedding[0],
                     {
-                        "source": "tool",
-                        "when": time.time(),
-                        "name": tool.name,
-                        "description": tool.description
+                        "source": procedure.source,
+                        "type": trigger_type,
+                        "name": procedure.name,
+                        "when": time.time()
                     },
                 )
-                log.warning(f"Newly embedded {repr(tool)}")
-                
-            for example in tool.start_examples:
-                # if the example is not embedded
-                if example not in embedded_tools_examples:
-                    # embed the examples and save them to DB
-                    example_embedding = self.embedder.embed_documents([example])
-                    self.memory.vectors.procedural.add_point(
-                        example,
-                        example_embedding[0],
-                        {
-                            "source": "tool_example",
-                            "when": time.time(),
-                            "name": tool.name
-                        },
-                    )
-                    log.warning(f"Newly embedded example for {tool.name}: {example}")
-
-        # easy access to mad hatter tools (found in plugins)
-        mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
-        mad_hatter_tools_examples = [e for t in self.mad_hatter.tools for e in t.start_examples]
-
-        # loop over embedded tools and delete the ones not present in active plugins
-        points_to_be_deleted = []
-        for emb_tool in procedures:
-            content = emb_tool.payload["page_content"]
-            # if the tool is not active, it inserts it in the list of points to be deleted
-            if content not in mad_hatter_tools_descriptions and content in embedded_tools_descriptions:
-                log.warning(f"Deleting embedded CatTool: {content}")
-                points_to_be_deleted.append(emb_tool.id)
-            # if the example is of a non-active tool, it inserts it in the list of points to be deleted
-            elif content not in mad_hatter_tools_examples and content in embedded_tools_examples:
-                log.warning(f"Deleting embedded example: {content}")
-                points_to_be_deleted.append(emb_tool.id)
-
-        # delete not active tools
-        if len(points_to_be_deleted) > 0:
-            self.memory.vectors.vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
-            )
-
-    def embedd_forms(self, procedures):
-
-        # TODO: to include the vectorization of the start and stop intents of the declared forms 
-        #       in procedural memory and the vectorization of the form examples in episodic memory
-
-
-        # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
-        # it is created and saved
-
-        # easy access to (point_id, tool_description)
-        embedded_forms_descriptions = [f.payload["page_content"] for f in procedures if f.payload["metadata"]["source"] == "form"]
-        embedded_forms_examples = [f.payload["page_content"] for f in procedures if f.payload["metadata"]["source"] == "form_example"]
-
+                log.warning(f"Newly embedded trigger of type {trigger_type} named {procedure.name}: {trigger}")
         
-        # loop over mad_hatter tools
-        for Form in self.mad_hatter.forms:
-            # if the tool is not embedded 
-            if Form.description not in embedded_forms_descriptions:
-                # embed the tool and save it to DB
-                form_embedding = self.embedder.embed_documents([Form.description])
-                self.memory.vectors.procedural.add_point(
-                    Form.description,
-                    form_embedding[0],
-                    {
-                        "source": "form",
-                        "when": time.time(),
-                        "name": Form.__name__,
-                        "description": Form.description
-                    },
-                )
-                log.warning(f"Newly form {repr(Form.__name__)}")
-                
-            for example in Form.start_examples:
-                # if the example is not embedded
-                if example not in embedded_forms_examples:
-                    # embed the examples and save them to DB
-                    example_embedding = self.embedder.embed_documents([example])
-                    self.memory.vectors.procedural.add_point(
-                        example,
-                        example_embedding[0],
-                        {
-                            "source": "form_example",
-                            "when": time.time(),
-                            "name": Form.__name__
-                        },
-                    )
-                    log.warning(f"Newly embedded example for {Form.__name__}: {example}")
-
-        # easy access to mad hatter tools (found in plugins)
-        mad_hatter_forms_descriptions = [t.description for t in self.mad_hatter.forms]
-        mad_hatter_forms_examples = [e for t in self.mad_hatter.forms for e in t.start_examples]
-
-        # loop over embedded tools and delete the ones not present in active plugins
-        points_to_be_deleted = []
-        for emb_tool in procedures:
-            content = emb_tool.payload["page_content"]
-            # if the tool is not active, it inserts it in the list of points to be deleted
-            if content not in mad_hatter_forms_descriptions and content in mad_hatter_forms_descriptions:
-                log.warning(f"Deleting embedded CatTool: {content}")
-                points_to_be_deleted.append(emb_tool.id)
-            # if the example is of a non-active tool, it inserts it in the list of points to be deleted
-            elif content not in mad_hatter_forms_examples and content in mad_hatter_forms_examples:
-                log.warning(f"Deleting embedded example: {content}")
-                points_to_be_deleted.append(emb_tool.id)
-
-        # delete not active tools
-        if len(points_to_be_deleted) > 0:
-            self.memory.vectors.vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
-            )
-
-
     def send_ws_message(self, content: str, msg_type="notification"):
         log.error("No websocket connection open")
 

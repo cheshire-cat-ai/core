@@ -20,16 +20,18 @@ class CatFormState(Enum):
 
 
 class CatForm:  # base model of forms
-    description:     str
+
     model_class:     BaseModel
+    source:          str = "form"
+    name:            str = None
+    description:     str
     start_examples:  List[str]
     stop_examples:   List[str]
     dialog_examples: List[Dict[str, str]]
- 
     ask_confirm:   bool = False
-
+    triggers = None
     _autopilot = False
-    
+
     def __init__(self, cat) -> None:
         self._state = CatFormState.INCOMPLETE
         self._model: Dict = {}
@@ -38,7 +40,6 @@ class CatForm:  # base model of forms
 
         self._errors: List[str]  = []
         self._ask_for: List[str] = []
-
 
     @property
     def cat(self):
