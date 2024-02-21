@@ -19,10 +19,15 @@ class CatTool(BaseTool):
         self.cat = None
 
         self.func = func
+        self.source = "tool"
         self.name = name
-        self.description = f"{self.name}: {description}"
+        self.description = description
         self.return_direct = return_direct
         self.start_examples = examples
+
+        self.triggers_map = {
+            "start_examples": self.start_examples
+        }
         # remove cat argument from signature so it does not end up in prompts
         self.signature = f"{signature(self.func)}".replace(", cat)", ")")
 

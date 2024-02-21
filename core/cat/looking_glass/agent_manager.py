@@ -17,7 +17,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
-from cat.looking_glass.output_parser import ToolOutputParser
+from cat.looking_glass.output_parser import ToolOutputParser, AgentAction, AgentFinish
 from cat.utils import verbal_timedelta
 from cat.log import log
 
@@ -44,40 +44,30 @@ class AgentManager:
         else:
             self.verbose = False
 
-    async def execute_tool_agent(self, agent_input, stray):
+    async def execute_procedures_agent(self, agent_input, stray):
 
         recalled_procedures_names = set()
         for p in stray.working_memory["procedural_memories"]:
             procedure = p[0]
-            if procedure.metadata["source"] in ["tool", "tool_example", "form", "form_example"]:
+            if procedure.metadata["source"] in ["tool","form"]: #TODO: There can be other the descritpion and start examples
                 recalled_procedures_names.add(procedure.metadata["name"])
-
-        log.critical(recalled_procedures_names)
-            
-        # tools currently recalled in working memory
-        
+                    
         # Get tools with that name from mad_hatter
-        allowed_procedures_names = []
-        allowed_procedures = []
-        allowed_tools = []
+        allowed_procedures: Dict[str, CatTool | CatForm] = {}
+        allowed_tools: List[CatTool] = []
         for p in self.mad_hatter.procedures:
-            if Plugin._is_cat_tool(p):
-                if p.name in recalled_procedures_names:
-                    # Prepare the tool to be used in the Cat (adding properties)
+            
+            if p.name in recalled_procedures_names:
+                # Prepare the tool to be used in the Cat (adding properties)
+                if Plugin._is_cat_tool(p):
                     tool = deepcopy(p)
                     tool.assign_cat(stray)
                     allowed_tools.append(tool)
-                    allowed_procedures.append(tool)
-                    allowed_procedures_names.append(tool.name)
-                    log.critical(f"Added: {p.name}")
-            
-            if Plugin._is_cat_form(p):
-                if p.__name__ in recalled_procedures_names:
-                    allowed_procedures.append(p)
-                    allowed_procedures_names.append(p.__name__)
-                    log.critical(f"Added: {p.__name__}")
-
-        
+                    allowed_procedures[tool.name] = tool
+                else:
+                    allowed_procedures[p.name] = p
+                log.critical(f"Added: {p.name}")
+    
         log.warning(allowed_procedures)
 
         #recalled_tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_tools_names, cat=stray)
@@ -87,7 +77,6 @@ class AgentManager:
         prompt = prompts.ToolPromptTemplate(
             template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray),
             procedures=allowed_procedures,
-            procedures_names=allowed_procedures_names,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
             input_variables=["input", "intermediate_steps"]
@@ -105,7 +94,6 @@ class AgentManager:
             llm_chain=agent_chain,
             output_parser=ToolOutputParser(),
             stop=["\nObservation:"],
-            #allowed_tools=allowed_procedures_names,
             verbose=self.verbose
         )
 
@@ -118,55 +106,17 @@ class AgentManager:
         )
 
         out = await agent_executor.ainvoke(agent_input)
-
+        
         if "form" in out.keys():
-            for Form in self.mad_hatter.forms:
-                if Form.__name__ == out["form"]:
-                    form = Form(stray)
-                    stray.working_memory["forms"] = form
-                    return {
-                        "output": form.next(),
-                        "intermediate_steps": []
-                    }
+            Form = allowed_procedures.get(out["form"], None)
+            f = Form(stray)
+            stray.working_memory["forms"] = f
+            return {
+                "output": f.next(),
+                "intermediate_steps": []
+            }
 
         return out
-
-    def execute_form_agent(self, agent_input, allowed_forms, stray):
-        
-        '''
-        TODO:
-        After vectorizing (in cheshire_cat.embed_procedures) to procedural memory the start 
-        and stop of the catforms, and to episodic memory the catform examples ..
-
-        1) Check working memory if there is an active form;
-        
-        2) if there is an active form, check from procedural memory whether 
-           the form stop has been invoked;
-        
-        3) if the form stop has not been invoked, follow the dialogue,
-           considering that if strict is False any tools must also be executed
-           (classic memory chain with cform.dialog_action and cform.dialog_prompt);
-        
-        4) if there is no active form, check from procedural memory whether 
-           start has been invoked of a form and if so start it.
-        '''
-
-
-
-        '''
-        # Acquires the current form from working memory
-        CURRENT_FORM_KEY = "CURRENT_FORM"
-        if CURRENT_FORM_KEY in stray.working_memory:
-            cat_form = stray.working_memory[CURRENT_FORM_KEY]
-            
-            if cat_form.strict is True:
-                response = cat_form.dialogue_direct()
-            else:
-                #...
-
-        return response
-        '''
-        return None
     
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
@@ -233,7 +183,7 @@ class AgentManager:
             log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                tools_result = await self.execute_tool_agent(agent_input, stray)
+                tools_result = await self.execute_procedures_agent(agent_input, stray)
 
                 #################################
                 # TODO: here we only deal with forms

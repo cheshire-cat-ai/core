@@ -41,7 +41,7 @@ class ToolOutputParser(AgentOutputParser):
         mh = MadHatter()
 
         for Form in mh.forms:
-            if Form.__name__ == action:
+            if Form.name == action:
                 return AgentFinish(
                     return_values={
                         "output": None,

@@ -1,10 +1,8 @@
 
-from typing import List, Union
+from typing import Union, Dict
 
 from langchain.agents.tools import BaseTool
 from langchain.prompts import StringPromptTemplate
-
-from cat.mad_hatter.plugin import Plugin
 
 from cat.experimental.form import CatForm
 
@@ -13,8 +11,7 @@ class ToolPromptTemplate(StringPromptTemplate):
     # The template to use
     template: str
     # The list of tools available
-    procedures: List[Union[BaseTool, CatForm.__class__]]
-    procedures_names: List[str]
+    procedures: Dict[str,Union[BaseTool, CatForm.__class__]]
 
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
@@ -28,18 +25,15 @@ class ToolPromptTemplate(StringPromptTemplate):
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
         kwargs["tools"] = ""
-        for proc in self.procedures:
-            if Plugin._is_cat_tool(proc):
-                kwargs["tools"] += f" - {proc.name}: {proc.description}\n"
-            if Plugin._is_cat_form(proc):
-                kwargs["tools"] += f" - {proc.__name__}: {proc.description}\n"
+        for proc in self.procedures.values():
+            kwargs["tools"] += f" - {proc.name}: {proc.description}\n"
             # if len(tool.examples) > 0:
             #     kwargs["tools"] += f"\tExamples of questions for {tool.name}:\n"
             #     for example in tool.examples:
             #         kwargs["tools"] += f"\t - \"{example}\"\n"
             #kwargs["tools"] += "\n"
         # Create a list of tool names for the tools provided
-        kwargs["tool_names"] = ", ".join(self.procedures_names)
+        kwargs["tool_names"] = ", ".join(self.procedures.keys())
 
         return self.template.format(**kwargs)
 
