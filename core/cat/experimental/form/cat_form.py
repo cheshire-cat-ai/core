@@ -50,8 +50,6 @@ class CatForm:  # base model of forms
         self._errors   = []
         self._ask_for  = []
 
-        self._exit_threshold = 0.85
-    
 
     @property
     def cat(self):
@@ -67,9 +65,6 @@ class CatForm:  # base model of forms
 
 
     def submit(self, form_data) -> str:
-        """
-        Action
-        """
         raise NotImplementedError
 
 
@@ -85,7 +80,7 @@ f"""Your task is to produce a JSON representing whether a user is confirming or 
 JSON must be in this format:
 ```json
 {{
-    "confirm": // type boolean, must be `true` or `false`)    
+    "confirm": // type boolean, must be `true` or `false` 
 }}
 ```
 
@@ -101,38 +96,42 @@ JSON:
         print(confirm_prompt)
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(confirm_prompt)
-        log.critical(f'check_user_confirm: {response}')
-        
+        response = self.cat.llm(confirm_prompt, stream=True)
         return "true" in response.lower()
         
-    
 
-    # TOOD: now always False
-    # Check if the user wants to exit the intent
+    # Check if the user wants to exit the form
+    # it is run at the befginning of every form.next()
     def check_exit_intent(self) -> bool:
 
-        return False
-        
-        # TODO: To readjust the function code
-
-        # Get user message vector
+        # Get user message
         user_message = self.cat.working_memory["user_message_json"]["text"]
-        user_message_vector = self.cat.embedder.embed_query(user_message)
-        
-        # Search for the vector most similar to the user message in the vector database and get distance
-        qclient = self.cat.memory.vectors.vector_db
-        search_results = qclient.search(
-            self.exit_intent_collection, 
-            user_message_vector, 
-            with_payload=False, 
-            limit=1
-        )
-        print(f"search_results: {search_results}")
-        nearest_score = search_results[0].score
-        
-        # If the nearest score is less than the threshold, exit intent
-        return nearest_score >= self._exit_threshold
+
+        # Check exit prompt
+        check_exit_prompt = \
+f"""Your task is to produce a JSON representing whether a user wants to exit or not.
+JSON must be in this format:
+```json
+{{
+    "exit": // type boolean, must be `true` or `false`
+}}
+```
+
+User said "{user_message}"
+
+JSON:
+```json
+{{
+    "exit": """
+
+
+        # Print confirm prompt
+        print(check_exit_prompt)
+
+        # Queries the LLM and check if user is agree or not
+        response = self.cat.llm(check_exit_prompt, stream=True)
+        return "true" in response.lower()
+
 
     # Execute the dialogue step
     def next(self):
@@ -188,8 +187,6 @@ JSON:
     
     
     def message(self):
-        log.critical(".........")
-        print(self._model)
 
         separator = "\n - "
         missing_fields = ""
@@ -216,20 +213,51 @@ JSON:
         if self._state == CatFormState.WAIT_CONFIRM:
             return out + "\n --> Confirm? Yes or no?"
 
-    
 
-    # Extract model informations from user message
-    def extract(self):
+    def stringify_convo_history(self):
 
         user_message = self.cat.working_memory["user_message_json"]["text"]
         chat_history = self.cat.working_memory["history"][-10:] # last n messages
-        #log.warning(chat_history)
 
         # stringify history
         history = ""
         for turn in chat_history:
             history += f"\n - {turn['who']}: {turn['message']}"
         history += f"Human: {user_message}"
+
+        return history
+
+
+    # Extract model informations from user message
+    def extract(self):
+        
+        prompt = self.extraction_prompt()
+        print(prompt)
+
+        # Invoke LLM chain
+        extraction_chain = LLMChain(
+            prompt     = PromptTemplate.from_template(prompt),
+            llm        = self._cat._llm,
+            verbose    = True,
+            output_key = "output"
+        )
+        json_str = extraction_chain.invoke({"stop": ["```"]})["output"]
+        
+        print(f"json after parser:\n{json_str}")
+
+        # json parser
+        try:
+            output_model = json.loads(json_str)
+        except Exception as e:
+            output_model = {} 
+            log.warning(e)
+
+        return output_model
+    
+
+    def extraction_prompt(self):
+
+        history = self.stringify_convo_history()
 
         # JSON structure
         # BaseModel.__fields__['my_field'].type_
@@ -262,7 +290,8 @@ This is the conversation:
 Updated JSON:
 ```json
 """
-        
+
+# TODO: convo example (optional but supported)
 #        if self._prompt_tpl_update:
 #            prompt += self._prompt_tpl_update.format(
 #                user_message = user_message, 
@@ -274,38 +303,9 @@ Updated JSON:
 #                JSON:{json.dumps(self._model, indent=4)}\n\
 #                Updated JSON:"
 #            
-        
-        print(prompt)
 
-        '''
-        # Invoke direct llm
-        json_str = self.cat.llm(prompt, stream=True)
-        
-        # workaround: in case the answer contains other information
-        end_json_index = json_str.find("```")
-        json_str = json_str[:end_json_index]
-        '''
-
-        # Invoke LLM chain
         prompt_escaped = prompt.replace("{", "{{").replace("}", "}}")
-        extraction_chain = LLMChain(
-            prompt     = PromptTemplate.from_template(prompt_escaped),
-            llm        = self._cat._llm,
-            verbose    = True,
-            output_key = "output"
-        )
-        json_str = extraction_chain.invoke({"stop": ["```"]})["output"]
-        
-        print(f"json after parser:\n{json_str}")
-
-        # json parser
-        try:
-            output_model = json.loads(json_str)
-        except Exception as e:
-            output_model = {} 
-            log.warning(e)
-
-        return output_model
+        return prompt_escaped
 
 
     # Sanitize model (take away unwanted keys and null values)
