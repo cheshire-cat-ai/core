@@ -17,7 +17,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
-from cat.looking_glass.output_parser import ToolOutputParser, AgentAction, AgentFinish
+from cat.looking_glass.output_parser import ChooseProcedureOutputParser, AgentAction, AgentFinish
 from cat.utils import verbal_timedelta
 from cat.log import log
 
@@ -92,7 +92,7 @@ class AgentManager:
         # init agent
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
-            output_parser=ToolOutputParser(),
+            output_parser=ChooseProcedureOutputParser(),
             stop=["\nObservation:"],
             verbose=self.verbose
         )
@@ -155,27 +155,29 @@ class AgentManager:
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
 
-        The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
+        The method formats the main prompt and gather the allowed tools/forms. It also instantiates a conversational Agent
         from Langchain.
 
         Returns
         -------
-        agent_executor : AgentExecutor
-            Instance of the Agent provided with a set of tools.
+        agent_executor : agent reply
+            Reply of the Agent in the format `{"output": ..., "intermediate_steps": ...}`.
         """
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(stray.working_memory)
         agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=stray)
+        
         # should we run the default agent?
         fast_reply = {}
         fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=stray)
         if len(fast_reply.keys()) > 0:
             return fast_reply
+        
+        # obtain prompt parts from plugins
         prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=stray)
         prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray)
-        
         
         # Run active form if present
         form_result = await self.execute_form_agent(stray)

@@ -7,7 +7,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.log import log
 
 
-class ToolOutputParser(AgentOutputParser):
+class ChooseProcedureOutputParser(AgentOutputParser):
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
 

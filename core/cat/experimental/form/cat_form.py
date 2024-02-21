@@ -27,8 +27,7 @@ class CatForm:  # base model of forms
     description:     str
     start_examples:  List[str]
     stop_examples:   List[str]
-    dialog_examples: List[Dict[str, str]]
-    ask_confirm:   bool = False
+    ask_confirm:     bool = False
     triggers = None
     _autopilot = False
 
@@ -39,7 +38,7 @@ class CatForm:  # base model of forms
         self._cat = cat
 
         self._errors: List[str]  = []
-        self._ask_for: List[str] = []
+        self._missing_fields: List[str] = []
 
     @property
     def cat(self):
@@ -168,9 +167,9 @@ JSON:
 
         separator = "\n - "
         missing_fields = ""
-        if self._ask_for:
+        if self._missing_fields:
             missing_fields = "\nMissing fields:"
-            missing_fields += separator + separator.join(self._ask_for)
+            missing_fields += separator + separator.join(self._missing_fields)
         invalid_fields = ""
         if self._errors:
             invalid_fields = "\nInvalid fields:"
@@ -284,7 +283,7 @@ Updated JSON:
     # Validate model
     def validate(self, model):
 
-        self._ask_for = []
+        self._missing_fields = []
         self._errors  = []
                 
         try:
@@ -301,7 +300,7 @@ Updated JSON:
             for error_message in e.errors():
                 field_name = error_message['loc'][0]
                 if error_message['type'] == 'missing':
-                    self._ask_for.append(field_name)
+                    self._missing_fields.append(field_name)
                 else:
                     self._errors.append(f'{field_name}: {error_message["msg"]}')
                     del model[field_name]

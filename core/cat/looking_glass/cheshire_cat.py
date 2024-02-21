@@ -276,7 +276,7 @@ class CheshireCat():
                 metadata={
                     "name":proc_name # TODO: fix support for filter by list
                 }
-            )        
+            )
 
     def embed_and_save(self, procedure: Procedure):
         # Embed the procedure description and save it to the database
