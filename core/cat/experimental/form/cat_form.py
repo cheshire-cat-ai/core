@@ -83,7 +83,7 @@ JSON:
     def check_exit_intent(self) -> bool:
 
         # Get user message
-        user_message = self.cat.working_memory["user_message_json"]["text"]
+        history = self.stringify_convo_history()
 
         # Check exit prompt
         check_exit_prompt = \
@@ -95,7 +95,9 @@ JSON must be in this format:
 }}
 ```
 
-User said "{user_message}"
+This is the conversation:
+
+{history}
 
 JSON:
 ```json
