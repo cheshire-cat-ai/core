@@ -11,16 +11,6 @@ from cat.log import log
 import json
 
 
-"""
-@dataclass
-class FieldExample:
-    user_message: str
-    model_before: Dict
-    model_after:  Dict
-    validation:   str
-    responces:    List[str]
-"""
-
 # Conversational Form State
 class CatFormState(Enum):
     INCOMPLETE   = "incomplete"
@@ -40,33 +30,22 @@ class CatForm:  # base model of forms
 
     _autopilot = False
     
-
     def __init__(self, cat) -> None:
         self._state = CatFormState.INCOMPLETE
         self._model: Dict = {}
         
         self._cat = cat
 
-        self._errors   = []
-        self._ask_for  = []
+        self._errors: List[str]  = []
+        self._ask_for: List[str] = []
 
 
     @property
     def cat(self):
         return self._cat
-    
-    @property
-    def ask_for(self) -> List:
-        return self._ask_for
-    
-    @property
-    def errors(self) -> List:
-        return self._errors
-
 
     def submit(self, form_data) -> str:
         raise NotImplementedError
-
 
     # Check user confirm the form data
     def confirm(self) -> bool:
@@ -99,7 +78,6 @@ JSON:
         response = self.cat.llm(confirm_prompt, stream=True)
         return "true" in response.lower()
         
-
     # Check if the user wants to exit the form
     # it is run at the befginning of every form.next()
     def check_exit_intent(self) -> bool:
@@ -132,7 +110,6 @@ JSON:
         response = self.cat.llm(check_exit_prompt, stream=True)
         return "true" in response.lower()
 
-
     # Execute the dialogue step
     def next(self):
         log.critical(self._state)
@@ -142,7 +119,6 @@ JSON:
 
         if self.check_exit_intent():
             self._state = CatFormState.CLOSED
-            return None
 
         # If state is WAIT_CONFIRM, check user confirm response..
         if self._state == CatFormState.WAIT_CONFIRM:
@@ -168,7 +144,6 @@ JSON:
         # if state is still INCOMPLETE, recap and ask for new info
         return self.message()
 
-
     # Updates the form with the information extracted from the user's response
     # (Return True if the model is updated)
     def update(self):
@@ -183,10 +158,12 @@ JSON:
         # Validate new_details
         new_model = self.validate(new_model)
 
-        return new_model
-    
+        return new_model    
     
     def message(self):
+
+        if self._state == CatFormState.CLOSED:
+            return f"Form {type(self).__name__} closed"
 
         separator = "\n - "
         missing_fields = ""
@@ -213,7 +190,6 @@ JSON:
         if self._state == CatFormState.WAIT_CONFIRM:
             return out + "\n --> Confirm? Yes or no?"
 
-
     def stringify_convo_history(self):
 
         user_message = self.cat.working_memory["user_message_json"]["text"]
@@ -226,7 +202,6 @@ JSON:
         history += f"Human: {user_message}"
 
         return history
-
 
     # Extract model informations from user message
     def extract(self):
@@ -254,7 +229,6 @@ JSON:
 
         return output_model
     
-
     def extraction_prompt(self):
 
         history = self.stringify_convo_history()
@@ -291,22 +265,10 @@ Updated JSON:
 ```json
 """
 
-# TODO: convo example (optional but supported)
-#        if self._prompt_tpl_update:
-#            prompt += self._prompt_tpl_update.format(
-#                user_message = user_message, 
-#                model = json.dumps(self._model)
-#            )
-#        else:
-#            prompt += f"\
-#                Sentence: {user_message}\n\
-#                JSON:{json.dumps(self._model, indent=4)}\n\
-#                Updated JSON:"
-#            
+        # TODO: convo example (optional but supported)
 
         prompt_escaped = prompt.replace("{", "{{").replace("}", "}}")
         return prompt_escaped
-
 
     # Sanitize model (take away unwanted keys and null values)
     # NOTE: unwanted keys are automatically taken away by pydantic
@@ -317,7 +279,6 @@ Updated JSON:
         model = {key: value for key, value in model.items() if value not in null_fields}
 
         return model
-
 
     # Validate model
     def validate(self, model):
@@ -348,90 +309,3 @@ Updated JSON:
             self._state = CatFormState.INCOMPLETE
         
         return model
-
-
-"""
-    # Load dialog examples by RAG
-    def _load_dialog_examples_by_rag(self):    
-        
-        # TODO: The function code needs to be reviewed
-        
-        '''
-        # Examples json format
-        examples = [
-            {
-                "user_message": "I want to order a pizza",
-                "model_before": "{{}}",
-                "model_after":  "{{}}",
-                "validation":   "information to ask: pizza type, address, phone",
-                "response":     "What kind of pizza do you want?"
-            },
-            {
-                "user_message": "I live in Via Roma 1",
-                "model_before": "{{\"pizza_type\":\"Margherita\"}}",
-                "model_after":  "{{\"pizza_type\":\"Margherita\",\"address\":\"Via Roma 1\"}}",
-                "validation":   "information to ask: phone",
-                "response":     "Could you give me your phone number?"
-            },
-            {
-                "user_message": "My phone is: 123123123",
-                "model_before": "{{\"pizza_type\":\"Diavola\"}}",
-                "model_after":  "{{\"pizza_type\":\"Diavola\",\"phone\":\"123123123\"}}",
-                "validation":   "information to ask: address",
-                "response":     "Could you give me your delivery address?"
-            },
-            {
-                "user_message": "I want a test pizza",
-                "model_before": "{{\"phone\":\"123123123\"}}",
-                "model_after":  "{{\"pizza_type\":\"test\", \"phone\":\"123123123\"}}",
-                "validation":   "there is an error: pizza_type test is not present in the menu",
-                "response":     "Pizza type is not a valid pizza"
-            }
-        ]
-        '''
-
-        # Get examples
-        examples = self.dialog_examples()
-        #print(f"examples: {examples}")
-
-        # If no examples are available, return
-        if not examples:
-            return
-        
-        # Create example selector
-        example_selector = SemanticSimilarityExampleSelector.from_examples(
-            examples, self.cat.embedder, Qdrant, k=1, location=':memory:'
-        )
-
-        # Create example_update_model_prompt for formatting output
-        example_update_model_prompt = PromptTemplate(
-            input_variables = ["user_message", "model_before", "model_after"],
-            template = "User Message: {user_message}\nModel: {model_before}\nUpdated Model: {model_after}"
-        )
-        #print(f"example_update_model_prompt:\n{example_update_model_prompt.format(**examples[1])}\n\n")
-
-        # Create promptTemplate from examples_selector and example_update_model_prompt
-        self._prompt_tpl_update = FewShotPromptTemplate(
-            example_selector = example_selector,
-            example_prompt   = example_update_model_prompt,
-            suffix = "User Message: {user_message}\nModel: {model}\nUpdated Model: ",
-            input_variables = ["user_message", "model"]
-        )
-        #print(f"prompt_tpl_update: {self._prompt_tpl_update.format(user_message='user question', model=self._model)}\n\n")
-
-        # Create example_response_prompt for formatting output
-        example_response_prompt = PromptTemplate(
-            input_variables = ["validation", "response"],
-            template = "Message: {validation}\nResponse: {response}"
-        )
-        #print(f"example_response_prompt:\n{example_response_prompt.format(**examples[1])}\n\n")
-
-        # Create promptTemplate from examples_selector and example_response_prompt
-        self._prompt_tpl_response = FewShotPromptTemplate(
-            example_selector = example_selector,
-            example_prompt   = example_response_prompt,
-            suffix = "Message: {validation}\nResponse: ",
-            input_variables = ["validation"]
-        )
-        #print(f"prompt_tpl_response: {self._prompt_tpl_response.format(validation='pydantic validation result')}\n\n")
-""" 

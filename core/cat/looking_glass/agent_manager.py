@@ -21,7 +21,7 @@ from cat.looking_glass.output_parser import ToolOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
 
-from cat.experimental.form import CatForm
+from cat.experimental.form import CatForm, CatFormState
 
 
 class AgentManager:
@@ -137,11 +137,12 @@ class AgentManager:
         if active_form:
             form_output = active_form.next()
             if form_output:
+                if active_form._state == CatFormState.CLOSED:
+                    log.critical("DELETE FORM")
+                    del stray.working_memory["forms"]
                 return {
                     "output": form_output
                 }
-            else:
-                del stray.working_memory["forms"]
         return None
 
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
