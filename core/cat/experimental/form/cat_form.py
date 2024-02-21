@@ -28,7 +28,7 @@ class CatForm:  # base model of forms
     start_examples:  List[str]
     stop_examples:   List[str]
     ask_confirm:     bool = False
-    triggers = None
+    triggers_map = None
     _autopilot = False
 
     def __init__(self, cat) -> None:

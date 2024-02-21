@@ -6,8 +6,8 @@ def form(Form: CatForm) -> CatForm:
     if Form.name is None:
         Form.name = Form.__name__
 
-    if Form.triggers is None:
-        Form.triggers =  {
+    if Form.triggers_map is None:
+        Form.triggers_map =  {
             "start_examples": Form.start_examples
         }
     
