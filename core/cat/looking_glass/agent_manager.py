@@ -55,7 +55,7 @@ class AgentManager:
         log.critical(recalled_procedures_names)
             
         # tools currently recalled in working memory
-        
+
         # Get tools with that name from mad_hatter
         allowed_procedures_names = []
         allowed_procedures = []
@@ -131,43 +131,19 @@ class AgentManager:
 
         return out
 
-    def execute_form_agent(self, agent_input, allowed_forms, stray):
+    async def execute_form_agent(self, stray):
         
-        '''
-        TODO:
-        After vectorizing (in cheshire_cat.embed_procedures) to procedural memory the start 
-        and stop of the catforms, and to episodic memory the catform examples ..
-
-        1) Check working memory if there is an active form;
-        
-        2) if there is an active form, check from procedural memory whether 
-           the form stop has been invoked;
-        
-        3) if the form stop has not been invoked, follow the dialogue,
-           considering that if strict is False any tools must also be executed
-           (classic memory chain with cform.dialog_action and cform.dialog_prompt);
-        
-        4) if there is no active form, check from procedural memory whether 
-           start has been invoked of a form and if so start it.
-        '''
-
-
-
-        '''
-        # Acquires the current form from working memory
-        CURRENT_FORM_KEY = "CURRENT_FORM"
-        if CURRENT_FORM_KEY in stray.working_memory:
-            cat_form = stray.working_memory[CURRENT_FORM_KEY]
-            
-            if cat_form.strict is True:
-                response = cat_form.dialogue_direct()
+        active_form = stray.working_memory.get("forms", None)
+        if active_form:
+            form_output = active_form.next()
+            if form_output:
+                return {
+                    "output": form_output
+                }
             else:
-                #...
-
-        return response
-        '''
+                del stray.working_memory["forms"]
         return None
-    
+
     async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
@@ -213,20 +189,12 @@ class AgentManager:
         prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray)
         
         
-        #################################
-        # TODO: here we only deal with forms
-        active_form = stray.working_memory.get("forms", None)
-        if active_form:
-            form_output = active_form.next()
-            if form_output:
-                return {
-                    "output": form_output
-                }
-            else:
-                del stray.working_memory["forms"]
-        ############### TODO END
+        # Run active form if present
+        form_result = await self.execute_form_agent(stray)
+        if form_result:
+            return form_result # exit agent with form output
 
-        # Try to get information from tools if there is some allowed
+        # Select and run useful procedures
         procedural_memories = stray.working_memory["procedural_memories"]
         if len(procedural_memories) > 0:
 
