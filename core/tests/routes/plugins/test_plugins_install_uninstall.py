@@ -36,7 +36,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     # check whether new tool has been embedded
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 6 # two tools, 4 tools examples
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
     assert "mock_tool" in procedures_names
     assert "get_the_time" in procedures_names # from core_plugin
 
@@ -63,9 +63,8 @@ def test_plugin_uninstall(client, just_installed_plugin):
     # plugin tool disappeared
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 3
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
-    assert "mock_tool" not in procedures_names
-    assert "get_the_time" in procedures_names # from core_plugin
+    procedures_names = set(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_names == {"get_the_time"}
 
     # only examples for core tool
     # Ensure unique procedure sources

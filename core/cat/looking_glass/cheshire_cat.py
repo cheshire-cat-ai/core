@@ -255,10 +255,33 @@ class CheshireCat():
     def embed_procedures(self):
         # Retrieve from vectorDB all tool embeddings
         embedded_procedures = self.memory.vectors.procedural.get_all_points()
-        embedded_procedures_names = set(p.payload["metadata"]["name"] for p in embedded_procedures)
+        embedded_procedures_names = set(p.payload["metadata"]["source"] for p in embedded_procedures)
 
         # Easy access to active procedures 
         active_procedures_dict = {p.name:p for p in self.mad_hatter.procedures}
+
+        # identiche = []
+        # for ap in active_procedures_dict:
+        #     embedded_description = None
+        #     embedded_start_examples = []
+        #     trigger_types = set(p.payload["metadata"]["trigger_type"] for p in embedded_procedures if p.payload["metadata"]["source"] == ap.name)
+
+        #     for p in embedded_procedures:
+        #         if p.payload["metadata"]["source"] == ap.name and p.payload["metadata"]["trigger_type"] == "description":
+        #             embedded_description = p.payload["page_content"]
+        #             continue
+                
+        #         if p.payload["metadata"]["source"] == ap.name and p.payload["metadata"]["trigger_type"] == "start_example":
+        #             embedded_start_examples.append(p.payload["page_content"])
+
+
+                
+
+
+        #     for ep in embedded_procedures:
+        #         ap.name == 
+
+                
 
         # TODO: Procedures should be re-embedded also if description or examples change
 
