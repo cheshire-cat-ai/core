@@ -26,8 +26,8 @@ from cat.utils import singleton
 class Procedure(Protocol):
     name: str
     description: str
-    source: str
-    triggers_map: Dict[str, List[str]] # stimula
+    procedure_type: str
+    triggers_map: Dict[str, List[str]]
 
 # main class
 @singleton
@@ -252,65 +252,79 @@ class CheshireCat():
         }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
+    def build_embedded_procedures_hashes(self, embedded_procedures):
+
+        hashes = {}
+        for ep in embedded_procedures:
+            #log.warning(ep)
+            metadata = ep.payload["metadata"]
+            content = ep.payload["page_content"]
+            source = metadata["source"]
+            trigger_type = metadata.get("trigger_type", "unsupported") # there may be legacy points with no trigger_type
+
+            p_hash = f"{source}.{trigger_type}.{content}"
+            hashes[p_hash] = ep.id
+        
+        return hashes
+    
+    def build_active_procedures_hashes(self, active_procedures):
+
+        hashes = {}
+        for ap in active_procedures:
+            for trigger_type, trigger_list in ap.triggers_map.items():
+                for trigger_content in trigger_list:
+                    p_hash = f"{ap.name}.{trigger_type}.{trigger_content}"
+                    hashes[p_hash] = {
+                        "obj": ap,
+                        "source": ap.name,
+                        "type": ap.procedure_type,
+                        "trigger_type": trigger_type,
+                        "content": trigger_content,
+                    }
+        return hashes
+
     def embed_procedures(self):
-        # Retrieve from vectorDB all tool embeddings
+
+        # Retrieve from vectorDB all procedural embeddings
         embedded_procedures = self.memory.vectors.procedural.get_all_points()
-        embedded_procedures_names = set(p.payload["metadata"]["name"] for p in embedded_procedures)
+        embedded_procedures_hashes = self.build_embedded_procedures_hashes(embedded_procedures)
+        
+        # Easy access to active procedures in mad_hatter (source of truth!)
+        active_procedures_hashes = self.build_active_procedures_hashes(self.mad_hatter.procedures)
 
-        # Easy access to active procedures 
-        active_procedures_dict = {p.name:p for p in self.mad_hatter.procedures}
+        from pprint import pprint
+        log.error("Embedded procedures")
+        pprint(embedded_procedures_hashes)
+        log.error("Active procedures")
+        pprint(active_procedures_hashes)
 
-        # TODO: Procedures should be re-embedded also if description or examples change
+        # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
+        points_to_be_deleted  = set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
+        points_to_be_embedded = set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
 
-        proc_names_to_delete = embedded_procedures_names - active_procedures_dict.keys()
-        proc_names_to_embed = active_procedures_dict.keys() - embedded_procedures_names
+        log.warning("Points to be deleted")
+        pprint(points_to_be_deleted)
+        points_to_be_deleted_ids = [embedded_procedures_hashes[p] for p in points_to_be_deleted]
+        self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
 
-        for proc_name in proc_names_to_embed:
-            # embed the tool and save it to DB
-            self.embed_and_save(active_procedures_dict[proc_name])
-                
-        # Remove embedded procedures not in mad_hatter
-        for proc_name in proc_names_to_delete:
-            log.warning(f"Removing the procedure {proc_name} not found in mad_hatter, removed.")
-            self.memory.vectors.procedural.delete_points_by_metadata_filter(
-                metadata={
-                    "name":proc_name # TODO: fix support for filter by list
+        log.warning("Points to be embedded")
+        pprint(points_to_be_embedded)
+        active_triggers_to_be_embedded = [active_procedures_hashes[p] for p in points_to_be_embedded]
+        for t in active_triggers_to_be_embedded:
+            print(t)
+            trigger_embedding = self.embedder.embed_documents([t["content"]])
+            self.memory.vectors.procedural.add_point(
+                t["content"],
+                trigger_embedding[0],
+                {
+                    "source": t["source"],
+                    "type": t["type"],
+                    "trigger_type": t["trigger_type"],
+                    "when": time.time(),
                 }
             )
+            log.warning(f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}")
 
-    def embed_and_save(self, procedure: Procedure):
-        # Embed the procedure description and save it to the database
-        proc_string_emb = f"{procedure.name}: {procedure.description}"
-        proc_embedding = self.embedder.embed_documents([proc_string_emb])
-        self.memory.vectors.procedural.add_point(
-            proc_string_emb,
-            proc_embedding[0],
-            {
-                "source": procedure.source,
-                "type": "description",
-                "name": procedure.name,
-                "when": time.time(),
-            },
-        )
-        log.warning(f"Newly embedded {procedure.source}: {procedure.name}, {procedure.description}")
-
-        # Embed the procedure triggers and save it to the database
-        for trigger_type, triggers in procedure.triggers_map.items():
-            for trigger in triggers:
-                # Embed the examples and save them to the database
-                trigger_embedding = self.embedder.embed_documents([trigger])
-                self.memory.vectors.procedural.add_point(
-                    trigger,
-                    trigger_embedding[0],
-                    {
-                        "source": procedure.source,
-                        "type": trigger_type,
-                        "name": procedure.name,
-                        "when": time.time()
-                    },
-                )
-                log.warning(f"Newly embedded trigger of type {trigger_type} named {procedure.name}: {trigger}")
-        
     def send_ws_message(self, content: str, msg_type="notification"):
         log.error("No websocket connection open")
 

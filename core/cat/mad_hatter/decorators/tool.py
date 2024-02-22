@@ -19,17 +19,20 @@ class CatTool(BaseTool):
         self.cat = None
 
         self.func = func
-        self.source = "tool"
+        self.procedure_type = "tool"
         self.name = name
         self.description = description
         self.return_direct = return_direct
-        self.start_examples = examples
 
         self.triggers_map = {
-            "start_examples": self.start_examples
+            "start_example": examples
         }
         # remove cat argument from signature so it does not end up in prompts
         self.signature = f"{signature(self.func)}".replace(", cat)", ")")
+
+    @property
+    def start_examples(self):
+        return self.triggers_map["start_example"]
 
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"

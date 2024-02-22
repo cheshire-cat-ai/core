@@ -36,7 +36,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     # check whether new tool has been embedded
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 6 # two tools, 4 tools examples
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
     assert "mock_tool" in procedures_names
     assert "get_the_time" in procedures_names # from core_plugin
 
@@ -63,14 +63,24 @@ def test_plugin_uninstall(client, just_installed_plugin):
     # plugin tool disappeared
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 3
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
-    assert "mock_tool" not in procedures_names
-    assert "get_the_time" in procedures_names # from core_plugin
+    procedures_names = set(map(lambda t: t["metadata"]["source"], procedures))
+    assert procedures_names == {"get_the_time"}
 
     # only examples for core tool
-    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    # Ensure unique procedure sources
+    procedures_sources = list(set(map(lambda t: t["metadata"]["source"], procedures))) 
     assert procedures_sources.count("tool") == 1
-    assert procedures_sources.count("tool_example") == 2
+    assert procedures_sources.count("form") == 0 # TODO: Add a form in mock plugin
 
+    tool_start_examples = []
+    form_start_examples = []
+    for p in procedures:
+        if p["metadata"]["type"] == "tool" and p["metadata"]["trigger_type"] == "start_example":
+            tool_start_examples.append(p)
+            continue
 
-
+        if p["metadata"]["type"] == "form" and p["metadata"]["trigger_type"] == "start_example":
+            form_start_examples.append(p)
+    
+    assert len(tool_start_examples) == 2
+    assert len(form_start_examples) == 0 # TODO: Add a form in mock plugin

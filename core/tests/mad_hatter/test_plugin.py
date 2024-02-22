@@ -81,7 +81,7 @@ def test_activate_plugin(plugin):
     assert isinstance(tool, CatTool)
     assert tool.plugin_id == "mock_plugin"
     assert tool.name == "mock_tool"
-    assert "mock_tool" in tool.description
+    assert tool.description == "Used to test mock tools. Input is the topic."
     assert isfunction(tool.func)
     assert tool.return_direct is True
     # tool examples found

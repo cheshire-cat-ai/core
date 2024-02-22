@@ -65,8 +65,8 @@ def test_tools_embedded(cheshire_cat):
 
     # get embedded tools
     tools = cheshire_cat.memory.vectors.procedural.get_all_points()
-    tools_descriptions = [t for t in tools if t.payload["metadata"]["source"] == "tool"]
-    tools_examples = [t for t in tools if t.payload["metadata"]["source"] == "tool_example"]
+    tools_descriptions = [t for t in tools if t.payload["metadata"]["type"] == "tool_description"]
+    tools_examples = [t for t in tools if t.payload["metadata"]["type"] == "tool_start_example"]
     
     assert len(tools_descriptions) == 1
     assert len(tools_examples) == 2

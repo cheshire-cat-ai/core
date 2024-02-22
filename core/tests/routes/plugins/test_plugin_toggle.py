@@ -31,7 +31,7 @@ def test_deactivate_plugin(client, just_installed_plugin):
     # tool has been taken away
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 3
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
     assert "mock_tool" not in procedures_names
     assert "get_the_time" in procedures_names # from core_plugin
 
@@ -63,7 +63,7 @@ def test_reactivate_plugin(client, just_installed_plugin):
     # tool has been re-embedded
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 6 # two tools and two examples each
-    procedures_names = list(map(lambda t: t["metadata"]["name"], procedures))
+    procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
     assert "mock_tool" in procedures_names
     assert "get_the_time" in procedures_names # from core_plugin
 
