@@ -26,8 +26,8 @@ from cat.utils import singleton
 class Procedure(Protocol):
     name: str
     description: str
-    source: str
-    triggers_map: Dict[str, List[str]] # stimula
+    procedure_type: str
+    triggers_map: Dict[str, List[str]]
 
 # main class
 @singleton
@@ -286,13 +286,13 @@ class CheshireCat():
             proc_string_emb,
             proc_embedding[0],
             {
-                "source": procedure.source,
-                "type": "description",
-                "name": procedure.name,
+                "type": procedure.procedure_type,
+                "source": procedure.name,
+                "trigger_type": "description",
                 "when": time.time(),
             },
         )
-        log.warning(f"Newly embedded {procedure.source}: {procedure.name}, {procedure.description}")
+        log.warning(f"Newly embedded {procedure.procedure_type}: {procedure.name}, {procedure.description}")
 
         # Embed the procedure triggers and save it to the database
         for trigger_type, triggers in procedure.triggers_map.items():
@@ -303,9 +303,9 @@ class CheshireCat():
                     trigger,
                     trigger_embedding[0],
                     {
-                        "source": procedure.source,
-                        "type": trigger_type,
-                        "name": procedure.name,
+                        "type": procedure.procedure_type,
+                        "source": procedure.name,
+                        "trigger_type": trigger_type,
                         "when": time.time()
                     },
                 )

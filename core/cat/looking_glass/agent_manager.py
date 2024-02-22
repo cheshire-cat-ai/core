@@ -49,8 +49,8 @@ class AgentManager:
         recalled_procedures_names = set()
         for p in stray.working_memory["procedural_memories"]:
             procedure = p[0]
-            if procedure.metadata["source"] in ["tool","form"]: #TODO: There can be other the descritpion and start examples
-                recalled_procedures_names.add(procedure.metadata["name"])
+            if procedure.metadata["procedure_type"] in ["tool","form"]: #TODO: There can be other the descritpion and start examples
+                recalled_procedures_names.add(procedure.metadata["source"])
 
         # Get tools with that name from mad_hatter
         allowed_procedures: Dict[str, CatTool | CatForm] = {}
@@ -209,8 +209,8 @@ class AgentManager:
                     recalled_tools_names = set()
                     for p in stray.working_memory["procedural_memories"]:
                         procedure = p[0]
-                        if procedure.metadata["source"] in ["tool", "tool_example"]:
-                            recalled_tools_names.add(procedure.metadata["name"])
+                        if procedure.metadata["procedure_type"] in ["tool", "tool_example"]:
+                            recalled_tools_names.add(procedure.metadata["source"])
                     allowed_tools = [t for t in self.mad_hatter.tools if t.name in recalled_tools_names]
                     return_direct_tools = []
                     for t in allowed_tools:

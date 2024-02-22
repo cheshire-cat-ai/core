@@ -22,7 +22,7 @@ class CatFormState(Enum):
 class CatForm:  # base model of forms
 
     model_class:     BaseModel
-    source:          str = "form"
+    procedure_type:  str = "form"
     name:            str = None
     description:     str
     start_examples:  List[str]
