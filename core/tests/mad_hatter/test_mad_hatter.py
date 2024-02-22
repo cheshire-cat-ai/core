@@ -43,7 +43,7 @@ def test_instantiation_discovery(mad_hatter):
     assert tool.plugin_id == "core_plugin"
     assert tool.cat is None
     assert tool.name == "get_the_time"
-    assert "get_the_time" in tool.description
+    assert tool.description == "Useful to get the current time when asked. Input is always None."
     assert isfunction(tool.func)
     assert tool.return_direct == False
     assert len(tool.start_examples) == 2
