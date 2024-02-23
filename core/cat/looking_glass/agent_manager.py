@@ -49,7 +49,7 @@ class AgentManager:
         recalled_procedures_names = set()
         for p in stray.working_memory["procedural_memories"]:
             procedure = p[0]
-            if procedure.metadata["procedure_type"] in ["tool","form"]: #TODO: There can be other the descritpion and start examples
+            if procedure.metadata["type"] in ["tool","form"] and procedure.metadata["trigger_type"] in ["description", "start_example"]:
                 recalled_procedures_names.add(procedure.metadata["source"])
 
         # Get tools with that name from mad_hatter
@@ -209,7 +209,7 @@ class AgentManager:
                     recalled_tools_names = set()
                     for p in stray.working_memory["procedural_memories"]:
                         procedure = p[0]
-                        if procedure.metadata["procedure_type"] in ["tool", "tool_example"]:
+                        if procedure.metadata["type"] == "tool":
                             recalled_tools_names.add(procedure.metadata["source"])
                     allowed_tools = [t for t in self.mad_hatter.tools if t.name in recalled_tools_names]
                     return_direct_tools = []

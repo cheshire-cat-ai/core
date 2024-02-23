@@ -8,7 +8,10 @@ def form(Form: CatForm) -> CatForm:
 
     if Form.triggers_map is None:
         Form.triggers_map =  {
-            "start_example": Form.start_examples
+            "start_example": Form.start_examples,
+            "description": [
+                f"{Form.name}: {Form.description}"
+            ]
         }
     
     return Form

@@ -25,8 +25,12 @@ from cat.utils import singleton
 
 class Procedure(Protocol):
     name: str
-    description: str
-    procedure_type: str
+    procedure_type: str # "tool" or "form"
+
+    # {
+    #   "description": [],
+    #   "start_examples": [],
+    # }
     triggers_map: Dict[str, List[str]]
 
 # main class
@@ -296,7 +300,9 @@ class CheshireCat():
         log.error("Embedded procedures")
         pprint(embedded_procedures_hashes)
         log.error("Active procedures")
-        pprint(active_procedures_hashes)
+        #for p in embedded_procedures_hashes:
+        #    print(p["content"])
+        print(active_procedures_hashes)
 
         # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
         points_to_be_deleted  = set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())

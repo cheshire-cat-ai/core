@@ -44,6 +44,8 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     assert procedures_sources.count("tool") == 2
     assert procedures_sources.count("tool_example") == 4
 
+    # TODO forms are embedded
+
 
 def test_plugin_uninstall(client, just_installed_plugin):
 
@@ -68,19 +70,18 @@ def test_plugin_uninstall(client, just_installed_plugin):
 
     # only examples for core tool
     # Ensure unique procedure sources
-    procedures_sources = list(set(map(lambda t: t["metadata"]["source"], procedures))) 
-    assert procedures_sources.count("tool") == 1
-    assert procedures_sources.count("form") == 0 # TODO: Add a form in mock plugin
+    procedures_sources = list(map(lambda t: t["metadata"]["type"], procedures)) 
+    assert procedures_sources.count("tool") == 3
+    assert procedures_sources.count("form") == 0
 
     tool_start_examples = []
     form_start_examples = []
     for p in procedures:
         if p["metadata"]["type"] == "tool" and p["metadata"]["trigger_type"] == "start_example":
             tool_start_examples.append(p)
-            continue
 
         if p["metadata"]["type"] == "form" and p["metadata"]["trigger_type"] == "start_example":
             form_start_examples.append(p)
     
     assert len(tool_start_examples) == 2
-    assert len(form_start_examples) == 0 # TODO: Add a form in mock plugin
+    assert len(form_start_examples) == 0

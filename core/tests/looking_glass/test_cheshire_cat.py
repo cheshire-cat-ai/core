@@ -61,18 +61,35 @@ def test_default_embedder_loaded(cheshire_cat):
     assert sample_embed == out
 
 
-def test_tools_embedded(cheshire_cat):
+def test_procedures_embedded(cheshire_cat):
 
     # get embedded tools
-    tools = cheshire_cat.memory.vectors.procedural.get_all_points()
-    tools_descriptions = [t for t in tools if t.payload["metadata"]["type"] == "tool_description"]
-    tools_examples = [t for t in tools if t.payload["metadata"]["type"] == "tool_start_example"]
-    
-    assert len(tools_descriptions) == 1
-    assert len(tools_examples) == 2
+    procedures = cheshire_cat.memory.vectors.procedural.get_all_points()
+    assert len(procedures) == 3
 
-    # some check on the embedding
-    assert "get_the_time" in tools_descriptions[0].payload["page_content"]
-    assert isinstance(tools_descriptions[0].vector, list)
-    sample_embed = DumbEmbedder().embed_query("I'm smarter than a random embedder BTW")
-    assert len(tools_descriptions[0].vector) == len(sample_embed) # right embed size
+    for p in procedures:
+        assert p.payload["metadata"]["source"] == "get_the_time"
+        assert p.payload["metadata"]["type"] == "tool"
+        trigger_type = p.payload["metadata"]["trigger_type"]
+        content = p.payload["page_content"]
+        assert trigger_type in ["start_example", "description"]
+        
+        if trigger_type == "start_example":
+            assert content in ["what time is it", "get the time"]
+        if trigger_type == "description":
+            assert content == "get_the_time: Useful to get the current time when asked. Input is always None."
+        
+        # some check on the embedding
+        assert isinstance(p.vector, list)
+        expected_embed = cheshire_cat.embedder.embed_query(content)
+        print(trigger_type)
+        print(content)
+        assert len(p.vector) == len(expected_embed) # same embed
+        assert p.vector == expected_embed
+        
+
+    #tools_embeddings = [p for p in procedures if p.payload["metadata"]["type"] == "tool"]
+    #assert len(tools_embeddings) == 3
+
+    #form_embeddings = [p for p in procedures if p.payload["metadata"]["source"] == "form"]
+    #assert len(form_embeddings) == 3

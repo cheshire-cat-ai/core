@@ -12,6 +12,7 @@ class CatTool(BaseTool):
     def __init__(self, name: str, func: Callable, return_direct: bool = False, examples: List[str] = []):
 
         description = func.__doc__.strip()
+
         # call parent contructor
         super().__init__(name=name, func=func, description=description, return_direct=return_direct)
 
@@ -25,6 +26,9 @@ class CatTool(BaseTool):
         self.return_direct = return_direct
 
         self.triggers_map = {
+            "description"  : [
+                f"{name}: {description}"
+            ],
             "start_example": examples
         }
         # remove cat argument from signature so it does not end up in prompts
