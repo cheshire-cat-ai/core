@@ -31,14 +31,18 @@ def test_deactivate_plugin(client, just_installed_plugin):
     # tool has been taken away
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 3
-    procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert "mock_tool" not in procedures_names
-    assert "get_the_time" in procedures_names # from core_plugin
+    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
+    assert "mock_tool" not in procedures_sources
+    assert "PizzaForm" not in procedures_sources
+    assert "get_the_time" in procedures_sources # from core_plugin
 
     # only examples for core tool
-    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert procedures_sources.count("tool") == 1
-    assert procedures_sources.count("tool_example") == 2
+    procedures_types = list(map(lambda t: t["metadata"]["type"], procedures))
+    assert procedures_types.count("tool") == 3
+    assert procedures_types.count("form") == 0
+    procedures_triggers = list(map(lambda t: t["metadata"]["trigger_type"], procedures))
+    assert procedures_triggers.count("start_example") == 2
+    assert procedures_triggers.count("description") == 1
     
 
 def test_reactivate_plugin(client, just_installed_plugin):
@@ -60,13 +64,18 @@ def test_reactivate_plugin(client, just_installed_plugin):
     response = client.get("/plugins/mock_plugin")
     assert response.json()["data"]["active"] == True
 
-    # tool has been re-embedded
+    # check whether procedures have been re-embedded
     procedures = get_procedural_memory_contents(client)
-    assert len(procedures) == 6 # two tools and two examples each
+    assert len(procedures) == 9 # two tools, 4 tools examples, 3  form triggers
     procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert "mock_tool" in procedures_names
-    assert "get_the_time" in procedures_names # from core_plugin
+    assert procedures_names.count("mock_tool") == 3
+    assert procedures_names.count("get_the_time") == 3
+    assert procedures_names.count("PizzaForm") == 3
 
-    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert procedures_sources.count("tool") == 2
-    assert procedures_sources.count("tool_example") == 4
+    procedures_sources = list(map(lambda t: t["metadata"]["type"], procedures))
+    assert procedures_sources.count("tool") == 6
+    assert procedures_sources.count("form") == 3
+
+    procedures_triggers = list(map(lambda t: t["metadata"]["trigger_type"], procedures))
+    assert procedures_triggers.count("start_example") == 6
+    assert procedures_triggers.count("description") == 3

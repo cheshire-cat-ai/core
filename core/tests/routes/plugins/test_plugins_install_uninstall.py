@@ -35,16 +35,19 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
 
     # check whether new tool has been embedded
     procedures = get_procedural_memory_contents(client)
-    assert len(procedures) == 6 # two tools, 4 tools examples
+    assert len(procedures) == 9 # two tools, 4 tools examples, 3  form triggers
     procedures_names = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert "mock_tool" in procedures_names
-    assert "get_the_time" in procedures_names # from core_plugin
+    assert procedures_names.count("mock_tool") == 3
+    assert procedures_names.count("get_the_time") == 3
+    assert procedures_names.count("PizzaForm") == 3
 
-    procedures_sources = list(map(lambda t: t["metadata"]["source"], procedures))
-    assert procedures_sources.count("tool") == 2
-    assert procedures_sources.count("tool_example") == 4
+    procedures_sources = list(map(lambda t: t["metadata"]["type"], procedures))
+    assert procedures_sources.count("tool") == 6
+    assert procedures_sources.count("form") == 3
 
-    # TODO forms are embedded
+    procedures_triggers = list(map(lambda t: t["metadata"]["trigger_type"], procedures))
+    assert procedures_triggers.count("start_example") == 6
+    assert procedures_triggers.count("description") == 3
 
 
 def test_plugin_uninstall(client, just_installed_plugin):

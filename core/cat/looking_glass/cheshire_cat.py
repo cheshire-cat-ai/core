@@ -296,25 +296,15 @@ class CheshireCat():
         # Easy access to active procedures in mad_hatter (source of truth!)
         active_procedures_hashes = self.build_active_procedures_hashes(self.mad_hatter.procedures)
 
-        from pprint import pprint
-        log.error("Embedded procedures")
-        pprint(embedded_procedures_hashes)
-        log.error("Active procedures")
-        #for p in embedded_procedures_hashes:
-        #    print(p["content"])
-        print(active_procedures_hashes)
-
         # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
         points_to_be_deleted  = set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
         points_to_be_embedded = set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
 
-        log.warning("Points to be deleted")
-        pprint(points_to_be_deleted)
         points_to_be_deleted_ids = [embedded_procedures_hashes[p] for p in points_to_be_deleted]
-        self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
+        if points_to_be_deleted_ids:
+            log.warning(f"Deleting triggers: {points_to_be_deleted}")
+            self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
 
-        log.warning("Points to be embedded")
-        pprint(points_to_be_embedded)
         active_triggers_to_be_embedded = [active_procedures_hashes[p] for p in points_to_be_embedded]
         for t in active_triggers_to_be_embedded:
             print(t)

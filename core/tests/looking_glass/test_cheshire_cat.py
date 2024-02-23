@@ -82,14 +82,5 @@ def test_procedures_embedded(cheshire_cat):
         # some check on the embedding
         assert isinstance(p.vector, list)
         expected_embed = cheshire_cat.embedder.embed_query(content)
-        print(trigger_type)
-        print(content)
         assert len(p.vector) == len(expected_embed) # same embed
-        assert p.vector == expected_embed
-        
-
-    #tools_embeddings = [p for p in procedures if p.payload["metadata"]["type"] == "tool"]
-    #assert len(tools_embeddings) == 3
-
-    #form_embeddings = [p for p in procedures if p.payload["metadata"]["source"] == "form"]
-    #assert len(form_embeddings) == 3
+        # assert p.vector == expected_embed TODO: Qdrant does unwanted normalization
