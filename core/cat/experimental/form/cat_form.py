@@ -72,7 +72,7 @@ JSON:
 
 
         # Print confirm prompt
-        print(confirm_prompt)
+        log.debug(confirm_prompt)
 
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(confirm_prompt, stream=True)
@@ -81,6 +81,8 @@ JSON:
     # Check if the user wants to exit the form
     # it is run at the befginning of every form.next()
     def check_exit_intent(self) -> bool:
+
+        # TODO: add exit examples
 
         # Get user message
         history = self.stringify_convo_history()
@@ -106,7 +108,7 @@ JSON:
 
 
         # Print confirm prompt
-        print(check_exit_prompt)
+        log.debug(check_exit_prompt)
 
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(check_exit_prompt, stream=True)
@@ -114,7 +116,6 @@ JSON:
 
     # Execute the dialogue step
     def next(self):
-        log.critical(self._state)
 
         # could we enrich prompt completion with episodic/declarative memories?
         #self.cat.working_memory["episodic_memories"] = []
@@ -141,7 +142,7 @@ JSON:
                 self._state = CatFormState.WAIT_CONFIRM
             else:
                 self._state = CatFormState.CLOSED
-                return self.submit(self._model) # TODO?
+                return self.submit(self._model)
             
         # if state is still INCOMPLETE, recap and ask for new info
         return self.message()
@@ -164,8 +165,12 @@ JSON:
     
     def message(self):
 
+        log.critical(self._state)
+
         if self._state == CatFormState.CLOSED:
-            return f"Form {type(self).__name__} closed"
+            return {
+                "output": f"Form {type(self).__name__} closed"
+            }
 
         separator = "\n - "
         missing_fields = ""
@@ -185,12 +190,13 @@ JSON:
 {missing_fields}
 {invalid_fields}
 """
-        
-        if self._state == CatFormState.INCOMPLETE:
-            return out
     
         if self._state == CatFormState.WAIT_CONFIRM:
-            return out + "\n --> Confirm? Yes or no?"
+            out += "\n --> Confirm? Yes or no?"
+
+        return {
+            "output": out
+        }
 
     def stringify_convo_history(self):
 
@@ -209,7 +215,7 @@ JSON:
     def extract(self):
         
         prompt = self.extraction_prompt()
-        print(prompt)
+        log.debug(prompt)
 
         # Invoke LLM chain
         extraction_chain = LLMChain(
@@ -220,7 +226,7 @@ JSON:
         )
         json_str = extraction_chain.invoke({"stop": ["```"]})["output"]
         
-        print(f"json after parser:\n{json_str}")
+        log.debug(f"Form JSON after parser:\n{json_str}")
 
         # json parser
         try:

@@ -34,4 +34,6 @@ class PizzaForm(CatForm):
         
         msg = f"Form submitted: {form_data}"
         #self.cat.send_ws_message(msg, msg_type="chat")
-        return msg
+        return {
+            "output": msg
+        }
