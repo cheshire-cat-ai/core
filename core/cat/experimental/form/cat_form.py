@@ -26,7 +26,7 @@ class CatForm:  # base model of forms
     name:            str = None
     description:     str
     start_examples:  List[str]
-    stop_examples:   List[str]
+    stop_examples:   List[str] = []
     ask_confirm:     bool = False
     triggers_map = None
     _autopilot = False
@@ -70,10 +70,6 @@ JSON:
 {{
     "confirm": """
 
-
-        # Print confirm prompt
-        log.debug(confirm_prompt)
-
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(confirm_prompt, stream=True)
         return "true" in response.lower()
@@ -87,6 +83,15 @@ JSON:
         # Get user message
         history = self.stringify_convo_history()
 
+        # Stop examples
+        stop_examples = """
+Examples where {"exit": true}:
+- exit form
+- stop it"""
+
+        for se in self.stop_examples:
+            stop_examples += f"\n- {se}"
+
         # Check exit prompt
         check_exit_prompt = \
 f"""Your task is to produce a JSON representing whether a user wants to exit or not.
@@ -97,6 +102,8 @@ JSON must be in this format:
 }}
 ```
 
+{stop_examples}
+
 This is the conversation:
 
 {history}
@@ -105,10 +112,6 @@ JSON:
 ```json
 {{
     "exit": """
-
-
-        # Print confirm prompt
-        log.debug(check_exit_prompt)
 
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(check_exit_prompt, stream=True)
@@ -164,8 +167,6 @@ JSON:
         return new_model    
     
     def message(self):
-
-        log.critical(self._state)
 
         if self._state == CatFormState.CLOSED:
             return {
