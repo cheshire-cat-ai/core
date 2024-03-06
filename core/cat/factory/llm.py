@@ -208,11 +208,16 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
         }
     )
 
-
+# https://api.python.langchain.com/en/latest/llms/langchain_community.llms.huggingface_endpoint.HuggingFaceEndpoint.html
 class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
-    task: str = "text2text-generation"
+    task: str = "text-generation"
+    max_new_tokens: int = 512
+    top_k: int = None
+    top_p: float = 0.95
+    temperature: float = 0.8
+    return_full_text: bool = False
     _pyclass: Type = HuggingFaceEndpoint
 
     model_config = ConfigDict(
