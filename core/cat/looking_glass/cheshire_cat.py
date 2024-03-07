@@ -43,7 +43,7 @@ class CheshireCat():
     Attributes
     ----------
     todo : list
-        TODO TODO TODO.
+        Yet to be written.
 
     """
 

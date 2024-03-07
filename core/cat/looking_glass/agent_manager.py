@@ -225,7 +225,7 @@ class AgentManager:
 
         # we run memory chain if:
         # - no procedures where recalled or selected or
-        # - procedures have return_direct=True or
+        # - procedures have all return_direct=False or
         # - procedures agent crashed big time
         if "tools_output" not in agent_input:
             agent_input["tools_output"] = ""

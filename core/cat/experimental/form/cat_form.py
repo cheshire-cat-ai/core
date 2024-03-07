@@ -78,8 +78,6 @@ JSON:
     # it is run at the befginning of every form.next()
     def check_exit_intent(self) -> bool:
 
-        # TODO: add exit examples
-
         # Get user message
         history = self.stringify_convo_history()
 
