@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.4.8 ( 2024-02-10 )
+
+New in version 1.4.8
+
+- fix Huggingface endpoint integration by @valentimarco 
+- optimize plugins' dependencies checks by @kodaline and @pingdred
+- adapter for OpenAI compatible endpoints by @AlessandroSpallina
+- optimizations for temp files and logs by @pingdred
+- Levenshtein distance utility by @horw
+- customizable query param for recall functionality by @pazoff 
+- alternative syntax for `@hook` by @zAlweNy26 
+- `@tool` examples` by @zAlweNy26 
+- ENV variable sfor Qdrant endpoint by @lucapirrone
+- endpoints' final  `/` standardization by @zAlweNy26 
+- logs refactoring by @giovannialbero1992
+- chuck size and overlap in RabbitHole based on tokens by @nickprock 
+- CustomOllama LLM adapter by @valentimarco 
+- plugin upgradeability flag by @bositalia
+- FatsEmbed base model and model enum by @nickprock and @valentimarco 
+- bump langchain and openai versions by @Pingdred 
+- new `before_cat_stores_episodic_memory` hook by @lucapirrone
+- fix cat plugins folder bug in test suite by @nickprock 
+- bump qdrant client version by @nickprock 
+
+## (long time passed here without changelod updates)
+
 ## 0.0.5 ( 2023-06-05 )
 
 ### Enhancements

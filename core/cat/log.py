@@ -202,9 +202,11 @@ class CatLogEngine:
         )
 
         # prettify
-        # TODO: newlines lose coloring :(
-        if type(msg) in [dict, list, str]:
-            msg = json.dumps(msg, indent=4)
+        if type(msg) in [dict, list, str]: # TODO: should be recursive
+            try:
+                msg = json.dumps(msg, indent=4)
+            except:
+                pass
         else:
             msg = pformat(msg)
 

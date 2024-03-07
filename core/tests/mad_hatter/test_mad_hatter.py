@@ -43,11 +43,12 @@ def test_instantiation_discovery(mad_hatter):
     assert tool.plugin_id == "core_plugin"
     assert tool.cat is None
     assert tool.name == "get_the_time"
-    assert "get_the_time" in tool.description
-    assert "what time is it" in tool.docstring
+    assert tool.description == "Useful to get the current time when asked. Input is always None."
     assert isfunction(tool.func)
     assert tool.return_direct == False
-    assert tool.examples == []
+    assert len(tool.start_examples) == 2
+    assert "what time is it" in tool.start_examples
+    assert "get the time" in tool.start_examples
 
     # list of active plugins in DB is correct
     active_plugins = mad_hatter.load_active_plugins_from_db()
@@ -81,6 +82,10 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     new_tool = mad_hatter.plugins["mock_plugin"].tools[0]
     assert new_tool.plugin_id == "mock_plugin"
     assert id(new_tool) == id(mad_hatter.tools[1])  # cached and same object in memory!
+    # tool examples found
+    assert len(new_tool.start_examples) == 2
+    assert "mock tool example 1" in new_tool.start_examples
+    assert "mock tool example 2" in new_tool.start_examples
 
     # hooks found
     new_hooks = mad_hatter.plugins["mock_plugin"].hooks

@@ -25,8 +25,8 @@ class StrayCat:
     def __init__(
             self,
             user_id: str,
+            main_loop,
             ws: WebSocket = None,
-            event_loop = None
         ):
         self.__user_id = user_id
         self.__ws_messages = asyncio.Queue()
@@ -35,12 +35,9 @@ class StrayCat:
         # attribute to store ws connection
         self.ws = ws
 
-        # event loop
-        if event_loop is None:
-            self.__loop = asyncio.get_event_loop()
-        else:
-            self.__loop = event_loop
+        self.__main_loop = main_loop
 
+        self.__loop = asyncio.new_event_loop()
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
         
@@ -66,25 +63,26 @@ class StrayCat:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
         if msg_type == "error":
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "name": "GenericError",
-                        "description": content
-                    }
-                )
+
+            # Call put_nowait in the uvicorn main loop is necessary
+            # as the ws_mesages queue
+
+            self.__main_loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "name": "GenericError",
+                    "description": content
+                }
             )
         else:
-            self.__loop.create_task(
-                self.__ws_messages.put(
-                    {
-                        "type": msg_type,
-                        "content": content
-                    }
-                )
+            self.__main_loop.call_soon_threadsafe(
+                self.__ws_messages.put_nowait,
+                {
+                    "type": msg_type,
+                    "content": content
+                }
             )
-
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
@@ -120,7 +118,7 @@ class StrayCat:
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=self)
-        log.info(f'Recall query: "{recall_query}"')
+        log.info(f"Recall query: '{recall_query}'")
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
@@ -176,7 +174,6 @@ class StrayCat:
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
 
-
     def llm(self, prompt: str, stream: bool = False) -> str:
         """Generate a response using the LLM model.
 
@@ -207,8 +204,7 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-
-    def __call__(self, user_message_json):
+    async def __call__(self, user_message_json):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
@@ -267,7 +263,7 @@ class StrayCat:
             
             # reply with agent
             try:
-                cat_message = self.agent_manager.execute_agent(self)
+                cat_message = await self.agent_manager.execute_agent(self)
             except Exception as e:
                 # This error happens when the LLM
                 #   does not respect prompt instructions.
@@ -323,7 +319,7 @@ class StrayCat:
                 "content": str(cat_message.get("output")),
                 "why": {
                     "input": cat_message.get("input"),
-                    "intermediate_steps": cat_message.get("intermediate_steps"),
+                    "intermediate_steps": cat_message.get("intermediate_steps", []),
                     "memory": {
                         "episodic": episodic_report,
                         "declarative": declarative_report,
@@ -339,6 +335,11 @@ class StrayCat:
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
+
+    def run(self, user_message_json):
+        return self.loop.run_until_complete(
+            self.__call__(user_message_json)
+        )
 
     def send_long_message_to_declarative(self):
         #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
@@ -364,10 +365,6 @@ class StrayCat:
     @property
     def user_id(self):
         return self.__user_id
-    
-    @property
-    def ws_messages(self):
-        return self.__ws_messages
 
     @property
     def _llm(self):
@@ -392,3 +389,7 @@ class StrayCat:
     @property
     def agent_manager(self):
         return CheshireCat().agent_manager
+
+    @property
+    def loop(self):
+        return self.__loop

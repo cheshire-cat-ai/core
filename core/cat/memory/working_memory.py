@@ -1,7 +1,3 @@
-import asyncio
-from typing import get_args, Literal
-
-from cat.log import log
 
 class WorkingMemory(dict):
     """Cat's volatile memory.
@@ -23,11 +19,6 @@ class WorkingMemory(dict):
         # The constructor instantiates a `dict` with a 'history' key to store conversation history
         # and the asyncio queue to manage the session notifications
         super().__init__(history=[])        
-
-    def get_user_id(self):
-        """Get current user id."""
-        
-        return self["user_message_json"]["user_id"]
 
     def update_conversation_history(self, who, message, why={}):
         """Update the conversation history.

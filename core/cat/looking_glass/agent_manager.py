@@ -6,17 +6,22 @@ from typing import List, Dict
 
 from copy import deepcopy
 
+from langchain_core.runnables import RunnableConfig
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 
+from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.callbacks import NewTokenHandler
-from cat.looking_glass.output_parser import ToolOutputParser
+from cat.looking_glass.output_parser import ChooseProcedureOutputParser, AgentAction, AgentFinish
 from cat.utils import verbal_timedelta
 from cat.log import log
+
+from cat.experimental.form import CatForm, CatFormState
 
 
 class AgentManager:
@@ -39,21 +44,40 @@ class AgentManager:
         else:
             self.verbose = False
 
+    async def execute_procedures_agent(self, agent_input, stray):
 
-    def execute_tool_agent(self, agent_input, allowed_tools, stray):
+        # gather recalled procedures
+        recalled_procedures_names = set()
+        for p in stray.working_memory["procedural_memories"]:
+            procedure = p[0]
+            if procedure.metadata["type"] in ["tool","form"] and procedure.metadata["trigger_type"] in ["description", "start_example"]:
+                recalled_procedures_names.add(procedure.metadata["source"])
 
-        # fix tools so they have an instance of the cat
-        allowed_tools_copy = deepcopy(allowed_tools)
-        for t in allowed_tools_copy:
-            # Prepare the tool to be used in the Cat (adding properties)
-            t.assign_cat(stray)
+        # Get tools with that name from mad_hatter
+        allowed_procedures: Dict[str, CatTool | CatForm] = {}
+        allowed_tools: List[CatTool] = []
+        return_direct_tools: List[str] = []
 
-        allowed_tools_names = [t.name for t in allowed_tools_copy]
-        # TODO: dynamic input_variables as in the main prompt 
+        for p in self.mad_hatter.procedures:
+            
+            if p.name in recalled_procedures_names:
+                # Prepare the tool to be used in the Cat (adding properties)
+                if Plugin._is_cat_tool(p):
+                    tool = deepcopy(p)
+                    tool.assign_cat(stray)
+                    allowed_tools.append(tool)
+                    allowed_procedures[tool.name] = tool
 
+                    # cache if the tool is return_direct
+                    if p.return_direct:
+                        return_direct_tools.append(tool.name)
+                else:
+                    # form
+                    allowed_procedures[p.name] = p
+    
         prompt = prompts.ToolPromptTemplate(
             template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray),
-            tools=allowed_tools_copy,
+            procedures=allowed_procedures,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
             input_variables=["input", "intermediate_steps"]
@@ -69,25 +93,63 @@ class AgentManager:
         # init agent
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
-            output_parser=ToolOutputParser(),
+            output_parser=ChooseProcedureOutputParser(),
             stop=["\nObservation:"],
-            allowed_tools=allowed_tools_names,
             verbose=self.verbose
         )
 
         # agent executor
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=agent,
-            tools=allowed_tools_copy,
+            tools=allowed_tools,
             return_intermediate_steps=True,
             verbose=self.verbose
         )
 
-        out = agent_executor(agent_input)
-        return out
-    
+        # agent RUN
+        out = await agent_executor.ainvoke(agent_input)
 
-    def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
+        # Extract intermediate steps in the format ((tool_name, tool_input), output)
+        # Also check if we have a return_direct tool
+        # TODO: only works with tools at the moment
+        out["return_direct"] = False
+        intermediate_steps = []
+        for step in out.get("intermediate_steps", []):
+            intermediate_steps.append(
+                ((step[0].tool, step[0].tool_input), step[1])
+            )
+
+            # If a tool was decorated with return_direct=True, indicate it in output
+            if step[0].tool in return_direct_tools:
+                out["return_direct"] = True
+        out["intermediate_steps"] = intermediate_steps
+
+        # if a form was selected, build it and store it in working memory
+        if "form" in out.keys():
+            FormClass = allowed_procedures.get(out["form"], None)
+            f = FormClass(stray)
+            stray.working_memory["forms"] = f
+            # let the form reply directly
+            out = f.next()
+            out["return_direct"] = True
+        
+        return out
+
+    async def execute_form_agent(self, stray):
+        
+        active_form = stray.working_memory.get("forms", None)
+        if active_form:
+            log.warning(active_form._state)
+            # closing form if state is closed
+            if active_form._state == CatFormState.CLOSED:
+                del stray.working_memory["forms"]
+            else:
+                # continue form
+                return active_form.next()
+        
+        return None # no active form
+        
+    async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
         input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
         # memory chain (second step)
@@ -99,100 +161,78 @@ class AgentManager:
         memory_chain = LLMChain(
             prompt=memory_prompt,
             llm=stray._llm,
-            verbose=self.verbose
+            verbose=self.verbose,
+            output_key="output"
         )
 
-        out = memory_chain(agent_input, callbacks=[NewTokenHandler(stray)])
-        out["output"] = out["text"]
-        del out["text"]
-        return out
+        return await memory_chain.ainvoke(agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
 
-
-    def execute_agent(self, stray):
+    async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
 
-        The method formats the main prompt and gather the allowed tools. It also instantiates a conversational Agent
+        The method formats the main prompt and gather the allowed tools/forms. It also instantiates a conversational Agent
         from Langchain.
 
         Returns
         -------
-        agent_executor : AgentExecutor
-            Instance of the Agent provided with a set of tools.
+        agent_executor : agent reply
+            Reply of the Agent in the format `{"output": ..., "intermediate_steps": ...}`.
         """
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(stray.working_memory)
         agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=stray)
+        
         # should we run the default agent?
         fast_reply = {}
         fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=stray)
         if len(fast_reply.keys()) > 0:
             return fast_reply
+        
+        # obtain prompt parts from plugins
         prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=stray)
         prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray)
+        
+        # Run active form if present
+        form_result = await self.execute_form_agent(stray)
+        if form_result:
+            return form_result # exit agent with form output
+        
+        # Select and run useful procedures
+        intermediate_steps = []
+        procedural_memories = stray.working_memory["procedural_memories"]
+        if len(procedural_memories) > 0:
 
-
-        # tools currently recalled in working memory
-        recalled_tools = stray.working_memory["procedural_memories"]
-        # Get the tools names only
-        tools_names = [t[0].metadata["name"] for t in recalled_tools]
-        tools_names = self.mad_hatter.execute_hook("agent_allowed_tools", tools_names, cat=stray)
-        # Get tools with that name from mad_hatter
-        allowed_tools = [i for i in self.mad_hatter.tools if i.name in tools_names]
-
-        # Try to get information from tools if there is some allowed
-        if len(allowed_tools) > 0:
-
-            log.debug(f"{len(allowed_tools)} allowed tools retrived.")
+            log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                tools_result = self.execute_tool_agent(agent_input, allowed_tools, stray)
+                procedures_result = await self.execute_procedures_agent(agent_input, stray)
+                if procedures_result.get("return_direct"):
+                    # exit agent if a return_direct procedure was executed
+                    return procedures_result
 
-                # If tools_result["output"] is None the LLM has used the fake tool none_of_the_others  
-                # so no relevant information has been obtained from the tools.
-                if tools_result["output"] is not None:
-                    
-                    # Extract of intermediate steps in the format ((tool_name, tool_input), output)
-                    used_tools = list(map(lambda x:((x[0].tool, x[0].tool_input), x[1]), tools_result["intermediate_steps"]))
+                # Adding the tools_output key in agent input, needed by the memory chain
+                if procedures_result.get("output"):
+                    agent_input["tools_output"] = "## Tools output: \n" + procedures_result["output"]
 
-                    # Get the name of the tools that have return_direct
-                    return_direct_tools = []
-                    for t in allowed_tools:
-                        if t.return_direct:
-                            return_direct_tools.append(t.name)
-
-                    # execute_tool_agent returns immediately when a tool with return_direct is called, 
-                    # so if one is used it is definitely the last one used
-                    if used_tools[-1][0][0] in return_direct_tools:
-                        # intermediate_steps still contains the information of all the tools used even if their output is not returned
-                        tools_result["intermediate_steps"] = used_tools
-                        return tools_result
-
-                    #Adding the tools_output key in agent input, needed by the memory chain
-                    agent_input["tools_output"] = "## Tools output: \n" + tools_result["output"] if tools_result["output"] else ""
-
-                    # Execute the memory chain
-                    out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
-
-                    # If some tools are used the intermediate step are added to the agent output
-                    out["intermediate_steps"] = used_tools
-
-                    #Early return
-                    return out
-
+                # store intermediate steps to enrich memory chain
+                intermediate_steps = procedures_result["intermediate_steps"]
+                
             except Exception as e:
                 log.error(e)
                 traceback.print_exc()
 
-        #If an exeption occur in the execute_tool_agent or there is no allowed tools execute only the memory chain
+        # we run memory chain if:
+        # - no procedures where recalled or selected or
+        # - procedures have all return_direct=False or
+        # - procedures agent crashed big time
+        if "tools_output" not in agent_input:
+            agent_input["tools_output"] = ""
+        memory_chain_output = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
+        memory_chain_output["intermediate_steps"] = intermediate_steps
 
-        #Adding the tools_output key in agent input, needed by the memory chain
-        agent_input["tools_output"] = ""
-        # Execute the memory chain
-        out = self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
-
-        return out
+        return memory_chain_output
     
     def format_agent_input(self, working_memory):
         """Format the input for the Agent.

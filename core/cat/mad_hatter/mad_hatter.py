@@ -1,17 +1,25 @@
+import os
 import glob
 import shutil
-import os
+import inspect
 import traceback
 from copy import deepcopy
+from typing import List, Dict
 
 from cat.log import log
+
 import cat.utils as utils
 from cat.utils import singleton
+
 from cat.db import crud
 from cat.db.models import Setting
+
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
-import inspect
+from cat.mad_hatter.decorators.hook import CatHook
+from cat.mad_hatter.decorators.tool import CatTool
+
+from cat.experimental.form import CatForm
 
 # This class is responsible for plugins functionality:
 # - loading
@@ -27,12 +35,13 @@ class MadHatter:
 
     def __init__(self):
 
-        self.plugins = {} # plugins dictionary
+        self.plugins: Dict[str, Plugin] = {} # plugins dictionary
 
-        self.hooks = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
-        self.tools = [] # list of active plugins tools 
+        self.hooks: Dict[str, List[CatHook]] = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
+        self.tools: List[CatTool] = [] # list of active plugins tools 
+        self.forms: List[CatForm] = [] # list of active plugins forms
 
-        self.active_plugins = []
+        self.active_plugins: List[str] = []
 
         self.plugins_folder = utils.get_plugins_path()
 
@@ -102,7 +111,7 @@ class MadHatter:
             if plugin_id in self.active_plugins:
                 self.plugins[plugin_id].activate()
 
-        self.sync_hooks_and_tools()
+        self.sync_hooks_tools_and_forms()
 
     def load_plugin(self, plugin_path):
         # Instantiate plugin.
@@ -117,19 +126,22 @@ class MadHatter:
             # Print the error and go on with the others.
             log.error(str(e))
 
-    # Load hooks and tools of the active plugins into MadHatter 
-    def sync_hooks_and_tools(self):
+    # Load hooks, tools and forms of the active plugins into MadHatter 
+    def sync_hooks_tools_and_forms(self):
 
-        # emptying tools and hooks
+        # emptying tools, hooks and forms
         self.hooks = {}
         self.tools = []
+        self.forms = []
 
         for _, plugin in self.plugins.items():
-            # load hooks and tools
+            # load hooks, tools and forms from active plugins
             if plugin.id in self.active_plugins:
 
                 # cache tools
                 self.tools += plugin.tools
+
+                self.forms += plugin.forms
 
                 # cache hooks (indexed by hook name)
                 for h in plugin.hooks:
@@ -212,7 +224,7 @@ class MadHatter:
             self.save_active_plugins_to_db(list(set(self.active_plugins)))
 
             # update cache and embeddings     
-            self.sync_hooks_and_tools()
+            self.sync_hooks_tools_and_forms()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
@@ -286,3 +298,6 @@ class MadHatter:
         name = plugin_suffix.split("/")[0]
         return self.plugins[name]
 
+    @property
+    def procedures(self):
+        return self.tools + self.forms

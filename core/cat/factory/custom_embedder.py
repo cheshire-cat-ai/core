@@ -1,8 +1,10 @@
+import re
 import os
 import string
 import json
 from typing import List
 from itertools import combinations
+from collections import OrderedDict
 from sklearn.feature_extraction.text import CountVectorizer
 from langchain_core.embeddings import Embeddings
 import httpx
@@ -19,23 +21,26 @@ class DumbEmbedder(Embeddings):
     This class relies on the `CountVectorizer`[1]_ offered by Scikit-learn.
     This embedder uses a naive approach to extract features from a text and build an embedding vector.
     Namely, it looks for pairs of characters in text starting form a vocabulary with all possible pairs of
-    printable characters, digits excluded.
-
+    printable characters, digits excluded. 
     """
 
     def __init__(self):
+
         # Get all printable characters numbers excluded and make everything lowercase
         chars = [p.lower() for p in string.printable[10:]]
 
         # Make the vocabulary with all possible combinations of 2 characters
-        voc = {f"{k[0]}{k[1]}": v for v, k in enumerate(combinations(chars, 2))}
-
-        # Re-index the tokens
-        for i, k in enumerate(voc.keys()):
-            voc[k] = i
+        voc = []
+        for k in combinations(chars, 2):
+            voc.append(f"{k[0]}{k[1]}")
+        voc = sorted(set(voc))
 
         # Naive embedder that counts occurrences of couple of characters in text
-        self.embedder = CountVectorizer(vocabulary=voc, analyzer="char_wb", ngram_range=(2, 2))
+        self.embedder = CountVectorizer(
+            vocabulary=voc,
+            analyzer=lambda s: re.findall("..", s),
+            binary=True
+        )
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """Embed a list of text and returns the embedding vectors that are lists of floats."""
@@ -43,7 +48,8 @@ class DumbEmbedder(Embeddings):
 
     def embed_query(self, text: str) -> List[float]:
         """Embed a string of text and returns the embedding vector as a list of floats."""
-        return self.embedder.transform([text]).astype(float).todense().tolist()[0]
+        return self.embed_documents([text])[0]
+
 
 
 class CustomOpenAIEmbeddings(Embeddings):

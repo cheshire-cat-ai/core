@@ -1,7 +1,7 @@
 import traceback
 import asyncio
 
-from fastapi import Depends, APIRouter, WebSocketDisconnect, WebSocket
+from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
@@ -21,7 +21,7 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
         user_message["user_id"] = stray.user_id
 
         # Run the `ccat` object's method in a threadpool since it might be a CPU-bound operation.
-        cat_message = await run_in_threadpool(stray, user_message)
+        cat_message = await run_in_threadpool(stray.run, user_message)
 
         # Send the response message back to the user.
         await websocket.send_json(cat_message)
@@ -34,7 +34,7 @@ async def check_messages(websoket: WebSocket, stray: StrayCat):
 
     while True:
         # extract from FIFO list websocket notification
-        notification = await stray.ws_messages.get()
+        notification = await stray._StrayCat__ws_messages.get()
         await websoket.send_json(notification)
 
 
@@ -62,6 +62,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         stray = StrayCat(
             ws=websocket,
             user_id=user_id,
+            main_loop=asyncio.get_running_loop()
         )
         strays[user_id] = stray
 

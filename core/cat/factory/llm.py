@@ -1,5 +1,11 @@
 from langchain_community.chat_models import AzureChatOpenAI
-from langchain_community.llms import OpenAI, AzureOpenAI, Cohere, Ollama, HuggingFaceTextGenInference, HuggingFaceEndpoint
+from langchain_community.llms import (
+    OpenAI,
+    AzureOpenAI,
+    Cohere,
+    HuggingFaceTextGenInference,
+    HuggingFaceEndpoint,
+)
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -19,9 +25,7 @@ class LLMSettings(BaseModel):
 
     # This is related to pydantic, because "model_*" attributes are protected.
     # We deactivate the protection because langchain relies on several "model_*" named attributes
-    model_config = ConfigDict(
-        protected_namespaces=()
-    )
+    model_config = ConfigDict(protected_namespaces=())
 
     # instantiate an LLM from configuration
     @classmethod
@@ -39,9 +43,8 @@ class LLMDefaultConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "Default Language Model",
-            "description":
-                "A dumb LLM just telling that the Cat is not configured. "
-                "There will be a nice LLM here once consumer hardware allows it.",
+            "description": "A dumb LLM just telling that the Cat is not configured. "
+            "There will be a nice LLM here once consumer hardware allows it.",
             "link": "",
         }
     )
@@ -97,7 +100,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
@@ -113,7 +116,7 @@ class LLMOpenAIChatConfig(LLMSettings):
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers, lower value create more focused and deterministc answers
+    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
     streaming: bool = True
     _pyclass: Type = OpenAI
 
@@ -130,12 +133,12 @@ class LLMOpenAIConfig(LLMSettings):
 class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-35-turbo"  # or gpt-4, use only chat models !
-    openai_api_base: str
+    azure_endpoint: str
     openai_api_type: str = "azure"
     # Dont mix api versions https://github.com/hwchase17/langchain/issues/4775
     openai_api_version: str = "2023-05-15"
 
-    deployment_name: str
+    azure_deployment: str
     streaming: bool = True
     _pyclass: Type = AzureChatOpenAI
 
@@ -151,13 +154,13 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 # https://python.langchain.com/en/latest/modules/models/llms/integrations/azure_openai_example.html
 class LLMAzureOpenAIConfig(LLMSettings):
     openai_api_key: str
-    openai_api_base: str
+    azure_endpoint: str
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
     # Don't mix api versions: https://github.com/hwchase17/langchain/issues/4775
     api_version: str = "2023-05-15"
-    deployment_name: str = "gpt-35-turbo-instruct"  # Model "comming soon" according to microsoft
+    azure_deployment: str = "gpt-35-turbo-instruct"
     model_name: str = "gpt-35-turbo-instruct"  # Use only completion models !
     streaming: bool = True
     _pyclass: Type = AzureOpenAI
@@ -205,11 +208,16 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
         }
     )
 
-
+# https://api.python.langchain.com/en/latest/llms/langchain_community.llms.huggingface_endpoint.HuggingFaceEndpoint.html
 class LLMHuggingFaceEndpointConfig(LLMSettings):
     endpoint_url: str
     huggingfacehub_api_token: str
-    task: str = "text2text-generation"
+    task: str = "text-generation"
+    max_new_tokens: int = 512
+    top_k: int = None
+    top_p: float = 0.95
+    temperature: float = 0.8
+    return_full_text: bool = False
     _pyclass: Type = HuggingFaceEndpoint
 
     model_config = ConfigDict(
@@ -220,10 +228,12 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
         }
     )
 
-# monkey patch to fix stops sequences 
-ollama_fix: Type = CustomOllama
-ollama_fix._create_stream = _create_stream_patch
-ollama_fix._acreate_stream = _acreate_stream_patch
+
+# monkey patch to fix stops sequences
+OllamaFix: Type = CustomOllama
+OllamaFix._create_stream = _create_stream_patch
+OllamaFix._acreate_stream = _acreate_stream_patch
+
 
 class LLMOllamaConfig(LLMSettings):
     base_url: str
@@ -233,7 +243,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = ollama_fix
+    _pyclass: Type = OllamaFix
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -251,18 +261,19 @@ class LLMGeminiChatConfig(LLMSettings):
 
     * `google_api_key`: The Google API key used to access the Google Natural Language Processing (NLP) API.
     * `model`: The name of the LLM model to use. In this case, it is set to "gemini".
-    * `temperature`: The temperature of the model, which controls the creativity and variety of the generated responses. 
-    * `top_p`: The top-p truncation value, which controls the probability of the generated words. 
-    * `top_k`: The top-k truncation value, which controls the number of candidate words to consider during generation. 
+    * `temperature`: The temperature of the model, which controls the creativity and variety of the generated responses.
+    * `top_p`: The top-p truncation value, which controls the probability of the generated words.
+    * `top_k`: The top-k truncation value, which controls the number of candidate words to consider during generation.
     * `max_output_tokens`: The maximum number of tokens to generate in a single response.
 
     The `LLMGeminiChatConfig` class is used to create an instance of the Gemini LLM model, which can be used to generate text in natural language.
     """
-    google_api_key: str 
+
+    google_api_key: str
     model: str = "gemini-pro"
-    temperature: float =  0.1
+    temperature: float = 0.1
     top_p: int = 1
-    top_k: int =  1
+    top_k: int = 1
     max_output_tokens: int = 29000
 
     _pyclass: Type = ChatGoogleGenerativeAI
@@ -276,9 +287,8 @@ class LLMGeminiChatConfig(LLMSettings):
     )
 
 
-
 def get_allowed_language_models():
-    
+
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
@@ -293,14 +303,16 @@ def get_allowed_language_models():
         LLMCustomConfig,
         LLMDefaultConfig,
     ]
-    
+
     mad_hatter_instance = MadHatter()
-    list_llms = mad_hatter_instance.execute_hook("factory_allowed_llms", list_llms_default, cat=None)
+    list_llms = mad_hatter_instance.execute_hook(
+        "factory_allowed_llms", list_llms_default, cat=None
+    )
     return list_llms
 
 
 def get_llm_from_name(name_llm: str):
-    """ Find the llm adapter class by name"""
+    """Find the llm adapter class by name"""
     for cls in get_allowed_language_models():
         if cls.__name__ == name_llm:
             return cls

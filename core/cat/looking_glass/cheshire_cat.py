@@ -1,4 +1,6 @@
 import time
+from typing import List, Dict
+from typing_extensions import Protocol
 
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
@@ -7,7 +9,6 @@ from langchain_community.llms import Cohere, OpenAI, AzureOpenAI
 from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 from cat.db import crud
 from cat.factory.custom_llm import CustomOpenAI
@@ -22,6 +23,15 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 
+class Procedure(Protocol):
+    name: str
+    procedure_type: str # "tool" or "form"
+
+    # {
+    #   "description": [],
+    #   "start_examples": [],
+    # }
+    triggers_map: Dict[str, List[str]]
 
 # main class
 @singleton
@@ -33,7 +43,7 @@ class CheshireCat():
     Attributes
     ----------
     todo : list
-        TODO TODO TODO.
+        Yet to be written.
 
     """
 
@@ -57,9 +67,9 @@ class CheshireCat():
         self.load_memory()
 
         # After memory is loaded, we can get/create tools embeddings
-        # every time the mad_hatter finishes syncing hooks and tools, it will notify the Cat (so it can embed tools in vector memory)
-        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_tools
-        self.embed_tools()
+        # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
+        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
+        self.embed_procedures() # first time launched manually
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager()
@@ -246,54 +256,70 @@ class CheshireCat():
         }
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
-    def embed_tools(self):
-        # loops over tools and assigns an embedding each. If an embedding is not present in vectorDB, 
-        # it is created and saved
+    def build_embedded_procedures_hashes(self, embedded_procedures):
 
-        # retrieve from vectorDB all tool embeddings
-        embedded_tools = self.memory.vectors.procedural.get_all_points()
+        hashes = {}
+        for ep in embedded_procedures:
+            #log.warning(ep)
+            metadata = ep.payload["metadata"]
+            content = ep.payload["page_content"]
+            source = metadata["source"]
+            trigger_type = metadata.get("trigger_type", "unsupported") # there may be legacy points with no trigger_type
 
-        # easy access to (point_id, tool_description)
-        embedded_tools_ids = [t.id for t in embedded_tools]
-        embedded_tools_descriptions = [t.payload["page_content"] for t in embedded_tools]
+            p_hash = f"{source}.{trigger_type}.{content}"
+            hashes[p_hash] = ep.id
+        
+        return hashes
+    
+    def build_active_procedures_hashes(self, active_procedures):
 
-        # loop over mad_hatter tools
-        for tool in self.mad_hatter.tools:
-            # if the tool is not embedded 
-            if tool.description not in embedded_tools_descriptions:
-                # embed the tool and save it to DB
-                tool_embedding = self.embedder.embed_documents([tool.description])
-                self.memory.vectors.procedural.add_point(
-                    tool.description,
-                    tool_embedding[0],
-                    {
-                        "source": "tool",
-                        "when": time.time(),
-                        "name": tool.name,
-                        "examples": tool.examples,
-                        "docstring": tool.docstring
-                    },
-                )
+        hashes = {}
+        for ap in active_procedures:
+            for trigger_type, trigger_list in ap.triggers_map.items():
+                for trigger_content in trigger_list:
+                    p_hash = f"{ap.name}.{trigger_type}.{trigger_content}"
+                    hashes[p_hash] = {
+                        "obj": ap,
+                        "source": ap.name,
+                        "type": ap.procedure_type,
+                        "trigger_type": trigger_type,
+                        "content": trigger_content,
+                    }
+        return hashes
 
-                log.warning(f"Newly embedded {repr(tool)}")
+    def embed_procedures(self):
 
-        # easy access to mad hatter tools (found in plugins)
-        mad_hatter_tools_descriptions = [t.description for t in self.mad_hatter.tools]
+        # Retrieve from vectorDB all procedural embeddings
+        embedded_procedures = self.memory.vectors.procedural.get_all_points()
+        embedded_procedures_hashes = self.build_embedded_procedures_hashes(embedded_procedures)
+        
+        # Easy access to active procedures in mad_hatter (source of truth!)
+        active_procedures_hashes = self.build_active_procedures_hashes(self.mad_hatter.procedures)
 
-        # loop over embedded tools and delete the ones not present in active plugins
-        points_to_be_deleted = []
-        for id, descr in zip(embedded_tools_ids, embedded_tools_descriptions):
-            # if the tool is not active, it inserts it in the list of points to be deleted
-            if descr not in mad_hatter_tools_descriptions:
-                log.warning(f"Deleting embedded CatTool: {descr}")
-                points_to_be_deleted.append(id)
+        # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
+        points_to_be_deleted  = set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
+        points_to_be_embedded = set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
 
-        # delete not active tools
-        if len(points_to_be_deleted) > 0:
-            self.memory.vectors.vector_db.delete(
-                collection_name="procedural",
-                points_selector=points_to_be_deleted
+        points_to_be_deleted_ids = [embedded_procedures_hashes[p] for p in points_to_be_deleted]
+        if points_to_be_deleted_ids:
+            log.warning(f"Deleting triggers: {points_to_be_deleted}")
+            self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
+
+        active_triggers_to_be_embedded = [active_procedures_hashes[p] for p in points_to_be_embedded]
+        for t in active_triggers_to_be_embedded:
+            print(t)
+            trigger_embedding = self.embedder.embed_documents([t["content"]])
+            self.memory.vectors.procedural.add_point(
+                t["content"],
+                trigger_embedding[0],
+                {
+                    "source": t["source"],
+                    "type": t["type"],
+                    "trigger_type": t["trigger_type"],
+                    "when": time.time(),
+                }
             )
+            log.warning(f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}")
 
     def send_ws_message(self, content: str, msg_type="notification"):
         log.error("No websocket connection open")

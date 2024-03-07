@@ -1,6 +1,6 @@
 import os
 import shutil
-from tests.utils import get_embedded_tools, create_mock_plugin_zip
+from tests.utils import create_mock_plugin_zip
 
 # TODO: registry responses here should be mocked, at the moment we are actually calling the service
 
