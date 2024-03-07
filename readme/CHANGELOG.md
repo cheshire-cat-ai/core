@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.5.o ( 2024-03-07 )
+## 1.5.0 ( 2024-03-07 )
 
 New in version 1.5.0: **Sir Punctilious Cat, the IV**! 
 
