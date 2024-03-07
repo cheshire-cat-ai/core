@@ -49,6 +49,7 @@ Follow instructions on how to run it with [docker compose and volumes](https://c
 ```python
 from cat.mad_hatter.decorators import tool, hook
 
+# hooks are an event system to get finegraned control over your assistant
 @hook
 def agent_prompt_prefix(prefix, cat):
     prefix = """You are Marvin the socks seller, a poetic vendor of socks.
@@ -56,7 +57,7 @@ You are an expert in socks, and you reply with exactly one rhyme.
 """
     return prefix
 
-
+# langchain inspired tools (function calling)
 @tool(return_direct=True)
 def socks_prices(color, cat):
     """How much do socks cost? Input is the sock color."""
@@ -65,10 +66,45 @@ def socks_prices(color, cat):
         "white": 10,
         "pink": 50,
     }
-    if color not in prices.keys():
-        return f"No {color} socks"
-    else:
-        return f"{prices[color]} €" 
+
+    price = prices.get(color, 0)
+    return f"{price} bucks, meeeow!" 
+```
+
+## Conversational form example
+
+```python
+from pydantic import BaseModel
+from cat.experimental.form import form, CatForm
+
+# data structure to fill up
+class PizzaOrder(BaseModel):
+    pizza_type: str
+    phone: int
+
+# forms let you control goal oriented conversations
+@form
+class PizzaForm(CatForm):
+    description = "Pizza Order"
+    model_class = PizzaOrder
+    start_examples = [
+        "order a pizza!",
+        "I want pizza"
+    ]
+    stop_examples = [
+        "stop pizza order",
+        "not hungry anymore",
+    ]
+    ask_confirm = True
+
+    def submit(self, form_data):
+        
+        # do the actual order here!
+
+        # return to convo
+        return {
+            "output": f"Pizza order on its way: {form_data}"
+        }
 ```
 
 ## Docs and Resources
@@ -82,10 +118,11 @@ def socks_prices(color, cat):
 ## Why use the Cat
 
 - ⚡️ API first, so you get a microservice to easily add a conversational layer to your app
-- 🚀 Extensible via plugins (AI can connect to your APIs or execute custom python code)
-- 🏛 Easy to use admin panel
-- 🌍 Supports any language model (works with OpenAI, Google, Ollama, HuggingFace, custom services)
 - 🐘 Remembers conversations and documents and uses them in conversation
+- 🚀 Extensible via plugins (public plugin registry + private plugins allowed)
+- 🎚 Event callbacks, function calling (tools), conversational forms
+- 🏛 Easy to use admin panel (chat, visualize memory and plugins, adjust settings)
+- 🌍 Supports any language model (works with OpenAI, Google, Ollama, HuggingFace, custom services)
 - 🐋 Production ready - 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
  

@@ -17,7 +17,6 @@ dependencies = [
     "qdrant_client==1.7.2",
     "langchain==0.1.10",
     "langchain-community==0.0.25",
-    "langsmith==0.1.0",
     "langchain-openai",
     "langchain-google-genai",
     "openai==1.10.0",
