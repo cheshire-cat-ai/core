@@ -10,7 +10,7 @@ from langchain_community.embeddings import (
 )
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from fastembed.embedding import Embedding
+from fastembed.embedding import TextEmbedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 
@@ -125,7 +125,7 @@ FastEmbedModels = Enum(
     "FastEmbedModels",
     {
         item["model"].replace("/", "_").replace("-", "_"): item["model"]
-        for item in Embedding.list_supported_models()
+        for item in TextEmbedding.list_supported_models()
     },
 )
 
