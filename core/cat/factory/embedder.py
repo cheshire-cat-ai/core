@@ -134,6 +134,7 @@ class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
     model_name: FastEmbedModels = Field(title="Model name", default="BAAI/bge-base-en")
     max_length: int = 512  # Unknown behavior for values > 512.
     doc_embed_type: str = "passage"  # as suggest on fastembed documentation, "passage" is the best option for documents.
+    cache_dir: str = "cat/data/models/fast_embed"
 
     _pyclass: Type = FastEmbedEmbeddings
 

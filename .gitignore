@@ -24,6 +24,10 @@ test_db.db
 # old admin folder
 admin
 
+# data folder (settings and models)
+core/cat/data/*
+!core/cat/data/.gitkeep
+
 # plugins are not tracked by git
 core/cat/plugins/*
 # plugins readme can stay
