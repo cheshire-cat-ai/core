@@ -219,8 +219,9 @@ class CatLogEngine:
         if secure != '':
             secure = 's'
 
+        server_port = int(os.getenv("CAT_SERVER_PORT","1865"))
         cat_host = os.getenv("CORE_HOST", "localhost")
-        cat_port = os.getenv("CORE_PORT", "1865")
+        cat_port = os.getenv("CORE_PORT", server_port)
         cat_address = f'http{secure}://{cat_host}:{cat_port}'
 
         with open("cat/welcome.txt", 'r') as f:

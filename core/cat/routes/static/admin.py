@@ -1,9 +1,11 @@
 import os
-import re
-import json
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
+cat_workdir = os.getenv("CAT_WORKDIR", "/")
+admin_path=os.path.join(cat_workdir,"admin")
+if not os.path.exists(admin_path):
+    raise FileExistsError(f"the {admin_path} folder doesn't exist")
 
 def mount(cheshire_cat_api):
 
@@ -11,7 +13,7 @@ def mount(cheshire_cat_api):
     mount_admin_spa(cheshire_cat_api)
 
     # note html=False because index.html needs to be injected with runtime information
-    cheshire_cat_api.mount("/admin", StaticFiles(directory="/admin/", html=False), name="admin")
+    cheshire_cat_api.mount("/admin", StaticFiles(directory=admin_path, html=False), name="admin")
 
 
 def mount_admin_spa(cheshire_cat_api):
@@ -34,7 +36,8 @@ def mount_admin_spa(cheshire_cat_api):
         # the admin sttic build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue
         # the files live inside the /admin folder (not visible in volume / cat code)
-        with open("/admin/index.html", 'r') as f:
+        index_path = os.path.join(admin_path, "index.html")
+        with open(index_path, 'r') as f:
             html = f.read()
 
         # TODO: this is ugly, should be done with beautiful soup or a template

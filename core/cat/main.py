@@ -109,10 +109,13 @@ if __name__ == "__main__":
         }
 
     log_level = os.getenv("LOG_LEVEL", "info")
+    server_bind = os.getenv("CAT_SERVER_BIND", "0.0.0.0")
+    server_port = int(os.getenv("CAT_SERVER_PORT", "80"))
+
     uvicorn.run(
         "cat.main:cheshire_cat_api",
-        host="0.0.0.0",
-        port=80,
+        host=server_bind,
+        port=server_port,
         use_colors=True,
         log_level=log_level.lower(),
         **debug_config
