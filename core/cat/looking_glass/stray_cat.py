@@ -6,8 +6,11 @@ from typing import Literal, get_args
 from langchain.docstore.document import Document
 from langchain_community.llms import BaseLLM
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain.chains import LLMChain
+from langchain_core.prompts.prompt import PromptTemplate
 
 from fastapi import WebSocket
+import re
 
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
@@ -362,6 +365,74 @@ class StrayCat:
         )
         self.rabbit_hole.store_documents(self, docs=docs, source="")
 
+    # Receives as input an action enum (ActionName and Description) and a user message, 
+    # and based on that chooses which element of the enum to return (the first element is by default)
+    def classify(self, actions, user_message):
+
+        # Get default action (first element)
+        default_action = next(iter(actions))
+
+        # Compose prompt
+        prompt = f"""
+    Your task is to produce a JSON representing which action the user chooses based on UserMessage. 
+    The possible actions are the following, in case of doubt answer with <{default_action.name}>:
+    """
+        for action in actions:
+            prompt += f"\n<{action.name}> {action.value}"
+            
+        prompt += f"""
+        
+    and return the corresponding tag for the action to be taken in the JSON format,
+    JSON must be in this format:
+    {{
+        "action": "<{default_action.name}>"
+    }}
+    User said "{user_message}"
+
+    JSON:
+    ```json
+    {{
+        "action":"""
+
+        # Escape curly braces in the prompt
+        prompt = prompt.replace("{", "{{").replace("}", "}}")
+
+        # Invoke LLM chain
+        response = self.call_llm_and_extract_json(prompt)
+        
+        # Locates the returned action
+        for action in actions:
+            if "<" + action.name + ">" in response.upper():
+                return action
+        return default_action
+
+    # Call LLM and extract json from the response
+    def call_llm_and_extract_json(self, prompt):
+        
+        # Escape curly braces in the prompt
+        prompt = prompt.replace("{", "{{").replace("}", "}}")
+
+        # Invoke LLM chain
+        extraction_chain = LLMChain(
+            prompt     = PromptTemplate.from_template(prompt),
+            llm        = self._llm,
+            verbose    = True,
+            output_key = "output"
+        )
+        
+        # Stops the acquisition if it finds the end of the json
+        response = extraction_chain.invoke({"stop": ["}"]})["output"] + "}"
+        
+        # Extracts the json from the response
+        match_json = re.search(r'\{[^{}]*\}', response)
+        response = match_json.group() if match_json else response
+
+        # Removes any comments in the json
+        match_comments = r'//.*?\n'
+        response = re.sub(match_comments, '', response)
+
+        return response
+    
     @property
     def user_id(self):
         return self.__user_id
