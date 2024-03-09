@@ -118,24 +118,32 @@ This guide is based on the **contributing-gen**. [Make your own](https://github.
 
 ## Running Without Docker
 If you want debug your code or also to understand better the codebase, it is possible run the cat without docker following these steps.
+
 I will assume that you know what is python, what is a virtual environment and how to activate it both in the console and in your IDE.
+
 If not, plase check on internet before apply some changes on your machine that you will regret in the future.
 
 
-1. from the core directory, create a virtual environment and activate it
-2. install the dependencing from the pyproject.toml file with the comand:
+1. From the core directory, create a virtual environment and activate it
+2. Install the dependencing from the pyproject.toml file with the comand:
   pip install --no-cache-dir .
 3. run
   python -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')
-4. create the worker folder used by the cat. You can create it from anywhere. The important thing is is should be accessible.
+4. Create the worker folder used by the cat. You can create it from anywhere. The important thing is is should be accessible.
 5. Inside the worker folder create the admin folder
 6. Go inside the admin folder and run
   curl -sL https://github.com/cheshire-cat-ai/admin-vue/releases/download/Admin/develop.zip | jar -xv
-7. set the environment variable CAT_WORKDIR to the worder folder path
-8. set the environment variable CAT_SERVER_PORT to the port where you want access the cat. Default port is 80, but some computer doesn't allow this port to be open. A good choise can be 1865 or 8080
-9. set the environment variable CAT_SERVER_BIND to the bind address. If you don't know what it mean, you can leave unset or set to "0.0.0.0". It only a secure setting so the generic "0.0.0.0" is fine you don't know what it mean
-10. go in the core folder and run python
+7. Set the environment variable CAT_WORKDIR to the worder folder path
+8. Set the environment variable CAT_SERVER_PORT to the port where you want access the cat. Default port is 80, but some computer doesn't allow this port to be open. A good choise can be 1865 or 8080
+9. Set the environment variable CAT_SERVER_BIND to the bind address. If you don't know what it mean, you can leave unset or set to "0.0.0.0". It only a secure setting so the generic "0.0.0.0" is fine you don't know what it mean
+10. Go in the core folder and run python cat/main.py
 
+### Some Usefull Tips
+
+- If you get the error "[Errno 13] Permission denied" usually it means you are using not allowed server PORT. 
+- The plugins will be installed in the source folder cat/plugins, not in he work dir.
+
+  
 
 
 
