@@ -61,29 +61,14 @@ async def upload_chunk(
     background_tasks: BackgroundTasks,
     chunk: str = Body(
         description="A chunk to upload in the cat memory",
-        examples={"chunk": "Example of chunk with len greater than 20"},
+        examples={"Example of chunk with length greater than 20"},
         min_length=20
         ),
     stray = Depends(session),
 ) -> Dict:
     """Upload a single chunk, The chunk will be vectorized and stored into documents memory."""
-    
-    if chunk is None:
-        raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "The body should have a field 'chunk'",
-                },
-            )
-    if len(chunk)<20:
-        raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "The chunk should have length greater than 20",
-                },
-            )
         
-    # upload file to long term memory, in the background
+    # upload chunk to long term memory, in the background
     background_tasks.add_task(
         stray.rabbit_hole.ingest_string, stray, chunk,
     )
