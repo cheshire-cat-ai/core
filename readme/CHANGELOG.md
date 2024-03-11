@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.5.0 ( 2024-03-07 )
+
+New in version 1.5.0: **Sir Punctilious Cat, the IV**! 
+
+- `@form` and `CatForm` to build goal oriented conversation in plugins - @Pingdred, @MaxDam, @pieroit and pizza challenge contributors
+- `@tool` `examples` to easily trigger tools - @zAlweNy26, @Pingdred
+- Agent refactoring (both `forms` ant `tools` are unified under procedural memory) - @Pingdred, @pieroit
+- Async tools - @Pingdred 
+- Update Azure LLM - @cristianorevil 
+- Update HuggingFaceEndpoints LLM - @alessioserra
+- Dependencies update
+- More unit tests, more stability
+
 ## 1.4.8 ( 2024-02-10 )
 
 New in version 1.4.8
