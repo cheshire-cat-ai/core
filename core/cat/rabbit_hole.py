@@ -155,6 +155,37 @@ class RabbitHole:
             source=filename 
         )
 
+    def ingest_string(
+            self,
+            stray,
+            text: str
+    ):
+        """Load a string in the Cat's declarative memory.
+
+        The method convert the string in Langchain `Document`. Then, it stores the `Document` in the Cat's memory.
+
+        Parameters
+        ----------
+        text : string
+            The text to store in the Cat's memory
+
+        See Also
+        ----------
+        before_rabbithole_stores_documents
+        """
+        
+        docs = self.string_to_docs(
+            stray,
+            text,
+            chunk_size=len(text),
+            chunk_overlap=0
+            )
+        self.store_documents(
+            stray,
+            docs,
+        )
+ 
+
     def file_to_docs(
             self,
             stray,
@@ -293,7 +324,7 @@ class RabbitHole:
         return docs
 
 
-    def store_documents(self, stray, docs: List[Document], source: str) -> None:
+    def store_documents(self, stray, docs: List[Document], source: str=None) -> None:
         """Add documents to the Cat's declarative memory.
 
         This method loops a list of Langchain `Document` and adds some metadata. Namely, the source filename and the

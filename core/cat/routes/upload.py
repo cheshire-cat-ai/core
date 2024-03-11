@@ -54,6 +54,28 @@ async def upload_file(
         "info": "File is being ingested asynchronously",
     }
 
+# receive chunk via http endpoint
+@router.post("/chunk")
+async def upload_chunk(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    chunk: str = Body(
+        description="A chunk to upload in the cat memory",
+        examples={"Example of chunk with length greater than 20"},
+        min_length=20
+        ),
+    stray = Depends(session),
+) -> Dict:
+    """Upload a single chunk, The chunk will be vectorized and stored into documents memory."""
+        
+    # upload chunk to long term memory, in the background
+    background_tasks.add_task(
+        stray.rabbit_hole.ingest_string, stray, chunk,
+    )
+
+    # reply to client
+    return {"info": "Chunk is being ingested asynchronously"}
+
 
 @router.post("/web")
 async def upload_url(
