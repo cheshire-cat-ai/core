@@ -192,7 +192,7 @@ class CheshireCat():
                     # It is also possible to use the Azure "deployment" name that is user defined
                     # when the model is deployed to Azure.
                     # "deployment": "my-text-embedding-ada-002",
-                    "openai_api_base": self._llm.openai_api_base,
+                    "azure_endpoint": self._llm.azure_endpoint,
                     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
                     # current supported versions 2022-12-01,2023-03-15-preview, 2023-05-15
                     # Don't mix api versions https://github.com/hwchase17/langchain/issues/4775
@@ -268,9 +268,9 @@ class CheshireCat():
 
             p_hash = f"{source}.{trigger_type}.{content}"
             hashes[p_hash] = ep.id
-        
+
         return hashes
-    
+
     def build_active_procedures_hashes(self, active_procedures):
 
         hashes = {}
@@ -292,7 +292,7 @@ class CheshireCat():
         # Retrieve from vectorDB all procedural embeddings
         embedded_procedures = self.memory.vectors.procedural.get_all_points()
         embedded_procedures_hashes = self.build_embedded_procedures_hashes(embedded_procedures)
-        
+
         # Easy access to active procedures in mad_hatter (source of truth!)
         active_procedures_hashes = self.build_active_procedures_hashes(self.mad_hatter.procedures)
 
