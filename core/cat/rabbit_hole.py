@@ -34,13 +34,25 @@ class RabbitHole:
             "text/markdown": TextParser(),
             "text/html": BS4HTMLParser()
         }
+        
+        self.__text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+            separators = ["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+            encoding_name = "cl100k_base",
+            keep_separator = True,
+            strip_whitespace = True
+        )
 
         self.__reload_file_handlers()
+        self.__reload_text_splitter()
 
     # each time we access the file handlers, plugins can intervene
     def __reload_file_handlers(self):
         # no access to stray
         self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
+        
+    def __reload_text_splitter(self):
+        # no access to stray
+        self.__text_splitter = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_splitter", self.__text_splitter, cat=self.__cat)
 
     def ingest_memory(self, stray, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -397,30 +409,20 @@ class RabbitHole:
 
         """
         # do something on the text before it is split
-        text = stray.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text, cat=stray
-        )
-
-        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-            encoding_name = "cl100k_base",
-            keep_separator=True,
-            strip_whitespace = True
-        )
+        text = stray.mad_hatter.execute_hook("before_rabbithole_splits_text", text, cat=stray)
+        
+        self.__text_splitter._chunk_size = chunk_size
+        self.__text_splitter._chunk_overlap = chunk_overlap
 
         log.info(f"Chunk size: {chunk_size}, chunk overlap: {chunk_overlap}")
         # split text
-        docs = text_splitter.split_documents(text)
+        docs = self.text_splitter.split_documents(text)
         # remove short texts (page numbers, isolated words, etc.)
         # TODO: join each short chunk with previous one, instead of deleting them
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = stray.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs, cat=stray
-        )
+        docs = stray.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs, cat=stray)
 
         return docs
 
@@ -429,3 +431,9 @@ class RabbitHole:
     def file_handlers(self):
         self.__reload_file_handlers()
         return self.__file_handlers
+
+    # each time we access the text splitter, plugins can intervene
+    @property
+    def text_splitter(self):
+        self.__reload_text_splitter()
+        return self.__text_splitter
