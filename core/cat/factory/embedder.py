@@ -91,7 +91,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str
     azure_endpoint: str
-    openai_api_type: str
+    openai_api_type: str = "azure"
     openai_api_version: str
     deployment: str
 
@@ -132,8 +132,10 @@ FastEmbedModels = Enum(
 
 class EmbedderQdrantFastEmbedConfig(EmbedderSettings):
     model_name: FastEmbedModels = Field(title="Model name", default="BAAI/bge-base-en")
-    max_length: int = 512  # Unknown behavior for values > 512.
-    doc_embed_type: str = "passage"  # as suggest on fastembed documentation, "passage" is the best option for documents.
+    # Unknown behavior for values > 512.
+    max_length: int = 512
+    # as suggest on fastembed documentation, "passage" is the best option for documents.
+    doc_embed_type: str = "passage"
     cache_dir: str = "cat/data/models/fast_embed"
 
     _pyclass: Type = FastEmbedEmbeddings
@@ -154,7 +156,8 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
     """
 
     google_api_key: str
-    model: str = "models/embedding-001"  # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+    # Default model https://python.langchain.com/docs/integrations/text_embedding/google_generative_ai
+    model: str = "models/embedding-001"
 
     _pyclass: Type = GoogleGenerativeAIEmbeddings
 
