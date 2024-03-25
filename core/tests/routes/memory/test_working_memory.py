@@ -28,7 +28,7 @@ def test_convo_history_update(client):
     assert json["history"][0]["who"] == "Human"
     assert json["history"][0]["message"] == message
     assert json["history"][0]["why"] == {}
-    assert json["history"][0]["when"] == 23
+    assert type(json["history"][0]["when"]) == float # timestamp
 
 
 def test_convo_history_reset(client):
