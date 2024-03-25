@@ -12,9 +12,6 @@ services:
       - CORE_HOST=${CORE_HOST:-localhost}
       - CORE_PORT=${CORE_PORT:-1865}
       - CORE_USE_SECURE_PROTOCOLS=${CORE_USE_SECURE_PROTOCOLS:-}
-      - QDRANT_HOST=${QDRANT_HOST:-localhost}
-      - QDRANT_PORT=${QDRANT_PORT:-6333}
-      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
       - API_KEY=${API_KEY:-}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - DEBUG=${DEBUG:-true}
