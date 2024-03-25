@@ -27,6 +27,8 @@ def test_convo_history_update(client):
     assert len(json["history"]) == 2 # mex and reply
     assert json["history"][0]["who"] == "Human"
     assert json["history"][0]["message"] == message
+    assert json["history"][0]["why"] == {}
+    assert json["history"][0]["when"] == 23
 
 
 def test_convo_history_reset(client):
