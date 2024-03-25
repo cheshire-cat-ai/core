@@ -7,7 +7,7 @@ These hooks allow to intercept the uploaded documents at different places before
 """
 
 from typing import List
-
+from langchain.text_splitter import TextSplitter
 from langchain.docstore.document import Document
 
 from cat.mad_hatter.decorators import hook
@@ -32,6 +32,27 @@ def rabbithole_instantiates_parsers(file_handlers: dict, cat) -> dict:
         Edited dictionary of supported mime types and related parsers.
     """
     return file_handlers
+
+
+@hook(priority=0)
+def rabbithole_instantiates_splitter(text_splitter: TextSplitter, cat) -> TextSplitter:
+    """Hook the splitter used to split text in chunks.
+
+    Allows replacing the default text splitter to customize the splitting process.
+
+    Parameters
+    ----------
+    text_splitter : TextSplitter
+        The text splitter used by default.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    text_splitter : TextSplitter
+        An instance of a TextSplitter subclass.
+    """
+    return text_splitter
 
 
 # Hook called just before of inserting a document in vector memory
