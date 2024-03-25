@@ -53,8 +53,7 @@ def test_point_deleted(client):
 # TODO: have a fixture uploading docs and separate test cases
 def test_points_deleted_by_metadata(client):
 
-    # expected_chunks = 5
-    expected_chunks = 2 
+    expected_chunks = 4 
 
     # upload to rabbithole a document
     content_type = "application/pdf"
@@ -68,6 +67,9 @@ def test_points_deleted_by_metadata(client):
         response = client.post("/rabbithole/", files=files)
     # check response
     assert response.status_code == 200
+    # check memory contents
+    declarative_memories = get_declarative_memory_contents(client)
+    assert len(declarative_memories) == expected_chunks
 
     # upload another document
     with open(file_path, 'rb') as f:
@@ -78,7 +80,6 @@ def test_points_deleted_by_metadata(client):
         response = client.post("/rabbithole/", files=files)
     # check response
     assert response.status_code == 200
-
     # check memory contents
     declarative_memories = get_declarative_memory_contents(client)
     assert len(declarative_memories) == expected_chunks * 2
