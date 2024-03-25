@@ -203,10 +203,10 @@ class CheshireCat:
 
         # Llama-cpp-python
         elif type(self._llm) in [CustomOpenAI]:
-            embedder = (
-                embedders.EmbedderOpenAICompatibleConfig.get_embedder_from_config(
-                    {"url": self._llm.url}
-                )
+            embedder = embedders.EmbedderOpenAICompatibleConfig.get_embedder_from_config(
+                {
+                    "url": self._llm.url
+                }
             )
         elif type(self._llm) in [ChatGoogleGenerativeAI]:
             embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
@@ -255,9 +255,8 @@ class CheshireCat:
             metadata = ep.payload["metadata"]
             content = ep.payload["page_content"]
             source = metadata["source"]
-            trigger_type = metadata.get(
-                "trigger_type", "unsupported"
-            )  # there may be legacy points with no trigger_type
+            # there may be legacy points with no trigger_type
+            trigger_type = metadata.get("trigger_type", "unsupported")
 
             p_hash = f"{source}.{trigger_type}.{content}"
             hashes[p_hash] = ep.id
@@ -294,12 +293,10 @@ class CheshireCat:
         )
 
         # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
-        points_to_be_deleted = set(embedded_procedures_hashes.keys()) - set(
-            active_procedures_hashes.keys()
-        )
-        points_to_be_embedded = set(active_procedures_hashes.keys()) - set(
-            embedded_procedures_hashes.keys()
-        )
+        points_to_be_deleted = \
+            set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
+        points_to_be_embedded = \
+            set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
 
         points_to_be_deleted_ids = [
             embedded_procedures_hashes[p] for p in points_to_be_deleted

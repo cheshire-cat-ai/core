@@ -100,9 +100,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = (
-        0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
-    )
+    temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
@@ -117,12 +115,8 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = (
-        "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
-    )
-    temperature: float = (
-        0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
-    )
+    model_name: str = "gpt-3.5-turbo-instruct"
+    temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = OpenAI
 
