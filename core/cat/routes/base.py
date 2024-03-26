@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Body
+from fastapi import APIRouter, Depends, Request, Body, Query
 from typing import Dict
 import tomli
 from cat.headers import session
@@ -21,13 +21,14 @@ async def home() -> Dict:
 
 
 @router.post("/message")
-async def message(
+async def message_with_cat(
     request: Request,
-    payload: Dict = Body(examples={"text": "hello!"}),
+    payload: Dict = Body({"text": "hello!"}),
+    save: bool = Query(description="Decide whether to save the message or not to the chat history", default=False),
     stray = Depends(session),
 ) -> Dict:
     """Get a response from the Cat"""
     
-    answer = await stray(message=payload, save=False)
+    answer = await stray(message=payload, save=save)
 
     return answer

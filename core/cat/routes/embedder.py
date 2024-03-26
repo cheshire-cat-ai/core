@@ -95,7 +95,7 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
-    payload: Dict = Body(examples={"openai_api_key": "your-key-here"}),
+    payload: Dict = Body({"openai_api_key": "your-key-here"}),
 ) -> Dict:
     """Upsert the Embedder setting"""
 
