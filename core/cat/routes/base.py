@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request, Body, Query
 from typing import Dict
-from cat.db.database import Database
 import tomli
+from cat.headers import session
 
 
 router = APIRouter()
@@ -18,3 +18,15 @@ async def home() -> Dict:
         "status": "We're all mad here, dear!",
         "version": project_toml['version']
     }
+
+
+@router.post("/message")
+async def message_with_cat(
+    payload: Dict = Body({"text": "hello!"}),
+    stray = Depends(session),
+) -> Dict:
+    """Get a response from the Cat"""
+    
+    answer = await stray(payload)
+
+    return answer

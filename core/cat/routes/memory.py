@@ -10,6 +10,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
+    stray = Depends(session),
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -29,7 +30,7 @@ async def recall_memories_from_text(
     for c in collections:
 
         # only episodic collection has users
-        user_id = request.headers.get("user_id", "user")
+        user_id = stray.user_id
         if c == "episodic":
             user_filter = {
                 'source': user_id
@@ -199,19 +200,10 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
+    stray = Depends(session),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
-    strays =  request.app.state.strays
-    user_id = request.headers.get("user_id", "user") # is this expected?
-
-    if user_id not in strays.keys():
-        raise HTTPException(
-            status_code=404,
-            detail=f"No conversation history found for the user {user_id}"
-        )
-
-    stray = strays[user_id]
     stray.working_memory["history"] = []
 
     return {
@@ -223,19 +215,10 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
+    stray = Depends(session),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    strays =  request.app.state.strays
-    user_id = request.headers.get("user_id", "user") # is this expected?
-
-    if user_id not in strays.keys():
-        raise HTTPException(
-            status_code=404,
-            detail=f"No conversation history found for the user {user_id}"
-        )
-
-    stray = strays[user_id]
     history = stray.working_memory["history"]
 
     return {

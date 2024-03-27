@@ -204,15 +204,17 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    async def __call__(self, user_message_json):
+    async def __call__(self, message):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
 
             Parameters
             ----------
-            user_message_json : dict
+            message : dict
                 Dictionary received from the Websocket client.
+            save : bool, optional
+                If True, the user's message is stored in the chat history. Default is True.
 
             Returns
             -------
@@ -226,10 +228,10 @@ class StrayCat:
             answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
 
             """
-            log.info(user_message_json)
+            log.info(message)
 
             # set a few easy access variables
-            self.working_memory["user_message_json"] = user_message_json
+            self.working_memory["user_message_json"] = message
 
             # hook to modify/enrich user input
             self.working_memory["user_message_json"] = self.mad_hatter.execute_hook(
@@ -238,7 +240,7 @@ class StrayCat:
                 cat=self
             )
 
-            if len(user_message_json["text"]) > MAX_TEXT_INPUT:
+            if len(message["text"]) > MAX_TEXT_INPUT:
                 # TODO: reflex hook!
                 self.send_long_message_to_declarative()
 
