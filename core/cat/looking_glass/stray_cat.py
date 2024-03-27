@@ -204,7 +204,7 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    async def __call__(self, message, save=True):
+    async def __call__(self, message):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
@@ -332,10 +332,9 @@ class StrayCat:
 
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
-            if save:
-                # update conversation history
-                self.working_memory.update_conversation_history(who="Human", message=user_message)
-                self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
+            # update conversation history
+            self.working_memory.update_conversation_history(who="Human", message=user_message)
+            self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
 
