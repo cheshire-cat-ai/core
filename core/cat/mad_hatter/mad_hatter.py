@@ -241,7 +241,7 @@ class MadHatter:
         if len(args) == 0:
             for hook in self.hooks[hook_name]:
                 try:
-                    log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
+                    log.debug(f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}")
                     hook.function(cat=cat)
                 except Exception as e:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
@@ -262,7 +262,7 @@ class MadHatter:
             try:
                 # pass tea_cup to the hooks, along other args
                 # hook has at least one argument, and it will be piped
-                log.debug(f"Executing {hook.plugin_id}::{hook.name} with priotrity {hook.priority}")
+                log.debug(f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}")
                 tea_spoon = hook.function(
                     deepcopy(tea_cup),
                     *deepcopy(args[1:]),

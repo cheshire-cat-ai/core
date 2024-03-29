@@ -27,7 +27,7 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
         await websocket.send_json(cat_message)
 
 
-async def check_messages(websoket: WebSocket, stray: StrayCat):
+async def check_messages(websocket: WebSocket, stray: StrayCat):
     """
     Periodically check if there are any new notifications from the `ccat` instance and send them to the user.
     """
@@ -35,7 +35,7 @@ async def check_messages(websoket: WebSocket, stray: StrayCat):
     while True:
         # extract from FIFO list websocket notification
         notification = await stray._StrayCat__ws_messages.get()
-        await websoket.send_json(notification)
+        await websocket.send_json(notification)
 
 
 @router.websocket("/ws")
