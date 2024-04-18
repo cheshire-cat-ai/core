@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: [main, develop]
   push:
-    branches: [main, develop,issue_759]
+    branches: [main, develop]
 
 jobs:
   # pylint:
