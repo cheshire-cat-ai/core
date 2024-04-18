@@ -64,11 +64,6 @@ If you want to do an action, use the following format:
     "action_input": "input of the action" // tThe input to the action shoud be a string
 }}
 
-The result of the action will be shown in the format:
-{{
-    "observation": "result of the action"
-}}
-
 {examples}
 
 Begin!

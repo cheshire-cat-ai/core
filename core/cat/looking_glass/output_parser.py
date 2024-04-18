@@ -11,6 +11,8 @@ class ChooseProcedureOutputParser(AgentOutputParser):
 
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
 
+        log.debug(llm_output)
+
         # Maing JSON valid
         llm_output = llm_output + "}"
         llm_output = llm_output.replace("None", "null")
