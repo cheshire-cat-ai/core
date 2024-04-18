@@ -71,7 +71,7 @@ JSON:
     "confirm": """
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(confirm_prompt, stream=True)
+        response = self.cat.llm(confirm_prompt)
         return "true" in response.lower()
         
     # Check if the user wants to exit the form
@@ -79,7 +79,7 @@ JSON:
     def check_exit_intent(self) -> bool:
 
         # Get user message
-        history = self.stringify_convo_history()
+        user_message = self.cat.working_memory["user_message_json"]["text"]
 
         # Stop examples
         stop_examples = """
@@ -102,9 +102,7 @@ JSON must be in this format:
 
 {stop_examples}
 
-This is the conversation:
-
-{history}
+User said "{user_message}"
 
 JSON:
 ```json
@@ -112,7 +110,7 @@ JSON:
     "exit": """
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(check_exit_prompt, stream=True)
+        response = self.cat.llm(check_exit_prompt)
         return "true" in response.lower()
 
     # Execute the dialogue step
