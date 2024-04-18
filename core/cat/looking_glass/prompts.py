@@ -1,4 +1,5 @@
-
+import json
+import random
 from typing import Union, Dict
 
 from langchain.agents.tools import BaseTool
@@ -20,18 +21,31 @@ class ToolPromptTemplate(StringPromptTemplate):
         thoughts = ""
         for action, observation in intermediate_steps:
             thoughts += action.log
-            thoughts += f"\nObservation: {observation}\n"
+            thoughts += f"\n{json.dumps({'observations':observation}, indent=4)}\n"
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
         kwargs["tools"] = ""
+        kwargs["examples"] = ""
         for proc in self.procedures.values():
-            kwargs["tools"] += f" - {proc.name}: {proc.description}\n"
-            # if len(tool.examples) > 0:
-            #     kwargs["tools"] += f"\tExamples of questions for {tool.name}:\n"
-            #     for example in tool.examples:
-            #         kwargs["tools"] += f"\t - \"{example}\"\n"
-            #kwargs["tools"] += "\n"
+            kwargs["tools"] += f"\n- {proc.name}: {proc.description}"
+            if len(proc.start_examples) > 0:
+
+                # At first example add this header
+                if len(kwargs["examples"]) == 0:
+                    kwargs["examples"] += "Here some examples:\n"
+
+                # Create action example 
+                example = {
+                    "action": proc.name,
+                    "action_input": "Input of the action according to it's description"
+                }
+
+                # Add a random user queston choosed from the start examples to prompt 
+                kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}\n"
+                # Add example
+                kwargs["examples"] += json.dumps(example, indent=4)
+
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join(self.procedures.keys())
 
