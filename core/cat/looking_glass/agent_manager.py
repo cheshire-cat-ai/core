@@ -94,7 +94,7 @@ class AgentManager:
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
             output_parser=ChooseProcedureOutputParser(),
-            stop=["\nObservation:"],
+            stop=["}"],
             verbose=self.verbose
         )
 
@@ -359,7 +359,7 @@ class AgentManager:
         memory_content = "## Context of documents containing relevant information: " + \
             memories_separator + memories_separator.join(memory_texts)
 
-        # if no data is retrieved from memory don't erite anithing in the prompt
+        # if no data is retrieved from memory don't write anithing in the prompt
         if len(memory_texts) == 0:
             memory_content = ""
 
