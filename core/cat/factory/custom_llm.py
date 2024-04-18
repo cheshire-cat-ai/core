@@ -89,7 +89,6 @@ class CustomOpenAI(ChatOpenAI):
             **kwargs
         )
 
-        #self.openai_api_base = kwargs['url']
 
 
 class CustomOllama(Ollama):

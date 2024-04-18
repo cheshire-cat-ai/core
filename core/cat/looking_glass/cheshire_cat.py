@@ -201,13 +201,7 @@ class CheshireCat:
                 }
             )
 
-        # Llama-cpp-python
-        elif type(self._llm) in [CustomOpenAI]:
-            embedder = embedders.EmbedderOpenAICompatibleConfig.get_embedder_from_config(
-                {
-                    "url": self._llm.url
-                }
-            )
+        
         elif type(self._llm) in [ChatGoogleGenerativeAI]:
             embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
                 {
