@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.5.1"
+version = "1.5.2"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -14,7 +14,7 @@ dependencies = [
     "websockets==10.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
-    "qdrant_client==1.7.2",
+    "qdrant_client==1.8.0",
     "langchain==0.1.10",
     "langchain-community==0.0.27",
     "langchain-openai",
@@ -22,9 +22,9 @@ dependencies = [
     "openai==1.10.0",
     "cohere==4.39",
     "huggingface-hub==0.20.3",
-    "beautifulsoup4==4.12.0",
+    "beautifulsoup4==4.12.3",
     "pdfminer.six==20221105",
-    "unstructured==0.5.7",
+    "unstructured==0.12.6",
     "tiktoken==0.5.2",
     "tomli",
     "loguru==0.7.2",

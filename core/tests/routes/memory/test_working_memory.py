@@ -3,11 +3,12 @@ from tests.utils import send_websocket_message
 
 
 def test_convo_history_absent(client):
-
     # no ws connection, so no convo history available
     response = client.get(f"/memory/conversation_history")
     json = response.json()
-    assert response.status_code == 404
+    assert response.status_code == 200
+    assert "history" in json
+    assert len(json["history"]) == 0
 
 
 def test_convo_history_update(client):
@@ -27,6 +28,8 @@ def test_convo_history_update(client):
     assert len(json["history"]) == 2 # mex and reply
     assert json["history"][0]["who"] == "Human"
     assert json["history"][0]["message"] == message
+    assert json["history"][0]["why"] == {}
+    assert type(json["history"][0]["when"]) == float # timestamp
 
 
 def test_convo_history_reset(client):

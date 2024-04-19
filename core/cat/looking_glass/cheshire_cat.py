@@ -23,9 +23,10 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 
+
 class Procedure(Protocol):
     name: str
-    procedure_type: str # "tool" or "form"
+    procedure_type: str  # "tool" or "form"
 
     # {
     #   "description": [],
@@ -33,9 +34,10 @@ class Procedure(Protocol):
     # }
     triggers_map: Dict[str, List[str]]
 
+
 # main class
 @singleton
-class CheshireCat():
+class CheshireCat:
     """The Cheshire Cat.
 
     This is the main class that manages everything.
@@ -69,7 +71,7 @@ class CheshireCat():
         # After memory is loaded, we can get/create tools embeddings
         # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
         self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
-        self.embed_procedures() # first time launched manually
+        self.embed_procedures()  # first time launched manually
 
         # Agent manager instance (for reasoning)
         self.agent_manager = AgentManager()
@@ -131,6 +133,7 @@ class CheshireCat():
                 llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
                 llm = LLMDefaultConfig.get_llm_from_config({})
 
@@ -164,11 +167,16 @@ class CheshireCat():
             FactoryClass = get_embedder_from_name(selected_embedder_class)
 
             # obtain configuration and instantiate Embedder
-            selected_embedder_config = crud.get_setting_by_name(name=selected_embedder_class)
+            selected_embedder_config = crud.get_setting_by_name(
+                name=selected_embedder_class
+            )
             try:
-                embedder = FactoryClass.get_embedder_from_config(selected_embedder_config["value"])
+                embedder = FactoryClass.get_embedder_from_config(
+                    selected_embedder_config["value"]
+                )
             except AttributeError as e:
                 import traceback
+
                 traceback.print_exc()
                 embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
             return embedder
@@ -181,24 +189,7 @@ class CheshireCat():
                 }
             )
 
-        # Azure
-        elif type(self._llm) in [AzureOpenAI, AzureChatOpenAI]:
-            embedder = embedders.EmbedderAzureOpenAIConfig.get_embedder_from_config(
-                {
-                    "openai_api_key": self._llm.openai_api_key,
-                    "openai_api_type": "azure",
-                    "model": "text-embedding-ada-002",
-                    # Now the only model for embeddings is text-embedding-ada-002
-                    # It is also possible to use the Azure "deployment" name that is user defined
-                    # when the model is deployed to Azure.
-                    # "deployment": "my-text-embedding-ada-002",
-                    "openai_api_base": self._llm.openai_api_base,
-                    # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#embeddings
-                    # current supported versions 2022-12-01,2023-03-15-preview, 2023-05-15
-                    # Don't mix api versions https://github.com/hwchase17/langchain/issues/4775
-                    "openai_api_version": "2023-05-15",
-                }
-            )
+        # For Azure avoid automatic embedder selection
 
         # Cohere
         elif type(self._llm) in [Cohere]:
@@ -260,17 +251,18 @@ class CheshireCat():
 
         hashes = {}
         for ep in embedded_procedures:
-            #log.warning(ep)
+            # log.warning(ep)
             metadata = ep.payload["metadata"]
             content = ep.payload["page_content"]
             source = metadata["source"]
-            trigger_type = metadata.get("trigger_type", "unsupported") # there may be legacy points with no trigger_type
+            # there may be legacy points with no trigger_type
+            trigger_type = metadata.get("trigger_type", "unsupported")
 
             p_hash = f"{source}.{trigger_type}.{content}"
             hashes[p_hash] = ep.id
-        
+
         return hashes
-    
+
     def build_active_procedures_hashes(self, active_procedures):
 
         hashes = {}
@@ -291,21 +283,31 @@ class CheshireCat():
 
         # Retrieve from vectorDB all procedural embeddings
         embedded_procedures = self.memory.vectors.procedural.get_all_points()
-        embedded_procedures_hashes = self.build_embedded_procedures_hashes(embedded_procedures)
-        
+        embedded_procedures_hashes = self.build_embedded_procedures_hashes(
+            embedded_procedures
+        )
+
         # Easy access to active procedures in mad_hatter (source of truth!)
-        active_procedures_hashes = self.build_active_procedures_hashes(self.mad_hatter.procedures)
+        active_procedures_hashes = self.build_active_procedures_hashes(
+            self.mad_hatter.procedures
+        )
 
         # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
-        points_to_be_deleted  = set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
-        points_to_be_embedded = set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
+        points_to_be_deleted = \
+            set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
+        points_to_be_embedded = \
+            set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
 
-        points_to_be_deleted_ids = [embedded_procedures_hashes[p] for p in points_to_be_deleted]
+        points_to_be_deleted_ids = [
+            embedded_procedures_hashes[p] for p in points_to_be_deleted
+        ]
         if points_to_be_deleted_ids:
             log.warning(f"Deleting triggers: {points_to_be_deleted}")
             self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
 
-        active_triggers_to_be_embedded = [active_procedures_hashes[p] for p in points_to_be_embedded]
+        active_triggers_to_be_embedded = [
+            active_procedures_hashes[p] for p in points_to_be_embedded
+        ]
         for t in active_triggers_to_be_embedded:
             print(t)
             trigger_embedding = self.embedder.embed_documents([t["content"]])
@@ -317,9 +319,11 @@ class CheshireCat():
                     "type": t["type"],
                     "trigger_type": t["trigger_type"],
                     "when": time.time(),
-                }
+                },
             )
-            log.warning(f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}")
+            log.warning(
+                f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}"
+            )
 
     def send_ws_message(self, content: str, msg_type="notification"):
         log.error("No websocket connection open")

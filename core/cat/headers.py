@@ -56,10 +56,10 @@ def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> 
 
 
 # get or create session (StrayCat)
-def session(request: Request) -> str:
+def session(request: Request) -> StrayCat:
 
     strays = request.app.state.strays
-    user_id = request.headers.get("user_id")
+    user_id = request.headers.get("user_id", "user")
     event_loop = request.app.state.event_loop
     
     if user_id not in strays.keys():

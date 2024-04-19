@@ -1,7 +1,7 @@
-from langchain_community.chat_models import AzureChatOpenAI
+from langchain_openai import AzureChatOpenAI
+from langchain_openai import AzureOpenAI
 from langchain_community.llms import (
     OpenAI,
-    AzureOpenAI,
     Cohere,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
@@ -100,7 +100,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-3.5-turbo"
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
+    temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
 
@@ -115,8 +115,8 @@ class LLMOpenAIChatConfig(LLMSettings):
 
 class LLMOpenAIConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "gpt-3.5-turbo-instruct"  # used instead of text-davinci-003 since it deprecated
-    temperature: float = 0.7  # default value, from 0 to 1. Higher value create more creative and randomic answers
+    model_name: str = "gpt-3.5-turbo-instruct"
+    temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = OpenAI
 
@@ -134,6 +134,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
     openai_api_key: str
     model_name: str = "gpt-35-turbo"  # or gpt-4, use only chat models !
     azure_endpoint: str
+    max_tokens: int = 2048
     openai_api_type: str = "azure"
     # Dont mix api versions https://github.com/hwchase17/langchain/issues/4775
     openai_api_version: str = "2023-05-15"
@@ -155,6 +156,7 @@ class LLMAzureChatOpenAIConfig(LLMSettings):
 class LLMAzureOpenAIConfig(LLMSettings):
     openai_api_key: str
     azure_endpoint: str
+    max_tokens: int = 2048
     api_type: str = "azure"
     # https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#completions
     # Current supported versions 2022-12-01, 2023-03-15-preview, 2023-05-15
@@ -207,6 +209,7 @@ class LLMHuggingFaceTextGenInferenceConfig(LLMSettings):
             "link": "https://huggingface.co/text-generation-inference",
         }
     )
+
 
 # https://api.python.langchain.com/en/latest/llms/langchain_community.llms.huggingface_endpoint.HuggingFaceEndpoint.html
 class LLMHuggingFaceEndpointConfig(LLMSettings):
