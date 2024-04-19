@@ -83,6 +83,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
     temperature: float = 0.01
     model_name:str
     api_key:str
+    streaming: bool = True
     _pyclass: Type = CustomOpenAI
 
     model_config = ConfigDict(
