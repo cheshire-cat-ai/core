@@ -94,7 +94,7 @@ class AgentManager:
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
             output_parser=ChooseProcedureOutputParser(),
-            stop=["}"],
+            stop=["```"], # markdown syntax ends JSON with backtick
             verbose=self.verbose
         )
 

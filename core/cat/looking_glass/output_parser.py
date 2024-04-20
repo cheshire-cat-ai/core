@@ -14,18 +14,17 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         log.debug(llm_output)
 
         # Maing JSON valid
-        llm_output = llm_output + "}"
         llm_output = llm_output.replace("None", "null")
         
         try:
-            parsed_output = json.loads(llm_output)
+            parsed_output = json.loads("{" + llm_output)
         except Exception as e:
             log.error(e)
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
         
         # Extract action
         action = parsed_output["action"]
-        action_input = parsed_output["action_input"]
+        action_input = str(parsed_output["action_input"])
 
         if action_input:
             action_input = action_input.strip(" ").strip('"')
