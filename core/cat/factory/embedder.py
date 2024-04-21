@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Type
+from typing import Type, Optional
 import langchain
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -74,7 +74,8 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
 
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
-    model: str = "text-embedding-ada-002"
+    model: str = "text-embedding-3-small"
+    dimensions: Optional[int] = 1536
     _pyclass: Type = OpenAIEmbeddings
 
     model_config = ConfigDict(
