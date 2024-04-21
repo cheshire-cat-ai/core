@@ -4,6 +4,7 @@ from langchain.schema import AgentAction, AgentFinish, OutputParserException
 from typing import Union
 
 from cat.mad_hatter.mad_hatter import MadHatter
+from cat.utils import parse_json
 from cat.log import log
 
 
@@ -17,7 +18,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         llm_output = llm_output.replace("None", "null")
         
         try:
-            parsed_output = json.loads("{" + llm_output)
+            parsed_output = parse_json(llm_output)
         except Exception as e:
             log.error(e)
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")

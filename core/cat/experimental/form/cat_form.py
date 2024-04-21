@@ -1,3 +1,5 @@
+import json
+from enum import Enum
 from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -5,10 +7,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from langchain.chains import LLMChain
 from langchain_core.prompts.prompt import PromptTemplate
 
-#from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
-from enum import Enum
+from cat.utils import parse_json
 from cat.log import log
-import json
 
 
 # Conversational Form State
@@ -214,7 +214,7 @@ JSON:
 
         # json parser
         try:
-            output_model = json.loads(json_str)
+            output_model = parse_json(json_str)
         except Exception as e:
             output_model = {} 
             log.warning(e)

@@ -2,9 +2,15 @@
 import os
 import inspect
 from datetime import timedelta
-from cat.log import log
-from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from urllib.parse import urlparse
+
+from pydantic import BaseModel
+
+from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
+from langchain_core.output_parsers import JsonOutputParser
+
+
+from cat.log import log
 
 
 def to_camel_case(text: str) -> str:
@@ -137,6 +143,18 @@ def levenshtein_distance(prediction: str, reference: str) -> int:
         reference=reference,
     )
     return result['score']
+
+
+def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
+
+    # instantiate parser
+    parser = JsonOutputParser(pydantic_object=pydantic_model)
+    
+    # first "{" occurrence (required by parser)
+    start_index = json_string.index("{")
+    
+    # parse
+    return parser.parse(json_string[start_index:])
 
 
 # This is our masterwork during tea time

@@ -4,8 +4,8 @@ import traceback
 from typing import Literal, get_args
 
 from langchain.docstore.document import Document
-from langchain_community.llms import BaseLLM
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_community.llms import BaseLLM
 
 from fastapi import WebSocket
 
@@ -340,6 +340,7 @@ class StrayCat:
             self.__call__(user_message_json)
         )
     
+
     def stringify_chat_history(self, latest_n: int = 5) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
@@ -371,6 +372,7 @@ class StrayCat:
             history_string += f"\n - {turn['who']}: {turn['message']}"
 
         return history_string
+
 
     @property
     def user_id(self):

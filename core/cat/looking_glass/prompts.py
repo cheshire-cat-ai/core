@@ -25,8 +25,7 @@ class ToolPromptTemplate(StringPromptTemplate):
 {json.dumps({'observation':observation}, indent=4)}
 ```
 ```json
-{{
-    """
+"""
             
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
@@ -76,8 +75,7 @@ You can only reply using these actions:
 ## Begin!
 {chat_history}
  - AI: ```json
-{{
-    {agent_scratchpad}"""
+{agent_scratchpad}"""
 
 
 MAIN_PROMPT_PREFIX = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
