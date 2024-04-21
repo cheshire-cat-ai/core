@@ -75,7 +75,7 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
 class EmbedderOpenAIConfig(EmbedderSettings):
     openai_api_key: str
     model: str = "text-embedding-3-small"
-    dimensions: Optional[int] = 1536
+    dimensions: Optional[int] = 1536 # it doesn't work with None, I think it's a FE problem
     _pyclass: Type = OpenAIEmbeddings
 
     model_config = ConfigDict(
