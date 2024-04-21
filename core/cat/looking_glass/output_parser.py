@@ -19,6 +19,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         
         try:
             parsed_output = parse_json(llm_output)
+            parsed_output_log = json.dumps(parsed_output, indent=4)
         except Exception as e:
             log.error(e)
             raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
@@ -36,8 +37,8 @@ class ChooseProcedureOutputParser(AgentOutputParser):
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": None},
-                log=json.dumps(parsed_output),
+                return_values={"output": action_input},
+                log=parsed_output_log
             )
 
         for Form in MadHatter().forms:
@@ -47,8 +48,8 @@ class ChooseProcedureOutputParser(AgentOutputParser):
                         "output": None,
                         "form": action
                     },
-                    log=json.dumps(parsed_output),
+                    log=parsed_output_log
                 )
             
         # Return the action and action input
-        return AgentAction(tool=action, tool_input=action_input, log=json.dumps(parsed_output))
+        return AgentAction(tool=action, tool_input=action_input, log=parsed_output_log)

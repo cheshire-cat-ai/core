@@ -41,15 +41,16 @@ class ToolPromptTemplate(StringPromptTemplate):
                     kwargs["examples"] += "## Here some examples:\n"
 
                 # Create action example 
-                example = {
-                    "action": proc.name,
-                    "action_input": "Input of the action according to it's description"
-                }
+                example = f"""
+{{
+    "action": {proc.name},
+    "action_input": // Input of the action according to it's description
+}}"""
 
                 # Add a random user queston choosed from the start examples to prompt 
                 kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}"
                 # Add example
-                kwargs["examples"] += f"\n```json\n{json.dumps(example, indent=4)}\n```"
+                kwargs["examples"] += f"\n```json\n{example}\n```"
 
         # Create a list of tool names for the tools provided
         kwargs["tool_names"] = ", ".join(self.procedures.keys())
@@ -67,6 +68,14 @@ You can only reply using these actions:
 {{
     "action": // str - The name of the action to take, should be one of [{tool_names}, finish]
     "action_input": // str or null - The input to the action shoud be a string
+}}
+```
+
+## When you have a final answer (or no tools are relevant), use the following format:
+```json
+{{
+    "action": "finish",
+    "action_input": null
 }}
 ```
 
