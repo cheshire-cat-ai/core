@@ -22,7 +22,7 @@ class ToolPromptTemplate(StringPromptTemplate):
         for action, observation in intermediate_steps:
             thoughts += action.log + "\n```\n"
             thoughts += f"""```json
-{json.dumps({'observation':observation}, indent=4)}
+{json.dumps({"action_output": observation}, indent=4)}
 ```
 ```json
 """

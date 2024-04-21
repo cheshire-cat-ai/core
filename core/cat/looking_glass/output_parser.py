@@ -37,7 +37,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
                 return_values={"output": None},
-                log=llm_output,
+                log=parsed_output,
             )
 
         for Form in MadHatter().forms:
@@ -47,8 +47,8 @@ class ChooseProcedureOutputParser(AgentOutputParser):
                         "output": None,
                         "form": action
                     },
-                    log=llm_output,
+                    log=parsed_output,
                 )
             
         # Return the action and action input
-        return AgentAction(tool=action, tool_input=action_input, log=llm_output)
+        return AgentAction(tool=action, tool_input=action_input, log=parsed_output)
