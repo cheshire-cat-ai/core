@@ -20,10 +20,11 @@ class ToolPromptTemplate(StringPromptTemplate):
         intermediate_steps = kwargs.pop("intermediate_steps")
         thoughts = ""
         for action, observation in intermediate_steps:
-            thoughts += action.log + "\n```\n"
+            thoughts += f"```json\n{action.log}\n```\n"
             thoughts += f"""```json
 {json.dumps({"action_output": observation}, indent=4)}
-```"""
+```
+"""
             
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
@@ -50,20 +51,20 @@ class ToolPromptTemplate(StringPromptTemplate):
                 kwargs["examples"] += f"\n```json\n{example}\n```"
 
         # Create a list of tool names for the tools provided
-        kwargs["tool_names"] = ", ".join(self.procedures.keys())
+        kwargs["tool_names"] = '"' + '", "'.join(self.procedures.keys()) + '"'
 
         return self.template.format(**kwargs)
 
 
-TOOL_PROMPT = """Create a sequence of JSON actions with the correct "action" and "action_input" to help the Human.
-You can use these actions:
+TOOL_PROMPT = """Create a JSON action to complete the action sequence, with the correct "action" and "action_input" to help the Human.
+You can use one of these actions:
 {tools}
-- final_answer: Use this action to finish or no relevant action is available. Input is always null.
+- "final_answer": Use this action to finish or no relevant action is available. Input is always null.
 
-## To add an action, use the following format:
+## To add an action, use only the following format:
 ```json
 {{
-    "action": // str - The name of the action to take, should be one of [{tool_names}, final_answer]
+    "action": // str - The name of the action to take, should be one of [{tool_names}, "final_answer"]
     "action_input": // str or null - The input to the action
 }}
 ```
@@ -90,15 +91,17 @@ When you have a final answer (or no tools are relevant), use the following forma
 ## Conversation with Human:
 {chat_history}
 
-## Actions used until now:
+## Actions sequence used until now:
 {agent_scratchpad}
+
+## Next action:
 ```json
 """
 
 
 MAIN_PROMPT_PREFIX = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
-You answer Human with a focus on the following context."""
+You answer Human shortly and with a focus on the following context."""
 
 
 MAIN_PROMPT_SUFFIX = """
