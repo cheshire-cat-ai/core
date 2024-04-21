@@ -14,8 +14,6 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
-
-MAX_TEXT_INPUT = 2000
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # The Stray cat goes around tools and hook, making troubles
@@ -242,10 +240,6 @@ class StrayCat:
 
             # text of latest Human message
             user_message_text = self.working_memory["user_message_json"]["text"]
-            
-            if len(user_message_text) > MAX_TEXT_INPUT:
-                # TODO: reflex hook!
-                self.send_long_message_to_declarative()
 
             # update conversation history (Human turn)
             self.working_memory.update_conversation_history(who="Human", message=user_message_text)
@@ -345,27 +339,38 @@ class StrayCat:
         return self.loop.run_until_complete(
             self.__call__(user_message_json)
         )
+    
+    def stringify_chat_history(self, latest_n: int = 5) -> str:
+        """Serialize chat history.
+        Converts to text the recent conversation turns.
 
-    def send_long_message_to_declarative(self):
-        #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
-        index = MAX_TEXT_INPUT
-        query = self.working_memory["user_message_json"]["text"]
-        char = query[index]
-        while not char.isspace() and index > 0:
-            index -= 1
-            char = query[index]
-        if index <= 0:
-            index = MAX_TEXT_INPUT
-        query, to_declarative_memory = query[:index], query
-        self.working_memory["user_message_json"]["text"] = query # shortens working memory content
+        Parameters
+        ----------
+        latest_n : int
+            Hoe many latest turns to stringify.
 
-        # TODO: can we run ingestion in the background?
-        docs = self.rabbit_hole.string_to_docs(
-            stray=self,
-            file_bytes=to_declarative_memory,
-            content_type="text/plain"
-        )
-        self.rabbit_hole.store_documents(self, docs=docs, source="")
+        Returns
+        -------
+        history : str
+            String with recent conversation turns.
+
+        Notes
+        -----
+        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
+
+        The chat history is a dictionary with keys::
+            'who': the name of who said the utterance;
+            'message': the utterance.
+
+        """
+
+        history = self.working_memory["history"][(-latest_n - 1):]
+
+        history_string = ""
+        for turn in history:
+            history_string += f"\n - {turn['who']}: {turn['message']}"
+
+        return history_string
 
     @property
     def user_id(self):

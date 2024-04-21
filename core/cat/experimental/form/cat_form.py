@@ -195,19 +195,6 @@ JSON:
             "output": out
         }
 
-    def stringify_convo_history(self):
-
-        user_message = self.cat.working_memory["user_message_json"]["text"]
-        chat_history = self.cat.working_memory["history"][-10:] # last n messages
-
-        # stringify history
-        history = ""
-        for turn in chat_history:
-            history += f"\n - {turn['who']}: {turn['message']}"
-        history += f"Human: {user_message}"
-
-        return history
-
     # Extract model informations from user message
     def extract(self):
         
@@ -236,7 +223,7 @@ JSON:
     
     def extraction_prompt(self):
 
-        history = self.stringify_convo_history()
+        history = self.cat.stringify_chat_history()
 
         # JSON structure
         # BaseModel.__fields__['my_field'].type_

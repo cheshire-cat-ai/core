@@ -93,7 +93,6 @@ MAIN_PROMPT_SUFFIX = """
 {declarative_memory}
 {tools_output}
 ## Conversation until now:{chat_history}
- - Human: {input}
  - AI: """
 
 
