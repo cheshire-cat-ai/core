@@ -33,7 +33,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         else:
             action_input = ""
 
-        if action == "finish":
+        if action == "final_answer":
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)

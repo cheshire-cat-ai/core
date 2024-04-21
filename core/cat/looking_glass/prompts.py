@@ -61,12 +61,12 @@ class ToolPromptTemplate(StringPromptTemplate):
 TOOL_PROMPT = """Select the correct "action" and "action_input" by creating a JSON.
 You can only reply using these actions:
 {tools}
-- finish: Use this action to finish or no relevant action is available. Input is always null.
+- final_answer: Use this action to finish or no relevant action is available. Input is always null.
 
 ## To do an action, use the following format:
 ```json
 {{
-    "action": // str - The name of the action to take, should be one of [{tool_names}, finish]
+    "action": // str - The name of the action to take, should be one of [{tool_names}, final_answer]
     "action_input": // str or null - The input to the action shoud be a string
 }}
 ```
@@ -74,7 +74,7 @@ You can only reply using these actions:
 ## When you have a final answer (or no tools are relevant), use the following format:
 ```json
 {{
-    "action": "finish",
+    "action": "final_answer",
     "action_input": null
 }}
 ```
@@ -83,8 +83,10 @@ You can only reply using these actions:
 
 ## Begin!
 {chat_history}
+
+{agent_scratchpad}
  - AI: ```json
-{agent_scratchpad}"""
+"""
 
 
 MAIN_PROMPT_PREFIX = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
