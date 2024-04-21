@@ -1,7 +1,7 @@
 import time
 import asyncio
 import traceback
-from typing import Literal, get_args
+from typing import Literal, get_args, List, Dict
 
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -340,6 +340,65 @@ class StrayCat:
             self.__call__(user_message_json)
         )
     
+    def classify(self, sentence: str, labels: List[str] | Dict[str, List[str]]) -> str:
+        """Classify a sentence.
+        
+        Parameters
+        ----------
+        sentence : str
+            Sentence to be classified.
+        labels : List[str] or Dict[str, List[str]]
+            Possible output categories and optional examples.
+
+        Returns
+        -------
+        label : str
+            Sentence category.
+
+        Examples
+        -------
+        >>> cat.classify("I feel good", labels=["positive", "negative"])
+        "positive"
+
+        Or giving examples for each category:
+
+        >>> example_labels = {
+        ...     "positive": ["I feel nice", "happy today"],
+        ...     "negative": ["I feel bad", "not my best day"],
+        ... }
+        ... cat.classify("it is a bad day", labels=example_labels)
+        "negative"
+
+        """
+
+        if type(labels) in [dict, Dict]:
+            labels_names = labels.keys()
+            examples_list = "\n\nExamples:"
+            for label, examples in labels.items():
+                for ex in examples:
+                    examples_list += f'\n"{ex}" -> "{label}"'
+        else:
+            labels_names = labels
+            examples_list = ""
+
+        labels_list = '"' + '", "'.join(labels_names) + '"'
+
+        prompt = f"""Classify this sentence:
+"{sentence}"
+
+Allowed classes are:
+{labels_list}{examples_list}
+
+"{sentence}" -> """
+
+        response = self.llm(prompt)
+        log.critical(response)
+
+        for l in labels_names:
+            if l in response:
+                return l
+        
+        return None
 
     def stringify_chat_history(self, latest_n: int = 5) -> str:
         """Serialize chat history.
