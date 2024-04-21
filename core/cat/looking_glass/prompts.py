@@ -58,26 +58,25 @@ class ToolPromptTemplate(StringPromptTemplate):
         return self.template.format(**kwargs)
 
 
-TOOL_PROMPT = """Answer the following question: {input}
+TOOL_PROMPT = """Select the correct "action" and "action_input" by creating a JSON.
 You can only reply using these actions:
 {tools} 
 - final_answer: Use this to respond to the user when you have the final answer. Input is the final answer.
 - none_of_the_others: Use this action if none of the others actions help. Input is always None.
 
-## If you want to do an action, use the following format:
+## To do an action, use the following format:
 ```json
 {{
-    "action": "action_name", // The name of the action to take, should be one of [{tool_names}, final_answer, none_of_the_others]
-    "action_input": "input of the action" // The input to the action shoud be a string
+    "action": // str - The name of the action to take, should be one of [{tool_names}, final_answer, none_of_the_others]
+    "action_input": // str or null - The input to the action shoud be a string
 }}
 ```
 
 {examples}
 
 ## Begin!
-
-Question: {input}
-```json
+{chat_history}
+ - AI: ```json
 {{
     {agent_scratchpad}"""
 
@@ -88,11 +87,16 @@ You answer Human with a focus on the following context."""
 
 
 MAIN_PROMPT_SUFFIX = """
+
 # Context
+
 {episodic_memory}
+
 {declarative_memory}
+
 {tools_output}
-## Conversation until now:{chat_history}
+
+# Conversation until now:{chat_history}
  - AI: """
 
 

@@ -364,7 +364,7 @@ class StrayCat:
 
         """
 
-        history = self.working_memory["history"][(-latest_n - 1):]
+        history = self.working_memory["history"][-latest_n:]
 
         history_string = ""
         for turn in history:

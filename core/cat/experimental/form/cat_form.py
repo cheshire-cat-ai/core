@@ -250,7 +250,6 @@ This is the current JSON:
 ```
 
 This is the conversation:
-
 {history}
 
 Updated JSON:

@@ -80,7 +80,7 @@ class AgentManager:
             procedures=allowed_procedures,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
-            input_variables=["input", "intermediate_steps"]
+            input_variables=["input", "chat_history", "intermediate_steps"]
         )
 
         # main chain
