@@ -212,12 +212,16 @@ class AgentManager:
                     # exit agent if a return_direct procedure was executed
                     return procedures_result
 
-                # Adding the tools_output key in agent input, needed by the memory chain
-                if procedures_result.get("output"):
-                    agent_input["tools_output"] = "## Tools output: \n" + procedures_result["output"]
-
                 # store intermediate steps to enrich memory chain
                 intermediate_steps = procedures_result["intermediate_steps"]
+
+                # Adding the tools_output key in agent input, needed by the memory chain
+                if len(intermediate_steps) > 0:
+                    agent_input["tools_output"] = "## Tools output: \n"
+                    for proc_res in intermediate_steps:
+                        # ((step[0].tool, step[0].tool_input), step[1])
+                        agent_input["tools_output"] += f" - {proc_res[0][0]}: {proc_res[1]}\n"
+
                 
             except Exception as e:
                 log.error(e)

@@ -31,16 +31,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         else:
             action_input = ""
 
-         # Check if agent should finish
-        if action == "final_answer":
-            return AgentFinish(
-                # Return values is generally always a dictionary with a single `output` key
-                # It is not recommended to try anything else at the moment :)
-                return_values={"output":action_input},
-                log=llm_output,
-            )
-
-        if action == "none_of_the_others":
+        if action == "finish":
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)

@@ -60,14 +60,13 @@ class ToolPromptTemplate(StringPromptTemplate):
 
 TOOL_PROMPT = """Select the correct "action" and "action_input" by creating a JSON.
 You can only reply using these actions:
-{tools} 
-- final_answer: Use this to respond to the user when you have the final answer. Input is the final answer.
-- none_of_the_others: Use this action if none of the others actions help. Input is always None.
+{tools}
+- finish: Use this action to finish or no relevant action is available. Input is always null.
 
 ## To do an action, use the following format:
 ```json
 {{
-    "action": // str - The name of the action to take, should be one of [{tool_names}, final_answer, none_of_the_others]
+    "action": // str - The name of the action to take, should be one of [{tool_names}, finish]
     "action_input": // str or null - The input to the action shoud be a string
 }}
 ```
