@@ -1,3 +1,5 @@
+import json
+from enum import Enum
 from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -5,10 +7,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from langchain.chains import LLMChain
 from langchain_core.prompts.prompt import PromptTemplate
 
-#from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
-from enum import Enum
+from cat.utils import parse_json
 from cat.log import log
-import json
 
 
 # Conversational Form State
@@ -195,19 +195,6 @@ JSON:
             "output": out
         }
 
-    def stringify_convo_history(self):
-
-        user_message = self.cat.working_memory["user_message_json"]["text"]
-        chat_history = self.cat.working_memory["history"][-10:] # last n messages
-
-        # stringify history
-        history = ""
-        for turn in chat_history:
-            history += f"\n - {turn['who']}: {turn['message']}"
-        history += f"Human: {user_message}"
-
-        return history
-
     # Extract model informations from user message
     def extract(self):
         
@@ -227,7 +214,7 @@ JSON:
 
         # json parser
         try:
-            output_model = json.loads(json_str)
+            output_model = parse_json(json_str)
         except Exception as e:
             output_model = {} 
             log.warning(e)
@@ -236,7 +223,7 @@ JSON:
     
     def extraction_prompt(self):
 
-        history = self.stringify_convo_history()
+        history = self.cat.stringify_chat_history()
 
         # JSON structure
         # BaseModel.__fields__['my_field'].type_
@@ -263,7 +250,6 @@ This is the current JSON:
 ```
 
 This is the conversation:
-
 {history}
 
 Updated JSON:

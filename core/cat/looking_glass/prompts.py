@@ -20,70 +20,101 @@ class ToolPromptTemplate(StringPromptTemplate):
         intermediate_steps = kwargs.pop("intermediate_steps")
         thoughts = ""
         for action, observation in intermediate_steps:
-            thoughts += action.log
-            thoughts += f"\n{json.dumps({'observations':observation}, indent=4)}\n"
+            thoughts += f"```json\n{action.log}\n```\n"
+            thoughts += f"""```json
+{json.dumps({"action_output": observation}, indent=4)}
+```
+"""
+            
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
         kwargs["tools"] = ""
         kwargs["examples"] = ""
         for proc in self.procedures.values():
-            kwargs["tools"] += f"\n- {proc.name}: {proc.description}"
+            kwargs["tools"] += f'\n- "{proc.name}": {proc.description}'
             if len(proc.start_examples) > 0:
 
                 # At first example add this header
                 if len(kwargs["examples"]) == 0:
-                    kwargs["examples"] += "Here some examples:\n"
+                    kwargs["examples"] += "## Here some examples:\n"
 
                 # Create action example 
-                example = {
-                    "action": proc.name,
-                    "action_input": "Input of the action according to it's description"
-                }
+                example = f"""{{
+    "action": "{proc.name}",
+    "action_input": // Input of the action according to it's description
+}}"""
 
                 # Add a random user queston choosed from the start examples to prompt 
-                kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}\n"
+                kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}"
                 # Add example
-                kwargs["examples"] += json.dumps(example, indent=4)
+                kwargs["examples"] += f"\n```json\n{example}\n```"
 
         # Create a list of tool names for the tools provided
-        kwargs["tool_names"] = ", ".join(self.procedures.keys())
+        kwargs["tool_names"] = '"' + '", "'.join(self.procedures.keys()) + '"'
 
         return self.template.format(**kwargs)
 
 
-TOOL_PROMPT = """Answer the following question: {input}
-You can only reply using these actions:
-{tools} 
-- final_answer: Use this to respond to the user when you have the final answer. Input is the final answer.
-- none_of_the_others: Use this action if none of the others actions help. Input is always None.
+TOOL_PROMPT = """Create a JSON action to complete the action sequence, with the correct "action" and "action_input" to help the Human.
+You can use one of these actions:
+{tools}
+- "final_answer": Use this action to finish or no relevant action is available. Input is always null.
 
-If you want to do an action, use the following format:
+## To add an action, use only the following format:
+```json
 {{
-    "action": "action_name", // The name of the action to take, should be one of [{tool_names}]
-    "action_input": "input of the action" // tThe input to the action shoud be a string
+    "action": // str - The name of the action to take, should be one of [{tool_names}, "final_answer"]
+    "action_input": // str or null - The input to the action
 }}
+```
 
 {examples}
 
-Begin!
+## Action output
+After each action there will be an action output in this format:
+```json
+{{
+    "action_output": // output of the preceding action
+}}
+```
 
-Question: {input}
-{agent_scratchpad}"""
+## Final answer / no action available
+When you have a final answer (or no tools are relevant), use the following format:
+```json
+{{
+    "action": "final_answer",
+    "action_input": null
+}}
+```
+
+## Conversation with Human:
+{chat_history}
+
+## Actions sequence used until now:
+{agent_scratchpad}
+
+## Next action:
+```json
+"""
 
 
 MAIN_PROMPT_PREFIX = """You are the Cheshire Cat AI, an intelligent AI that passes the Turing test.
 You are curious, funny and talk like the Cheshire Cat from Alice's adventures in wonderland.
-You answer Human with a focus on the following context."""
+You answer Human shortly and with a focus on the following context."""
 
 
 MAIN_PROMPT_SUFFIX = """
+
 # Context
+
 {episodic_memory}
+
 {declarative_memory}
+
 {tools_output}
-## Conversation until now:{chat_history}
- - Human: {input}
+
+# Conversation until now:{chat_history}
  - AI: """
 
 
