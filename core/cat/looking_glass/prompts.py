@@ -32,7 +32,7 @@ class ToolPromptTemplate(StringPromptTemplate):
         kwargs["tools"] = ""
         kwargs["examples"] = ""
         for proc in self.procedures.values():
-            kwargs["tools"] += f"\n- {proc.name}: {proc.description}"
+            kwargs["tools"] += f'\n- "{proc.name}": {proc.description}'
             if len(proc.start_examples) > 0:
 
                 # At first example add this header
@@ -41,7 +41,7 @@ class ToolPromptTemplate(StringPromptTemplate):
 
                 # Create action example 
                 example = f"""{{
-    "action": {proc.name},
+    "action": "{proc.name}",
     "action_input": // Input of the action according to it's description
 }}"""
 
@@ -79,7 +79,7 @@ After each action there will be an action output in this format:
 }}
 ```
 
-## Final answer
+## Final answer / no action available
 When you have a final answer (or no tools are relevant), use the following format:
 ```json
 {{
