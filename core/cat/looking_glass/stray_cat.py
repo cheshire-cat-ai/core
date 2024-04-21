@@ -240,9 +240,15 @@ class StrayCat:
                 cat=self
             )
 
-            if len(message["text"]) > MAX_TEXT_INPUT:
+            # text of latest Human message
+            user_message_text = self.working_memory["user_message_json"]["text"]
+            
+            if len(user_message_text) > MAX_TEXT_INPUT:
                 # TODO: reflex hook!
                 self.send_long_message_to_declarative()
+
+            # update conversation history (Human turn)
+            self.working_memory.update_conversation_history(who="Human", message=user_message_text)
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -279,7 +285,7 @@ class StrayCat:
 
                 unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
                 cat_message = {
-                    "input": self.working_memory["user_message_json"]["text"],
+                    "input": user_message_text,
                     "intermediate_steps": [],
                     "output": unparsable_llm_output
                 }
@@ -287,10 +293,8 @@ class StrayCat:
             log.info("cat_message:")
             log.info(cat_message)
 
-            user_message = self.working_memory["user_message_json"]["text"]
-
             doc = Document(
-                page_content=user_message,
+                page_content=user_message_text,
                 metadata={
                     "source": self.user_id,
                     "when": time.time()
@@ -302,7 +306,7 @@ class StrayCat:
             # store user message in episodic memory
             # TODO: vectorize and store also conversation chunks
             #   (not raw dialog, but summarization)
-            user_message_embedding = self.embedder.embed_documents([user_message])
+            user_message_embedding = self.embedder.embed_documents([user_message_text])
             _ = self.memory.vectors.episodic.add_point(
                 doc.page_content,
                 user_message_embedding[0],
@@ -332,8 +336,7 @@ class StrayCat:
 
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
-            # update conversation history
-            self.working_memory.update_conversation_history(who="Human", message=user_message)
+            # update conversation history (AI turn)
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
