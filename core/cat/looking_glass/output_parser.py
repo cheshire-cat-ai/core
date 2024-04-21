@@ -37,7 +37,7 @@ class ChooseProcedureOutputParser(AgentOutputParser):
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
-                return_values={"output": action_input},
+                return_values={"output": None},
                 log=parsed_output_log
             )
 

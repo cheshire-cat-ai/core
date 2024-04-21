@@ -23,9 +23,7 @@ class ToolPromptTemplate(StringPromptTemplate):
             thoughts += action.log + "\n```\n"
             thoughts += f"""```json
 {json.dumps({"action_output": observation}, indent=4)}
-```
-```json
-"""
+```"""
             
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
@@ -41,8 +39,7 @@ class ToolPromptTemplate(StringPromptTemplate):
                     kwargs["examples"] += "## Here some examples:\n"
 
                 # Create action example 
-                example = f"""
-{{
+                example = f"""{{
     "action": {proc.name},
     "action_input": // Input of the action according to it's description
 }}"""
@@ -58,20 +55,31 @@ class ToolPromptTemplate(StringPromptTemplate):
         return self.template.format(**kwargs)
 
 
-TOOL_PROMPT = """Select the correct "action" and "action_input" by creating a JSON.
-You can only reply using these actions:
+TOOL_PROMPT = """Create a sequence of JSON actions with the correct "action" and "action_input" to help the Human.
+You can use these actions:
 {tools}
 - final_answer: Use this action to finish or no relevant action is available. Input is always null.
 
-## To do an action, use the following format:
+## To add an action, use the following format:
 ```json
 {{
     "action": // str - The name of the action to take, should be one of [{tool_names}, final_answer]
-    "action_input": // str or null - The input to the action shoud be a string
+    "action_input": // str or null - The input to the action
 }}
 ```
 
-## When you have a final answer (or no tools are relevant), use the following format:
+{examples}
+
+## Action output
+After each action there will be an action output in this format:
+```json
+{{
+    "action_output": // output of the preceding action
+}}
+```
+
+## Final answer
+When you have a final answer (or no tools are relevant), use the following format:
 ```json
 {{
     "action": "final_answer",
@@ -79,13 +87,12 @@ You can only reply using these actions:
 }}
 ```
 
-{examples}
-
-## Begin!
+## Conversation with Human:
 {chat_history}
 
+## Actions used until now:
 {agent_scratchpad}
- - AI: ```json
+```json
 """
 
 
