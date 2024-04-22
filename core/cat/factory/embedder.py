@@ -95,6 +95,7 @@ class EmbedderAzureOpenAIConfig(EmbedderSettings):
     openai_api_type: str = "azure"
     openai_api_version: str
     deployment: str
+    dimensions: Optional[int] = 1536 # it doesn't work with None, I think it's a FE problem
 
     _pyclass: Type = AzureOpenAIEmbeddings
 
