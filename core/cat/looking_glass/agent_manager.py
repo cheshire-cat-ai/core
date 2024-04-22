@@ -128,7 +128,7 @@ class AgentManager:
         if "form" in out.keys():
             FormClass = allowed_procedures.get(out["form"], None)
             f = FormClass(stray)
-            stray.working_memory["forms"] = f
+            stray.working_memory["active_form"] = f
             # let the form reply directly
             out = f.next()
             out["return_direct"] = True
@@ -137,12 +137,12 @@ class AgentManager:
 
     async def execute_form_agent(self, stray):
         
-        active_form = stray.working_memory.get("forms", None)
+        active_form = stray.working_memory.get("active_form", None)
         if active_form:
             log.warning(active_form._state)
             # closing form if state is closed
             if active_form._state == CatFormState.CLOSED:
-                del stray.working_memory["forms"]
+                del stray.working_memory["active_form"]
             else:
                 # continue form
                 return active_form.next()
@@ -165,7 +165,7 @@ class AgentManager:
             output_key="output"
         )
 
-        return await memory_chain.ainvoke(agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
+        return await memory_chain.ainvoke({**agent_input, "stop":"Human:"}, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
