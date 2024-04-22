@@ -48,7 +48,7 @@ class AgentManager:
 
         # gather recalled procedures
         recalled_procedures_names = set()
-        for p in stray.working_memory["procedural_memories"]:
+        for p in stray.working_memory.procedural_memories:
             procedure = p[0]
             if procedure.metadata["type"] in ["tool","form"] and procedure.metadata["trigger_type"] in ["description", "start_example"]:
                 recalled_procedures_names.add(procedure.metadata["source"])
@@ -128,7 +128,7 @@ class AgentManager:
         if "form" in out.keys():
             FormClass = allowed_procedures.get(out["form"], None)
             f = FormClass(stray)
-            stray.working_memory["active_form"] = f
+            stray.working_memory.active_form = f
             # let the form reply directly
             out = f.next()
             out["return_direct"] = True
@@ -137,12 +137,11 @@ class AgentManager:
 
     async def execute_form_agent(self, stray):
         
-        active_form = stray.working_memory.get("active_form", None)
+        active_form = stray.working_memory.active_form
         if active_form:
-            log.warning(active_form._state)
             # closing form if state is closed
             if active_form._state == CatFormState.CLOSED:
-                del stray.working_memory["active_form"]
+                stray.working_memory.active_form = None
             else:
                 # continue form
                 return active_form.next()
@@ -201,7 +200,7 @@ class AgentManager:
         
         # Select and run useful procedures
         intermediate_steps = []
-        procedural_memories = stray.working_memory["procedural_memories"]
+        procedural_memories = stray.working_memory.procedural_memories
         if len(procedural_memories) > 0:
 
             log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
@@ -272,17 +271,17 @@ class AgentManager:
 
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.agent_prompt_episodic_memories(
-            stray.working_memory["episodic_memories"]
+            stray.working_memory.episodic_memories
         )
         declarative_memory_formatted_content = self.agent_prompt_declarative_memories(
-            stray.working_memory["declarative_memories"]
+            stray.working_memory.declarative_memories
         )
 
         # format conversation history to be inserted in the prompt
         conversation_history_formatted_content = stray.stringify_chat_history()
 
         return {
-            "input": stray.working_memory["user_message_json"]["text"], # TODO: deprecate, since it is included in chat history
+            "input": stray.working_memory.user_message_json.text, # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,

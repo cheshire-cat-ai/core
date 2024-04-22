@@ -113,7 +113,7 @@ def cat_recall_query(user_message: str, cat) -> str:
     Returns
     -------
     Edited string to be used for context retrieval in memory. The returned string is further stored in the
-    Working Memory at `cat.working_memory["memory_query"]`.
+    Working Memory at `cat.working_memory.recall_query`.
 
     Notes
     -----
@@ -128,11 +128,6 @@ def cat_recall_query(user_message: str, cat) -> str:
        arXiv preprint arXiv:2212.10496.
 
     """
-    # example 1: HyDE embedding
-    # return cat.hypothetis_chain.run(user_message)
-
-    # example 2: Condense recent conversation
-    # TODO
 
     # here we just return the latest user message as is
     return user_message

@@ -1,8 +1,12 @@
 
 import time
+from typing import List
+from cat.utils import BaseModelDict
+from cat.convo.messages import UserMessage
+from cat.experimental.form import CatForm
 
 
-class WorkingMemory(dict):
+class WorkingMemory(BaseModelDict):
     """Cat's volatile memory.
 
     Handy class that behaves like a `dict` to store temporary custom data.
@@ -18,10 +22,11 @@ class WorkingMemory(dict):
     the conversation turns between the Human and the AI.
     """
 
-    def __init__(self):
-        # The constructor instantiates a `dict` with a 'history' key to store conversation history
-        # and the asyncio queue to manage the session notifications
-        super().__init__(history=[])        
+    # stores conversation history
+    history: List = []
+    recall_query: str = ""
+    user_message_json : None | UserMessage = None
+    active_form: None | CatForm = None
 
     def update_conversation_history(self, who, message, why={}):
         """Update the conversation history.
@@ -37,6 +42,6 @@ class WorkingMemory(dict):
         
         """
         # append latest message in conversation
-        self["history"].append({"who": who, "message": message, "why": why, "when": time.time()})
+        self.history.append({"who": who, "message": message, "why": why, "when": time.time()})
 
 

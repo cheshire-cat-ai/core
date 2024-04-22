@@ -176,7 +176,11 @@ class singleton:
 import traceback
 class BaseModelDict(BaseModel):
 
-    model_config = ConfigDict(extra='allow', validate_assignment=True)
+    model_config = ConfigDict(
+        extra='allow',
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+    )
 
     def __getitem__(self, key):
 
@@ -199,3 +203,9 @@ class BaseModelDict(BaseModel):
 
         # set attribute
         setattr(self, key, value)
+
+    def get(self, key, default):
+        try:
+            return self.__getitem__(key)
+        except:
+            return default

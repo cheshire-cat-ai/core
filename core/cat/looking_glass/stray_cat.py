@@ -13,7 +13,7 @@ from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
-from cat.convo.messages import CatMessage, UserMessage
+from cat.convo.messages import CatMessage, UserMessage, MessageWhy
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
@@ -144,7 +144,7 @@ class StrayCat:
 
         if query is None:
             # If query is not provided, use the user's message as the query
-            recall_query = self.working_memory["user_message_json"]["text"]
+            recall_query = self.working_memory.user_message_json.text
 
         # We may want to search in memory
         recall_query = self.mad_hatter.execute_hook("cat_recall_query", recall_query, cat=self)
@@ -152,7 +152,7 @@ class StrayCat:
 
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
-        self.working_memory["recall_query"] = recall_query
+        self.working_memory.recall_query = recall_query
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories", cat=self)
@@ -199,7 +199,7 @@ class StrayCat:
             vector_memory = getattr(self.memory.vectors, memory_type)
             memories = vector_memory.recall_memories_from_embedding(**config)
 
-            self.working_memory[memory_key] = memories
+            setattr(self.working_memory, memory_key, memories) # self.working_memory.procedural_memories = ...
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
@@ -234,14 +234,14 @@ class StrayCat:
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt, callbacks=callbacks)
 
-    async def __call__(self, message):
+    async def __call__(self, message_dict):
             """Call the Cat instance.
 
             This method is called on the user's message received from the client.
 
             Parameters
             ----------
-            message : dict
+            message_dict : dict
                 Dictionary received from the Websocket client.
             save : bool, optional
                 If True, the user's message is stored in the chat history. Default is True.
@@ -258,20 +258,23 @@ class StrayCat:
             answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
 
             """
-            log.info(message)
+
+            # Parse websocket message into UserMessage obj
+            user_message = UserMessage.model_validate(message_dict)
+            log.info(user_message)
 
             # set a few easy access variables
-            self.working_memory["user_message_json"] = message
+            self.working_memory.user_message_json = user_message
 
             # hook to modify/enrich user input
-            self.working_memory["user_message_json"] = self.mad_hatter.execute_hook(
+            self.working_memory.user_message_json = self.mad_hatter.execute_hook(
                 "before_cat_reads_message",
-                self.working_memory["user_message_json"],
+                self.working_memory.user_message_json,
                 cat=self
             )
 
             # text of latest Human message
-            user_message_text = self.working_memory["user_message_json"]["text"]
+            user_message_text = self.working_memory.user_message_json.text
 
             # update conversation history (Human turn)
             self.working_memory.update_conversation_history(who="Human", message=user_message_text)
@@ -341,20 +344,22 @@ class StrayCat:
 
             # build data structure for output (response and why with memories)
             # TODO: these 3 lines are a mess, simplify
-            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["episodic_memories"]]
-            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
-            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
-  
-            why = {
-                "input": cat_message.get("input"),
-                "intermediate_steps": cat_message.get("intermediate_steps", []),
-                "memory": {
+            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
+            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
+            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
+
+            # why this response?
+            why = MessageWhy(
+                input=cat_message.get("input", ""),
+                intermediate_steps=cat_message.get("intermediate_steps", []),
+                memory={
                     "episodic": episodic_report,
                     "declarative": declarative_report,
                     "procedural": procedural_report,
-                },
-            }
-
+                }
+            )
+            
+            # prepare final cat message
             final_output = CatMessage(
                 type="chat",
                 user_id=self.user_id,
@@ -362,6 +367,7 @@ class StrayCat:
                 why=why
             )
 
+            # run message through plugins
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
             # update conversation history (AI turn)
@@ -459,7 +465,7 @@ Allowed classes are:
 
         """
 
-        history = self.working_memory["history"][-latest_n:]
+        history = self.working_memory.history[-latest_n:]
 
         history_string = ""
         for turn in history:
