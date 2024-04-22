@@ -1,3 +1,5 @@
+import time
+import asyncio
 import inspect
 
 from typing import Union, Callable, List 
@@ -46,9 +48,18 @@ class CatTool(BaseTool):
         self.cat = cat
 
     def _run(self, input_by_llm):
+        # Check if the tool is a corutine
         if inspect.iscoroutinefunction(self.func):
-            raise NotImplementedError("Tool does not support sync")
+            # Run corutine in main event loop in the main thread
+            future = asyncio.ensure_future(self.func(input_by_llm, cat=self.cat), loop=self.cat._StrayCat__main_loop)
 
+            # Whatit utill the corutine is finisched
+            while not future.done():
+                time.sleep(0.1)
+            
+            return future.result()
+
+        # If the tool is a function call it and return the result
         return self.func(input_by_llm, cat=self.cat)
 
     async def _arun(self, input_by_llm):
