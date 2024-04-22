@@ -26,10 +26,11 @@ class ChooseProcedureOutputParser(AgentOutputParser):
         
         # Extract action
         action = parsed_output["action"]
-        action_input = str(parsed_output["action_input"])
 
-        if action_input:
-            action_input = action_input.strip(" ").strip('"')
+        if isinstance(parsed_output["action_input"], str):
+            action_input = parsed_output["action_input"]
+        elif isinstance(parsed_output["action_input"], dict):
+            action_input = json.dumps(parsed_output["action_input"])
         else:
             action_input = ""
 
