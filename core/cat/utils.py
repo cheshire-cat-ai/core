@@ -4,7 +4,7 @@ import inspect
 from datetime import timedelta
 from urllib.parse import urlparse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
@@ -172,31 +172,30 @@ class singleton:
             return cls.instances[class_]
 
         return getinstance
-    
 
-class BaseCustomObject:
-    _custom_attributes: dict = {}    
+import traceback
+class BaseModelDict(BaseModel):
+
+    model_config = ConfigDict(extra='allow', validate_assignment=True)
 
     def __getitem__(self, key):
-        if hasattr(self, key):
-            return getattr(self, key)
-        if key in self._custom_attributes:
-            return self._custom_attributes[key]
-        raise KeyError(f"Attribute '{key}' does not exist.")
+
+        # deprecate dictionary usage
+        stack = traceback.extract_stack(limit=2)
+        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
+        log.warning(f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`")
+        log.warning(line_code)
+
+        # return attribute
+        return getattr(self, key)
 
     def __setitem__(self, key, value):
-        if hasattr(self, key):
-            raise AttributeError(f"Attribute '{key}' is already defined in the class.")
-        self._custom_attributes[key] = value
+        
+        # deprecate dictionary usage
+        stack = traceback.extract_stack(limit=2)
+        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
+        log.warning(f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`')
+        log.warning(line_code)
 
-    def to_dict(self):
-        attributes = vars(self).copy()
-
-        if "_custom_attributes" in attributes.keys():
-            del attributes["_custom_attributes"]
-
-        attributes = {
-            **attributes,
-            **self._custom_attributes
-        }
-        return attributes
+        # set attribute
+        setattr(self, key, value)

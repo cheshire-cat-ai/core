@@ -1,7 +1,6 @@
 import time
 import asyncio
 import traceback
-from dataclasses import dataclass, field
 from typing import Literal, get_args, List, Dict, Union
 
 from langchain.docstore.document import Document
@@ -11,33 +10,12 @@ from langchain_community.llms import BaseLLM
 from fastapi import WebSocket
 
 from cat.log import log
-from cat.utils import BaseCustomObject
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
+from cat.convo.messages import CatMessage, UserMessage
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
-
-@dataclass
-class CatMessage(Dict):
-    msg_type: str
-    content: str
-    user_id: str
-    why: dict = field(default_factory=lambda: {})
-
-    def to_dict(self):
-        attributes = super().to_dict()
-        attributes["type"] = attributes["msg_type"]
-        del attributes["msg_type"]
-        return attributes  
-
-class UserMessage(BaseCustomObject):
-    text: str
-    user_id: str
-
-    def __init__(self, text:str, user_id: str, **kwargs):
-        super().__init__(text, user_id, **kwargs) 
 
 
 # The Stray cat goes around tools and hook, making troubles
@@ -366,19 +344,19 @@ class StrayCat:
             episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["episodic_memories"]]
             declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
             procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
-            
+  
             why = {
-                    "input": cat_message.get("input"),
-                    "intermediate_steps": cat_message.get("intermediate_steps", []),
-                    "memory": {
-                        "episodic": episodic_report,
-                        "declarative": declarative_report,
-                        "procedural": procedural_report,
-                    },
-                }
+                "input": cat_message.get("input"),
+                "intermediate_steps": cat_message.get("intermediate_steps", []),
+                "memory": {
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
+                    "procedural": procedural_report,
+                },
+            }
 
             final_output = CatMessage(
-                msg_type="chat",
+                type="chat",
                 user_id=self.user_id,
                 content=str(cat_message.get("output")),
                 why=why
@@ -387,9 +365,10 @@ class StrayCat:
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
             # update conversation history (AI turn)
-            self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
-        
-            return final_output.to_dict()
+            self.working_memory.update_conversation_history(who="AI", message=final_output.content, why=final_output.why)
+
+            # send message back to client
+            return final_output.dict()
 
     def run(self, user_message_json):
         return self.loop.run_until_complete(
