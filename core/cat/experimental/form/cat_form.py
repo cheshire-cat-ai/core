@@ -51,7 +51,7 @@ class CatForm:  # base model of forms
     def confirm(self) -> bool:
         
         # Get user message
-        user_message = self.cat.working_memory["user_message_json"]["text"]
+        user_message = self.cat.working_memory.user_message_json.text
         
         # Confirm prompt
         confirm_prompt = \
@@ -79,7 +79,7 @@ JSON:
     def check_exit_intent(self) -> bool:
 
         # Get user message
-        user_message = self.cat.working_memory["user_message_json"]["text"]
+        user_message = self.cat.working_memory.user_message_json.text
 
         # Stop examples
         stop_examples = """
@@ -117,7 +117,7 @@ JSON:
     def next(self):
 
         # could we enrich prompt completion with episodic/declarative memories?
-        #self.cat.working_memory["episodic_memories"] = []
+        #self.cat.working_memory.episodic_memories = []
 
         if self.check_exit_intent():
             self._state = CatFormState.CLOSED

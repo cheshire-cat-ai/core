@@ -20,7 +20,7 @@ def test_session_creation_from_websocket(client, app):
     assert "Alice" in strays
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"
-    convo = strays["Alice"].working_memory["history"] 
+    convo = strays["Alice"].working_memory.history 
     assert len(convo) == 2
     assert convo[0]["who"] == "Human"
     assert convo[0]["message"] == mex["text"]
@@ -51,7 +51,7 @@ def test_session_creation_from_http(client, app):
     assert "Alice" in strays
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"
-    convo = strays["Alice"].working_memory["history"] 
+    convo = strays["Alice"].working_memory.history 
     assert len(convo) == 0 # no ws message sent from Alice
 
 
