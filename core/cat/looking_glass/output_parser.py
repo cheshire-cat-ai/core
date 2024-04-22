@@ -22,7 +22,12 @@ class ChooseProcedureOutputParser(AgentOutputParser):
             parsed_output_log = json.dumps(parsed_output, indent=4)
         except Exception as e:
             log.error(e)
-            raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
+            return AgentFinish(
+                # Return values is generally always a dictionary with a single `output` key
+                # It is not recommended to try anything else at the moment :)
+                return_values={"output": None},
+                log=""
+            )
         
         # Extract action
         action = parsed_output["action"]
