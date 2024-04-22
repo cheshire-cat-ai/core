@@ -1,7 +1,8 @@
 import time
 import asyncio
 import traceback
-from typing import Literal, get_args, List, Dict
+from dataclasses import dataclass, field
+from typing import Literal, get_args, List, Dict, Union
 
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -10,11 +11,34 @@ from langchain_community.llms import BaseLLM
 from fastapi import WebSocket
 
 from cat.log import log
+from cat.utils import BaseCustomObject
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
+
+
+@dataclass
+class CatMessage(Dict):
+    msg_type: str
+    content: str
+    user_id: str
+    why: dict = field(default_factory=lambda: {})
+
+    def to_dict(self):
+        attributes = super().to_dict()
+        attributes["type"] = attributes["msg_type"]
+        del attributes["msg_type"]
+        return attributes  
+
+class UserMessage(BaseCustomObject):
+    text: str
+    user_id: str
+
+    def __init__(self, text:str, user_id: str, **kwargs):
+        super().__init__(text, user_id, **kwargs) 
+
 
 # The Stray cat goes around tools and hook, making troubles
 class StrayCat:
@@ -70,7 +94,7 @@ class StrayCat:
                 {
                     "type": msg_type,
                     "name": "GenericError",
-                    "description": content
+                    "description": str(content)
                 }
             )
         else:
@@ -81,6 +105,36 @@ class StrayCat:
                     "content": content
                 }
             )
+            
+    def send_chat_message(self, message: Union[str, CatMessage], save=False):
+        if isinstance(message, str):
+            message = CatMessage(
+                    msg_type="chat",
+                    user_id=self.user_id,
+                    content=message,
+                )
+            
+        if save:
+            self.working_memory.update_conversation_history(who="AI", message=message["content"], why=message["why"])
+
+        self.__main_loop.call_soon_threadsafe(
+            self.__ws_messages.put_nowait,
+            {
+                **message.to_dict()
+            }
+        )
+
+    def send_notification(self, content: str):
+        self.send_ws_message(
+            content=content, 
+            msg_type="notification"
+        )
+
+    def send_error(self, error):
+        self.send_ws_message(
+            content=error, 
+            msg_type="error"
+        )
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
@@ -313,11 +367,7 @@ class StrayCat:
             declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["declarative_memories"]]
             procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory["procedural_memories"]]
             
-            final_output = {
-                "type": "chat",
-                "user_id": self.user_id,
-                "content": str(cat_message.get("output")),
-                "why": {
+            why = {
                     "input": cat_message.get("input"),
                     "intermediate_steps": cat_message.get("intermediate_steps", []),
                     "memory": {
@@ -325,15 +375,21 @@ class StrayCat:
                         "declarative": declarative_report,
                         "procedural": procedural_report,
                     },
-                },
-            }
+                }
+
+            final_output = CatMessage(
+                msg_type="chat",
+                user_id=self.user_id,
+                content=str(cat_message.get("output")),
+                why=why
+            )
 
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
             # update conversation history (AI turn)
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
-
-            return final_output
+        
+            return final_output.to_dict()
 
     def run(self, user_message_json):
         return self.loop.run_until_complete(

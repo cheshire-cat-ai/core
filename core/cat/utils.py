@@ -172,3 +172,31 @@ class singleton:
             return cls.instances[class_]
 
         return getinstance
+    
+
+class BaseCustomObject:
+    _custom_attributes: dict = {}    
+
+    def __getitem__(self, key):
+        if hasattr(self, key):
+            return getattr(self, key)
+        if key in self._custom_attributes:
+            return self._custom_attributes[key]
+        raise KeyError(f"Attribute '{key}' does not exist.")
+
+    def __setitem__(self, key, value):
+        if hasattr(self, key):
+            raise AttributeError(f"Attribute '{key}' is already defined in the class.")
+        self._custom_attributes[key] = value
+
+    def to_dict(self):
+        attributes = vars(self).copy()
+
+        if "_custom_attributes" in attributes.keys():
+            del attributes["_custom_attributes"]
+
+        attributes = {
+            **attributes,
+            **self._custom_attributes
+        }
+        return attributes
