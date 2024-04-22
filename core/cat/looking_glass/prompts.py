@@ -105,7 +105,6 @@ You answer Human shortly and with a focus on the following context."""
 
 
 MAIN_PROMPT_SUFFIX = """
-
 # Context
 
 {episodic_memory}
@@ -114,7 +113,6 @@ MAIN_PROMPT_SUFFIX = """
 
 {tools_output}
 
-# Conversation until now:{chat_history}
- - AI: """
+# Conversation until now:"""
 
 
