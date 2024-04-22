@@ -231,8 +231,14 @@ class AgentManager:
         # - no procedures where recalled or selected or
         # - procedures have all return_direct=False or
         # - procedures agent crashed big time
-        if "tools_output" not in agent_input:
-            agent_input["tools_output"] = ""
+
+        # Save tools output 
+        tools_output = agent_input.get("tools_output", "")
+        # Update agent input from working memory
+        agent_input = self.format_agent_input(stray)
+        # Add eventuals tools output
+        agent_input["tools_output"] = tools_output
+
         memory_chain_output = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
         memory_chain_output["intermediate_steps"] = intermediate_steps
 
@@ -280,6 +286,7 @@ class AgentManager:
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
+            "tools_output": ""
         }
 
     def agent_prompt_episodic_memories(self, memory_docs: List[Document]) -> str:
