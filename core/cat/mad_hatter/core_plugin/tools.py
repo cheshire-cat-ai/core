@@ -7,4 +7,4 @@ from cat.mad_hatter.decorators import tool
 def get_the_time(tool_input, cat):
     """Useful to get the current time when asked. Input is always None."""
 
-    return str(datetime.now())
+    return f"The current time is {str(datetime.now())}"
