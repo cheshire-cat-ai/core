@@ -39,8 +39,4 @@ class WorkingMemory(dict):
         # append latest message in conversation
         self["history"].append({"who": who, "message": message, "why": why, "when": time.time()})
 
-        # do not allow more than k messages in convo history (+2 which are the current turn)
-        # TODO: allow infinite history, but only insert in prompts the last k messages
-        k = 5
-        self["history"] = self["history"][(-k - 1):]
 

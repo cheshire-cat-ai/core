@@ -1,11 +1,11 @@
 import time
 import asyncio
 import traceback
-from typing import Literal, get_args
+from typing import Literal, get_args, List, Dict
 
 from langchain.docstore.document import Document
-from langchain_community.llms import BaseLLM
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_community.llms import BaseLLM
 
 from fastapi import WebSocket
 
@@ -14,8 +14,6 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 
-
-MAX_TEXT_INPUT = 2000
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 # The Stray cat goes around tools and hook, making troubles
@@ -240,9 +238,11 @@ class StrayCat:
                 cat=self
             )
 
-            if len(message["text"]) > MAX_TEXT_INPUT:
-                # TODO: reflex hook!
-                self.send_long_message_to_declarative()
+            # text of latest Human message
+            user_message_text = self.working_memory["user_message_json"]["text"]
+
+            # update conversation history (Human turn)
+            self.working_memory.update_conversation_history(who="Human", message=user_message_text)
 
             # recall episodic and declarative memories from vector collections
             #   and store them in working_memory
@@ -279,7 +279,7 @@ class StrayCat:
 
                 unparsable_llm_output = error_description.replace("Could not parse LLM output: `", "").replace("`", "")
                 cat_message = {
-                    "input": self.working_memory["user_message_json"]["text"],
+                    "input": user_message_text,
                     "intermediate_steps": [],
                     "output": unparsable_llm_output
                 }
@@ -287,10 +287,8 @@ class StrayCat:
             log.info("cat_message:")
             log.info(cat_message)
 
-            user_message = self.working_memory["user_message_json"]["text"]
-
             doc = Document(
-                page_content=user_message,
+                page_content=user_message_text,
                 metadata={
                     "source": self.user_id,
                     "when": time.time()
@@ -302,7 +300,7 @@ class StrayCat:
             # store user message in episodic memory
             # TODO: vectorize and store also conversation chunks
             #   (not raw dialog, but summarization)
-            user_message_embedding = self.embedder.embed_documents([user_message])
+            user_message_embedding = self.embedder.embed_documents([user_message_text])
             _ = self.memory.vectors.episodic.add_point(
                 doc.page_content,
                 user_message_embedding[0],
@@ -332,8 +330,7 @@ class StrayCat:
 
             final_output = self.mad_hatter.execute_hook("before_cat_sends_message", final_output, cat=self)
 
-            # update conversation history
-            self.working_memory.update_conversation_history(who="Human", message=user_message)
+            # update conversation history (AI turn)
             self.working_memory.update_conversation_history(who="AI", message=final_output["content"], why=final_output["why"])
 
             return final_output
@@ -342,27 +339,99 @@ class StrayCat:
         return self.loop.run_until_complete(
             self.__call__(user_message_json)
         )
+    
+    def classify(self, sentence: str, labels: List[str] | Dict[str, List[str]]) -> str:
+        """Classify a sentence.
+        
+        Parameters
+        ----------
+        sentence : str
+            Sentence to be classified.
+        labels : List[str] or Dict[str, List[str]]
+            Possible output categories and optional examples.
 
-    def send_long_message_to_declarative(self):
-        #Split input after MAX_TEXT_INPUT tokens, on a whitespace, if any, and send it to the rabbit hole
-        index = MAX_TEXT_INPUT
-        query = self.working_memory["user_message_json"]["text"]
-        char = query[index]
-        while not char.isspace() and index > 0:
-            index -= 1
-            char = query[index]
-        if index <= 0:
-            index = MAX_TEXT_INPUT
-        query, to_declarative_memory = query[:index], query
-        self.working_memory["user_message_json"]["text"] = query # shortens working memory content
+        Returns
+        -------
+        label : str
+            Sentence category.
 
-        # TODO: can we run ingestion in the background?
-        docs = self.rabbit_hole.string_to_docs(
-            stray=self,
-            file_bytes=to_declarative_memory,
-            content_type="text/plain"
-        )
-        self.rabbit_hole.store_documents(self, docs=docs, source="")
+        Examples
+        -------
+        >>> cat.classify("I feel good", labels=["positive", "negative"])
+        "positive"
+
+        Or giving examples for each category:
+
+        >>> example_labels = {
+        ...     "positive": ["I feel nice", "happy today"],
+        ...     "negative": ["I feel bad", "not my best day"],
+        ... }
+        ... cat.classify("it is a bad day", labels=example_labels)
+        "negative"
+
+        """
+
+        if type(labels) in [dict, Dict]:
+            labels_names = labels.keys()
+            examples_list = "\n\nExamples:"
+            for label, examples in labels.items():
+                for ex in examples:
+                    examples_list += f'\n"{ex}" -> "{label}"'
+        else:
+            labels_names = labels
+            examples_list = ""
+
+        labels_list = '"' + '", "'.join(labels_names) + '"'
+
+        prompt = f"""Classify this sentence:
+"{sentence}"
+
+Allowed classes are:
+{labels_list}{examples_list}
+
+"{sentence}" -> """
+
+        response = self.llm(prompt)
+        log.critical(response)
+
+        for l in labels_names:
+            if l in response:
+                return l
+        
+        return None
+
+    def stringify_chat_history(self, latest_n: int = 5) -> str:
+        """Serialize chat history.
+        Converts to text the recent conversation turns.
+
+        Parameters
+        ----------
+        latest_n : int
+            Hoe many latest turns to stringify.
+
+        Returns
+        -------
+        history : str
+            String with recent conversation turns.
+
+        Notes
+        -----
+        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
+
+        The chat history is a dictionary with keys::
+            'who': the name of who said the utterance;
+            'message': the utterance.
+
+        """
+
+        history = self.working_memory["history"][-latest_n:]
+
+        history_string = ""
+        for turn in history:
+            history_string += f"\n - {turn['who']}: {turn['message']}"
+
+        return history_string
+
 
     @property
     def user_id(self):

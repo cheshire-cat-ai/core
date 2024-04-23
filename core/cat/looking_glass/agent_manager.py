@@ -80,7 +80,7 @@ class AgentManager:
             procedures=allowed_procedures,
             # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
             # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
-            input_variables=["input", "intermediate_steps"]
+            input_variables=["input", "chat_history", "intermediate_steps"]
         )
 
         # main chain
@@ -94,7 +94,7 @@ class AgentManager:
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
             output_parser=ChooseProcedureOutputParser(),
-            stop=["\nObservation:"],
+            stop=["```"], # markdown syntax ends JSON with backtick
             verbose=self.verbose
         )
 
@@ -181,7 +181,7 @@ class AgentManager:
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
-        agent_input = self.format_agent_input(stray.working_memory)
+        agent_input = self.format_agent_input(stray)
         agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=stray)
         
         # should we run the default agent?
@@ -212,12 +212,16 @@ class AgentManager:
                     # exit agent if a return_direct procedure was executed
                     return procedures_result
 
-                # Adding the tools_output key in agent input, needed by the memory chain
-                if procedures_result.get("output"):
-                    agent_input["tools_output"] = "## Tools output: \n" + procedures_result["output"]
-
                 # store intermediate steps to enrich memory chain
                 intermediate_steps = procedures_result["intermediate_steps"]
+
+                # Adding the tools_output key in agent input, needed by the memory chain
+                if len(intermediate_steps) > 0:
+                    agent_input["tools_output"] = "## Tools output: \n"
+                    for proc_res in intermediate_steps:
+                        # ((step[0].tool, step[0].tool_input), step[1])
+                        agent_input["tools_output"] += f" - {proc_res[0][0]}: {proc_res[1]}\n"
+
                 
             except Exception as e:
                 log.error(e)
@@ -234,7 +238,7 @@ class AgentManager:
 
         return memory_chain_output
     
-    def format_agent_input(self, working_memory):
+    def format_agent_input(self, stray):
         """Format the input for the Agent.
 
         The method formats the strings of recalled memories and chat history that will be provided to the Langchain
@@ -262,19 +266,17 @@ class AgentManager:
 
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.agent_prompt_episodic_memories(
-            working_memory["episodic_memories"]
+            stray.working_memory["episodic_memories"]
         )
         declarative_memory_formatted_content = self.agent_prompt_declarative_memories(
-            working_memory["declarative_memories"]
+            stray.working_memory["declarative_memories"]
         )
 
         # format conversation history to be inserted in the prompt
-        conversation_history_formatted_content = self.agent_prompt_chat_history(
-            working_memory["history"]
-        )
+        conversation_history_formatted_content = stray.stringify_chat_history()
 
         return {
-            "input": working_memory["user_message_json"]["text"],
+            "input": stray.working_memory["user_message_json"]["text"], # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
@@ -359,38 +361,10 @@ class AgentManager:
         memory_content = "## Context of documents containing relevant information: " + \
             memories_separator + memories_separator.join(memory_texts)
 
-        # if no data is retrieved from memory don't erite anithing in the prompt
+        # if no data is retrieved from memory don't write anithing in the prompt
         if len(memory_texts) == 0:
             memory_content = ""
 
         return memory_content
 
-    def agent_prompt_chat_history(self, chat_history: List[Dict]) -> str:
-        """Serialize chat history for the agent input.
-        Converts to text the recent conversation turns fed to the *Agent*.
-
-        Parameters
-        ----------
-        chat_history : List[Dict]
-            List of dictionaries collecting speaking turns.
-
-        Returns
-        -------
-        history : str
-            String with recent conversation turns to be provided as context to the *Agent*.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
-        """
-        history = ""
-        for turn in chat_history:
-            history += f"\n - {turn['who']}: {turn['message']}"
-
-        return history
 

@@ -1,3 +1,5 @@
+import json
+from enum import Enum
 from typing import List, Dict
 from dataclasses import dataclass
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -5,10 +7,8 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from langchain.chains import LLMChain
 from langchain_core.prompts.prompt import PromptTemplate
 
-#from cat.looking_glass.prompts import MAIN_PROMPT_PREFIX
-from enum import Enum
+from cat.utils import parse_json
 from cat.log import log
-import json
 
 
 # Conversational Form State
@@ -71,7 +71,7 @@ JSON:
     "confirm": """
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(confirm_prompt, stream=True)
+        response = self.cat.llm(confirm_prompt)
         return "true" in response.lower()
         
     # Check if the user wants to exit the form
@@ -79,7 +79,7 @@ JSON:
     def check_exit_intent(self) -> bool:
 
         # Get user message
-        history = self.stringify_convo_history()
+        user_message = self.cat.working_memory["user_message_json"]["text"]
 
         # Stop examples
         stop_examples = """
@@ -102,9 +102,7 @@ JSON must be in this format:
 
 {stop_examples}
 
-This is the conversation:
-
-{history}
+User said "{user_message}"
 
 JSON:
 ```json
@@ -112,7 +110,7 @@ JSON:
     "exit": """
 
         # Queries the LLM and check if user is agree or not
-        response = self.cat.llm(check_exit_prompt, stream=True)
+        response = self.cat.llm(check_exit_prompt)
         return "true" in response.lower()
 
     # Execute the dialogue step
@@ -197,19 +195,6 @@ JSON:
             "output": out
         }
 
-    def stringify_convo_history(self):
-
-        user_message = self.cat.working_memory["user_message_json"]["text"]
-        chat_history = self.cat.working_memory["history"][-10:] # last n messages
-
-        # stringify history
-        history = ""
-        for turn in chat_history:
-            history += f"\n - {turn['who']}: {turn['message']}"
-        history += f"Human: {user_message}"
-
-        return history
-
     # Extract model informations from user message
     def extract(self):
         
@@ -229,7 +214,7 @@ JSON:
 
         # json parser
         try:
-            output_model = json.loads(json_str)
+            output_model = parse_json(json_str)
         except Exception as e:
             output_model = {} 
             log.warning(e)
@@ -238,7 +223,7 @@ JSON:
     
     def extraction_prompt(self):
 
-        history = self.stringify_convo_history()
+        history = self.cat.stringify_chat_history()
 
         # JSON structure
         # BaseModel.__fields__['my_field'].type_
@@ -265,7 +250,6 @@ This is the current JSON:
 ```
 
 This is the conversation:
-
 {history}
 
 Updated JSON:
