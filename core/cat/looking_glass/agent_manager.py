@@ -53,6 +53,9 @@ class AgentManager:
             if procedure.metadata["type"] in ["tool","form"] and procedure.metadata["trigger_type"] in ["description", "start_example"]:
                 recalled_procedures_names.add(procedure.metadata["source"])
 
+        # call agent_allowed_tools hook
+        recalled_procedures_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_procedures_names, cat=stray)
+
         # Get tools with that name from mad_hatter
         allowed_procedures: Dict[str, CatTool | CatForm] = {}
         allowed_tools: List[CatTool] = []
