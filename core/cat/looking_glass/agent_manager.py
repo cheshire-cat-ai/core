@@ -6,8 +6,10 @@ from typing import List, Dict
 
 from copy import deepcopy
 
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_community.llms import BaseLLM
 from langchain.docstore.document import Document
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.agents import AgentExecutor, LLMSingleActionAgent
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
@@ -15,11 +17,11 @@ from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
-from cat.looking_glass.output_parser import (
-    ChooseProcedureOutputParser
-)
+from cat.looking_glass.output_parser import ChooseProcedureOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
+from langchain_core.runnables import RunnableConfig
+from cat.looking_glass.callbacks import NewTokenHandler
 
 from cat.experimental.form import CatForm, CatFormState
 
@@ -149,8 +151,9 @@ class AgentManager:
     async def execute_memory_chain(
         self, agent_input, prompt_prefix, prompt_suffix, stray
     ):
-        input_variables = {i: j for i, j in agent_input.items() if i in prompt_prefix}
+        # input_variables = {i: j for i, j in agent_input.items() if i in prompt_prefix}
 
+        # when the working memory will get the type, than use convert_to_Langchain_message method from cat.convo module
         chat_history = []
         for message in stray.working_memory.history:
             if message["who"] == "Human":
@@ -167,29 +170,34 @@ class AgentManager:
                         response_metadata={"userId": message["who"]},
                     )
                 )
-
-        final_prompt = ChatPromptTemplate(
-            messages=[
-                SystemMessagePromptTemplate.from_template(
-                    template=prompt_prefix + prompt_suffix
-                ),
-                *chat_history
+        if isinstance(stray._llm, BaseChatModel):
+            final_prompt = ChatPromptTemplate(
+                messages=[
+                    SystemMessagePromptTemplate.from_template(
+                        template=prompt_prefix + prompt_suffix
+                    ),
+                    *chat_history,
+                ]
+            )
+        else:
+            input_variables = [
+                i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix
             ]
-        )
+            final_prompt = PromptTemplate(
+                template=prompt_prefix + prompt_suffix, input_variables=input_variables
+            )
 
         memory_chain = LLMChain(
             prompt=final_prompt,
             llm=stray._llm,
             verbose=self.verbose,
             output_key="output",
-            return_final_only=False,
+            # return_final_only=False
         )
 
-        output = memory_chain.invoke(agent_input)["full_generation"][0]
-        return {
-            "output": output.text,
-            "finish_reason": output.generation_info["finish_reason"],
-        }
+        return await memory_chain.ainvoke(
+            agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
+        )
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
