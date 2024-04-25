@@ -163,12 +163,33 @@ JSON:
         return new_model    
     
     def message(self):
+        state_methods = {
+            CatFormState.CLOSED: self.message_closed,
+            CatFormState.WAIT_CONFIRM: self.message_wait_confirm,
+            CatFormState.INCOMPLETE: self.message_incomplete
+        }
+        state_method = state_methods.get(self._state, lambda: {"output": "Invalid state"})
+        return state_method()
 
-        if self._state == CatFormState.CLOSED:
-            return {
-                "output": f"Form {type(self).__name__} closed"
-            }
-
+        
+    def message_closed(self):
+        return {
+            "output": f"Form {type(self).__name__} closed"
+        }
+    
+    def message_wait_confirm(self):
+        output = self._generate_base_message()
+        output += "\n --> Confirm? Yes or no?"
+        return {
+            "output": output
+        }
+    
+    def message_incomplete(self):
+        return {
+            "output": self._generate_base_message()
+        }
+    
+    def _generate_base_message(self):
         separator = "\n - "
         missing_fields = ""
         if self._missing_fields:
@@ -187,13 +208,7 @@ JSON:
 {missing_fields}
 {invalid_fields}
 """
-    
-        if self._state == CatFormState.WAIT_CONFIRM:
-            out += "\n --> Confirm? Yes or no?"
-
-        return {
-            "output": out
-        }
+        return out
 
     # Extract model informations from user message
     def extract(self):
