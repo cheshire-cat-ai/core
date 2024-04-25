@@ -23,7 +23,7 @@ def create_setting(payload: models.SettingBody):
     """Create a new setting in the database"""
 
     # complete the payload with setting_id and updated_at
-    payload = models.Setting(**payload.dict())
+    payload = models.Setting(**payload.model_dump())
 
     # save to DB
     new_setting = crud.create_setting(payload)
