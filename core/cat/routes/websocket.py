@@ -36,8 +36,11 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
 
     # Skip the coroutine if the same user is already connected via WebSocket.
     if user_id in strays.keys():
-        stray = strays[user_id]            
-        stray.ws = websocket # ws connection is overwritten
+        stray = strays[user_id]       
+        # Close previus ws connection
+        await stray._StrayCat__ws.close()
+        # Set new ws connection
+        stray._StrayCat__ws = websocket 
         log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
         
     else:
