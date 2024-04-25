@@ -90,10 +90,25 @@ class StrayCat:
             return
 
         if isinstance(message, str):
+            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
+            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
+            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
+
+            # why this response?
+            why = MessageWhy(
+                input=self.working_memory.user_message_json.text,
+                intermediate_steps=[],
+                memory={
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
+                    "procedural": procedural_report,
+                }
+            )
             message = CatMessage(
                     type="chat",
                     user_id=self.user_id,
                     content=message,
+                    why=why
                 )
             
         if save:
