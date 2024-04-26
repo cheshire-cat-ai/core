@@ -1,6 +1,7 @@
 """Various utiles used from the projects."""
 import os
 import inspect
+import traceback
 from datetime import timedelta
 from urllib.parse import urlparse
 
@@ -173,7 +174,8 @@ class singleton:
 
         return getinstance
 
-import traceback
+
+# Class mixing pydantic BaseModel with dictionaries (added for backward compatibility, to be deprecated in v2)
 class BaseModelDict(BaseModel):
 
     model_config = ConfigDict(

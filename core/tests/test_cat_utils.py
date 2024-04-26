@@ -26,3 +26,6 @@ def test_get_static_url():
 def test_levenshtein_distance():
     assert utils.levenshtein_distance("hello world", "hello world") == 0.0
     assert utils.levenshtein_distance("hello world", "") == 1.0
+
+
+#def test_parse_json()
