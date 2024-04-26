@@ -1,5 +1,6 @@
-from typing import List, Type, Dict
+import time
 
+from typing import List, Type, Dict
 from pydantic import ConfigDict
 
 from langchain.llms.base import LLM
@@ -8,13 +9,17 @@ from cat.mad_hatter.decorators import hook
 from cat.factory.llm import LLMSettings
 
 
+# canned responses for the fake LLM
+fake_responses_map = {
+    "hey": "bla bla bla",
+}
+
+
 # langchin FakeLLMs only support lists
 # https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/fake.html
 class FakeTestLLM(LLM):
 
-    responses: Dict = {
-        "hey": "bla bla bla"
-    }
+    responses: Dict = fake_responses_map
 
     @property
     def _llm_type(self):
@@ -34,9 +39,6 @@ class FakeTestLLM(LLM):
 class FakeTestLLMConfig(LLMSettings):
     """Fake LLM for testing purposes."""
 
-    #responses: Dict = {
-    #    "hey": "bla bla bla"
-    #}
     _pyclass: Type = FakeTestLLM
 
     model_config = ConfigDict(
