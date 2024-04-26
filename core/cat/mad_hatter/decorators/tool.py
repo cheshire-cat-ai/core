@@ -1,11 +1,14 @@
 import time
 import asyncio
 import inspect
+import concurrent
 
 from typing import Union, Callable, List 
 from inspect import signature
 
 from langchain_core.tools import BaseTool
+
+from cat.log import log
 
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
@@ -50,15 +53,22 @@ class CatTool(BaseTool):
     def _run(self, input_by_llm):
         # Check if the tool is a corutine
         if inspect.iscoroutinefunction(self.func):
-            # Run corutine in main event loop in the main thread
-            future = asyncio.ensure_future(self.func(input_by_llm, cat=self.cat), loop=self.cat._StrayCat__main_loop)
 
-            # Whatit utill the corutine is finisched
-            while not future.done():
-                time.sleep(0.1)
+            # Wrap the corutine in a function
+            def start(coro, *args, **kwargs):
+                # Create a new event loop
+                loop  = asyncio.new_event_loop()
+                # Set the event loop
+                asyncio.set_event_loop(loop)
+                # Run the tool
+                return loop.run_until_complete(coro(input_by_llm, cat=self.cat))
             
-            return future.result()
-
+            with concurrent.futures.ThreadPoolExecutor() as exe:
+                # Run tool in a separete tread
+                future = exe.submit(start, self.func, input_by_llm, self.cat)
+                # Wait for the result
+                return future.result()
+                
         # If the tool is a function call it and return the result
         return self.func(input_by_llm, cat=self.cat)
 

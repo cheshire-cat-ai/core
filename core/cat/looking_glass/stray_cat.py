@@ -33,7 +33,7 @@ class StrayCat:
         self.working_memory = WorkingMemory()
 
         # attribute to store ws connection
-        self.ws = ws
+        self.__ws = ws
 
         self.__main_loop = main_loop
 
@@ -53,7 +53,7 @@ class StrayCat:
             The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
         """
 
-        if self.ws is None:
+        if self.__ws is None:
             log.warning(f"No websocket connection is open for user {self.user_id}")
             return
 
@@ -62,13 +62,14 @@ class StrayCat:
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
+        def send(elem):
+            asyncio.run_coroutine_threadsafe(
+                self.__ws.send_json(elem), 
+                loop=self.__main_loop
+             ).result()
+
         if msg_type == "error":
-
-            # Call put_nowait in the uvicorn main loop is necessary
-            # as the ws_mesages queue
-
-            self.__main_loop.call_soon_threadsafe(
-                self.__ws_messages.put_nowait,
+           send(
                 {
                     "type": msg_type,
                     "name": "GenericError",
@@ -76,8 +77,7 @@ class StrayCat:
                 }
             )
         else:
-            self.__main_loop.call_soon_threadsafe(
-                self.__ws_messages.put_nowait,
+            send(
                 {
                     "type": msg_type,
                     "content": content
@@ -85,22 +85,39 @@ class StrayCat:
             )
             
     def send_chat_message(self, message: Union[str, CatMessage], save=False):
+        if self.__ws is None:
+            log.warning(f"No websocket connection is open for user {self.user_id}")
+            return
+
         if isinstance(message, str):
+            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
+            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
+            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
+
+            # why this response?
+            why = MessageWhy(
+                input=self.working_memory.user_message_json.text,
+                intermediate_steps=[],
+                memory={
+                    "episodic": episodic_report,
+                    "declarative": declarative_report,
+                    "procedural": procedural_report,
+                }
+            )
             message = CatMessage(
-                    msg_type="chat",
+                    type="chat",
                     user_id=self.user_id,
                     content=message,
+                    why=why
                 )
             
         if save:
             self.working_memory.update_conversation_history(who="AI", message=message["content"], why=message["why"])
 
-        self.__main_loop.call_soon_threadsafe(
-            self.__ws_messages.put_nowait,
-            {
-                **message.to_dict()
-            }
-        )
+        asyncio.run_coroutine_threadsafe(
+            self.__ws.send_json(message.model_dump()), 
+            loop=self.__main_loop
+        ).result()
 
     def send_notification(self, content: str):
         self.send_ws_message(
@@ -374,7 +391,8 @@ class StrayCat:
             self.working_memory.update_conversation_history(who="AI", message=final_output.content, why=final_output.why)
 
             # send message back to client
-            return final_output.dict()
+            self.send_chat_message(final_output)
+            #return final_output.model_dump()
 
     def run(self, user_message_json):
         return self.loop.run_until_complete(
@@ -472,7 +490,6 @@ Allowed classes are:
             history_string += f"\n - {turn['who']}: {turn['message']}"
 
         return history_string
-
 
     @property
     def user_id(self):
