@@ -36,6 +36,7 @@ class StrayCat:
 
         self.__main_loop = main_loop
 
+        # TODO: is this necessary?
         self.__loop = asyncio.new_event_loop()
 
     def __send_ws_json(self, data: Any):
