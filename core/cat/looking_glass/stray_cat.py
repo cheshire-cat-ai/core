@@ -378,7 +378,6 @@ class StrayCat:
             
             # prepare final cat message
             final_output = CatMessage(
-                type="chat",
                 user_id=self.user_id,
                 content=str(cat_message.get("output")),
                 why=why
@@ -390,14 +389,21 @@ class StrayCat:
             # update conversation history (AI turn)
             self.working_memory.update_conversation_history(who="AI", message=final_output.content, why=final_output.why)
 
-            # send message back to client
-            self.send_chat_message(final_output)
-            #return final_output.model_dump()
+            return final_output
 
     def run(self, user_message_json):
-        return self.loop.run_until_complete(
-            self.__call__(user_message_json)
-        )
+        try:
+            cat_message = self.loop.run_until_complete(
+                self.__call__(user_message_json)
+            )
+            # send message back to client
+            self.send_chat_message(cat_message)
+        except Exception as e:
+            # Log any unexpected errors
+            log.error(e)
+            traceback.print_exc()
+            # Send error as websocket message
+            self.send_error(e)
     
     def classify(self, sentence: str, labels: List[str] | Dict[str, List[str]]) -> str:
         """Classify a sentence.
