@@ -38,7 +38,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
     if user_id in strays.keys():
         stray = strays[user_id]       
         # Close previus ws connection
-        await stray._StrayCat__ws.close()
+        if stray._StrayCat__ws:
+            await stray._StrayCat__ws.close()
         # Set new ws connection
         stray._StrayCat__ws = websocket 
         log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
@@ -61,11 +62,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
         await receive_message(websocket, stray)
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
+        stray._StrayCat__ws = None 
         log.info("WebSocket connection closed")
-    except Exception as e:
-        # Log any unexpected errors and send an error message back to the user.
-        log.error(e)
-        traceback.print_exc()
     # finally:
     #     del strays[user_id]
 

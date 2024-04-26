@@ -15,9 +15,8 @@ class MessageWhy(BaseModelDict):
     intermediate_steps: List
     memory: dict
 
-
 class CatMessage(BaseModelDict):
-    type: str
+    type: str = "chat"
     content: str
     user_id: str
     why: MessageWhy
