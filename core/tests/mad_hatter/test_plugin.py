@@ -68,13 +68,19 @@ def test_activate_plugin(plugin):
 
     # hooks
     assert len(plugin.hooks) == 3
-    hook = plugin.hooks[0]
-    assert isinstance(hook, CatHook)
-    assert hook.plugin_id == "mock_plugin"
-    assert hook.name == "factory_allowed_llms"
-    assert isfunction(hook.function)
-    assert hook.priority == 1 # edefault priority
-    # TODO: check all mock_plugin hooks
+    for hook in plugin.hooks:
+        assert isinstance(hook, CatHook)
+        assert hook.plugin_id == "mock_plugin"
+        assert hook.name in [
+            "factory_allowed_llms",
+            "before_cat_sends_message",
+        ]
+        assert isfunction(hook.function)
+        
+        if hook.name == "before_cat_sends_message":
+            assert hook.priority > 1
+        else:
+            assert hook.priority == 1 # default priority
 
     # tools
     assert len(plugin.tools) == 1
