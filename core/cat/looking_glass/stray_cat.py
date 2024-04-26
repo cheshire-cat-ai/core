@@ -39,6 +39,27 @@ class StrayCat:
 
         self.__loop = asyncio.new_event_loop()
 
+    def __build_why(self) -> MessageWhy:
+
+        # build data structure for output (response and why with memories)
+        # TODO: these 3 lines are a mess, simplify
+        episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
+        declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
+        procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
+
+        # why this response?
+        why = MessageWhy(
+            input=self.working_memory.user_message_json.text,
+            intermediate_steps=[],
+            memory={
+                "episodic": episodic_report,
+                "declarative": declarative_report,
+                "procedural": procedural_report,
+            }
+        )
+
+        return why
+
     def send_ws_message(self, content: str, msg_type: MSG_TYPES="notification"):
         
         """Send a message via websocket.
@@ -90,24 +111,10 @@ class StrayCat:
             return
 
         if isinstance(message, str):
-            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
-            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
-            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
-
-            # why this response?
-            why = MessageWhy(
-                input=self.working_memory.user_message_json.text,
-                intermediate_steps=[],
-                memory={
-                    "episodic": episodic_report,
-                    "declarative": declarative_report,
-                    "procedural": procedural_report,
-                }
-            )
+            why = self.__build_why()
             message = CatMessage(
-                    type="chat",
-                    user_id=self.user_id,
                     content=message,
+                    user_id=self.user_id,
                     why=why
                 )
             
@@ -374,22 +381,9 @@ class StrayCat:
                 doc.metadata,
             )
 
-            # build data structure for output (response and why with memories)
-            # TODO: these 3 lines are a mess, simplify
-            episodic_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.episodic_memories]
-            declarative_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.declarative_memories]
-            procedural_report = [dict(d[0]) | {"score": float(d[1]), "id": d[3]} for d in self.working_memory.procedural_memories]
-
             # why this response?
-            why = MessageWhy(
-                input=cat_message.get("input", ""),
-                intermediate_steps=cat_message.get("intermediate_steps", []),
-                memory={
-                    "episodic": episodic_report,
-                    "declarative": declarative_report,
-                    "procedural": procedural_report,
-                }
-            )
+            why = self.__build_why()
+            why.intermediate_steps = cat_message.get("intermediate_steps", [])
             
             # prepare final cat message
             final_output = CatMessage(
