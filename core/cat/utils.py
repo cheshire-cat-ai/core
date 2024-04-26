@@ -206,7 +206,7 @@ class BaseModelDict(BaseModel):
         # set attribute
         setattr(self, key, value)
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         try:
             return self.__getitem__(key)
         except:

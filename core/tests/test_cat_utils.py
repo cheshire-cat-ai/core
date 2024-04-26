@@ -75,5 +75,6 @@ def test_base_dict_model():
         cat.origin["location"],
         cat["origin"].location,
         cat["origin"]["location"],
+        cat.get("origin").get("location")
     ])
     assert len(accesses) == 1

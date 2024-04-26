@@ -17,4 +17,3 @@ def test_stray_initialization(stray):
     assert isinstance(stray.working_memory, WorkingMemory)
 
 
-# TODO: test all properties and methods
