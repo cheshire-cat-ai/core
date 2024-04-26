@@ -75,7 +75,7 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     assert "mock_plugin" in mad_hatter.load_active_plugins_from_db() # plugin starts active
 
     # plugin is activated by default
-    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 2
+    assert len(mad_hatter.plugins["mock_plugin"].hooks) == 3
     assert len(mad_hatter.plugins["mock_plugin"].tools) == 1
 
     # tool found
