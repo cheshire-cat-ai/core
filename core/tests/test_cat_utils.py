@@ -47,7 +47,7 @@ def test_parse_json():
     unclosed_json = """{"a":2"""
     assert( utils.parse_json(unclosed_json) == expected_json )
 
-    unclosed_key_json = """{"a":2, "b":"""
+    unclosed_key_json = """{"a":3, "b":"""
     assert( utils.parse_json(unclosed_key_json) == expected_json )
 
     invalid_json = """yaml is better"""
