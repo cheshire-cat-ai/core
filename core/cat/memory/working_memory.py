@@ -24,9 +24,14 @@ class WorkingMemory(BaseModelDict):
 
     # stores conversation history
     history: List = []
-    recall_query: str = ""
     user_message_json : None | UserMessage = None
     active_form: None | CatForm = None
+
+    # recalled memories attributes
+    recall_query: str = ""
+    episodic_memories: List = []
+    declarative_memories: List = []
+    procedural_memories: List = []
 
     def update_conversation_history(self, who, message, why={}):
         """Update the conversation history.
