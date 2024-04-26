@@ -1,7 +1,13 @@
 import os
 import fnmatch
 
-from fastapi import Request
+from typing import Annotated
+from cat.log import log
+
+from fastapi import (
+    WebSocket,
+    Request,
+)
 from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
@@ -18,8 +24,32 @@ The keys are piped with a `|`, hence the list takes care of splitting and storin
 
 api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
+def ws_auth(
+    websocket: WebSocket,
+    ) -> None | str:
+    """Authenticate endpoint.
 
-def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> None | str:
+    Check the provided key is available in API keys list.
+
+    Parameters
+    ----------
+    request : Request
+        HTTP request.
+
+    Returns
+    -------
+    api_key : str | None
+        Returns the valid key if set in the `.env`, otherwise return None.
+
+    Raises
+    ------
+    HTTPException
+        Error with status code `403` if the provided key is not valid.
+
+    """
+    return websocket.app.state.ccat.authorizator.is_ws_allowed(websocket)
+    
+def http_auth(request: Request) -> None | str:
     """Authenticate endpoint.
 
     Check the provided key is available in API keys list.
@@ -42,16 +72,13 @@ def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> 
         Error with status code `403` if the provided key is not valid.
 
     """
-    if not API_KEY:
+    authorizator = request.app.state.ccat.authorizator
+    if authorizator.is_master_key(request) or authorizator.is_http_allowed(request):
         return None
-    if fnmatch.fnmatch(request.url.path, "/admin*"):
-        return None
-    if api_key in API_KEY:
-        return api_key
     else:
         raise HTTPException(
             status_code=403,
-            detail={"error": "Invalid API Key"}
+            detail={"error": "Invalid Credentials"}
         )
 
 

@@ -27,7 +27,7 @@ class EmbedderSettings(BaseModel):
     # instantiate an Embedder from configuration
     @classmethod
     def get_embedder_from_config(cls, config):
-        if cls._pyclass is None:
+        if cls._pyclass is None: 
             raise Exception(
                 "Embedder configuration class has self._pyclass==None. Should be a valid Embedder class"
             )

@@ -34,3 +34,19 @@ def factory_allowed_embedders(allowed, cat) -> List:
         list of allowed embedders 
     """
     return allowed
+
+@hook(priority=0)
+def factory_allowed_authorizators(allowed, cat) -> List:
+    """Hook to extend list of supported authorizators.
+
+    Parameters
+    ---------
+    allowed : List of AuthorizatorSettings classes
+        list of allowed authorizators 
+
+    Returns
+    -------
+    supported : List of AuthorizatorSettings classes
+        list of allowed authorizators 
+    """
+    return allowed
