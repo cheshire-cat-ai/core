@@ -125,11 +125,26 @@ class StrayCat:
             msg_type="notification"
         )
 
-    def send_error(self, error):
-        self.send_ws_message(
-            content=error, 
-            msg_type="error"
-        )
+    def send_error(self, error: Union[str, Exception]):
+
+        if self.__ws is None:
+            log.warning(f"No websocket connection is open for user {self.user_id}")
+            return
+        
+        if isinstance(error, str):
+            error_message = {
+                        "type": "error",
+                        "name": "GenericError",
+                        "description": str(error)
+                    }
+        else:
+            error_message = {
+                        "type": "error",
+                        "name": error.__class__.__name__,
+                        "description": str(error)
+                    }
+
+        self.__send_ws_json(error_message)
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
