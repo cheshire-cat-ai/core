@@ -1,7 +1,7 @@
 import time
 import asyncio
 import traceback
-from typing import Literal, get_args, List, Dict, Union
+from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -29,7 +29,6 @@ class StrayCat:
             ws: WebSocket = None,
         ):
         self.__user_id = user_id
-        self.__ws_messages = asyncio.Queue()
         self.working_memory = WorkingMemory()
 
         # attribute to store ws connection
@@ -39,6 +38,14 @@ class StrayCat:
 
         self.__loop = asyncio.new_event_loop()
 
+    def __send_ws_json(self, data: Any):
+            # Run the corutine in the main event loop in the main thread 
+            # and wait for the result
+            asyncio.run_coroutine_threadsafe(
+                self.__ws.send_json(data), 
+                loop=self.__main_loop
+             ).result()
+            
     def __build_why(self) -> MessageWhy:
 
         # build data structure for output (response and why with memories)
@@ -83,14 +90,8 @@ class StrayCat:
         if msg_type not in options:
             raise ValueError(f"The message type `{msg_type}` is not valid. Valid types: {', '.join(options)}")
 
-        def send(elem):
-            asyncio.run_coroutine_threadsafe(
-                self.__ws.send_json(elem), 
-                loop=self.__main_loop
-             ).result()
-
         if msg_type == "error":
-           send(
+           self.__send_ws_json(
                 {
                     "type": msg_type,
                     "name": "GenericError",
@@ -98,7 +99,7 @@ class StrayCat:
                 }
             )
         else:
-            send(
+             self.__send_ws_json(
                 {
                     "type": msg_type,
                     "content": content
@@ -121,10 +122,7 @@ class StrayCat:
         if save:
             self.working_memory.update_conversation_history(who="AI", message=message["content"], why=message["why"])
 
-        asyncio.run_coroutine_threadsafe(
-            self.__ws.send_json(message.model_dump()), 
-            loop=self.__main_loop
-        ).result()
+        self.__send_ws_json(message.model_dump())
 
     def send_notification(self, content: str):
         self.send_ws_message(
