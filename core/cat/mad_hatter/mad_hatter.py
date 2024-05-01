@@ -102,11 +102,17 @@ class MadHatter:
         log.info("ACTIVE PLUGINS:")
         log.info(self.active_plugins)
 
+        # Directories to skip
+        skip_directories = ['lost+found']
+
         # discover plugins, folder by folder
         for folder in all_plugin_folders:
-            self.load_plugin(folder)
-
             plugin_id = os.path.basename(os.path.normpath(folder))
+
+            if plugin_id in skip_directories:
+                continue
+
+            self.load_plugin(folder)
             
             if plugin_id in self.active_plugins:
                 self.plugins[plugin_id].activate()
