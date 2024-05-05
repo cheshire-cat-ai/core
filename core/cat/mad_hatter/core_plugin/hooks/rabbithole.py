@@ -53,6 +53,11 @@ def rabbithole_instantiates_splitter(text_splitter: TextSplitter, cat) -> TextSp
     text_splitter : TextSplitter
         An instance of a TextSplitter subclass.
     """
+
+    # example on how to change chunking
+    # text_splitter._chunk_size = 64
+    # text_splitter._chnk_overlap = 8
+
     return text_splitter
 
 

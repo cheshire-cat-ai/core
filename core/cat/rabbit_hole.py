@@ -28,29 +28,32 @@ class RabbitHole:
     def __init__(self, cat) -> None:
         self.__cat = cat
 
+    # each time we access the file handlers, plugins can intervene
+    def __reload_file_handlers(self):
+        
+        # default file handlers
         self.__file_handlers = {
             "application/pdf": PDFMinerParser(),
             "text/plain": TextParser(),
             "text/markdown": TextParser(),
             "text/html": BS4HTMLParser()
         }
+
+        # no access to stray
+        self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
         
+    def __reload_text_splitter(self):
+        
+        # default text splitter
         self.__text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+            chunk_size=256,
+            chunk_overlap=64,
             separators = ["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
             encoding_name = "cl100k_base",
             keep_separator = True,
             strip_whitespace = True
         )
 
-        self.__reload_file_handlers()
-        self.__reload_text_splitter()
-
-    # each time we access the file handlers, plugins can intervene
-    def __reload_file_handlers(self):
-        # no access to stray
-        self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
-        
-    def __reload_text_splitter(self):
         # no access to stray
         self.__text_splitter = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_splitter", self.__text_splitter, cat=self.__cat)
 
@@ -120,8 +123,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 256,
-            chunk_overlap: int = 64,
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -171,8 +174,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 256,
-            chunk_overlap: int = 64
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -253,8 +256,8 @@ class RabbitHole:
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
-            chunk_size: int = 256,
-            chunk_overlap: int = 64
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -417,13 +420,19 @@ class RabbitHole:
         """
         # do something on the text before it is split
         text = stray.mad_hatter.execute_hook("before_rabbithole_splits_text", text, cat=stray)
-        
-        self.__text_splitter._chunk_size = chunk_size
-        self.__text_splitter._chunk_overlap = chunk_overlap
+
+        # hooks decide the test splitter (see @property .text_splitter)
+        text_splitter = self.text_splitter
+
+        # override chunk_size and chunk_overlap only if the request has those info
+        if chunk_size:
+            text_splitter._chunk_size = chunk_size
+        if chunk_overlap:
+            text_splitter._chunk_overlap = chunk_overlap
 
         log.info(f"Chunk size: {chunk_size}, chunk overlap: {chunk_overlap}")
         # split text
-        docs = self.text_splitter.split_documents(text)
+        docs = text_splitter.split_documents(text)
         # remove short texts (page numbers, isolated words, etc.)
         # TODO: join each short chunk with previous one, instead of deleting them
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
