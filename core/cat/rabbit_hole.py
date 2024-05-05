@@ -358,7 +358,12 @@ class RabbitHole:
         # notify client
         finished_reading_message = f"Finished reading {source}, " \
                                    f"I made {len(docs)} thoughts on it."
-
+        
+        # hook the docs after they are stored in the vector memory
+        docs = stray.mad_hatter.execute_hook(
+            "after_rabbithole_insert_memory", docs, cat=stray
+        )
+        
         stray.send_ws_message(finished_reading_message)
 
         log.warning(f"Done uploading {source}")

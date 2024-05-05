@@ -145,3 +145,33 @@ def before_rabbithole_stores_documents(docs: List[Document], cat) -> List[Docume
     """
 
     return docs
+
+@hook(priority=0)
+def after_rabbithole_insert_memory(docs: List[Document], cat) -> List[Document]:
+    """Hook the Document after is inserted in the vector memory.
+
+    Allows editing and enhancing the list of Document after is inserted in the vector memory.
+
+    Parameters
+    ----------
+    docs : List[Document]
+        List of Langchain Document to be edited.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    docs : List[Document]
+        List of edited Langchain documents.
+
+    Notes
+    -----
+    The Document has two properties::
+
+        page_content: the string with the text to save in memory;
+        metadata: a dictionary with at least two keys:
+            source: where the text comes from;
+            when: timestamp to track when it's been uploaded.
+
+    """
+    return docs
