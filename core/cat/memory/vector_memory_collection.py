@@ -188,25 +188,26 @@ class VectorMemoryCollection():
 
         # TODO: may be adapted to upload batches of points as langchain does.
         # Not necessary now as the bottleneck is the embedder
-        points = [
-            PointStruct(
-                id=id or uuid.uuid4().hex,
-                payload={
-                    "page_content": content,
-                    "metadata": metadata,
-                },
-                vector=vector
-            )
-        ]
+        point = PointStruct(
+                    id=id or uuid.uuid4().hex,
+                    payload={
+                        "page_content": content,
+                        "metadata": metadata,
+                    },
+                    vector=vector
+                )
 
         update_status = self.client.upsert(
             collection_name=self.collection_name,
-            points=points,
+            points=[point],
             **kwargs
         )
-
-        # TODO: this should be an UpdateStatus object, not sure what to do with it 
-        return update_status
+ 
+        if update_status.status == "completed":
+            # returnign stored point
+            return point
+        else:
+            return None
 
     def delete_points_by_metadata_filter(self, metadata=None):
         res = self.client.delete(

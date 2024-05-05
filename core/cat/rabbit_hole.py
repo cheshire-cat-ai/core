@@ -326,6 +326,7 @@ class RabbitHole:
         # classic embed
         time_last_notification = time.time()
         time_interval = 10  # a notification every 10 secs
+        stored_points = []
         for d, doc in enumerate(docs):
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
@@ -342,27 +343,28 @@ class RabbitHole:
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
                 doc_embedding = stray.embedder.embed_documents([doc.page_content])
-                _ = stray.memory.vectors.declarative.add_point(
+                stored_point = stray.memory.vectors.declarative.add_point(
                     doc.page_content,
                     doc_embedding[0],
                     doc.metadata,
                 )
+                stored_points.append(stored_point)
 
                 log.info(f"Inserted into memory ({inserting_info})")
             else:
                 log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
-            time.sleep(0.1)
+            time.sleep(0.05)
+
+        # hook the points after they are stored in the vector memory
+        stray.mad_hatter.execute_hook(
+            "after_rabbithole_stored_documents", source, stored_points, cat=stray
+        )
 
         # notify client
-        finished_reading_message = f"Finished reading {source}, " \
-                                   f"I made {len(docs)} thoughts on it."
-        
-        # hook the docs after they are stored in the vector memory
-        docs = stray.mad_hatter.execute_hook(
-            "after_rabbithole_insert_memory", docs, cat=stray
-        )
+        finished_reading_message = \
+            f"Finished reading {source}, I made {len(docs)} thoughts on it."
         
         stray.send_ws_message(finished_reading_message)
 
