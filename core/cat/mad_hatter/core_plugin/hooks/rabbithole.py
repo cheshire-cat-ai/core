@@ -7,7 +7,7 @@ These hooks allow to intercept the uploaded documents at different places before
 """
 
 from typing import List
-
+from langchain.text_splitter import TextSplitter
 from langchain.docstore.document import Document
 from qdrant_client.http.models import PointStruct
 
@@ -33,6 +33,32 @@ def rabbithole_instantiates_parsers(file_handlers: dict, cat) -> dict:
         Edited dictionary of supported mime types and related parsers.
     """
     return file_handlers
+
+
+@hook(priority=0)
+def rabbithole_instantiates_splitter(text_splitter: TextSplitter, cat) -> TextSplitter:
+    """Hook the splitter used to split text in chunks.
+
+    Allows replacing the default text splitter to customize the splitting process.
+
+    Parameters
+    ----------
+    text_splitter : TextSplitter
+        The text splitter used by default.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    text_splitter : TextSplitter
+        An instance of a TextSplitter subclass.
+    """
+
+    # example on how to change chunking
+    # text_splitter._chunk_size = 64
+    # text_splitter._chnk_overlap = 8
+
+    return text_splitter
 
 
 # Hook called just before of inserting a document in vector memory
