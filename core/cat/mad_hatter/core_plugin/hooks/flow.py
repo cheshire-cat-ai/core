@@ -332,25 +332,3 @@ def before_cat_stores_episodic_memory(doc: Document, cat) -> Document:
 
     """
     return doc
-
-# Hook called just before of inserting the tool or form in procedural vector memory
-@hook(priority=0)
-def before_cat_stores_procedural_memory(metadata: dict, cat) -> dict:
-    """Hook the tool or form metadata before is inserted in the vector memory.
-
-    Allows editing and enhancing a tool or form metadata before the Cat add it to the procedural vector memory.
-
-    Parameters
-    ----------
-    metedata : dict
-        metadata Dictionary to be inserted in procedural vector memory.
-    cat : CheshireCat
-        Cheshire Cat instance.
-
-    Returns
-    -------
-    metedata : dict
-        metadata Dictionary that is added in the procedural vector memory.
-
-    """
-    return metadata

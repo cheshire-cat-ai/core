@@ -56,7 +56,7 @@ def rabbithole_instantiates_splitter(text_splitter: TextSplitter, cat) -> TextSp
 
     # example on how to change chunking
     # text_splitter._chunk_size = 64
-    # text_splitter._chnk_overlap = 8
+    # text_splitter._chunk_overlap = 8
 
     return text_splitter
 

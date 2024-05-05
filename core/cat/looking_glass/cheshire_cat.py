@@ -303,7 +303,6 @@ class CheshireCat:
             active_procedures_hashes[p] for p in points_to_be_embedded
         ]
         for t in active_triggers_to_be_embedded:
-            print(t)
            
             metadata = {
                 "source": t["source"],
@@ -311,9 +310,7 @@ class CheshireCat:
                 "trigger_type": t["trigger_type"],
                 "when": time.time(),
             }
-            metadata = self.mad_hatter.execute_hook(
-                "before_cat_stores_procedural_memory", metadata, cat=self
-            )
+
             trigger_embedding = self.embedder.embed_documents([t["content"]])
             self.memory.vectors.procedural.add_point(
                 t["content"],
