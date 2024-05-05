@@ -119,8 +119,6 @@ JSON:
         # could we enrich prompt completion with episodic/declarative memories?
         #self.cat.working_memory.episodic_memories = []
 
-        if self.check_exit_intent():
-            self._state = CatFormState.CLOSED
 
         # If state is WAIT_CONFIRM, check user confirm response..
         if self._state == CatFormState.WAIT_CONFIRM:
@@ -128,7 +126,13 @@ JSON:
                 self._state = CatFormState.CLOSED
                 return self.submit(self._model)
             else:
-                self._state = CatFormState.INCOMPLETE
+                if self.check_exit_intent():
+                    self._state = CatFormState.CLOSED
+                else:
+                    self._state = CatFormState.INCOMPLETE
+
+        if self.check_exit_intent():
+            self._state = CatFormState.CLOSED
 
         # If the state is INCOMPLETE, execute model update
         # (and change state based on validation result)
