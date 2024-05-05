@@ -207,3 +207,8 @@ def get_embedders_schemas():
         EMBEDDER_SCHEMAS[schema["title"]] = schema
 
     return EMBEDDER_SCHEMAS
+
+def get_embedders_class():
+    # Provide a dictionary containing the name of the embedder and its corresponding class.
+    return {config_class.model_json_schema()["title"]: config_class
+            for config_class in get_allowed_embedder_models()}
