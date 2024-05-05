@@ -207,7 +207,23 @@ class BaseModelDict(BaseModel):
         setattr(self, key, value)
 
     def get(self, key, default=None):
-        try:
-            return self.__getitem__(key)
-        except:
-            return default
+        return getattr(self, key, default)
+
+    def __delitem__(self, key):
+        delattr(self, key)
+
+    def _get_all_attributes(self):
+        #return {**self.model_fields, **self.__pydantic_extra__}
+        return self.model_dump()
+
+    def keys(self):
+        return self._get_all_attributes().keys()
+
+    def values(self):
+        return self._get_all_attributes().values()
+
+    def items(self):
+        return self._get_all_attributes().items()
+
+    def __contains__(self, key):
+        return key in self.keys()
