@@ -296,12 +296,13 @@ class RabbitHole:
 
         # Parse the text
         stray.send_ws_message("I'm parsing the content. Big content could require some minutes...")
-        text = parser.parse(blob)
+        super_docs = parser.parse(blob)
 
+        # Split
         stray.send_ws_message("Parsing completed. Now let's go with reading process...")
         docs = self.__split_text(
             stray=stray,
-            text=text,
+            text=super_docs,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap
         )

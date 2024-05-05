@@ -95,27 +95,29 @@ def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
 
 # Hook called just before rabbithole splits text. Input is whole Document
 @hook(priority=0)
-def before_rabbithole_splits_text(doc: Document, cat) -> Document:
-    """Hook the `Document` before is split.
+def before_rabbithole_splits_text(docs: List[Document], cat) -> List[Document]:
+    """Hook the `Documents` before they are split into chunks.
 
-    Allows editing the whole uploaded `Document` before the *RabbitHole* recursively splits it in shorter ones.
+    Allows editing the uploaded document main Document(s) before the *RabbitHole* recursively splits it in shorter ones.
+    Please note that this is a list because parsers can output one or more Document, that are afterwards splitted.
 
     For instance, the hook allows to change the text or edit/add metadata.
 
     Parameters
     ----------
-    doc : Document
-        Langchain `Document` uploaded in the *RabbitHole* to be ingested.
+    docs : List[Document]
+        Langchain `Document`s resulted after parsing the file uploaded in the *RabbitHole*.
     cat : CheshireCat
         Cheshire Cat instance.
 
     Returns
     -------
-    doc : Document
-        Edited Langchain `Document`.
+    docs : List[Document]
+        Edited Langchain `Document`s.
 
     """
-    return doc
+
+    return docs
 
 
 # Hook called after rabbithole have splitted text into chunks.
