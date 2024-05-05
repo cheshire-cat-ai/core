@@ -1,6 +1,7 @@
 import mimetypes
 import requests
 from typing import Dict
+from copy import deepcopy
 
 from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
@@ -16,11 +17,11 @@ async def upload_file(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    chunk_size: int = Body(
-        default=256,
-        description="Maximum length of each chunk after the document is split (in characters)",
+    chunk_size: int | None = Body(
+        default=None,
+        description="Maximum length of each chunk after the document is split (in tokens)",
     ),
-    chunk_overlap: int = Body(default=64, description="Chunk overlap (in characters)"),
+    chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
     stray = Depends(session),
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
@@ -44,7 +45,9 @@ async def upload_file(
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
-        stray.rabbit_hole.ingest_file, stray, file, chunk_size, chunk_overlap
+        # we deepcopy the file because FastAPI does not keep the file in memory after the response returns to the client
+        # https://github.com/tiangolo/fastapi/discussions/10936
+        stray.rabbit_hole.ingest_file, stray, deepcopy(file), chunk_size, chunk_overlap
     )
 
     # reply to client
@@ -62,11 +65,11 @@ async def upload_url(
     url: str = Body(
         description="URL of the website to which you want to save the content"
     ),
-    chunk_size: int = Body(
-        default=256,
-        description="Maximum length of each chunk after the document is split (in characters)",
+    chunk_size: int | None = Body(
+        default=None,
+        description="Maximum length of each chunk after the document is split (in tokens)",
     ),
-    chunk_overlap: int = Body(default=64, description="Chunk overlap (in characters)"),
+    chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
     stray = Depends(session),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
@@ -127,7 +130,7 @@ async def upload_memory(
             })
 
     # Ingest memories in background and notify client
-    background_tasks.add_task(stray.rabbit_hole.ingest_memory, stray, file)
+    background_tasks.add_task(stray.rabbit_hole.ingest_memory, stray, deepcopy(file))
 
     # reply to client
     return {

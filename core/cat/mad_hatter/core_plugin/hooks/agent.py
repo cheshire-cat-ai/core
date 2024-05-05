@@ -64,7 +64,7 @@ def agent_fast_reply(fast_reply, cat) -> Union[None, Dict]:
 
     Example 2: don't remember (no uploaded documents about topic)
     ```python
-    num_declarative_memories = len( cat.working_memory["declarative_memories"] )
+    num_declarative_memories = len( cat.working_memory.declarative_memories )
     if num_declarative_memories == 0:
         return {
            "output": "Sorry, I have no memories about that."

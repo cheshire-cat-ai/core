@@ -28,6 +28,10 @@ class RabbitHole:
     def __init__(self, cat) -> None:
         self.__cat = cat
 
+    # each time we access the file handlers, plugins can intervene
+    def __reload_file_handlers(self):
+        
+        # default file handlers
         self.__file_handlers = {
             "application/pdf": PDFMinerParser(),
             "text/plain": TextParser(),
@@ -35,12 +39,23 @@ class RabbitHole:
             "text/html": BS4HTMLParser()
         }
 
-        self.__reload_file_handlers()
-
-    # each time we access the file handlers, plugins can intervene
-    def __reload_file_handlers(self):
         # no access to stray
         self.__file_handlers = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat)
+        
+    def __reload_text_splitter(self):
+        
+        # default text splitter
+        self.__text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+            chunk_size=256,
+            chunk_overlap=64,
+            separators = ["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
+            encoding_name = "cl100k_base",
+            keep_separator = True,
+            strip_whitespace = True
+        )
+
+        # no access to stray
+        self.__text_splitter = self.__cat.mad_hatter.execute_hook("rabbithole_instantiates_splitter", self.__text_splitter, cat=self.__cat)
 
     def ingest_memory(self, stray, file: UploadFile):
         """Upload memories to the declarative memory from a JSON file.
@@ -108,8 +123,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 256,
-            chunk_overlap: int = 64,
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -159,8 +174,8 @@ class RabbitHole:
             self,
             stray,
             file: Union[str, UploadFile],
-            chunk_size: int = 256,
-            chunk_overlap: int = 64
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -241,8 +256,8 @@ class RabbitHole:
             file_bytes: str,
             source: str = None,
             content_type: str = "text/plain",
-            chunk_size: int = 256,
-            chunk_overlap: int = 64
+            chunk_size: int | None = None,
+            chunk_overlap: int | None = None,
         ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -281,12 +296,13 @@ class RabbitHole:
 
         # Parse the text
         stray.send_ws_message("I'm parsing the content. Big content could require some minutes...")
-        text = parser.parse(blob)
+        super_docs = parser.parse(blob)
 
+        # Split
         stray.send_ws_message("Parsing completed. Now let's go with reading process...")
         docs = self.__split_text(
             stray=stray,
-            text=text,
+            text=super_docs,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap
         )
@@ -326,6 +342,7 @@ class RabbitHole:
         # classic embed
         time_last_notification = time.time()
         time_interval = 10  # a notification every 10 secs
+        stored_points = []
         for d, doc in enumerate(docs):
             if time.time() - time_last_notification > time_interval:
                 time_last_notification = time.time()
@@ -342,23 +359,29 @@ class RabbitHole:
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
                 doc_embedding = stray.embedder.embed_documents([doc.page_content])
-                _ = stray.memory.vectors.declarative.add_point(
+                stored_point = stray.memory.vectors.declarative.add_point(
                     doc.page_content,
                     doc_embedding[0],
                     doc.metadata,
                 )
+                stored_points.append(stored_point)
 
                 log.info(f"Inserted into memory ({inserting_info})")
             else:
                 log.info(f"Skipped memory insertion of empty doc ({inserting_info})")
 
             # wait a little to avoid APIs rate limit errors
-            time.sleep(0.1)
+            time.sleep(0.05)
+
+        # hook the points after they are stored in the vector memory
+        stray.mad_hatter.execute_hook(
+            "after_rabbithole_stored_documents", source, stored_points, cat=stray
+        )
 
         # notify client
-        finished_reading_message = f"Finished reading {source}, " \
-                                   f"I made {len(docs)} thoughts on it."
-
+        finished_reading_message = \
+            f"Finished reading {source}, I made {len(docs)} thoughts on it."
+        
         stray.send_ws_message(finished_reading_message)
 
         log.warning(f"Done uploading {source}")
@@ -397,18 +420,16 @@ class RabbitHole:
 
         """
         # do something on the text before it is split
-        text = stray.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text, cat=stray
-        )
+        text = stray.mad_hatter.execute_hook("before_rabbithole_splits_text", text, cat=stray)
 
-        text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            separators=["\\n\\n", "\n\n", ".\\n", ".\n", "\\n", "\n", " ", ""],
-            encoding_name = "cl100k_base",
-            keep_separator=True,
-            strip_whitespace = True
-        )
+        # hooks decide the test splitter (see @property .text_splitter)
+        text_splitter = self.text_splitter
+
+        # override chunk_size and chunk_overlap only if the request has those info
+        if chunk_size:
+            text_splitter._chunk_size = chunk_size
+        if chunk_overlap:
+            text_splitter._chunk_overlap = chunk_overlap
 
         log.info(f"Chunk size: {chunk_size}, chunk overlap: {chunk_overlap}")
         # split text
@@ -418,9 +439,7 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = stray.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs, cat=stray
-        )
+        docs = stray.mad_hatter.execute_hook("after_rabbithole_splitted_text", docs, cat=stray)
 
         return docs
 
@@ -429,3 +448,9 @@ class RabbitHole:
     def file_handlers(self):
         self.__reload_file_handlers()
         return self.__file_handlers
+
+    # each time we access the text splitter, plugins can intervene
+    @property
+    def text_splitter(self):
+        self.__reload_text_splitter()
+        return self.__text_splitter

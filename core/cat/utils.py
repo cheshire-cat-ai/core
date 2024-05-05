@@ -1,10 +1,11 @@
 """Various utiles used from the projects."""
 import os
 import inspect
+import traceback
 from datetime import timedelta
 from urllib.parse import urlparse
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
@@ -172,3 +173,57 @@ class singleton:
             return cls.instances[class_]
 
         return getinstance
+
+
+# Class mixing pydantic BaseModel with dictionaries (added for backward compatibility, to be deprecated in v2)
+class BaseModelDict(BaseModel):
+
+    model_config = ConfigDict(
+        extra='allow',
+        validate_assignment=True,
+        arbitrary_types_allowed=True,
+    )
+
+    def __getitem__(self, key):
+
+        # deprecate dictionary usage
+        stack = traceback.extract_stack(limit=2)
+        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
+        log.warning(f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`")
+        log.warning(line_code)
+
+        # return attribute
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        
+        # deprecate dictionary usage
+        stack = traceback.extract_stack(limit=2)
+        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
+        log.warning(f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`')
+        log.warning(line_code)
+
+        # set attribute
+        setattr(self, key, value)
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+    def __delitem__(self, key):
+        delattr(self, key)
+
+    def _get_all_attributes(self):
+        #return {**self.model_fields, **self.__pydantic_extra__}
+        return self.model_dump()
+
+    def keys(self):
+        return self._get_all_attributes().keys()
+
+    def values(self):
+        return self._get_all_attributes().values()
+
+    def items(self):
+        return self._get_all_attributes().items()
+
+    def __contains__(self, key):
+        return key in self.keys()

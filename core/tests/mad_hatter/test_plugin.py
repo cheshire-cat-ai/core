@@ -67,13 +67,20 @@ def test_activate_plugin(plugin):
     assert plugin.active is True
 
     # hooks
-    assert len(plugin.hooks) == 2
-    hook = plugin.hooks[0]
-    assert isinstance(hook, CatHook)
-    assert hook.plugin_id == "mock_plugin"
-    assert hook.name == "before_cat_sends_message"
-    assert isfunction(hook.function)
-    assert hook.priority > 1 # not sorted yet (mad_hatter will sort them)
+    assert len(plugin.hooks) == 3
+    for hook in plugin.hooks:
+        assert isinstance(hook, CatHook)
+        assert hook.plugin_id == "mock_plugin"
+        assert hook.name in [
+            "factory_allowed_llms",
+            "before_cat_sends_message",
+        ]
+        assert isfunction(hook.function)
+        
+        if hook.name == "before_cat_sends_message":
+            assert hook.priority > 1
+        else:
+            assert hook.priority == 1 # default priority
 
     # tools
     assert len(plugin.tools) == 1

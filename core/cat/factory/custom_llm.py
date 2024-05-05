@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from langchain_core.language_models.llms import LLM
 from langchain_openai.llms import OpenAI
 from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError
+from langchain_openai.chat_models import ChatOpenAI
 
 from cat.log import log
 
@@ -77,27 +78,17 @@ class LLMCustom(LLM):
         }
 
 
-class CustomOpenAI(OpenAI):
+class CustomOpenAI(ChatOpenAI):
     url: str
 
     def __init__(self, **kwargs):
-        model_kwargs = {
-            'repeat_penalty': kwargs.pop('repeat_penalty'),
-            'top_k': kwargs.pop('top_k')
-        }
-
-        stop = kwargs.pop('stop', None)
-        if stop:
-            model_kwargs['stop'] = stop.split(',')
-
+        
         super().__init__(
-            openai_api_key=" ",
-            model_kwargs=model_kwargs,
+            model_kwargs={},
+            base_url=kwargs['url'],
             **kwargs
         )
 
-        self.url = kwargs['url']
-        self.openai_api_base = os.path.join(self.url, "v1")
 
 
 class CustomOllama(Ollama):

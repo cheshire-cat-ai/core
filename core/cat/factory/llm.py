@@ -81,11 +81,9 @@ class LLMCustomConfig(LLMSettings):
 class LLMOpenAICompatibleConfig(LLMSettings):
     url: str
     temperature: float = 0.01
-    max_tokens: int = 512
-    stop: str = "Human:,###"
-    top_k: int = 40
-    top_p: float = 0.95
-    repeat_penalty: float = 1.1
+    model_name:str
+    api_key:str
+    streaming: bool = True
     _pyclass: Type = CustomOpenAI
 
     model_config = ConfigDict(

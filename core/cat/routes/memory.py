@@ -204,7 +204,7 @@ async def wipe_conversation_history(
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
-    stray.working_memory["history"] = []
+    stray.working_memory.history = []
 
     return {
         "deleted": True,
@@ -219,8 +219,6 @@ async def get_conversation_history(
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    history = stray.working_memory["history"]
-
     return {
-        "history": history
+        "history": stray.working_memory.history
     }

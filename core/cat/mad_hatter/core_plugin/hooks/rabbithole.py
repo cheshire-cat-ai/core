@@ -7,8 +7,9 @@ These hooks allow to intercept the uploaded documents at different places before
 """
 
 from typing import List
-
+from langchain.text_splitter import TextSplitter
 from langchain.docstore.document import Document
+from qdrant_client.http.models import PointStruct
 
 from cat.mad_hatter.decorators import hook
 
@@ -32,6 +33,32 @@ def rabbithole_instantiates_parsers(file_handlers: dict, cat) -> dict:
         Edited dictionary of supported mime types and related parsers.
     """
     return file_handlers
+
+
+@hook(priority=0)
+def rabbithole_instantiates_splitter(text_splitter: TextSplitter, cat) -> TextSplitter:
+    """Hook the splitter used to split text in chunks.
+
+    Allows replacing the default text splitter to customize the splitting process.
+
+    Parameters
+    ----------
+    text_splitter : TextSplitter
+        The text splitter used by default.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    text_splitter : TextSplitter
+        An instance of a TextSplitter subclass.
+    """
+
+    # example on how to change chunking
+    # text_splitter._chunk_size = 64
+    # text_splitter._chunk_overlap = 8
+
+    return text_splitter
 
 
 # Hook called just before of inserting a document in vector memory
@@ -68,27 +95,29 @@ def before_rabbithole_insert_memory(doc: Document, cat) -> Document:
 
 # Hook called just before rabbithole splits text. Input is whole Document
 @hook(priority=0)
-def before_rabbithole_splits_text(doc: Document, cat) -> Document:
-    """Hook the `Document` before is split.
+def before_rabbithole_splits_text(docs: List[Document], cat) -> List[Document]:
+    """Hook the `Documents` before they are split into chunks.
 
-    Allows editing the whole uploaded `Document` before the *RabbitHole* recursively splits it in shorter ones.
+    Allows editing the uploaded document main Document(s) before the *RabbitHole* recursively splits it in shorter ones.
+    Please note that this is a list because parsers can output one or more Document, that are afterwards splitted.
 
     For instance, the hook allows to change the text or edit/add metadata.
 
     Parameters
     ----------
-    doc : Document
-        Langchain `Document` uploaded in the *RabbitHole* to be ingested.
+    docs : List[Document]
+        Langchain `Document`s resulted after parsing the file uploaded in the *RabbitHole*.
     cat : CheshireCat
         Cheshire Cat instance.
 
     Returns
     -------
-    doc : Document
-        Edited Langchain `Document`.
+    docs : List[Document]
+        Edited Langchain `Document`s.
 
     """
-    return doc
+
+    return docs
 
 
 # Hook called after rabbithole have splitted text into chunks.
@@ -145,3 +174,24 @@ def before_rabbithole_stores_documents(docs: List[Document], cat) -> List[Docume
     """
 
     return docs
+
+@hook(priority=0)
+def after_rabbithole_stored_documents(source, stored_points: List[PointStruct], cat) -> None:
+    """Hook the Document after is inserted in the vector memory.
+
+    Allows editing and enhancing the list of Document after is inserted in the vector memory.
+
+    Parameters
+    ----------
+    source: str
+        Name of ingested file/url
+    docs : List[PointStruct]
+        List of Qdrant PointStruct just inserted into the db.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    None
+    """
+    pass
