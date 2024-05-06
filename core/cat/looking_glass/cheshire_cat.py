@@ -2,6 +2,9 @@ import time
 from typing import List, Dict
 from typing_extensions import Protocol
 
+from fastapi.routing import APIRouter
+from fastapi import FastAPI
+
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -81,6 +84,11 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
+
+    def load_custom_endpoints(self):
+        custom_endpoints_router = APIRouter(prefix="/custom")
+        custom_endpoints_router = self.mad_hatter.execute_hook("load_custom_endpoints", custom_endpoints_router, cat=self)
+        return custom_endpoints_router
 
     def load_natural_language(self):
         """Load Natural Language related objects.

@@ -6,6 +6,7 @@ Here is a collection of methods to hook into the Cat execution pipeline.
 
 from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
+from fastapi.routing import APIRouter
 
 
 # Called before cat bootstrap
@@ -332,3 +333,25 @@ def before_cat_stores_episodic_memory(doc: Document, cat) -> Document:
 
     """
     return doc
+
+
+# Hook called to extend custom endpoint routes in cat rest api
+@hook(priority=0)
+def load_custom_endpoints(custom_endpoint_router: APIRouter, cat) -> None:
+    """Hook the custom endpoints router loading.
+
+    Allow to extend custom endpoint routes in FastAPI
+
+    Parameters
+    ----------
+    custom_endpoint_router : APIRouter
+        FastAPI APIRouter instance.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    -------
+    custom_endpoint_router : APIRouter
+        extended FastAPI APIRouter instance with custom routes.
+    """
+    return custom_endpoint_router

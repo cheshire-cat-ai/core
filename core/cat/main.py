@@ -28,6 +28,9 @@ async def lifespan(app: FastAPI):
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat()
 
+    # Load custom endpoints from cat tools
+    app.include_router(router=app.state.ccat.load_custom_endpoints())
+
     # Dict of pseudo-sessions (key is the user_id)
     app.state.strays = {}
 
