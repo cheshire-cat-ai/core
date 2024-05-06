@@ -1,4 +1,3 @@
-
 FROM python:3.10.11-slim-bullseye
 
 ### SYSTEM SETUP ###
@@ -25,6 +24,10 @@ COPY ./cat /app/cat
 ### INSTALL PYTHON DEPENDENCIES (Plugins) ###
 COPY ./install_plugin_dependencies.py /app/install_plugin_dependencies.py
 RUN python3 install_plugin_dependencies.py
+
+### ENVIRONMENT VARIABLES ###
+ENV PYTHONUNBUFFERED=1
+ENV WATCHFILES_FORCE_POLLING=true
 
 ### FINISH ###
 CMD python3 -m cat.main
