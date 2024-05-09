@@ -1,4 +1,6 @@
+import json
 import os
+import random
 import time
 import traceback
 from datetime import timedelta
@@ -7,12 +9,10 @@ from typing import List, Dict
 from copy import deepcopy
 
 from cat.convo.messages import Role
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_community.llms import BaseLLM
 from langchain.docstore.document import Document
-from langchain.prompts import ChatPromptTemplate, PromptTemplate
+from langchain.prompts import ChatPromptTemplate
 from langchain.chains.llm import LLMChain
-from langchain.agents import AgentExecutor, LLMSingleActionAgent
+from langchain.agents import AgentExecutor
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
@@ -23,10 +23,10 @@ from cat.utils import verbal_timedelta
 from cat.log import log
 from langchain_core.runnables import RunnableConfig
 from cat.looking_glass.callbacks import NewTokenHandler
-
 from cat.experimental.form import CatForm, CatFormState
-
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.utils import get_colored_text
 
 
 class AgentManager:
@@ -86,37 +86,82 @@ class AgentManager:
                     # form
                     allowed_procedures[p.name] = p
 
-        prompt = prompts.ToolPromptTemplate(
-            template=self.mad_hatter.execute_hook(
-                "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
-            ),
-            procedures=allowed_procedures,
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
-            input_variables=["input", "chat_history", "intermediate_steps"],
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                SystemMessagePromptTemplate.from_template(
+                    template=self.mad_hatter.execute_hook(
+                        "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
+                    )
+                ),
+            ]
         )
 
-        # main chain
-        agent_chain = LLMChain(prompt=prompt, llm=stray._llm, verbose=self.verbose)
+        def examples():
+            list_examples = ""
+            for proc in allowed_procedures.values():
+                if len(proc.start_examples) > 0:
+                    # At first example add this header
+                    if len(list_examples) == 0:
+                        list_examples += "## Here some examples:\n"
+                    # Create action example
+                    example_json = f"""{{
+        "action": "{proc.name}",
+        "action_input": // Input of the action according to it's description
+    }}"""
 
-        # init agent
-        agent = LLMSingleActionAgent(
-            llm_chain=agent_chain,
-            output_parser=ChooseProcedureOutputParser(),
-            stop=["}\n```"],  # markdown syntax ends JSON with backtick
-            verbose=self.verbose,
+                    # Add a random user queston choosed from the start examples to prompt
+                    list_examples += f"\nQuestion: {random.choice(proc.start_examples)}"
+                    # Add example
+                    list_examples += f"\n```json\n{example_json}\n```"
+
+            return list_examples
+
+        prompt = prompt.partial(
+            tools="\n".join(
+                f"- {tool.name}: {tool.description}" for tool in allowed_tools
+            ),
+            tool_names=", ".join(allowed_procedures.keys()),
+            agent_scratchpad="",
+            examples=examples(),
+        )
+        llm_with_stop = stray._llm
+
+        def scratchpad(x):
+            thoughts = ""
+            for action, observation in x:
+                thoughts += f"```json\n{action.log}\n```\n"
+                thoughts += f"""```json
+{json.dumps({"action_output": observation}, indent=4)}
+```
+"""
+            return thoughts
+
+        def logging(x):
+            
+            print("\n",get_colored_text(x.to_string(),"green"))
+            return x
+
+        agent = (
+            RunnablePassthrough.assign(
+                agent_scratchpad=lambda x: scratchpad(x["intermediate_steps"])
+            )
+            | prompt
+            | RunnableLambda(lambda x: logging(x))
+            | llm_with_stop
+            | ChooseProcedureOutputParser()
         )
 
         # agent executor
-        agent_executor = AgentExecutor.from_agent_and_tools(
+        agent_executor = AgentExecutor(
             agent=agent,
             tools=allowed_tools,
             return_intermediate_steps=True,
-            verbose=self.verbose,
+            verbose=True,
+            max_iterations=5,
         )
 
         # agent RUN
-        out = await agent_executor.ainvoke(agent_input)
+        out = agent_executor.invoke(agent_input)
 
         # Extract intermediate steps in the format ((tool_name, tool_input), output)
         # Also check if we have a return_direct tool
@@ -181,7 +226,7 @@ class AgentManager:
             # return_final_only=False
         )
 
-        return await memory_chain.ainvoke(
+        return memory_chain.invoke(
             agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
 
