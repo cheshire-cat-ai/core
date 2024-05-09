@@ -29,7 +29,8 @@ class CatMessage(BaseModelDict):
     type: str
     content: str
     user_id: str
-    why: MessageWhy
+    type: str = "chat"
+    why: MessageWhy | None = None
 
 
 class UserMessage(BaseModelDict):

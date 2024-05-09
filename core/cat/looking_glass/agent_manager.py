@@ -59,6 +59,9 @@ class AgentManager:
             ] in ["description", "start_example"]:
                 recalled_procedures_names.add(procedure.metadata["source"])
 
+        # call agent_allowed_tools hook
+        recalled_procedures_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_procedures_names, cat=stray)
+
         # Get tools with that name from mad_hatter
         allowed_procedures: Dict[str, CatTool | CatForm] = {}
         allowed_tools: List[CatTool] = []
@@ -261,10 +264,8 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n"
                     for proc_res in intermediate_steps:
                         # ((step[0].tool, step[0].tool_input), step[1])
-                        agent_input["tools_output"] += (
-                            f" - {proc_res[0][0]}: {proc_res[1]}\n"
-                        )
-
+                        agent_input["tools_output"] += f" - {proc_res[0][0]}: {proc_res[1]}\n"
+                        
             except Exception as e:
                 log.error(e)
                 traceback.print_exc()
@@ -273,13 +274,6 @@ class AgentManager:
         # - no procedures where recalled or selected or
         # - procedures have all return_direct=False or
         # - procedures agent crashed big time
-
-        # Save tools output
-        tools_output = agent_input.get("tools_output", "")
-        # Update agent input from working memory
-        agent_input = self.format_agent_input(stray)
-        # Add eventuals tools output
-        agent_input["tools_output"] = tools_output
 
         memory_chain_output = await self.execute_memory_chain(
             agent_input, prompt_prefix, prompt_suffix, stray

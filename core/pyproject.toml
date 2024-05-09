@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.5.3"
+version = "1.6.1"
 requires-python = ">=3.10"
 license = { file="LICENSE" }
 authors = [
@@ -10,7 +10,7 @@ authors = [
 dependencies = [
     "python-multipart==0.0.6",
     "pydantic==2.4.2",
-    "fastapi==0.103.2",
+    "fastapi==0.110.2",
     "websockets==10.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
