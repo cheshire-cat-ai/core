@@ -1,10 +1,12 @@
 from typing import List, Dict
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
+from enum import Enum
 
-#class WorkingMemory(BaseModelDict):
-#    history : List = []
 
+class Role(Enum):
+    AI = "AI"
+    Human = "Human"
 
 class MessageWhy(BaseModelDict):
     """Class for wrapping message why
@@ -26,7 +28,6 @@ class CatMessage(BaseModelDict):
         content (str): cat message
         user_id (str): user id
     """
-    type: str
     content: str
     user_id: str
     type: str = "chat"

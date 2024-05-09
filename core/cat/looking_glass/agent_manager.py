@@ -6,6 +6,7 @@ from typing import List, Dict
 
 from copy import deepcopy
 
+from cat.convo.messages import Role
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.llms import BaseLLM
 from langchain.docstore.document import Document
@@ -60,7 +61,9 @@ class AgentManager:
                 recalled_procedures_names.add(procedure.metadata["source"])
 
         # call agent_allowed_tools hook
-        recalled_procedures_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_procedures_names, cat=stray)
+        recalled_procedures_names = self.mad_hatter.execute_hook(
+            "agent_allowed_tools", recalled_procedures_names, cat=stray
+        )
 
         # Get tools with that name from mad_hatter
         allowed_procedures: Dict[str, CatTool | CatForm] = {}
@@ -154,34 +157,22 @@ class AgentManager:
     async def execute_memory_chain(
         self, agent_input, prompt_prefix, prompt_suffix, stray
     ):
-        # input_variables = {i: j for i, j in agent_input.items() if i in prompt_prefix}
-
-        # when the working memory will get the type, than use convert_to_Langchain_message method from cat.convo module
-        chat_history = []
-        for message in stray.working_memory.history:
-            if message["who"] == "Human":
-                chat_history.append(
-                    HumanMessage(
-                        content=message["message"],
-                        response_metadata={"userId": message["who"]},
-                    )
-                )
-            else:
-                chat_history.append(
-                    AIMessage(
-                        content=message["message"],
-                        response_metadata={"userId": message["who"]},
-                    )
-                )
         if isinstance(stray._llm, BaseChatModel):
-            final_prompt = ChatPromptTemplate(
-                messages=[
-                    SystemMessagePromptTemplate.from_template(
-                        template=prompt_prefix + prompt_suffix
-                    ),
-                    *chat_history,
-                ]
-            )
+            chat_history = []
+            for message in stray.working_memory.history:
+                if message["role"] == Role.Human:
+                    chat_history.append(HumanMessage(content=message["message"]))
+                else:
+                    chat_history.append(AIMessage(content=message["message"]))
+            
+                final_prompt = ChatPromptTemplate(
+                    messages=[
+                        SystemMessagePromptTemplate.from_template(
+                            template=prompt_prefix + prompt_suffix
+                        ),
+                        *chat_history,
+                    ]
+                )
         else:
             input_variables = [
                 i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix
@@ -264,8 +255,10 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n"
                     for proc_res in intermediate_steps:
                         # ((step[0].tool, step[0].tool_input), step[1])
-                        agent_input["tools_output"] += f" - {proc_res[0][0]}: {proc_res[1]}\n"
-                        
+                        agent_input["tools_output"] += (
+                            f" - {proc_res[0][0]}: {proc_res[1]}\n"
+                        )
+
             except Exception as e:
                 log.error(e)
                 traceback.print_exc()
