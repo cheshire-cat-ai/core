@@ -12,7 +12,7 @@ class ToolPromptTemplate(StringPromptTemplate):
     # The template to use
     template: str
     # The list of tools available
-    procedures: Dict[str,Union[BaseTool, CatForm.__class__]]
+    procedures: Dict[str, Union[BaseTool, CatForm.__class__]]
 
     def format(self, **kwargs) -> str:
         # Get the intermediate steps (AgentAction, Observation tuples)
@@ -25,7 +25,7 @@ class ToolPromptTemplate(StringPromptTemplate):
 {json.dumps({"action_output": observation}, indent=4)}
 ```
 """
-            
+
         # Set the agent_scratchpad variable to that value
         kwargs["agent_scratchpad"] = thoughts
         # Create a tools variable from the list of tools provided
@@ -34,19 +34,20 @@ class ToolPromptTemplate(StringPromptTemplate):
         for proc in self.procedures.values():
             kwargs["tools"] += f'\n- "{proc.name}": {proc.description}'
             if len(proc.start_examples) > 0:
-
                 # At first example add this header
                 if len(kwargs["examples"]) == 0:
                     kwargs["examples"] += "## Here some examples:\n"
 
-                # Create action example 
+                # Create action example
                 example = f"""{{
     "action": "{proc.name}",
     "action_input": // Input of the action according to it's description
 }}"""
 
-                # Add a random user queston choosed from the start examples to prompt 
-                kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}"
+                # Add a random user queston choosed from the start examples to prompt
+                kwargs["examples"] += (
+                    f"\nQuestion: {random.choice(proc.start_examples)}"
+                )
                 # Add example
                 kwargs["examples"] += f"\n```json\n{example}\n```"
 
@@ -95,7 +96,6 @@ When you have a final answer (or no tools are relevant), use the following forma
 {agent_scratchpad}
 
 ## Next action:
-```json
 """
 
 
@@ -114,5 +114,3 @@ MAIN_PROMPT_SUFFIX = """
 {tools_output}
 
 # Conversation until now:"""
-
-

@@ -103,7 +103,7 @@ class AgentManager:
         agent = LLMSingleActionAgent(
             llm_chain=agent_chain,
             output_parser=ChooseProcedureOutputParser(),
-            stop=["```"],  # markdown syntax ends JSON with backtick
+            stop=["}\n```"],  # markdown syntax ends JSON with backtick
             verbose=self.verbose,
         )
 
@@ -157,28 +157,20 @@ class AgentManager:
     async def execute_memory_chain(
         self, agent_input, prompt_prefix, prompt_suffix, stray
     ):
-        if isinstance(stray._llm, BaseChatModel):
-            chat_history = []
-            for message in stray.working_memory.history:
-                if message["role"] == Role.Human:
-                    chat_history.append(HumanMessage(content=message["message"]))
-                else:
-                    chat_history.append(AIMessage(content=message["message"]))
-            
-                final_prompt = ChatPromptTemplate(
-                    messages=[
-                        SystemMessagePromptTemplate.from_template(
-                            template=prompt_prefix + prompt_suffix
-                        ),
-                        *chat_history,
-                    ]
-                )
-        else:
-            input_variables = [
-                i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix
-            ]
-            final_prompt = PromptTemplate(
-                template=prompt_prefix + prompt_suffix, input_variables=input_variables
+        chat_history = []
+        for message in stray.working_memory.history:
+            if message["role"] == Role.Human:
+                chat_history.append(HumanMessage(content=message["message"]))
+            else:
+                chat_history.append(AIMessage(content=message["message"]))
+
+            final_prompt = ChatPromptTemplate(
+                messages=[
+                    SystemMessagePromptTemplate.from_template(
+                        template=prompt_prefix + prompt_suffix
+                    ),
+                    *chat_history,
+                ]
             )
 
         memory_chain = LLMChain(

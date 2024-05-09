@@ -19,6 +19,7 @@ from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOl
 from cat.mad_hatter.mad_hatter import MadHatter
 
 
+
 # Base class to manage LLM configuration.
 class LLMSettings(BaseModel):
     # class instantiating the model
@@ -229,14 +230,6 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
             "link": "https://huggingface.co/inference-endpoints",
         }
     )
-
-
-# monkey patch to fix stops sequences
-OllamaFix: Type = CustomOllama
-# OllamaFix._create_stream = _create_stream_patch
-# OllamaFix._acreate_stream = _acreate_stream_patch
-
-
 class LLMOllamaConfig(LLMSettings):
     base_url: str
     model: str = "llama3"
@@ -245,7 +238,7 @@ class LLMOllamaConfig(LLMSettings):
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = OllamaFix
+    _pyclass: Type = CustomOllama
 
     model_config = ConfigDict(
         json_schema_extra={
