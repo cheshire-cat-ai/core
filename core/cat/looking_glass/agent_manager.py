@@ -1,19 +1,21 @@
-import json
 import os
-import random
 import time
+import json
+import random
 import traceback
-from datetime import timedelta
-from typing import List, Dict
-
 from copy import deepcopy
+from typing import List, Dict
+from datetime import timedelta
 
-from cat.convo.messages import Role
+from langchain_core.utils import get_colored_text
+from langchain.agents import AgentExecutor
 from langchain.docstore.document import Document
 from langchain.prompts import ChatPromptTemplate
-from langchain.chains.llm import LLMChain
-from langchain.agents import AgentExecutor
+from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain.callbacks.tracers import ConsoleCallbackHandler
+
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
@@ -21,12 +23,8 @@ from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ChooseProcedureOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
-from langchain_core.runnables import RunnableConfig
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.experimental.form import CatForm, CatFormState
-from langchain_core.messages import AIMessage, HumanMessage
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
-from langchain_core.utils import get_colored_text
 
 
 class AgentManager:
@@ -92,7 +90,8 @@ class AgentManager:
                     template=self.mad_hatter.execute_hook(
                         "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
                     )
-                ),
+                ),   
+                # *(stray.langchainfy_chat_history())
             ]
         )
 
@@ -114,17 +113,23 @@ class AgentManager:
                     # Add example
                     list_examples += f"\n```json\n{example_json}\n```"
 
+                    list_examples += """```json
+{{
+    "action": "final_answer",
+    "action_input": null
+}}
+```"""
             return list_examples
 
         prompt = prompt.partial(
             tools="\n".join(
-                f"- {tool.name}: {tool.description}" for tool in allowed_tools
+                f"- {tool.name}: {tool.description}" for tool in allowed_procedures.values()
             ),
             tool_names=", ".join(allowed_procedures.keys()),
             agent_scratchpad="",
+            chat_history=stray.stringify_chat_history(),
             examples=examples(),
         )
-        llm_with_stop = stray._llm
 
         def scratchpad(x):
             thoughts = ""
@@ -136,8 +141,7 @@ class AgentManager:
 """
             return thoughts
 
-        def logging(x):
-            
+        def logging(x): 
             print("\n",get_colored_text(x.to_string(),"green"))
             return x
 
@@ -147,7 +151,7 @@ class AgentManager:
             )
             | prompt
             | RunnableLambda(lambda x: logging(x))
-            | llm_with_stop
+            | stray._llm
             | ChooseProcedureOutputParser()
         )
 
@@ -202,33 +206,33 @@ class AgentManager:
     async def execute_memory_chain(
         self, agent_input, prompt_prefix, prompt_suffix, stray
     ):
-        chat_history = []
-        for message in stray.working_memory.history:
-            if message["role"] == Role.Human:
-                chat_history.append(HumanMessage(content=message["message"]))
-            else:
-                chat_history.append(AIMessage(content=message["message"]))
-
-            final_prompt = ChatPromptTemplate(
-                messages=[
-                    SystemMessagePromptTemplate.from_template(
-                        template=prompt_prefix + prompt_suffix
-                    ),
-                    *chat_history,
-                ]
-            )
-
-        memory_chain = LLMChain(
-            prompt=final_prompt,
-            llm=stray._llm,
-            verbose=self.verbose,
-            output_key="output",
-            # return_final_only=False
+        final_prompt = ChatPromptTemplate(
+            messages=[
+                SystemMessagePromptTemplate.from_template(
+                    template=prompt_prefix + prompt_suffix
+                ),
+                *(stray.langchainfy_chat_history())
+            ]
         )
 
-        return memory_chain.invoke(
+        def logging(x):
+            #The names are not shown in the chat history log, the model however receives the name correctly
+            log.info("The names are not shown in the chat history log, the model however receives the name correctly")            
+            print("\n",get_colored_text(x.to_string(),"green"))
+            return x
+
+        memory_chain = (
+            final_prompt
+            | RunnableLambda(lambda x: logging(x))
+            | stray._llm
+        )
+
+        output = memory_chain.invoke(
             agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
+        agent_input["output"] = output.content
+
+        return agent_input
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
@@ -345,13 +349,13 @@ class AgentManager:
         )
 
         # format conversation history to be inserted in the prompt
-        conversation_history_formatted_content = stray.stringify_chat_history()
+        #conversation_history_formatted_content = stray.stringify_chat_history()
 
         return {
             "input": stray.working_memory.user_message_json.text,  # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
-            "chat_history": conversation_history_formatted_content,
+            #"chat_history": conversation_history_formatted_content,
             "tools_output": "",
         }
 
