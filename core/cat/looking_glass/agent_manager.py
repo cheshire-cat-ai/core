@@ -1,4 +1,6 @@
+import json
 import os
+import random
 import time
 import traceback
 from datetime import timedelta
@@ -6,22 +8,25 @@ from typing import List, Dict
 
 from copy import deepcopy
 
-from langchain_core.runnables import RunnableConfig
+from cat.convo.messages import Role
 from langchain.docstore.document import Document
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.agents import AgentExecutor, LLMSingleActionAgent
-
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains.llm import LLMChain
+from langchain.agents import AgentExecutor
+from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
-from cat.looking_glass.callbacks import NewTokenHandler
-from cat.looking_glass.output_parser import ChooseProcedureOutputParser, AgentAction, AgentFinish
+from cat.looking_glass.output_parser import ChooseProcedureOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
-
+from langchain_core.runnables import RunnableConfig
+from cat.looking_glass.callbacks import NewTokenHandler
 from cat.experimental.form import CatForm, CatFormState
+from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.utils import get_colored_text
 
 
 class AgentManager:
@@ -36,6 +41,7 @@ class AgentManager:
         Cheshire Cat instance.
 
     """
+
     def __init__(self):
         self.mad_hatter = MadHatter()
 
@@ -45,16 +51,19 @@ class AgentManager:
             self.verbose = False
 
     async def execute_procedures_agent(self, agent_input, stray):
-
         # gather recalled procedures
         recalled_procedures_names = set()
         for p in stray.working_memory.procedural_memories:
             procedure = p[0]
-            if procedure.metadata["type"] in ["tool","form"] and procedure.metadata["trigger_type"] in ["description", "start_example"]:
+            if procedure.metadata["type"] in ["tool", "form"] and procedure.metadata[
+                "trigger_type"
+            ] in ["description", "start_example"]:
                 recalled_procedures_names.add(procedure.metadata["source"])
 
         # call agent_allowed_tools hook
-        recalled_procedures_names = self.mad_hatter.execute_hook("agent_allowed_tools", recalled_procedures_names, cat=stray)
+        recalled_procedures_names = self.mad_hatter.execute_hook(
+            "agent_allowed_tools", recalled_procedures_names, cat=stray
+        )
 
         # Get tools with that name from mad_hatter
         allowed_procedures: Dict[str, CatTool | CatForm] = {}
@@ -62,7 +71,6 @@ class AgentManager:
         return_direct_tools: List[str] = []
 
         for p in self.mad_hatter.procedures:
-            
             if p.name in recalled_procedures_names:
                 # Prepare the tool to be used in the Cat (adding properties)
                 if Plugin._is_cat_tool(p):
@@ -77,40 +85,83 @@ class AgentManager:
                 else:
                     # form
                     allowed_procedures[p.name] = p
-    
-        prompt = prompts.ToolPromptTemplate(
-            template = self.mad_hatter.execute_hook("agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray),
-            procedures=allowed_procedures,
-            # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-            # This includes the `intermediate_steps` variable because it is needed to fill the scratchpad
-            input_variables=["input", "chat_history", "intermediate_steps"]
+
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                SystemMessagePromptTemplate.from_template(
+                    template=self.mad_hatter.execute_hook(
+                        "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
+                    )
+                ),
+            ]
         )
 
-        # main chain
-        agent_chain = LLMChain(
-            prompt=prompt,
-            llm=stray._llm,
-            verbose=self.verbose
-        )
+        def examples():
+            list_examples = ""
+            for proc in allowed_procedures.values():
+                if len(proc.start_examples) > 0:
+                    # At first example add this header
+                    if len(list_examples) == 0:
+                        list_examples += "## Here some examples:\n"
+                    # Create action example
+                    example_json = f"""{{
+        "action": "{proc.name}",
+        "action_input": // Input of the action according to it's description
+    }}"""
 
-        # init agent
-        agent = LLMSingleActionAgent(
-            llm_chain=agent_chain,
-            output_parser=ChooseProcedureOutputParser(),
-            stop=["```"], # markdown syntax ends JSON with backtick
-            verbose=self.verbose
+                    # Add a random user queston choosed from the start examples to prompt
+                    list_examples += f"\nQuestion: {random.choice(proc.start_examples)}"
+                    # Add example
+                    list_examples += f"\n```json\n{example_json}\n```"
+
+            return list_examples
+
+        prompt = prompt.partial(
+            tools="\n".join(
+                f"- {tool.name}: {tool.description}" for tool in allowed_tools
+            ),
+            tool_names=", ".join(allowed_procedures.keys()),
+            agent_scratchpad="",
+            examples=examples(),
+        )
+        llm_with_stop = stray._llm
+
+        def scratchpad(x):
+            thoughts = ""
+            for action, observation in x:
+                thoughts += f"```json\n{action.log}\n```\n"
+                thoughts += f"""```json
+{json.dumps({"action_output": observation}, indent=4)}
+```
+"""
+            return thoughts
+
+        def logging(x):
+            
+            print("\n",get_colored_text(x.to_string(),"green"))
+            return x
+
+        agent = (
+            RunnablePassthrough.assign(
+                agent_scratchpad=lambda x: scratchpad(x["intermediate_steps"])
+            )
+            | prompt
+            | RunnableLambda(lambda x: logging(x))
+            | llm_with_stop
+            | ChooseProcedureOutputParser()
         )
 
         # agent executor
-        agent_executor = AgentExecutor.from_agent_and_tools(
+        agent_executor = AgentExecutor(
             agent=agent,
             tools=allowed_tools,
             return_intermediate_steps=True,
-            verbose=self.verbose
+            verbose=True,
+            max_iterations=5,
         )
 
         # agent RUN
-        out = await agent_executor.ainvoke(agent_input)
+        out = agent_executor.invoke(agent_input)
 
         # Extract intermediate steps in the format ((tool_name, tool_input), output)
         # Also check if we have a return_direct tool
@@ -118,9 +169,7 @@ class AgentManager:
         out["return_direct"] = False
         intermediate_steps = []
         for step in out.get("intermediate_steps", []):
-            intermediate_steps.append(
-                ((step[0].tool, step[0].tool_input), step[1])
-            )
+            intermediate_steps.append(((step[0].tool, step[0].tool_input), step[1]))
 
             # If a tool was decorated with return_direct=True, indicate it in output
             if step[0].tool in return_direct_tools:
@@ -135,11 +184,10 @@ class AgentManager:
             # let the form reply directly
             out = f.next()
             out["return_direct"] = True
-        
+
         return out
 
     async def execute_form_agent(self, stray):
-        
         active_form = stray.working_memory.active_form
         if active_form:
             # closing form if state is closed
@@ -148,26 +196,39 @@ class AgentManager:
             else:
                 # continue form
                 return active_form.next()
-        
-        return None # no active form
-        
-    async def execute_memory_chain(self, agent_input, prompt_prefix, prompt_suffix, stray):
 
-        input_variables = [i for i in agent_input.keys() if i in prompt_prefix + prompt_suffix]
-        # memory chain (second step)
-        memory_prompt = PromptTemplate(
-            template = prompt_prefix + prompt_suffix,
-            input_variables=input_variables
-        )
+        return None  # no active form
+
+    async def execute_memory_chain(
+        self, agent_input, prompt_prefix, prompt_suffix, stray
+    ):
+        chat_history = []
+        for message in stray.working_memory.history:
+            if message["role"] == Role.Human:
+                chat_history.append(HumanMessage(content=message["message"]))
+            else:
+                chat_history.append(AIMessage(content=message["message"]))
+
+            final_prompt = ChatPromptTemplate(
+                messages=[
+                    SystemMessagePromptTemplate.from_template(
+                        template=prompt_prefix + prompt_suffix
+                    ),
+                    *chat_history,
+                ]
+            )
 
         memory_chain = LLMChain(
-            prompt=memory_prompt,
+            prompt=final_prompt,
             llm=stray._llm,
             verbose=self.verbose,
-            output_key="output"
+            output_key="output",
+            # return_final_only=False
         )
 
-        return await memory_chain.ainvoke({**agent_input, "stop":"Human:"}, config=RunnableConfig(callbacks=[NewTokenHandler(stray)]))
+        return memory_chain.invoke(
+            agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
+        )
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
@@ -184,32 +245,41 @@ class AgentManager:
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
         agent_input = self.format_agent_input(stray)
-        agent_input = self.mad_hatter.execute_hook("before_agent_starts", agent_input, cat=stray)
-        
+        agent_input = self.mad_hatter.execute_hook(
+            "before_agent_starts", agent_input, cat=stray
+        )
+
         # should we run the default agent?
         fast_reply = {}
-        fast_reply = self.mad_hatter.execute_hook("agent_fast_reply", fast_reply, cat=stray)
+        fast_reply = self.mad_hatter.execute_hook(
+            "agent_fast_reply", fast_reply, cat=stray
+        )
         if len(fast_reply.keys()) > 0:
             return fast_reply
-        
+
         # obtain prompt parts from plugins
-        prompt_prefix = self.mad_hatter.execute_hook("agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=stray)
-        prompt_suffix = self.mad_hatter.execute_hook("agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray)
-        
+        prompt_prefix = self.mad_hatter.execute_hook(
+            "agent_prompt_prefix", prompts.MAIN_PROMPT_PREFIX, cat=stray
+        )
+        prompt_suffix = self.mad_hatter.execute_hook(
+            "agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray
+        )
+
         # Run active form if present
         form_result = await self.execute_form_agent(stray)
         if form_result:
-            return form_result # exit agent with form output
-        
+            return form_result  # exit agent with form output
+
         # Select and run useful procedures
         intermediate_steps = []
         procedural_memories = stray.working_memory.procedural_memories
         if len(procedural_memories) > 0:
-
             log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                procedures_result = await self.execute_procedures_agent(agent_input, stray)
+                procedures_result = await self.execute_procedures_agent(
+                    agent_input, stray
+                )
                 if procedures_result.get("return_direct"):
                     # exit agent if a return_direct procedure was executed
                     return procedures_result
@@ -222,8 +292,10 @@ class AgentManager:
                     agent_input["tools_output"] = "## Tools output: \n"
                     for proc_res in intermediate_steps:
                         # ((step[0].tool, step[0].tool_input), step[1])
-                        agent_input["tools_output"] += f" - {proc_res[0][0]}: {proc_res[1]}\n"
-                        
+                        agent_input["tools_output"] += (
+                            f" - {proc_res[0][0]}: {proc_res[1]}\n"
+                        )
+
             except Exception as e:
                 log.error(e)
                 traceback.print_exc()
@@ -233,11 +305,13 @@ class AgentManager:
         # - procedures have all return_direct=False or
         # - procedures agent crashed big time
 
-        memory_chain_output = await self.execute_memory_chain(agent_input, prompt_prefix, prompt_suffix, stray)
+        memory_chain_output = await self.execute_memory_chain(
+            agent_input, prompt_prefix, prompt_suffix, stray
+        )
         memory_chain_output["intermediate_steps"] = intermediate_steps
 
         return memory_chain_output
-    
+
     def format_agent_input(self, stray):
         """Format the input for the Agent.
 
@@ -262,8 +336,6 @@ class AgentManager:
         agent_prompt_chat_history
         """
 
-
-
         # format memories to be inserted in the prompt
         episodic_memory_formatted_content = self.agent_prompt_episodic_memories(
             stray.working_memory.episodic_memories
@@ -276,11 +348,11 @@ class AgentManager:
         conversation_history_formatted_content = stray.stringify_chat_history()
 
         return {
-            "input": stray.working_memory.user_message_json.text, # TODO: deprecate, since it is included in chat history
+            "input": stray.working_memory.user_message_json.text,  # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             "chat_history": conversation_history_formatted_content,
-            "tools_output": ""
+            "tools_output": "",
         }
 
     def agent_prompt_episodic_memories(self, memory_docs: List[Document]) -> str:
@@ -303,7 +375,6 @@ class AgentManager:
         # add time information (e.g. "2 days ago")
         memory_timestamps = []
         for m in memory_docs:
-
             # Get Time information in the Document metadata
             timestamp = m[0].metadata["when"]
 
@@ -318,8 +389,11 @@ class AgentManager:
 
         # Format the memories for the output
         memories_separator = "\n  - "
-        memory_content = "## Context of things the Human said in the past: " + \
-            memories_separator + memories_separator.join(memory_texts)
+        memory_content = (
+            "## Context of things the Human said in the past: "
+            + memories_separator
+            + memories_separator.join(memory_texts)
+        )
 
         # if no data is retrieved from memory don't erite anithing in the prompt
         if len(memory_texts) == 0:
@@ -348,7 +422,6 @@ class AgentManager:
         # add source information (e.g. "extracted from file.txt")
         memory_sources = []
         for m in memory_docs:
-
             # Get and save the source of the memory
             source = m[0].metadata["source"]
             memory_sources.append(f" (extracted from {source})")
@@ -359,13 +432,14 @@ class AgentManager:
         # Format the memories for the output
         memories_separator = "\n  - "
 
-        memory_content = "## Context of documents containing relevant information: " + \
-            memories_separator + memories_separator.join(memory_texts)
+        memory_content = (
+            "## Context of documents containing relevant information: "
+            + memories_separator
+            + memories_separator.join(memory_texts)
+        )
 
         # if no data is retrieved from memory don't write anithing in the prompt
         if len(memory_texts) == 0:
             memory_content = ""
 
         return memory_content
-
-
