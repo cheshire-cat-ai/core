@@ -15,8 +15,7 @@ def mount(cheshire_cat_api):
 
 
 def mount_admin_spa(cheshire_cat_api):
-    @cheshire_cat_api.get("/admin/")
-    @cheshire_cat_api.get("/admin/{page}")
+    @cheshire_cat_api.get("/admin")
     @cheshire_cat_api.get("/admin/{page}/")
     def get_injected_admin():
         # admin index.html

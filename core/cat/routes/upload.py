@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 # receive files via http endpoint
-@router.post("/")
+@router.post("")
 async def upload_file(
     request: Request,
     file: UploadFile,

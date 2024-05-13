@@ -7,7 +7,7 @@ from cat.db import crud
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 def get_settings(search: str = ""):
     """Get the entire list of settings available in the database"""
 
@@ -18,7 +18,7 @@ def get_settings(search: str = ""):
     }
 
 
-@router.post("/")
+@router.post("")
 def create_setting(payload: models.SettingBody):
     """Create a new setting in the database"""
 
