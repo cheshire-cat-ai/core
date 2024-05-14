@@ -230,7 +230,7 @@ class AgentManager:
         output = memory_chain.invoke(
             agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
-        agent_input["output"] = output.content
+        agent_input["output"] = output
 
         return agent_input
 
