@@ -66,7 +66,6 @@ JSON must be in this format:
 User said "{user_message}"
 
 JSON:
-```json
 {{
     "confirm": """
 
@@ -105,7 +104,6 @@ JSON must be in this format:
 User said "{user_message}"
 
 JSON:
-```json
 {{
     "exit": """
 
@@ -227,7 +225,7 @@ JSON:
             verbose    = True,
             output_key = "output"
         )
-        json_str = extraction_chain.invoke({"stop": ["```"]})["output"]
+        json_str = extraction_chain.invoke({})["output"] #{"stop": ["```"]}
         
         log.debug(f"Form JSON after parser:\n{json_str}")
 
@@ -272,7 +270,6 @@ This is the conversation:
 {history}
 
 Updated JSON:
-```json
 """
 
         # TODO: convo example (optional but supported)

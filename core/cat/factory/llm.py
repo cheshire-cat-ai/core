@@ -8,6 +8,7 @@ from langchain_community.llms import (
 )
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.chat_models.ollama import ChatOllama
 
 from .ollama_utils import _create_stream_patch, _acreate_stream_patch
 from typing import Type
@@ -16,6 +17,7 @@ from pydantic import BaseModel, ConfigDict
 
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
 from cat.mad_hatter.mad_hatter import MadHatter
+
 
 
 # Base class to manage LLM configuration.
@@ -228,29 +230,21 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
             "link": "https://huggingface.co/inference-endpoints",
         }
     )
-
-
-# monkey patch to fix stops sequences
-OllamaFix: Type = CustomOllama
-OllamaFix._create_stream = _create_stream_patch
-OllamaFix._acreate_stream = _acreate_stream_patch
-
-
 class LLMOllamaConfig(LLMSettings):
     base_url: str
-    model: str = "llama2"
+    model: str = "llama3"
     num_ctx: int = 2048
     repeat_last_n: int = 64
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = OllamaFix
+    _pyclass: Type = CustomOllama
 
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "Ollama",
             "description": "Configuration for Ollama",
-            "link": "https://ollama.ai/library",
+            "link": "https://ollama.ai/library"
         }
     )
 

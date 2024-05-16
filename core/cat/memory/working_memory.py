@@ -1,8 +1,7 @@
-
 import time
 from typing import List
 from cat.utils import BaseModelDict
-from cat.convo.messages import UserMessage
+from cat.convo.messages import Role, UserMessage
 from cat.experimental.form import CatForm
 
 
@@ -24,7 +23,7 @@ class WorkingMemory(BaseModelDict):
 
     # stores conversation history
     history: List = []
-    user_message_json : None | UserMessage = None
+    user_message_json: None | UserMessage = None
     active_form: None | CatForm = None
 
     # recalled memories attributes
@@ -44,9 +43,17 @@ class WorkingMemory(BaseModelDict):
             Who said the message. Can either be `Human` or `AI`.
         message : str
             The message said.
-        
+
         """
         # append latest message in conversation
-        self.history.append({"who": who, "message": message, "why": why, "when": time.time()})
-
-
+        # TODO: Message should be of type CatMessage or UserMessage. For retrocompatibility we put a new key
+        # we are sure that who is not change in the current call
+        self.history.append(
+            {
+                "who": who,
+                "message": message,
+                "why": why,
+                "when": time.time(),
+                "role": Role.AI if who == "AI" else Role.Human
+            }
+        )
