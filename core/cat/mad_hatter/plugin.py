@@ -65,7 +65,11 @@ class Plugin:
 
     def activate(self):
         # install plugin requirements on activation
-        self._install_requirements()
+        try:
+            self._install_requirements()
+        except Exception as e:
+            raise e
+            
 
         # Load of hooks and tools
         self._load_decorated_functions()
@@ -273,6 +277,13 @@ class Plugin:
                     subprocess.run(['pip', 'install', '--no-cache-dir', '-r', tmp.name], check=True)
                 except subprocess.CalledProcessError as e:
                     log.error(f"Error during installing {self.id} requirements: {e}")
+                    
+                    # Uninstall the previously installed packages
+                    log.info(f"Uninstalling requirements for: {self.id}")
+                    subprocess.run(['pip', 'uninstall', '-r', tmp.name], check=True)
+                    
+                    raise Exception(f"Error during {self.id} requirements installation")
+                    
                 
     # lists of hooks and tools
     def _load_decorated_functions(self):
