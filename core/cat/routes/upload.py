@@ -14,8 +14,7 @@ router = APIRouter()
 
 def format_upload_file(upload_file: UploadFile) -> UploadFile:
     file_content = upload_file.file.read()
-    file_copy = io.BytesIO(file_content)
-    return UploadFile(filename=upload_file.filename, file=file_copy)
+    return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
 # receive files via http endpoint
 @router.post("/")
