@@ -45,7 +45,7 @@ class ToolPromptTemplate(StringPromptTemplate):
     "action_input": // Input of the action according to it's description
 }}"""
 
-                # Add a random user queston choosed from the start examples to prompt 
+                # Add a random user queston choose from the start examples to prompt 
                 kwargs["examples"] += f"\nQuestion: {random.choice(proc.start_examples)}"
                 # Add example
                 kwargs["examples"] += f"\n```json\n{example}\n```"
