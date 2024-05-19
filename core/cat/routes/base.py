@@ -3,6 +3,7 @@ from typing import Dict
 import tomli
 from cat.headers import session
 
+from cat.convo.messages import CatMessage
 
 router = APIRouter()
 
@@ -20,13 +21,11 @@ async def home() -> Dict:
     }
 
 
-@router.post("/message")
+@router.post("/message", response_model=CatMessage)
 async def message_with_cat(
     payload: Dict = Body({"text": "hello!"}),
     stray = Depends(session),
 ) -> Dict:
     """Get a response from the Cat"""
-    
-    answer = await stray(payload)
-
+    answer = await stray({"user_id": stray.user_id, **payload})
     return answer
