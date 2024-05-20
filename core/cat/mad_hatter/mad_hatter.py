@@ -112,8 +112,9 @@ class MadHatter:
                 try:
                     self.plugins[plugin_id].activate()
                 except Exception as e:
-                    # Couldn't activate the plugin -> Delete it
-                    self.uninstall_plugin(plugin_id)
+                    # Couldn't activate the plugin -> Deactivate it
+                    if plugin_id in self.active_plugins:
+                        self.toggle_plugin(plugin_id)
                     raise e
                 
 
@@ -217,8 +218,7 @@ class MadHatter:
                 try:
                     self.plugins[plugin_id].activate()
                 except Exception as e:
-                    # Couldn't activate the plugin -> Delete it
-                    self.uninstall_plugin(plugin_id)
+                    # Couldn't activate the plugin
                     raise e
 
                 # Execute hook on plugin activation
