@@ -109,7 +109,14 @@ class MadHatter:
             plugin_id = os.path.basename(os.path.normpath(folder))
             
             if plugin_id in self.active_plugins:
-                self.plugins[plugin_id].activate()
+                try:
+                    self.plugins[plugin_id].activate()
+                except Exception as e:
+                    # Couldn't activate the plugin -> Deactivate it
+                    if plugin_id in self.active_plugins:
+                        self.toggle_plugin(plugin_id)
+                    raise e
+                
 
         self.sync_hooks_tools_and_forms()
 
@@ -208,7 +215,11 @@ class MadHatter:
                 log.warning(f"Toggle plugin {plugin_id}: Activate")
 
                 # Activate the plugin
-                self.plugins[plugin_id].activate()
+                try:
+                    self.plugins[plugin_id].activate()
+                except Exception as e:
+                    # Couldn't activate the plugin
+                    raise e
 
                 # Execute hook on plugin activation
                 # Activation hook must happen before actual activation,
