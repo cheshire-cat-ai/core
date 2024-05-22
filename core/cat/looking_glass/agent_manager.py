@@ -10,6 +10,7 @@ from datetime import timedelta
 from langchain_core.utils import get_colored_text
 from langchain.agents import AgentExecutor
 from langchain.docstore.document import Document
+from langchain_core.output_parsers.string import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
@@ -141,16 +142,12 @@ class AgentManager:
 """
             return thoughts
 
-        def logging(x): 
-            print("\n",get_colored_text(x.to_string(),"green"))
-            return x
-
         agent = (
             RunnablePassthrough.assign(
                 agent_scratchpad=lambda x: scratchpad(x["intermediate_steps"])
             )
             | prompt
-            | RunnableLambda(lambda x: logging(x))
+            | RunnableLambda(lambda x: self.__log_prompt(x))
             | stray._llm
             | ChooseProcedureOutputParser()
         )
@@ -215,23 +212,18 @@ class AgentManager:
             ]
         )
 
-        def logging(x):
-            #The names are not shown in the chat history log, the model however receives the name correctly
-            log.info("The names are not shown in the chat history log, the model however receives the name correctly")            
-            print("\n",get_colored_text(x.to_string(),"green"))
-            return x
-
         memory_chain = (
             final_prompt
-            | RunnableLambda(lambda x: logging(x))
+            | RunnableLambda(lambda x: self.__log_prompt(x))
             | stray._llm
+            | StrOutputParser()
         )
 
-        output = memory_chain.invoke(
-            agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
+        agent_input["output"] = memory_chain.invoke(
+            agent_input, 
+            config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
-        agent_input["output"] = output.content
-
+        
         return agent_input
 
     async def execute_agent(self, stray):
@@ -447,3 +439,9 @@ class AgentManager:
             memory_content = ""
 
         return memory_content
+
+    def __log_prompt(self, x):
+            #The names are not shown in the chat history log, the model however receives the name correctly
+            log.info("The names are not shown in the chat history log, the model however receives the name correctly")            
+            print("\n",get_colored_text(x.to_string(),"green"))
+            return x
