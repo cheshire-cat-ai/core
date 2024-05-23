@@ -75,7 +75,7 @@ class LLMCustomConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Custom LLM",
             "description": "LLM on a custom endpoint. See docs for examples.",
-            "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/",
+            "link": "https://cheshirecat.ai/custom-large-language-model/",
         }
     )
 
