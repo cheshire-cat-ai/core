@@ -42,6 +42,7 @@ dependencies = [
     "httpx",
     "fastembed==0.2.2",
     "rapidfuzz==3.6.1",
+    "APScheduler==3.10.4",
 ]
 
 [tool.coverage.run]
