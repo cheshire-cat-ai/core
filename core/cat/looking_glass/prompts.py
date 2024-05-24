@@ -95,7 +95,7 @@ When you have a final answer (or no tools are relevant), use the following forma
 ## Actions sequence used until now:
 {agent_scratchpad}
 
-# Next Action to perform or final_answare:
+# Next Action to perform or final_answer:
 """
 
 
