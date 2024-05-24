@@ -61,12 +61,6 @@ class CheshireCat:
         # Start scheduling system
         self.scheduler = Scheduler()
         
-        log.info("Scheduled jobs:")
-        log.info(self.scheduler.get_jobs())
-        log.info("Adding a job")
-        self.scheduler.add_job("TEST")
-        log.info(self.scheduler.get_jobs())
-        
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
 
