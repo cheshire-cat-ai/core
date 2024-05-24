@@ -1,5 +1,6 @@
 import mimetypes
 import requests
+import io
 from typing import Dict
 from copy import deepcopy
 
@@ -10,6 +11,10 @@ from cat.log import log
 
 router = APIRouter()
 
+
+def format_upload_file(upload_file: UploadFile) -> UploadFile:
+    file_content = upload_file.file.read()
+    return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
 # receive files via http endpoint
 @router.post("/")
@@ -47,7 +52,7 @@ async def upload_file(
     background_tasks.add_task(
         # we deepcopy the file because FastAPI does not keep the file in memory after the response returns to the client
         # https://github.com/tiangolo/fastapi/discussions/10936
-        stray.rabbit_hole.ingest_file, stray, deepcopy(file), chunk_size, chunk_overlap
+        stray.rabbit_hole.ingest_file, stray, deepcopy(format_upload_file(file)), chunk_size, chunk_overlap
     )
 
     # reply to client
