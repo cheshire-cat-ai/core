@@ -17,7 +17,7 @@ import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
 from cat.looking_glass.agent_manager import AgentManager
-from cat.looking_glass.scheduler import Scheduler
+from cat.looking_glass.white_rabbit import WhiteRabbit
 from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory
@@ -59,7 +59,7 @@ class CheshireCat:
         # bootstrap the cat!
         
         # Start scheduling system
-        self.scheduler = Scheduler()
+        self.white_rabbit = WhiteRabbit()
         
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
