@@ -6,8 +6,6 @@ Here is a collection of methods to hook into the *Agent* execution pipeline.
 
 from typing import List, Union, Dict
 
-from langchain.tools.base import BaseTool
-from langchain.agents import load_tools
 from cat.mad_hatter.decorators import hook
 from cat.log import log
 

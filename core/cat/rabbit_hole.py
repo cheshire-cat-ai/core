@@ -13,11 +13,11 @@ from langchain.docstore.document import Document
 from qdrant_client.http import models
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders.parsers import PDFMinerParser
-from langchain.document_loaders.parsers.generic import MimeTypeBasedParser
-from langchain.document_loaders.parsers.txt import TextParser
+from langchain_community.document_loaders.parsers.pdf import PDFMinerParser
+from langchain_community.document_loaders.parsers.generic import MimeTypeBasedParser
+from langchain_community.document_loaders.parsers.txt import TextParser
+from langchain_community.document_loaders.parsers.html.bs4 import BS4HTMLParser
 from langchain.document_loaders.blob_loaders.schema import Blob
-from langchain.document_loaders.parsers.html.bs4 import BS4HTMLParser
 
 from cat.utils import singleton
 from cat.log import log

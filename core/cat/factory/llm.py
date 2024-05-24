@@ -265,7 +265,7 @@ class LLMGeminiChatConfig(LLMSettings):
     """
 
     google_api_key: str
-    model: str = "gemini-pro"
+    model: str = "gemini-1.5-pro-latest"
     temperature: float = 0.1
     top_p: int = 1
     top_k: int = 1
