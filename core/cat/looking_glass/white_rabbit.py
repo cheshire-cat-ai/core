@@ -50,6 +50,39 @@ class WhiteRabbit:
         except e:
             log.error("Error during scheduler start: ", e)
             
+    def schedule_job(self, job, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0, **kwargs):
+        """
+        Schedule a job
+        
+        Parameters
+        ----------
+        job: function
+            The function to be called.
+        days: int
+            Days to wait.
+        hours: int
+            Hours to wait.
+        minutes: int
+            Minutes to wait.
+        seconds: int
+            Seconds to wait.
+        milliseconds: int
+            Milliseconds to wait.
+        microseconds: int
+            Microseconds to wait.
+        **kwargs
+            The arguments to pass to the function
+        """
+        # Calculate time
+        schedule = datetime.today() + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds, microseconds=microseconds)
+        
+        # Check that the function is callable
+        if not callable(job):
+            log.error("WhiteRabbit: The job should be callable!")
+            raise TypeError(f"TypeError: '{type(job)}' object is not callable")
+        
+        # Schedule the job
+        self.scheduler.add_job(job, 'date', run_date=schedule, kwargs=kwargs)
         
     def schedule_chat_message(self, content: str, cat, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0):
         """
