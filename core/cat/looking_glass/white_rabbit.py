@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 from cat.log import log
 
@@ -41,15 +42,32 @@ class WhiteRabbit:
         # Creating the effective scheduler
         self.scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
         
-        log.info("Starting scheduler")
+        # Add our listener to the scheduler
+        self.scheduler.add_listener(self._job_ended_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
+        
+        log.info("WhiteRabbit: Starting scheduler")
         
         # Start the scheduler
         try:
             self.scheduler.start()
-            log.info("Scheduler started")
+            log.info("WhiteRabbit: Scheduler started")
         except e:
-            log.error("Error during scheduler start: ", e)
-            
+            log.error("WhiteRabbit: Error during scheduler start: ", e)
+
+    def _job_ended_listener(self, event):
+        """
+        Triggered when a job ends
+        
+        Parameters
+        ----------
+        event: apscheduler.events.JobExecutionEvent
+            Passed by the scheduler when the job ends. It contains informations about the job.
+        """
+        if event.exception:
+            log.error(f"WhiteRabbit: error during the execution of job {event.job_id} started at {event.scheduled_run_time}. Error: {event.traceback}")
+        else:
+            log.info(f"WhiteRabbit: executed job {event.job_id} started at {event.scheduled_run_time}. Value returned: {event.retval}")
+    
     def schedule_job(self, job, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0, **kwargs):
         """
         Schedule a job
