@@ -102,6 +102,38 @@ class WhiteRabbit:
         # Schedule the job
         self.scheduler.add_job(job, 'date', run_date=schedule, kwargs=kwargs)
         
+    def schedule_interval_job(self, job, start_date:datetime = None, end_date:datetime = None, days=0, hours=0, minutes=0, seconds=0, **kwargs):
+        """
+        Schedule an interval job
+
+        Parameters
+        ----------
+        job: function
+            The function to be called.
+        start_date: datetime
+            Start date. If None the job can start instantaneously
+        end_date: datetime
+            End date. If None the job never ends.
+        days: int
+            Days to wait.
+        hours: int
+            Hours to wait.
+        minutes: int
+            Minutes to wait.
+        seconds: int
+            Seconds to wait.
+        **kwargs
+            The arguments to pass to the function
+        """
+        
+        # Check that the function is callable
+        if not callable(job):
+            log.error("WhiteRabbit: The job should be callable!")
+            raise TypeError(f"TypeError: '{type(job)}' object is not callable")
+
+        # Schedule the job
+        self.scheduler.add_job(job, 'interval', start_date=start_date, end_date=end_date, days=days, hours=hours, minutes=minutes, seconds=seconds, kwargs=kwargs)
+        
     def schedule_chat_message(self, content: str, cat, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0):
         """
         Schedule a chat message
