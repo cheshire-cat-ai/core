@@ -50,8 +50,5 @@ def get_env(name):
         default = cat_default_env_variables[name]
     else:
         default=None
-        
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    #print(cat_default_env_variables)
-    print(name, os.getenv(name))
+
     return os.getenv(name, default)
