@@ -24,6 +24,7 @@ from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ChooseProcedureOutputParser
 from cat.utils import verbal_timedelta
 from cat.log import log
+from cat.env import get_env
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.experimental.form import CatForm, CatFormState
 
@@ -44,7 +45,7 @@ class AgentManager:
     def __init__(self):
         self.mad_hatter = MadHatter()
 
-        if os.getenv("LOG_LEVEL", "INFO") in ["DEBUG", "INFO"]:
+        if get_env("CCAT_LOG_LEVEL") in ["DEBUG", "INFO"]:
             self.verbose = True
         else:
             self.verbose = False

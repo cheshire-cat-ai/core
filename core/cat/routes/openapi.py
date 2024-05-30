@@ -1,10 +1,11 @@
-import os
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 import tomli
 
-API_KEY = os.getenv("API_KEY", "")
+from cat.env import get_env
+
+API_KEY = get_env("CCAT_API_KEY")
 
 
 def get_openapi_configuration_function(cheshire_cat_api: FastAPI):

@@ -1,4 +1,3 @@
-import os
 import fnmatch
 
 from fastapi import Request
@@ -6,9 +5,10 @@ from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
 from cat.looking_glass.stray_cat import StrayCat
+from cat.env import get_env
 
 API_KEY = [
-    key.strip() for key in os.getenv("API_KEY", "").split("|") if key.strip()
+    key.strip() for key in get_env("CCAT_API_KEY").split("|") if key.strip()
 ]
 """List[str]: list of piped API keys.
 

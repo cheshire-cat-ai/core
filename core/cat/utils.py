@@ -10,7 +10,6 @@ from pydantic import BaseModel, ConfigDict
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
 
-
 from cat.log import log
 
 
@@ -82,11 +81,11 @@ def verbal_timedelta(td: timedelta) -> str:
 
 def get_base_url():
     """Allows exposing the base url."""
-    secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
-    if secure != '':
+    secure = get_env('CORE_USE_SECURE_PROTOCOLS')
+    if secure not in ['', 'false', '0']:
         secure = 's'
-    cat_host = os.getenv('CORE_HOST', 'localhost')
-    cat_port = os.getenv('CORE_PORT', '1865')
+    cat_host = get_env('CORE_HOST')
+    cat_port = get_env('CORE_PORT')
     return f'http{secure}://{cat_host}:{cat_port}/'
 
 

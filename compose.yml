@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+
+  cheshire-cat-core:
+    build:
+      context: ./core
+    container_name: cheshire_cat_core
+    # Uncomment the two lines below to use your .env (see .env.example)
+    # env_file:
+    #   - .env
+    ports:
+      - ${CCAT_CORE_PORT:-1865}:80
+    volumes:
+      - ./core:/app
+    command:
+      - python
+      - "-m"
+      - "cat.main"
+    restart: unless-stopped

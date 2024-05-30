@@ -1,7 +1,7 @@
-import os
 from tinydb import TinyDB
 
 from cat.utils import singleton
+from cat.env import get_env
 
 @singleton
 class Database:
@@ -10,7 +10,7 @@ class Database:
         self.db = TinyDB(self.get_file_name())
 
     def get_file_name(self):
-        tinydb_file = os.getenv("METADATA_FILE", "cat/data/metadata.json")
+        tinydb_file = get_env("CCAT_METADATA_FILE")
         return tinydb_file
 
 def get_db():
