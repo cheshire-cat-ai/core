@@ -38,6 +38,7 @@ dependencies = [
     "perflint",
     "pylint-actions",
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "fastembed==0.2.2",
     "rapidfuzz==3.6.1",
