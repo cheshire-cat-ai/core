@@ -215,7 +215,7 @@ class CatLogEngine:
 
     def welcome(self):
         """Welcome message in the terminal."""
-        secure = get_env('CORE_USE_SECURE_PROTOCOLS')
+        secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
         if secure != '':
             secure = 's'
 

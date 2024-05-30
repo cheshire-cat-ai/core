@@ -11,6 +11,7 @@ from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
 
 from cat.log import log
+from cat.env import get_env
 
 
 def to_camel_case(text: str) -> str:
@@ -81,11 +82,11 @@ def verbal_timedelta(td: timedelta) -> str:
 
 def get_base_url():
     """Allows exposing the base url."""
-    secure = get_env('CORE_USE_SECURE_PROTOCOLS')
+    secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
     if secure not in ['', 'false', '0']:
         secure = 's'
-    cat_host = get_env('CORE_HOST')
-    cat_port = get_env('CORE_PORT')
+    cat_host = get_env("CCAT_CORE_HOST")
+    cat_port = get_env("CCAT_CORE_PORT")
     return f'http{secure}://{cat_host}:{cat_port}/'
 
 
