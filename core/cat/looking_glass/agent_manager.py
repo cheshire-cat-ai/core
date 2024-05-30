@@ -4,7 +4,7 @@ import json
 import random
 import traceback
 from copy import deepcopy
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 from datetime import timedelta
 
 from langchain_core.utils import get_colored_text
@@ -353,7 +353,7 @@ class AgentManager:
             "tools_output": "",
         }
 
-    def agent_prompt_episodic_memories(self, memory_docs: List[Document]) -> str:
+    def agent_prompt_episodic_memories(self, memory_docs: List[Tuple[Document, float]]) -> str:
         """Formats episodic memories to be inserted into the prompt.
 
         Parameters
@@ -399,7 +399,7 @@ class AgentManager:
 
         return memory_content
 
-    def agent_prompt_declarative_memories(self, memory_docs: List[Document]) -> str:
+    def agent_prompt_declarative_memories(self, memory_docs: List[Tuple[Document, float]]) -> str:
         """Formats the declarative memories for the prompt context.
         Such context is placed in the `agent_prompt_prefix` in the place held by {declarative_memory}.
 
