@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Type
-import langchain
 
 from pydantic import BaseModel, ConfigDict, Field
 from langchain_community.embeddings import (
