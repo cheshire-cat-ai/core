@@ -151,7 +151,7 @@ class WhiteRabbit:
         
         # Generate id if none
         if id == None:
-            id = job.__name__ + "-" + schedule.strftime("%m/%d/%Y-%H:%M:%S")
+            id = f"{job.__name__}-{schedule.strftime('%m/%d/%Y-%H:%M:%S')}"
             
         # Schedule the job
         self.scheduler.add_job(job, 'date', id=id, run_date=schedule, kwargs=kwargs)
@@ -196,12 +196,66 @@ class WhiteRabbit:
         
         # Generate id if none
         if id == None:
-            id = job.__name__ + "-interval-" + str(days) + "-" + str(hours) + "-" + str(minutes) + "-" + str(seconds)
+            id = f"{job.__name__}-interval-{days}-{hours}-{minutes}-{seconds}"
 
         # Schedule the job
         self.scheduler.add_job(job, 'interval', id=id, start_date=start_date, end_date=end_date, days=days, hours=hours, minutes=minutes, seconds=seconds, kwargs=kwargs)
         
         return id
+
+    def schedule_cron_job(self, job, id:str=None, start_date:datetime = None, end_date:datetime = None, year=None, month=None, day=None, week=None, day_of_week=None, hour=None, minute=None, second=None, **kwargs):
+        """
+        Schedule a cron job
+
+        Parameters
+        ----------
+        job: function
+            The function to be called.
+        id: str
+            The id assigned to the job
+        start_date: datetime
+            Start date. If None the job can start instantaneously
+        end_date: datetime
+            End date. If None the job never ends.
+        year: int|str 
+            4-digit year
+        month: int|str 
+            month (1-12)
+        day: int|str
+            day of month (1-31)
+        week: int|str
+            ISO week (1-53)
+        day_of_week: int|str
+            number or name of weekday (0-6 or mon,tue,wed,thu,fri,sat,sun)
+        hour: int|str
+            hour (0-23)
+        minute: int|str
+            minute (0-59)
+        second: int|str
+            second (0-59)
+        **kwargs
+            The arguments to pass to the function
+            
+        Returns
+        -------
+        str
+            The job id.
+        """
+        
+        # Check that the function is callable
+        if not callable(job):
+            log.error("WhiteRabbit: The job should be callable!")
+            raise TypeError(f"TypeError: '{type(job)}' object is not callable")
+        
+        # Generate id if none
+        if id == None:
+            id = f"{job.__name__}-cron"
+        
+        # Schedule the job
+        self.scheduler.add_job(job, 'cron', id=id, start_date=start_date, end_date=end_date, year=year, month=month, day=day, week=week, day_of_week=day_of_week, hour=hour, minute=minute, second=second, kwargs=kwargs)
+        
+        return id
+
         
     def schedule_chat_message(self, content: str, cat, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0):
         """
@@ -236,9 +290,9 @@ class WhiteRabbit:
         schedule = datetime.today() + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds, microseconds=microseconds)
         
         # Generate id
-        id = "send_ws_message" + "-" + schedule.strftime("%m/%d/%Y-%H:%M:%S")
+        id = f"send_ws_message-{schedule.strftime('%m/%d/%Y-%H:%M:%S')}"
         
         # Schedule the job
-        self.scheduler.add_job(cat.send_ws_message, 'date', run_date=schedule, kwargs={'content': content, 'msg_type': 'chat'})
+        self.scheduler.add_job(cat.send_ws_message, 'date', id=id, run_date=schedule, kwargs={'content': content, 'msg_type': 'chat'})
         
         return id
