@@ -51,7 +51,7 @@ class WhiteRabbit:
         try:
             self.scheduler.start()
             log.info("WhiteRabbit: Scheduler started")
-        except e:
+        except Exception as e:
             log.error("WhiteRabbit: Error during scheduler start: ", e)
 
     def _job_ended_listener(self, event):
@@ -68,7 +68,50 @@ class WhiteRabbit:
         else:
             log.info(f"WhiteRabbit: executed job {event.job_id} started at {event.scheduled_run_time}. Value returned: {event.retval}")
     
-    def schedule_job(self, job, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0, **kwargs):
+    def get_jobs(self):
+        """
+        Returns a list of scheduled jobs
+            
+        Returns
+        -------
+        list
+            List of all jobs
+        """
+        jobs = self.scheduler.get_jobs()
+        
+        jobsList = []
+    
+        for job in jobs:
+            jobsList.append({
+                "id": job.id,
+                "name": job.name,
+                "next_run": job.next_run_time
+            })
+        
+        return jobsList
+    
+    def remove_job(self, id:str):
+        """
+        Removes a scheduled job
+        
+        Parameters
+        ----------
+        id: str
+            The id assigned to the job.
+            
+        Returns
+        -------
+        bool
+            The outcome of the removal.
+        """
+        try:
+            self.scheduler.remove_job(id)
+            return True
+        except Exception as e:
+            log.error(f"WhiteRabbit: error during job removal. {e}")
+            return False
+        
+    def schedule_job(self, job, id:str=None, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0, **kwargs):
         """
         Schedule a job
         
@@ -76,6 +119,8 @@ class WhiteRabbit:
         ----------
         job: function
             The function to be called.
+        id: str
+            The id assigned to the job.
         days: int
             Days to wait.
         hours: int
@@ -89,7 +134,12 @@ class WhiteRabbit:
         microseconds: int
             Microseconds to wait.
         **kwargs
-            The arguments to pass to the function
+            The arguments to pass to the function.
+            
+        Returns
+        -------
+        str
+            The job id.
         """
         # Calculate time
         schedule = datetime.today() + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds, microseconds=microseconds)
@@ -99,10 +149,16 @@ class WhiteRabbit:
             log.error("WhiteRabbit: The job should be callable!")
             raise TypeError(f"TypeError: '{type(job)}' object is not callable")
         
+        # Generate id if none
+        if id == None:
+            id = job.__name__ + "-" + schedule.strftime("%m/%d/%Y-%H:%M:%S")
+            
         # Schedule the job
-        self.scheduler.add_job(job, 'date', run_date=schedule, kwargs=kwargs)
+        self.scheduler.add_job(job, 'date', id=id, run_date=schedule, kwargs=kwargs)
         
-    def schedule_interval_job(self, job, start_date:datetime = None, end_date:datetime = None, days=0, hours=0, minutes=0, seconds=0, **kwargs):
+        return id
+        
+    def schedule_interval_job(self, job, id:str=None, start_date:datetime = None, end_date:datetime = None, days=0, hours=0, minutes=0, seconds=0, **kwargs):
         """
         Schedule an interval job
 
@@ -110,6 +166,8 @@ class WhiteRabbit:
         ----------
         job: function
             The function to be called.
+        id: str
+            The id assigned to the job
         start_date: datetime
             Start date. If None the job can start instantaneously
         end_date: datetime
@@ -124,15 +182,26 @@ class WhiteRabbit:
             Seconds to wait.
         **kwargs
             The arguments to pass to the function
+            
+        Returns
+        -------
+        str
+            The job id.
         """
         
         # Check that the function is callable
         if not callable(job):
             log.error("WhiteRabbit: The job should be callable!")
             raise TypeError(f"TypeError: '{type(job)}' object is not callable")
+        
+        # Generate id if none
+        if id == None:
+            id = job.__name__ + "-interval-" + str(days) + "-" + str(hours) + "-" + str(minutes) + "-" + str(seconds)
 
         # Schedule the job
-        self.scheduler.add_job(job, 'interval', start_date=start_date, end_date=end_date, days=days, hours=hours, minutes=minutes, seconds=seconds, kwargs=kwargs)
+        self.scheduler.add_job(job, 'interval', id=id, start_date=start_date, end_date=end_date, days=days, hours=hours, minutes=minutes, seconds=seconds, kwargs=kwargs)
+        
+        return id
         
     def schedule_chat_message(self, content: str, cat, days=0, hours=0, minutes=0, seconds=0, milliseconds=0, microseconds=0):
         """
@@ -156,10 +225,20 @@ class WhiteRabbit:
             Milliseconds to wait.
         microseconds: int
             Microseconds to wait.
+            
+        Returns
+        -------
+        str
+            The job id.
         """
         
         # Calculate time
         schedule = datetime.today() + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds, milliseconds=milliseconds, microseconds=microseconds)
         
+        # Generate id
+        id = "send_ws_message" + "-" + schedule.strftime("%m/%d/%Y-%H:%M:%S")
+        
         # Schedule the job
         self.scheduler.add_job(cat.send_ws_message, 'date', run_date=schedule, kwargs={'content': content, 'msg_type': 'chat'})
+        
+        return id
