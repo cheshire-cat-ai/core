@@ -17,7 +17,7 @@ def test_api_key_http(secure_client):
     assert response.status_code == 403
     assert response.json()["detail"]["error"] == "Invalid API Key"
 
-    # forbid access if no CCAT_API_KEY is wrong
+    # forbid access if CCAT_API_KEY is wrong
     headers = {
         "access_token": "wrong"
     }
