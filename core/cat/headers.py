@@ -37,6 +37,11 @@ def ws_auth(
         Error with status code `403` if the message is not allowed. # TODOAUTH: ws has no status code
 
     """
+
+    # internal auth system for the admin panel
+    # TODOAUTH
+
+    # custom auth
     authorizator = websocket.app.state.ccat.authorizator
     if not authorizator.is_ws_allowed(websocket):
         raise HTTPException( # TODOAUTH: ws has no status code?
@@ -65,8 +70,12 @@ def http_auth(request: Request) -> bool:
         Error with status code `403` if the request is not allowed.
 
     """
+
+    # internal auth system for the admin panel
+    # TODOAUTH
+
     authorizator = request.app.state.ccat.authorizator
-    if authorizator.is_master_key(request) or authorizator.is_http_allowed(request):
+    if authorizator.is_http_allowed(request):
         return None
     else:
         raise HTTPException(

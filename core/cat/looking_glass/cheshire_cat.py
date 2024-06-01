@@ -27,6 +27,7 @@ from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from fastapi import Request
 
+
 class Procedure(Protocol):
     name: str
     procedure_type: str  # "tool" or "form"
@@ -58,8 +59,11 @@ class CheshireCat:
         At init time the Cat executes the bootstrap.
         """
         
-        # bootstrap the cat!
+        # bootstrap the Cat! ^._.^
         
+        # load Authorizator
+        self.load_authorizator()
+
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
         
@@ -71,9 +75,6 @@ class CheshireCat:
 
         # load LLM and embedder
         self.load_natural_language()
-
-        # load Authorizator
-        self.load_authorizator()
 
         # Load memories (vector collections and working_memory)
         self.load_memory()
@@ -247,14 +248,13 @@ class CheshireCat:
                 authorizator = FactoryClass.get_authorizator_from_config(
                     selected_authorizator_config["value"]
                 )
-                log.critical(f"Authorizator: {authorizator.api_key}")
             except AttributeError as e:
                 import traceback
 
                 traceback.print_exc()
-                authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({})
+                authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({}) # TODOAUTH should be default auth
         else:
-            authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({})
+            authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({}) # TODOAUTH should be default auth
         
         self.authorizator = authorizator
 

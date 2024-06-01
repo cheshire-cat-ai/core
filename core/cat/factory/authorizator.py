@@ -33,8 +33,8 @@ class AuthorizatorApiKeyConfig(AuthorizatorSettings):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": 'API Key Authorizator',
-            "description": 'Authoriza requests based on API key',
+            "humanReadableName": "API Key Authorizator",
+            "description": 'Authorize requests based on API key',
             "link": "",
         }
     )
