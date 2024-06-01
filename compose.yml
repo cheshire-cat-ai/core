@@ -11,6 +11,7 @@ services:
     #   - .env
     ports:
       - ${CCAT_CORE_PORT:-1865}:80
+      - 5678:5678 # only for development purposes (take away in production)
     volumes:
       - ./core:/app
     command:
