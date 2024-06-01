@@ -30,6 +30,7 @@ def get_embedders_settings(request: Request) -> Dict:
     if selected is not None:
         selected = selected["value"]["name"]
     else:
+        # TODO: take away automatic embedder settings in v2
         # If DB does not contain a selected embedder, it means an embedder was automatically selected.
         # Deduce selected embedder:
         ccat = request.app.state.ccat

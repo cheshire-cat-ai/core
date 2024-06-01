@@ -6,9 +6,9 @@ from fastapi import Request, APIRouter, Body, HTTPException
 
 router = APIRouter()
 
-AUTHORIZAOTOR_SELECTED_NAME = "authorizator_selected"
+AUTHORIZATOR_SELECTED_NAME = "authorizator_selected"
 
-AUTHORIZAOTOR_CATEGORY = "authorizator_factory"
+AUTHORIZATOR_CATEGORY = "authorizator_factory"
 
 @router.get("/settings")
 def get_authorizator_settings(request: Request) -> Dict:
@@ -17,22 +17,14 @@ def get_authorizator_settings(request: Request) -> Dict:
     SUPPORTED_AUTHORIZATORS = get_allowed_authorizator_strategies()
     
     # get selected Authorizator, if any
-    selected = crud.get_setting_by_name(name=AUTHORIZAOTOR_SELECTED_NAME)
+    selected = crud.get_setting_by_name(name=AUTHORIZATOR_SELECTED_NAME)
     if selected is not None:
         selected = selected["value"]["name"]
-    else:
-        # If DB does not contain a selected authorizator, it means an authorizator was automatically selected.
-        # Deduce selected authorizator:
-        ccat = request.app.state.ccat
-        for authorizator_config_class in reversed(SUPPORTED_AUTHORIZATORS):
-            if authorizator_config_class._pyclass.default == type(ccat.authorizator):
-                selected = authorizator_config_class.__name__
     
-    saved_settings = crud.get_settings_by_category(category=AUTHORIZAOTOR_CATEGORY)
+    saved_settings = crud.get_settings_by_category(category=AUTHORIZATOR_CATEGORY)
     saved_settings = { s["name"]: s for s in saved_settings }
 
     settings = []
-
     for class_name, schema in get_authorizators_schemas().items():
         
         if class_name in saved_settings:
@@ -58,24 +50,26 @@ def get_authorizator_setting(request: Request, authorizator_name: str) -> Dict:
     AUTHORIZATOR_SCHEMAS = get_authorizators_schemas()
 
     allowed_configurations  = list(AUTHORIZATOR_SCHEMAS.keys())
-    from cat.log import log
-    log.error(f"Allowed configurations: {allowed_configurations}")
     if authorizator_name not in allowed_configurations:
         raise HTTPException(
             status_code=400, 
             detail={
-                "error": f"{authorizator_name} not supported"
+                "error": f"{authorizator_name} not supported. Must be one of {allowed_configurations}"
             }
         )
     
     setting = crud.get_setting_by_name(name=authorizator_name)
-
     schema = AUTHORIZATOR_SCHEMAS[authorizator_name]
     
+    if setting is None:
+        setting = {}
+    else:
+        setting = setting["value"]
+
     return {
         "name"  : authorizator_name,
-        "value" : setting["value"] if setting is not None else {},
-        "schema": schema,
+        "value" : setting,
+        "schema": schema
     }
 
 @router.put("/settings/{authorizator_name}")
@@ -93,7 +87,7 @@ def upsert_authenticator_setting(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": f"{authorizator_name} not supported"
+                "error": f"{authorizator_name} not supported. Must be one of {allowed_configurations}"
             }
         )
     
@@ -101,15 +95,15 @@ def upsert_authenticator_setting(
         models.Setting(
             name=authorizator_name,
             value=payload,
-            category=AUTHORIZAOTOR_CATEGORY
+            category=AUTHORIZATOR_CATEGORY
         )
     )
 
     crud.upsert_setting_by_name(
         models.Setting(
-            name=AUTHORIZAOTOR_SELECTED_NAME,
+            name=AUTHORIZATOR_SELECTED_NAME,
             value={"name": authorizator_name},
-            category=AUTHORIZAOTOR_CATEGORY
+            category=AUTHORIZATOR_CATEGORY
         )
     )
 

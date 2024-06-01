@@ -8,5 +8,5 @@ class AuthStatic(StaticFiles):
 
     async def __call__(self, scope, receive, send) -> None:
         request = Request(scope, receive=receive)
-        http_auth(request)
+        http_auth(request) # TODOAUTH: verify static files follow the auth
         await super().__call__(scope, receive, send)
