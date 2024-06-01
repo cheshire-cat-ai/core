@@ -1,11 +1,12 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.6.1"
+version = "1.6.2"
 requires-python = ">=3.10"
-license = { file="LICENSE" }
+license = { file = "LICENSE" }
 authors = [
-    { name = "Piero Savastano" }, { name = "Cheshire Cat AI Contributors" }
+    { name = "Piero Savastano" },
+    { name = "Cheshire Cat AI Contributors" },
 ]
 dependencies = [
     "python-multipart==0.0.6",
@@ -15,17 +16,16 @@ dependencies = [
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
     "qdrant_client==1.8.0",
-    "langchain==0.1.10",
-    "langchain-community==0.0.27",
-    "langchain-openai",
-    "langchain-google-genai",
-    "openai==1.10.0",
-    "cohere==4.39",
+    "langchain==0.2.1",
+    "langchain-community==0.2.1",
+    "langchain-openai==0.1.7",
+    "langchain-google-genai==1.0.5",
+    "langchain-cohere==0.1.5",
     "huggingface-hub==0.20.3",
     "beautifulsoup4==4.12.3",
     "pdfminer.six==20221105",
     "unstructured==0.12.6",
-    "tiktoken==0.5.2",
+    "tiktoken==0.7.0",
     "tomli",
     "loguru==0.7.2",
     "anthropic==0.2.9",
@@ -39,9 +39,11 @@ dependencies = [
     "perflint",
     "pylint-actions",
     "pytest",
+    "pytest-asyncio",
     "httpx",
     "fastembed==0.2.2",
     "rapidfuzz==3.6.1",
+    "APScheduler==3.10.4",
 ]
 
 [tool.coverage.run]
@@ -50,7 +52,19 @@ source = ["cat"]
 [tool.pylint]
 max-line-length = 180
 disable = [
-    "C0301","C0103","C0114","E0401","C0115","C0116","E1101","R0801","C0202","W0406","W1514","W0201","W0511"
+    "C0301",
+    "C0103",
+    "C0114",
+    "E0401",
+    "C0115",
+    "C0116",
+    "E1101",
+    "R0801",
+    "C0202",
+    "W0406",
+    "W1514",
+    "W0201",
+    "W0511",
 ]
 
 [tool.pylint.main]

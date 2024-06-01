@@ -1,19 +1,17 @@
 from enum import Enum
 from typing import Type
-import langchain
 
 from pydantic import BaseModel, ConfigDict, Field
 from langchain_community.embeddings import (
     FakeEmbeddings,
-    FastEmbedEmbeddings,
-    CohereEmbeddings,
+    FastEmbedEmbeddings
 )
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from fastembed.embedding import TextEmbedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
-
+from langchain_cohere import CohereEmbeddings
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseModel):

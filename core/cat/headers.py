@@ -1,4 +1,3 @@
-import os
 import fnmatch
 
 from fastapi import Request
@@ -6,10 +5,8 @@ from fastapi import Security, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 
 from cat.looking_glass.stray_cat import StrayCat
+from cat.env import get_env
 
-API_KEY = [
-    key.strip() for key in os.getenv("API_KEY", "").split("|") if key.strip()
-]
 """List[str]: list of piped API keys.
 
 The list stores all the API keys set in the `.env` file.
@@ -42,6 +39,11 @@ def check_api_key(request: Request, api_key: str = Security(api_key_header)) -> 
         Error with status code `403` if the provided key is not valid.
 
     """
+
+    API_KEY = [
+        key.strip() for key in get_env("CCAT_API_KEY").split("|") if key.strip()
+    ]
+    
     if not API_KEY:
         return None
     if fnmatch.fnmatch(request.url.path, "/admin*"):

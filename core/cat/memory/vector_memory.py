@@ -1,4 +1,3 @@
-import os
 import sys
 import uuid
 import socket
@@ -11,6 +10,7 @@ from qdrant_client.qdrant_remote import QdrantRemote
 
 from cat.memory.vector_memory_collection import VectorMemoryCollection
 from cat.log import log
+from cat.env import get_env
 # from cat.utils import singleton
 
 
@@ -51,22 +51,26 @@ class VectorMemory:
 
     def connect_to_vector_memory(self) -> None:
         db_path = "cat/data/local_vector_memory/"
-        qdrant_host = os.getenv("QDRANT_HOST", db_path)
+        qdrant_host = get_env("CCAT_QDRANT_HOST")
 
-        if len(qdrant_host) == 0 or qdrant_host == db_path:
+        if len(qdrant_host) == 0:
             log.info(f"Qdrant path: {db_path}")
             # Qdrant local vector DB client
 
             # reconnect only if it's the first boot and not a reload
             if VectorMemory.local_vector_db is None:
-                VectorMemory.local_vector_db = QdrantClient(path=db_path, force_disable_check_same_thread=True)
+                VectorMemory.local_vector_db = QdrantClient(
+                    path=db_path,
+                    force_disable_check_same_thread=True
+                )
 
             self.vector_db = VectorMemory.local_vector_db
         else:
-            qdrant_port = int(os.getenv("QDRANT_PORT", 6333))
+            # Qdrant remote or in other container
+            qdrant_port = int(get_env("CCAT_QDRANT_PORT"))
             qdrant_https = is_https(qdrant_host)
             qdrant_host = extract_domain_from_url(qdrant_host)
-            qdrant_api_key = os.getenv("QDRANT_API_KEY")
+            qdrant_api_key = get_env("CCAT_QDRANT_API_KEY")
 
             try:
                 s = socket.socket()

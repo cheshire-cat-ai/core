@@ -6,6 +6,7 @@ from typing import Literal, get_args, List, Dict, Union, Any
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.llms import BaseLLM
+from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
 
 from fastapi import WebSocket
 
@@ -13,7 +14,7 @@ from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
-from cat.convo.messages import CatMessage, UserMessage, MessageWhy
+from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
@@ -503,6 +504,18 @@ Allowed classes are:
             history_string += f"\n - {turn['who']}: {turn['message']}"
 
         return history_string
+    
+    def langchainfy_chat_history(self,  latest_n: int = 5) -> List[BaseMessage]:
+        chat_history = self.working_memory.history[-latest_n:]
+
+        langchain_chat_history = []
+        for message in chat_history:
+            if message["role"] == Role.Human:
+                langchain_chat_history.append(HumanMessage(name=message["who"], content=message["message"]))
+            else:
+                langchain_chat_history.append(AIMessage(name=message["who"], content=message["message"]))
+
+        return langchain_chat_history
 
     @property
     def user_id(self):
@@ -531,6 +544,10 @@ Allowed classes are:
     @property
     def agent_manager(self):
         return CheshireCat().agent_manager
+    
+    @property
+    def white_rabbit(self):
+        return CheshireCat().white_rabbit
 
     @property
     def loop(self):

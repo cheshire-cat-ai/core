@@ -1,15 +1,10 @@
-import os
-from typing import Optional, List, Any, Mapping, Dict, Iterator, AsyncIterator
-
-import aiohttp
+from typing import Optional, List, Any, Mapping, Dict
 import requests
-
 from fastapi import HTTPException
 
 from langchain_core.language_models.llms import LLM
-from langchain_openai.llms import OpenAI
-from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError
 from langchain_openai.chat_models import ChatOpenAI
+from langchain_community.chat_models.ollama import ChatOllama
 
 from cat.log import log
 
@@ -91,7 +86,7 @@ class CustomOpenAI(ChatOpenAI):
 
 
 
-class CustomOllama(Ollama):
+class CustomOllama(ChatOllama):
     def __init__(self, **kwargs: Any) -> None:
         if "localhost" in kwargs["base_url"]:
             log.error(

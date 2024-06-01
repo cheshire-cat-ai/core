@@ -2,14 +2,13 @@ from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAI
 from langchain_community.llms import (
     OpenAI,
-    Cohere,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
 )
 from langchain_openai import ChatOpenAI
+from langchain_cohere import ChatCohere
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from .ollama_utils import _create_stream_patch, _acreate_stream_patch
 from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
@@ -73,7 +72,7 @@ class LLMCustomConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Custom LLM",
             "description": "LLM on a custom endpoint. See docs for examples.",
-            "link": "https://cheshirecat.ai/2023/08/19/custom-large-language-model/",
+            "link": "https://cheshirecat.ai/custom-large-language-model/",
         }
     )
 
@@ -81,8 +80,8 @@ class LLMCustomConfig(LLMSettings):
 class LLMOpenAICompatibleConfig(LLMSettings):
     url: str
     temperature: float = 0.01
-    model_name:str
-    api_key:str
+    model_name: str
+    api_key: str
     streaming: bool = True
     _pyclass: Type = CustomOpenAI
 
@@ -177,8 +176,10 @@ class LLMAzureOpenAIConfig(LLMSettings):
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
+    temperature: float = 0.7
     streaming: bool = True
-    _pyclass: Type = Cohere
+
+    _pyclass: Type = ChatCohere
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -230,21 +231,15 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
     )
 
 
-# monkey patch to fix stops sequences
-OllamaFix: Type = CustomOllama
-OllamaFix._create_stream = _create_stream_patch
-OllamaFix._acreate_stream = _acreate_stream_patch
-
-
 class LLMOllamaConfig(LLMSettings):
     base_url: str
-    model: str = "llama2"
+    model: str = "llama3"
     num_ctx: int = 2048
     repeat_last_n: int = 64
     repeat_penalty: float = 1.1
     temperature: float = 0.8
 
-    _pyclass: Type = OllamaFix
+    _pyclass: Type = CustomOllama
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -271,7 +266,7 @@ class LLMGeminiChatConfig(LLMSettings):
     """
 
     google_api_key: str
-    model: str = "gemini-pro"
+    model: str = "gemini-1.5-pro-latest"
     temperature: float = 0.1
     top_p: int = 1
     top_k: int = 1
@@ -289,7 +284,6 @@ class LLMGeminiChatConfig(LLMSettings):
 
 
 def get_allowed_language_models():
-
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
@@ -321,7 +315,6 @@ def get_llm_from_name(name_llm: str):
 
 
 def get_llms_schemas():
-
     # LLM_SCHEMAS contains metadata to let any client know
     # which fields are required to create the language model.
     LLM_SCHEMAS = {}
