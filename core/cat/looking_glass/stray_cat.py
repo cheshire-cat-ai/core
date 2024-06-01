@@ -544,6 +544,10 @@ Allowed classes are:
     @property
     def agent_manager(self):
         return CheshireCat().agent_manager
+    
+    @property
+    def white_rabbit(self):
+        return CheshireCat().white_rabbit
 
     @property
     def loop(self):
