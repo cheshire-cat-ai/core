@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 # GET plugins
-@router.get("/")
+@router.get("")
 async def get_available_plugins(
     request: Request,
     query: str = None,

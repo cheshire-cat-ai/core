@@ -17,7 +17,7 @@ def format_upload_file(upload_file: UploadFile) -> UploadFile:
     return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
 # receive files via http endpoint
-@router.post("/")
+@router.post("")
 async def upload_file(
     request: Request,
     file: UploadFile,
