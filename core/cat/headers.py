@@ -1,7 +1,5 @@
 import fnmatch
-
 from typing import Annotated
-from cat.log import log
 
 from fastapi import (
     WebSocket,
@@ -12,9 +10,8 @@ from fastapi.security.api_key import APIKeyHeader
 
 from cat.looking_glass.stray_cat import StrayCat
 from cat.env import get_env
+from cat.log import log
 
-
-api_key_header = APIKeyHeader(name="access_token", auto_error=False)
 
 def ws_auth(
     websocket: WebSocket,
@@ -38,10 +35,6 @@ def ws_auth(
 
     """
 
-    # internal auth system for the admin panel
-    # TODOAUTH
-
-    # custom auth
     authorizator = websocket.app.state.ccat.authorizator
     if not authorizator._is_ws_allowed(websocket):
         raise HTTPException( # TODOAUTH: ws has no status code?
@@ -70,9 +63,6 @@ def http_auth(request: Request) -> bool:
         Error with status code `403` if the request is not allowed.
 
     """
-
-    # internal auth system for the admin panel
-    # TODOAUTH
 
     authorizator = request.app.state.ccat.authorizator
     if not authorizator._is_http_allowed(request):
