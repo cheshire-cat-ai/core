@@ -68,8 +68,12 @@ class AuthorizatorApiKey(BaseAuth):
     def __init__(self, api_key):
         self.api_key = api_key
 
+    def get_bearer_token(self, request):
+        header_value = request.headers.get("Authorization", "")
+        return header_value.replace("Bearer", "").strip()
+
     def is_http_allowed(self, request: Request):
-        return request.headers.get("Authorization") == self.api_key
+        return self.get_bearer_token(request) == self.api_key
 
     def is_ws_allowed(self, websocket: WebSocket):
         return websocket.headers.get("Authorization") == self.api_key # TODOAUTH: ws has headers?
