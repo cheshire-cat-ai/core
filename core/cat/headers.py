@@ -43,7 +43,7 @@ def ws_auth(
 
     # custom auth
     authorizator = websocket.app.state.ccat.authorizator
-    if not authorizator.is_ws_allowed(websocket):
+    if not authorizator._is_ws_allowed(websocket):
         raise HTTPException( # TODOAUTH: ws has no status code?
             status_code=403,
             detail={"error": "Invalid Credentials"}
@@ -75,9 +75,7 @@ def http_auth(request: Request) -> bool:
     # TODOAUTH
 
     authorizator = request.app.state.ccat.authorizator
-    if authorizator.is_http_allowed(request):
-        return None
-    else:
+    if not authorizator._is_http_allowed(request):
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}

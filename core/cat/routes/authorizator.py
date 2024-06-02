@@ -16,7 +16,7 @@ def get_authorizator_settings(request: Request) -> Dict:
 
     SUPPORTED_AUTHORIZATORS = get_allowed_authorizator_strategies()
     
-    # get selected Authorizator, if any
+    # get selected Authorizator
     selected = crud.get_setting_by_name(name=AUTHORIZATOR_SELECTED_NAME)
     if selected is not None:
         selected = selected["value"]["name"]
