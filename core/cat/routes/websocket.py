@@ -26,7 +26,7 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
 
 @router.websocket("/ws")
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
+async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"): # TODOAUTH: does ws connection support headers?
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """

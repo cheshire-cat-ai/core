@@ -27,6 +27,7 @@ from qdrant_client.http.models import (
 from langchain.docstore.document import Document
 
 from cat.log import log
+from cat.env import get_env
 
 
 class VectorMemoryCollection():
@@ -75,7 +76,7 @@ class VectorMemoryCollection():
             log.warning(f'Collection "{self.collection_name}" has different embedder')
             # Memory snapshot saving can be turned off in the .env file with:
             # SAVE_MEMORY_SNAPSHOTS=false
-            if os.getenv("SAVE_MEMORY_SNAPSHOTS") == "true":
+            if get_env("CCAT_SAVE_MEMORY_SNAPSHOTS") == "true":
                 # dump collection on disk before deleting
                 self.save_dump()
                 log.info(f"Dump '{self.collection_name}' completed")

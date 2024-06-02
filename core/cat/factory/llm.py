@@ -2,22 +2,19 @@ from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAI
 from langchain_community.llms import (
     OpenAI,
-    Cohere,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
 )
 from langchain_openai import ChatOpenAI
+from langchain_cohere import ChatCohere
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_community.chat_models.ollama import ChatOllama
 
-from .ollama_utils import _create_stream_patch, _acreate_stream_patch
 from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
 
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
 from cat.mad_hatter.mad_hatter import MadHatter
-
 
 
 # Base class to manage LLM configuration.
@@ -83,8 +80,8 @@ class LLMCustomConfig(LLMSettings):
 class LLMOpenAICompatibleConfig(LLMSettings):
     url: str
     temperature: float = 0.01
-    model_name:str
-    api_key:str
+    model_name: str
+    api_key: str
     streaming: bool = True
     _pyclass: Type = CustomOpenAI
 
@@ -179,8 +176,10 @@ class LLMAzureOpenAIConfig(LLMSettings):
 class LLMCohereConfig(LLMSettings):
     cohere_api_key: str
     model: str = "command"
+    temperature: float = 0.7
     streaming: bool = True
-    _pyclass: Type = Cohere
+
+    _pyclass: Type = ChatCohere
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -230,6 +229,8 @@ class LLMHuggingFaceEndpointConfig(LLMSettings):
             "link": "https://huggingface.co/inference-endpoints",
         }
     )
+
+
 class LLMOllamaConfig(LLMSettings):
     base_url: str
     model: str = "llama3"
@@ -244,7 +245,7 @@ class LLMOllamaConfig(LLMSettings):
         json_schema_extra={
             "humanReadableName": "Ollama",
             "description": "Configuration for Ollama",
-            "link": "https://ollama.ai/library"
+            "link": "https://ollama.ai/library",
         }
     )
 
@@ -283,7 +284,6 @@ class LLMGeminiChatConfig(LLMSettings):
 
 
 def get_allowed_language_models():
-
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
@@ -315,7 +315,6 @@ def get_llm_from_name(name_llm: str):
 
 
 def get_llms_schemas():
-
     # LLM_SCHEMAS contains metadata to let any client know
     # which fields are required to create the language model.
     LLM_SCHEMAS = {}

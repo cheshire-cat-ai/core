@@ -1,7 +1,6 @@
-import os
-from contextlib import asynccontextmanager
-import asyncio
 import uvicorn
+import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
@@ -10,11 +9,16 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from cat.log import log
-from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket 
+from cat.env import get_env, fix_legacy_env_variables
+from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket, authorizator
 from cat.routes.static import public, admin, static
-from cat.headers import check_api_key
+from cat.headers import http_auth, ws_auth
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat 
+
+
+# TODO: take away in v2
+fix_legacy_env_variables()
 
 
 @asynccontextmanager
@@ -51,7 +55,7 @@ cheshire_cat_api = FastAPI(
 )
 
 # Configures the CORS middleware for the FastAPI app
-cors_allowed_origins_str = os.getenv("CORS_ALLOWED_ORIGINS", "")
+cors_allowed_origins_str = get_env("CCAT_CORS_ALLOWED_ORIGINS")
 origins = cors_allowed_origins_str.split(",") if cors_allowed_origins_str else ["*"]
 cheshire_cat_api.add_middleware(
     CORSMiddleware,
@@ -62,14 +66,15 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(check_api_key)])
-cheshire_cat_api.include_router(websocket.router, tags=["WebSocket"])
+cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(authorizator.router, tags=["Authorizator"], prefix="/authorizator", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(websocket.router, tags=["Websocket"], dependencies=[Depends(ws_auth)])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
@@ -101,19 +106,18 @@ if __name__ == "__main__":
 
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
-    if os.getenv("DEBUG", "true") == "true":
+    if get_env("CCAT_DEBUG") == "true":
         debug_config = {
             "reload": True,
             "reload_includes": ["plugin.json"],
             "reload_excludes": ["*test_*.*", "*mock_*.*"]
         }
 
-    log_level = os.getenv("LOG_LEVEL", "info")
     uvicorn.run(
         "cat.main:cheshire_cat_api",
         host="0.0.0.0",
         port=80,
         use_colors=True,
-        log_level=log_level.lower(),
+        log_level=get_env("CCAT_LOG_LEVEL").lower(),
         **debug_config
     )

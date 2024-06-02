@@ -2,7 +2,6 @@
 
 import logging
 import sys
-import os
 import inspect
 import traceback
 import json
@@ -10,10 +9,11 @@ from itertools import takewhile
 from pprint import pformat
 from loguru import logger
 
+from cat.env import get_env
 
 def get_log_level():
     """Return the global LOG level."""
-    return os.getenv("LOG_LEVEL", "INFO")
+    return get_env("CCAT_LOG_LEVEL")
 
 
 class CatLogEngine:
@@ -215,12 +215,12 @@ class CatLogEngine:
 
     def welcome(self):
         """Welcome message in the terminal."""
-        secure = os.getenv('CORE_USE_SECURE_PROTOCOLS', '')
+        secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
         if secure != '':
             secure = 's'
 
-        cat_host = os.getenv("CORE_HOST", "localhost")
-        cat_port = os.getenv("CORE_PORT", "1865")
+        cat_host = get_env("CCAT_CORE_HOST")
+        cat_port = get_env("CCAT_CORE_PORT")
         cat_address = f'http{secure}://{cat_host}:{cat_port}'
 
         with open("cat/welcome.txt", 'r') as f:
