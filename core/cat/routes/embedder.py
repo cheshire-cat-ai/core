@@ -118,11 +118,19 @@ def upsert_embedder_setting(
 
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
-        models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=payload)
+        models.Setting(
+            name=languageEmbedderName,
+            category=EMBEDDER_CATEGORY,
+            value=payload
+        )
     )
 
     crud.upsert_setting_by_name(
-        models.Setting(name=EMBEDDER_SELECTED_NAME, category=EMBEDDER_SELECTED_CATEGORY, value={"name":languageEmbedderName})
+        models.Setting(
+            name=EMBEDDER_SELECTED_NAME,
+            category=EMBEDDER_SELECTED_CATEGORY,
+            value={"name":languageEmbedderName}
+        )
     )
 
     status = {

@@ -10,7 +10,7 @@ from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from cat.db import crud
+from cat.db import crud, models
 from cat.factory.custom_llm import CustomOpenAI
 from cat.factory.embedder import get_embedder_from_name
 from cat.factory.authorizator import AuthorizatorSettings, get_authorizator_from_name
@@ -232,29 +232,48 @@ class CheshireCat:
 
     def load_authorizator(self):
         """Load the authorizator."""
+
         # Authorizator
         selected_authorizator = crud.get_setting_by_name(name="authorizator_selected")
 
-        if selected_authorizator is not None:
-            # get Authorizator factory class
-            selected_authorizator_class = selected_authorizator["value"]["name"]
-            FactoryClass = get_authorizator_from_name(selected_authorizator_class)
-
-            # obtain configuration and instantiate Authorizator
-            selected_authorizator_config = crud.get_setting_by_name(
-                name=selected_authorizator_class
-            )
-            try:
-                authorizator = FactoryClass.get_authorizator_from_config(
-                    selected_authorizator_config["value"]
+        # if no authorizator is saved, use default one and save to db
+        if selected_authorizator is None:
+            # create the auth settings
+            crud.upsert_setting_by_name(
+                models.Setting(
+                    name="AuthorizatorNoAuthConfig",
+                    category="authorizator_factory",
+                    value={}
                 )
-            except AttributeError as e:
-                import traceback
+            )
+            crud.upsert_setting_by_name(
+                models.Setting(
+                    name="authorizator_selected",
+                    category="authorizator_factory",
+                    value={"name": "AuthorizatorNoAuthConfig"}
+                )
+            )
 
-                traceback.print_exc()
-                authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({}) # TODOAUTH should be default auth
-        else:
-            authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({}) # TODOAUTH should be default auth
+            # reload from db
+            selected_authorizator = crud.get_setting_by_name(name="authorizator_selected")
+
+        # get Authorizator factory class
+        selected_authorizator_class = selected_authorizator["value"]["name"]
+        FactoryClass = get_authorizator_from_name(selected_authorizator_class)
+
+        # obtain configuration and instantiate Authorizator
+        selected_authorizator_config = crud.get_setting_by_name(
+            name=selected_authorizator_class
+        )
+        try:
+            authorizator = FactoryClass.get_authorizator_from_config(
+                selected_authorizator_config["value"]
+            )
+        except AttributeError as e:
+            import traceback
+
+            traceback.print_exc()
+            authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({})
         
         self.authorizator = authorizator
 
