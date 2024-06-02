@@ -53,7 +53,7 @@ class VectorMemory:
         db_path = "cat/data/local_vector_memory/"
         qdrant_host = get_env("CCAT_QDRANT_HOST")
 
-        if len(qdrant_host) == 0:
+        if not qdrant_host:
             log.info(f"Qdrant path: {db_path}")
             # Qdrant local vector DB client
 

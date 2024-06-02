@@ -2,6 +2,7 @@ import os
 import pytest
 from tests.utils import send_websocket_message
 
+
 @pytest.fixture
 def secure_client(client):
     # set CCAT_API_KEY
@@ -15,7 +16,7 @@ def test_api_key_http(secure_client):
     # forbid access if no CCAT_API_KEY is provided
     response = secure_client.get("/")
     assert response.status_code == 403
-    assert response.json()["detail"]["error"] == "Invalid API Key"
+    assert response.json()["detail"]["error"] == "Invalid Credentials"
 
     # forbid access if CCAT_API_KEY is wrong
     headers = {
@@ -23,7 +24,7 @@ def test_api_key_http(secure_client):
     }
     response = secure_client.get("/", headers=headers)
     assert response.status_code == 403
-    assert response.json()["detail"]["error"] == "Invalid API Key"
+    assert response.json()["detail"]["error"] == "Invalid Credentials"
 
     # allow access if CCAT_API_KEY is right
     headers = {
