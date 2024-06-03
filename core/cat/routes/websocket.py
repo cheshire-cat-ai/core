@@ -24,9 +24,10 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
         await run_in_threadpool(stray.run, user_message)
 
 
+# TODOAUTH: ws has no headers https://stackoverflow.com/a/77060459
 @router.websocket("/ws")
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"): # TODOAUTH: does ws connection support headers?
+async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """

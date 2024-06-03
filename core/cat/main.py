@@ -10,9 +10,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
-from cat.routes import base, settings, llm, embedder, memory, plugins, upload, websocket, authorizator
+from cat.routes import (
+    base, settings,
+    llm, embedder, authorizator,
+    memory, plugins, upload,
+    websocket, auth
+)
 from cat.routes.static import public, admin, static
-from cat.headers import http_auth, ws_auth
+from cat.auth.headers import http_auth, ws_auth
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat 
 
@@ -67,6 +72,7 @@ cheshire_cat_api.add_middleware(
 
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth") # endpoint to get JWT, no Depends
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(http_auth)])
 cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(http_auth)])
 cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(http_auth)])

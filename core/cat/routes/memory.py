@@ -1,6 +1,7 @@
 from typing import Dict
-from cat.headers import session
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
+
+from cat.auth.headers import session
 
 router = APIRouter()
 
