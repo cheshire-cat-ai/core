@@ -1,0 +1,27 @@
+{
+    "name": "dev-cheshire-cat-core",
+    "customizations": {
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": { 
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
+				"python.formatting.blackPath": "/usr/local/py-utils/bin/black",
+				"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf"
+			},
+			
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.debugpy",
+				"ms-python.pylint"
+				
+			]
+		}
+    },
+	"dockerComposeFile": ["docker-compose.yml"],
+	"workspaceFolder": "/app",
+	"postStartCommand": "python3 /app/install_plugin_dependencies.py",
+	"service": "dev-cheshire-cat-core"	
+}

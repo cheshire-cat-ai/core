@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+
+  dev-cheshire-cat-core:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ../../core
+    container_name: dev-cheshire_cat_core
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=true
+      - CORE_HOST=${CORE_HOST:-localhost}
+      - CORE_PORT=${CORE_PORT:-1865}
+      - CORE_USE_SECURE_PROTOCOLS=${CORE_USE_SECURE_PROTOCOLS:-}
+      - API_KEY=${API_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DEBUG=${DEBUG:-true}
+      - SAVE_MEMORY_SNAPSHOTS=${SAVE_MEMORY_SNAPSHOTS:-false}
+    ports:
+      - ${CORE_PORT:-1865}:80
+      - ${DEBUG_PORT:-5678}:5678
+    volumes:
+      - ../../core:/app
+    command:
+      - sleep
+      - infinity
+    restart: unless-stopped
