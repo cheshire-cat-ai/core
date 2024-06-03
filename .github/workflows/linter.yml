@@ -1,0 +1,32 @@
+name: Cheshire-Cat Linter Action
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+  
+
+jobs:
+  linter:
+    name: "Run linter"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: chartboost/ruff-action@v1
+  test:
+    needs: [ linter ]
+    name: "Run Tests"
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cat up
+        run: docker-compose up -d
+      - name: Test
+        run: docker exec cheshire_cat_core python -m pytest --color=yes .
+      - name: Cat down
+        run: docker-compose down
