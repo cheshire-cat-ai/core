@@ -48,6 +48,7 @@ dependencies = [
     "fastembed==0.2.2",
     "rapidfuzz==3.6.1",
     "APScheduler==3.10.4",
+    "ruff==0.4.7",
 ]
 
 [tool.coverage.run]
