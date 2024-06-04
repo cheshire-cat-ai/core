@@ -2,7 +2,7 @@ from os import getenv
 from typing import Type
 from cat.log import log
 from pydantic import BaseModel, ConfigDict
-from cat.factory.custom_authorizator import BaseAuth, AuthorizatorNoAuth, AuthorizatorApiKey
+from cat.factory.custom_authorizator import BaseAuth, AuthEnvironmentVariables, AuthApiKey
 from cat.mad_hatter.mad_hatter import MadHatter
 
 class AuthorizatorSettings(BaseModel):
@@ -16,8 +16,8 @@ class AuthorizatorSettings(BaseModel):
             )
         return cls._pyclass.default(**config)
 
-class AuthorizatorNoAuthConfig(AuthorizatorSettings):
-    _pyclass: Type = AuthorizatorNoAuth
+class AuthEnvironmentVariablesConfig(AuthorizatorSettings):
+    _pyclass: Type = AuthEnvironmentVariables
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -27,9 +27,9 @@ class AuthorizatorNoAuthConfig(AuthorizatorSettings):
         }
     )
 
-class AuthorizatorApiKeyConfig(AuthorizatorSettings):
+class AuthApiKeyConfig(AuthorizatorSettings):
     api_key: str
-    _pyclass: Type = AuthorizatorApiKey
+    _pyclass: Type = AuthApiKey
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -41,8 +41,8 @@ class AuthorizatorApiKeyConfig(AuthorizatorSettings):
 
 def get_allowed_authorizator_strategies():
     list_authorizator_default = [
-        AuthorizatorNoAuthConfig,
-        AuthorizatorApiKeyConfig,
+        AuthEnvironmentVariablesConfig,
+        AuthApiKeyConfig,
     ]
 
     mad_hatter_instance = MadHatter()

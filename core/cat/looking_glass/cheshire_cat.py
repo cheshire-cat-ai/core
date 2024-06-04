@@ -16,6 +16,7 @@ from cat.factory.embedder import get_embedder_from_name
 from cat.factory.authorizator import AuthorizatorSettings, get_authorizator_from_name
 import cat.factory.embedder as embedders
 import cat.factory.authorizator as authorizators
+from cat.factory.custom_authorizator import AuthorizatorCore
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
 from cat.looking_glass.agent_manager import AgentManager
@@ -62,7 +63,7 @@ class CheshireCat:
         # bootstrap the Cat! ^._.^
         
         # load Authorizator
-        self.load_authorizator()
+        self.load_auth()
 
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
@@ -230,10 +231,13 @@ class CheshireCat:
 
         return embedder
 
-    def load_authorizator(self):
-        """Load the authorizator."""
+    def load_auth(self):
+        """Load auth systems."""
 
-        # Authorizator
+        # Admin panel auth (internal, not customizable)
+        self.core_auth = AuthorizatorCore()
+
+        # Custom authorizator # TODOAUTH: change the name to custom_auth
         selected_authorizator = crud.get_setting_by_name(name="authorizator_selected")
 
         # if no authorizator is saved, use default one and save to db
@@ -241,7 +245,7 @@ class CheshireCat:
             # create the auth settings
             crud.upsert_setting_by_name(
                 models.Setting(
-                    name="AuthorizatorNoAuthConfig",
+                    name="AuthEnvironmentVariablesConfig",
                     category="authorizator_factory",
                     value={}
                 )
@@ -250,7 +254,7 @@ class CheshireCat:
                 models.Setting(
                     name="authorizator_selected",
                     category="authorizator_factory",
-                    value={"name": "AuthorizatorNoAuthConfig"}
+                    value={"name": "AuthEnvironmentVariablesConfig"}
                 )
             )
 
@@ -273,7 +277,7 @@ class CheshireCat:
             import traceback
 
             traceback.print_exc()
-            authorizator = authorizators.AuthorizatorNoAuthConfig.get_authorizator_from_config({})
+            authorizator = authorizators.AuthEnvironmentVariablesConfig.get_authorizator_from_config({})
         
         self.authorizator = authorizator
 

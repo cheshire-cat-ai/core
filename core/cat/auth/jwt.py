@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # TODOAUTH: use CCAT_API_KEY?
 SECRET_KEY = "sfdjgnsiobesiubib54ku3vku6v553kuv6uv354uvk5yuvtku5"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 1 # TODOAUTH find reasonable expire
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 # TODOAUTH find reasonable expire
 
 
 def create_access_token(data: dict):

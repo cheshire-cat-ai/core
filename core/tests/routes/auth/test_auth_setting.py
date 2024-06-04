@@ -21,7 +21,7 @@ def test_get_all_authorizator_settings(client):
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
     # automatically selected authorizator
-    assert json["selected_configuration"] == "AuthorizatorNoAuthConfig"
+    assert json["selected_configuration"] == "AuthEnvironmentVariablesConfig"
 
 
 def test_get_authorizator_settings_non_existent(client):
@@ -36,7 +36,7 @@ def test_get_authorizator_settings_non_existent(client):
 
 def test_get_authorizator_settings(client):
 
-    authorizator_name = "AuthorizatorNoAuthConfig"
+    authorizator_name = "AuthEnvironmentVariablesConfig"
     response = client.get(f"/authorizator/settings/{authorizator_name}")
     json = response.json()
 
@@ -50,7 +50,7 @@ def test_get_authorizator_settings(client):
 def test_upsert_authorizator_settings(client):
     
     # set a different authorizator from default one (same class different size # TODO: have another fake/test authorizator class)
-    new_authorizator = "AuthorizatorApiKeyConfig"
+    new_authorizator = "AuthApiKeyConfig"
     authorizator_config = {
         "api_key": "meow"
     }

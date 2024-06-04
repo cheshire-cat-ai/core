@@ -15,7 +15,7 @@ from cat.log import log
 
 def ws_auth(
     websocket: WebSocket,
-    ) -> None | str:
+    ) -> None | str: # TODOAUTH: return stray?
     """Authenticate websocket connection.
 
     Parameters
@@ -35,14 +35,18 @@ def ws_auth(
 
     """
 
-    authorizator = websocket.app.state.ccat.authorizator
-    if not authorizator._is_ws_allowed(websocket):
-        raise HTTPException( # TODOAUTH: ws has no status code?
+    ccat = websocket.app.state.ccat
+
+    # Internal auth or custom auth must return True
+    allowed = ccat.core_auth.is_ws_allowed(websocket) or ccat.authorizator.is_ws_allowed(websocket)
+    if not allowed:
+        raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-        )
+    )
+
     
-def http_auth(request: Request) -> bool:
+def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
     """Authenticate endpoint.
 
     Check the provided key is available in API keys list.
@@ -64,12 +68,15 @@ def http_auth(request: Request) -> bool:
 
     """
 
-    authorizator = request.app.state.ccat.authorizator
-    if not authorizator._is_http_allowed(request):
+    ccat = request.app.state.ccat
+
+    # Internal auth or custom auth must return True
+    allowed = ccat.core_auth.is_http_allowed(request) or ccat.authorizator.is_http_allowed(request)
+    if not allowed:
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-        )
+    )
 
 
 # get or create session (StrayCat)

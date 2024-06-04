@@ -1,7 +1,7 @@
 import traceback
 import asyncio
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
@@ -24,15 +24,28 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
         await run_in_threadpool(stray.run, user_message)
 
 
-# TODOAUTH: ws has no headers https://stackoverflow.com/a/77060459
 @router.websocket("/ws")
 @router.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str = "user"):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user_id: str = "user",
+    token: str | None = None):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
 
+    #log.critical(user_id)
+    #log.warning(access_token)
+
     # Retrieve the `ccat` instance from the application's state.
+    #ccat = websocket.app.state.ccat
+
+    # check token
+    #if not ccat.authorizator._is_ws_allowed(websocket):
+    #    await websocket.close(code=1004, reason="Invalid Credentials")
+    #    return
+
+    # Retrieve sessions
     strays = websocket.app.state.strays
 
     # Skip the coroutine if the same user is already connected via WebSocket.

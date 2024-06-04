@@ -42,3 +42,6 @@ def test_api_key_ws(secure_client):
     mex = {"text": "Where do I go?"}
     res = send_websocket_message(mex, secure_client)
     assert "You did not configure" in res["content"]
+
+
+# TODOAUTH: test websocket CCAT_API_KEY_WS
