@@ -5,7 +5,7 @@ from fastapi import (
     WebSocket,
     Request,
 )
-from fastapi import Security, HTTPException
+from fastapi import Security, HTTPException, WebSocketException
 from fastapi.security.api_key import APIKeyHeader
 
 from cat.looking_glass.stray_cat import StrayCat
@@ -42,9 +42,10 @@ async def ws_auth(
     # Internal auth or custom auth must return True
     allowed = ccat.core_auth.is_ws_allowed(websocket) or ccat.authorizator.is_ws_allowed(websocket)
     if not allowed:
-        await websocket.close(code=1004, reason="Invalid Credentials")
-        del strays[user_id] # # TODOAUTH not sure
-        return
+        raise WebSocketException(
+            code=1004,
+            reason="Invalid Credentials"
+        )
 
     
 def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
@@ -77,7 +78,7 @@ def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-        )  
+        )
 
 
 # get or create session (StrayCat)
