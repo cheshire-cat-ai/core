@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
-from cat.headers import session
+from cat.auth.headers import session
 from cat.log import log
 
 router = APIRouter()

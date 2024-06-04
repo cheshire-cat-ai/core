@@ -13,9 +13,10 @@ from cat.env import get_env
 from cat.log import log
 
 
-def ws_auth(
+async def ws_auth(
     websocket: WebSocket,
-    ) -> None | str:
+    user_id="user",
+    ) -> None | str: # TODOAUTH: return stray?
     """Authenticate websocket connection.
 
     Parameters
@@ -30,19 +31,23 @@ def ws_auth(
 
     Raises
     ------
-    HTTPException
-        Error with status code `403` if the message is not allowed. # TODOAUTH: ws has no status code
+    WebsocketDisconnect
+        Websocket disconnection
 
     """
 
-    authorizator = websocket.app.state.ccat.authorizator
-    if not authorizator._is_ws_allowed(websocket):
-        raise HTTPException( # TODOAUTH: ws has no status code?
-            status_code=403,
-            detail={"error": "Invalid Credentials"}
-        )
+    ccat = websocket.app.state.ccat
+    strays = websocket.app.state.strays
+
+    # Internal auth or custom auth must return True
+    allowed = ccat.core_auth.is_ws_allowed(websocket) or ccat.authorizator.is_ws_allowed(websocket)
+    if not allowed:
+        await websocket.close(code=1004, reason="Invalid Credentials")
+        del strays[user_id] # # TODOAUTH not sure
+        return
+
     
-def http_auth(request: Request) -> bool:
+def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
     """Authenticate endpoint.
 
     Check the provided key is available in API keys list.
@@ -64,12 +69,15 @@ def http_auth(request: Request) -> bool:
 
     """
 
-    authorizator = request.app.state.ccat.authorizator
-    if not authorizator._is_http_allowed(request):
+    ccat = request.app.state.ccat
+
+    # Internal auth or custom auth must return True
+    allowed = ccat.core_auth.is_http_allowed(request) or ccat.authorizator.is_http_allowed(request)
+    if not allowed:
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-        )
+        )  
 
 
 # get or create session (StrayCat)

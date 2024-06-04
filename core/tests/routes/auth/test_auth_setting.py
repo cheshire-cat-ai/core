@@ -21,7 +21,7 @@ def test_get_all_authorizator_settings(client):
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
     # automatically selected authorizator
-    assert json["selected_configuration"] == "AuthorizatorNoAuthConfig"
+    assert json["selected_configuration"] == "AuthEnvironmentVariablesConfig"
 
 
 def test_get_authorizator_settings_non_existent(client):
@@ -36,7 +36,7 @@ def test_get_authorizator_settings_non_existent(client):
 
 def test_get_authorizator_settings(client):
 
-    authorizator_name = "AuthorizatorNoAuthConfig"
+    authorizator_name = "AuthEnvironmentVariablesConfig"
     response = client.get(f"/authorizator/settings/{authorizator_name}")
     json = response.json()
 
@@ -48,11 +48,12 @@ def test_get_authorizator_settings(client):
 
 
 def test_upsert_authorizator_settings(client):
-    
+
     # set a different authorizator from default one (same class different size # TODO: have another fake/test authorizator class)
-    new_authorizator = "AuthorizatorApiKeyConfig"
+    new_authorizator = "AuthApiKeyConfig"
     authorizator_config = {
-        "api_key": "meow"
+        "api_key_http": "meow_http",
+        "api_key_ws": "meow_ws",
     }
     response = client.put(f"/authorizator/settings/{new_authorizator}", json=authorizator_config)
     json = response.json()
@@ -62,16 +63,16 @@ def test_upsert_authorizator_settings(client):
     assert json["name"] == new_authorizator
 
     # Retrieve all authorizators settings to check if it was saved in DB
-    
-    ## We are now force to use api_key, otherwise we don't get in
+
+    ## We are now forced to use api_key, otherwise we don't get in
     response = client.get("/authorizator/settings")
     json = response.json()
     assert response.status_code == 403
     assert response.json()["detail"]["error"] == "Invalid Credentials"
 
-    ## let's use the configured api_key
+    ## let's use the configured api_key for http
     headers = {
-        "Authorization": "meow"
+        "access_token": "meow_http"
     }
     response = client.get("/authorizator/settings", headers=headers)
     json = response.json()

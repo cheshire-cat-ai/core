@@ -107,7 +107,7 @@ def upsert_authenticator_setting(
         )
     )
 
-    request.app.state.ccat.load_authorizator()
+    request.app.state.ccat.load_auth()
 
     return {
         "name"  : authorizator_name,

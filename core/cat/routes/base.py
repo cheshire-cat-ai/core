@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, Body, Query
 from typing import Dict
 import tomli
-from cat.headers import session
+from cat.auth.headers import session
 
 from cat.convo.messages import CatMessage
 

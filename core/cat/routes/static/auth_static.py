@@ -1,6 +1,6 @@
 from fastapi.staticfiles import StaticFiles
 from fastapi import Request
-from cat.headers import http_auth
+from cat.auth.headers import http_auth
 
 class AuthStatic(StaticFiles):
     def __init__(self, *args, **kwargs) -> None:
