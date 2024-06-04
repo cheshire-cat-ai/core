@@ -29,21 +29,14 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
 async def websocket_endpoint(
     websocket: WebSocket,
     user_id: str = "user",
-    token: str | None = None):
+    token: str | None = None,
+    access_token: str | None = None
+    # other query params can be added (i.e. for custom auth)
+    #  and they will be stored in websocket.query_params
+):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
-
-    #log.critical(user_id)
-    #log.warning(access_token)
-
-    # Retrieve the `ccat` instance from the application's state.
-    #ccat = websocket.app.state.ccat
-
-    # check token
-    #if not ccat.authorizator._is_ws_allowed(websocket):
-    #    await websocket.close(code=1004, reason="Invalid Credentials")
-    #    return
 
     # Retrieve sessions
     strays = websocket.app.state.strays

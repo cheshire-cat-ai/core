@@ -1,11 +1,15 @@
 import os
 import shutil
-
+from urllib.parse import urlencode
 
 # utility function to communicate with the cat via websocket
-def send_websocket_message(msg, client, user_id="user"):
+def send_websocket_message(msg, client, user_id="user", query_params=None):
 
-    with client.websocket_connect(f"/ws/{user_id}") as websocket:
+    url = f"/ws/{user_id}"
+    if query_params:
+        url += "?" + urlencode(query_params)
+
+    with client.websocket_connect(url) as websocket:
         # sed ws message
         websocket.send_json(msg)
         # get reply

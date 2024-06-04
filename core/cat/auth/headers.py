@@ -13,8 +13,9 @@ from cat.env import get_env
 from cat.log import log
 
 
-def ws_auth(
+async def ws_auth(
     websocket: WebSocket,
+    user_id="user",
     ) -> None | str: # TODOAUTH: return stray?
     """Authenticate websocket connection.
 
@@ -30,20 +31,20 @@ def ws_auth(
 
     Raises
     ------
-    HTTPException
-        Error with status code `403` if the message is not allowed. # TODOAUTH: ws has no status code
+    WebsocketDisconnect
+        Websocket disconnection
 
     """
 
     ccat = websocket.app.state.ccat
+    strays = websocket.app.state.strays
 
     # Internal auth or custom auth must return True
     allowed = ccat.core_auth.is_ws_allowed(websocket) or ccat.authorizator.is_ws_allowed(websocket)
     if not allowed:
-        raise HTTPException(
-            status_code=403,
-            detail={"error": "Invalid Credentials"}
-    )
+        await websocket.close(code=1004, reason="Invalid Credentials")
+        del strays[user_id] # # TODOAUTH not sure
+        return
 
     
 def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
@@ -76,7 +77,7 @@ def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-    )
+        )  
 
 
 # get or create session (StrayCat)

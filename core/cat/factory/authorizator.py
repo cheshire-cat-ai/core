@@ -28,7 +28,8 @@ class AuthEnvironmentVariablesConfig(AuthorizatorSettings):
     )
 
 class AuthApiKeyConfig(AuthorizatorSettings):
-    api_key: str
+    api_key_http: str
+    api_key_ws: str
     _pyclass: Type = AuthApiKey
 
     model_config = ConfigDict(
