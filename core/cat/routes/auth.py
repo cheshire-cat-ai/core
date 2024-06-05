@@ -2,9 +2,13 @@
 from typing import Dict
 import asyncio
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, Request, Body, Query, HTTPException
 
-from cat.auth.jwt import create_access_token
+from fastapi import APIRouter, Depends, Request, Body, Query, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
+
+#from cat.auth.jwt import create_access_token
+from cat.factory.custom_auth_handler import BaseAuthHandler
+
 from cat.log import log
 
 router = APIRouter()
@@ -17,6 +21,7 @@ class JWTResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+"""
 @router.post("/token")
 async def get_access_token(creds: UserCredentials):
 
@@ -35,3 +40,86 @@ async def get_access_token(creds: UserCredentials):
                 "error": f"Invalid Credentials"
             }
         )
+"""
+
+
+
+#from fastapi import Depends
+#from fastapi.security import OAuth2AuthorizationCodeBearer
+
+#oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    # ???
+#    authorizationUrl="http://localhost:8080/realms/gatto/protocol/openid-connect/auth",
+    # The URL to obtain the OAuth2 token
+#    tokenUrl="http://localhost:8080/realms/gatto/protocol/openid-connect/token",
+    # Where to obtain a new token
+#    refreshUrl="",
+#    scheme_name="OAuth2 for da Cat",
+#    auto_error=True,
+#)
+
+
+#async def get_stray(token: str = Depends(auth_handler.oauth2_scheme)):
+    # if token is None, it means that the Authorization header is not present
+    # otherwise you get the token itself
+#    log.warning(token)
+#    return {"user": 42}
+
+#@router.get("")
+#async def prova(stray: dict = Depends(get_stray)):
+#    return stray
+
+
+@router.get("/core_login")
+async def auth_index(request: Request):
+
+    return HTMLResponse("""
+<form action="/auth/token" method="POST">
+    <h1>^._.^</h1>
+    <h3>Enjoy this top notch login form design.</h3>
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <button type="submit">Login</button>
+    </div>
+</form>
+""")
+
+
+@router.get("/login")
+async def auth_login(request: Request):
+
+    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
+
+    # Redirect the browser to the identity provider's authorization page
+    return RedirectResponse(
+        url = await auth_handler.get_full_authorization_url(request)
+    )
+
+# TODOAUTH /logout
+
+@router.post("/token")
+async def auth_token(request: Request):
+
+    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
+
+    # use code sent by Identity Provider to get access token
+    #  or, if using implicit OAuth2, just get the token
+    access_token = await auth_handler.get_token_from_identity_provider(request)
+
+    log.warning(access_token)
+    token_data = await auth_handler.verify_token(access_token)
+    log.warning(token_data)
+
+    return RedirectResponse(
+        url = f"/admin#{access_token}",
+        status_code=302
+    )
+
+

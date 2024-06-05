@@ -40,15 +40,15 @@ async def ws_auth(
     strays = websocket.app.state.strays
 
     # Internal auth or custom auth must return True
-    allowed = ccat.core_auth.is_ws_allowed(websocket) or ccat.authorizator.is_ws_allowed(websocket)
+    allowed = await ccat.auth_handler._is_ws_allowed(websocket)
     if not allowed:
         raise WebSocketException(
             code=1004,
             reason="Invalid Credentials"
         )
 
-    
-def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
+
+async def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
     """Authenticate endpoint.
 
     Check the provided key is available in API keys list.
@@ -73,12 +73,57 @@ def http_auth(request: Request) -> bool: # TODOAUTH: return stray?
     ccat = request.app.state.ccat
 
     # Internal auth or custom auth must return True
-    allowed = ccat.core_auth.is_http_allowed(request) or ccat.authorizator.is_http_allowed(request)
+    allowed = await ccat.auth_handler._is_http_allowed(request)
     if not allowed:
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
         )
+
+
+async def browser_auth(request: Request) -> bool: # TODOAUTH: return stray?
+    """Authenticate the admin with access token.
+
+    Parameters
+    ----------
+    request : Request
+        HTTP request.
+
+    Returns
+    -------
+    None
+        Does not raise an exception if the request is allowed.
+
+    Raises
+    ------
+    HTTPException
+        Error with status code `403` if the request is not allowed.
+
+    """
+
+    log.warning(request.query_params)
+
+    token = request.query_params.get("access_token")
+    if token:
+        ccat = request.app.state.ccat
+
+        # Internal auth or custom auth must return True
+        allowed = await ccat.auth_handler.verify_token(token)
+        if not allowed:
+            raise HTTPException(
+            status_code=307,
+            headers={
+                "Location": "/auth/login"
+            }
+        )
+
+    # no token or invalid token, redirect to login
+    #raise HTTPException(
+    #    status_code=307,
+    #    headers={
+    #        "Location": "/auth/login"
+    #    }
+    #)
 
 
 # get or create session (StrayCat)

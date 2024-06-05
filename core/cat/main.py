@@ -12,7 +12,7 @@ from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
 from cat.routes import (
     base, settings,
-    llm, embedder, authorizator,
+    llm, embedder, auth_handler,
     memory, plugins, upload,
     websocket, auth
 )
@@ -79,15 +79,14 @@ cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/emb
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(http_auth)])
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(http_auth)])
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(authorizator.router, tags=["Authorizator"], prefix="/authorizator", dependencies=[Depends(http_auth)])
+cheshire_cat_api.include_router(auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler", dependencies=[Depends(http_auth)])
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"], dependencies=[Depends(ws_auth)])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
 # https://github.com/tiangolo/fastapi/discussions/9070
-# admin single page app
-admin.mount_admin_spa(cheshire_cat_api)
-# admin (static build)
+
+# admin single page app (static build)
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)
 static.mount(cheshire_cat_api)

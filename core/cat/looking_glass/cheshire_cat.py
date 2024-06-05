@@ -2,6 +2,8 @@ import time
 from typing import List, Dict
 from typing_extensions import Protocol
 
+from fastapi import Request
+
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -10,13 +12,13 @@ from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from cat.factory.auth_handler import get_auth_handler_from_name
+import cat.factory.auth_handler as auth_handlers
+from cat.factory.custom_auth_handler import CoreAuthHandler
 from cat.db import crud, models
 from cat.factory.custom_llm import CustomOpenAI
 from cat.factory.embedder import get_embedder_from_name
-from cat.factory.authorizator import AuthorizatorSettings, get_authorizator_from_name
 import cat.factory.embedder as embedders
-import cat.factory.authorizator as authorizators
-from cat.factory.custom_authorizator import AuthCore
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
 from cat.looking_glass.agent_manager import AgentManager
@@ -26,7 +28,6 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
-from fastapi import Request
 
 
 class Procedure(Protocol):
@@ -62,7 +63,7 @@ class CheshireCat:
         
         # bootstrap the Cat! ^._.^
         
-        # load Authorizator
+        # load AuthHandler
         self.load_auth()
 
         # Start scheduling system
@@ -235,51 +236,54 @@ class CheshireCat:
         """Load auth systems."""
 
         # Admin panel auth (internal, not customizable)
-        self.core_auth = AuthCore()
+        self.core_auth = CoreAuthHandler()
 
-        # Custom authorizator # TODOAUTH: change the name to custom_auth
-        selected_authorizator = crud.get_setting_by_name(name="authorizator_selected")
+        # Custom auth_handler # TODOAUTH: change the name to custom_auth
+        selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
 
-        # if no authorizator is saved, use default one and save to db
-        if selected_authorizator is None:
+        # if no auth_handler is saved, use default one and save to db
+        if selected_auth_handler is None:
             # create the auth settings
             crud.upsert_setting_by_name(
                 models.Setting(
                     name="AuthEnvironmentVariablesConfig",
-                    category="authorizator_factory",
+                    category="auth_handler_factory",
                     value={}
                 )
             )
             crud.upsert_setting_by_name(
                 models.Setting(
-                    name="authorizator_selected",
-                    category="authorizator_factory",
+                    name="auth_handler_selected",
+                    category="auth_handler_factory",
                     value={"name": "AuthEnvironmentVariablesConfig"}
                 )
             )
 
             # reload from db
-            selected_authorizator = crud.get_setting_by_name(name="authorizator_selected")
+            selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
 
-        # get Authorizator factory class
-        selected_authorizator_class = selected_authorizator["value"]["name"]
-        FactoryClass = get_authorizator_from_name(selected_authorizator_class)
+        # get AuthHandler factory class
+        selected_auth_handler_class = selected_auth_handler["value"]["name"]
+        FactoryClass = get_auth_handler_from_name(selected_auth_handler_class)
 
-        # obtain configuration and instantiate Authorizator
-        selected_authorizator_config = crud.get_setting_by_name(
-            name=selected_authorizator_class
+        # obtain configuration and instantiate AuthHandler
+        selected_auth_handler_config = crud.get_setting_by_name(
+            name=selected_auth_handler_class
         )
         try:
-            authorizator = FactoryClass.get_authorizator_from_config(
-                selected_authorizator_config["value"]
+            auth_handler = FactoryClass.get_auth_handler_from_config(
+                selected_auth_handler_config["value"]
             )
         except AttributeError as e:
             import traceback
 
             traceback.print_exc()
-            authorizator = authorizators.AuthEnvironmentVariablesConfig.get_authorizator_from_config({})
+
+             # TODOAUTH: use Default
+            auth_handler = \
+                auth_handlers.CoreAuthHandlerConfig.get_auth_handler_from_config({})
         
-        self.authorizator = authorizator
+        self.auth_handler = auth_handler
 
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""

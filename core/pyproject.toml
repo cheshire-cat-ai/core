@@ -35,6 +35,9 @@ dependencies = [
     "text_generation==0.6.1",
     "tinydb==4.8.0",
     "python-slugify==8.0.1",
+
+    "python-keycloak==4.0.0",
+
     "autopep8",
     "pylint",
     "perflint",
