@@ -2,6 +2,7 @@ import time
 import asyncio
 import traceback
 from typing import Literal, get_args, List, Dict, Union, Any
+from collections.abc import Iterable
 
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -17,7 +18,7 @@ from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
+MEMORY_COLLECTION = Literal["episodic", "declarative", "procedural"]
 
 # The Stray cat goes around tools and hook, making troubles
 class StrayCat:
@@ -155,6 +156,40 @@ class StrayCat:
                     }
 
         self.__send_ws_json(error_message)
+
+    def recall(
+            self,
+            query: str | List[float],
+            k: int | None = 5,
+            threshold: int | None = None,
+            metadata: dict | None = None,
+            collections: Iterable[MEMORY_COLLECTION] | None = None,
+            override_working_memory: bool = False
+            ):
+
+        if isinstance(query, str):
+            query = self.embedder.embed_query(query)
+
+        if collections:
+            memory_collections = get_args(MEMORY_COLLECTION)
+            collections_not_allowed = [c for c in collections if c not in memory_collections]
+            if any(collections_not_allowed):
+                raise ValueError(
+                    f"Collections not allowed: {', '.join(collections_not_allowed)}. Collections should be any of {', '.join(memory_collections)}")
+        else:
+            collections = self.memory.vectors.collections.keys()
+
+        for collection in collections:
+            vector_memory = getattr(self.memory.vectors, collection)
+            if k:
+                memories = vector_memory.recall_memories_from_embedding(
+                    query, metadata, k, threshold
+                )
+                if override_working_memory:
+                    memory_key = f"{collection}_memories"
+                    setattr(self.working_memory, memory_key, memories)
+            else:
+                memories = vector_memory.get_all_points()
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
