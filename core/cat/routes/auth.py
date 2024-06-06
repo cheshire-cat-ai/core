@@ -102,7 +102,7 @@ async def auth_login(request: Request):
         url = await auth_handler.get_full_authorization_url(request)
     )
 
-# TODOAUTH /logout
+# TODOAUTH /logout endpoint
 
 @router.post("/token")
 async def auth_token(request: Request):
@@ -113,13 +113,19 @@ async def auth_token(request: Request):
     #  or, if using implicit OAuth2, just get the token
     access_token = await auth_handler.get_token_from_identity_provider(request)
 
-    log.warning(access_token)
-    token_data = await auth_handler.verify_token(access_token)
-    log.warning(token_data)
 
+    if access_token:
+        # verify token (not necessary) #TODOAUTH take away?
+        #token_data = await auth_handler.get_user_info_from_token(access_token)
+        
+        return RedirectResponse(
+            url = f"/admin?access_token={access_token}",
+            status_code=302
+        )
+    
+    # Redirect the browser to the identity provider's authorization page
     return RedirectResponse(
-        url = f"/admin#{access_token}",
-        status_code=302
+        url = await auth_handler.get_full_authorization_url(request)
     )
 
 

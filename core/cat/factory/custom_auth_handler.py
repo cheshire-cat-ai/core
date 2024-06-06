@@ -18,6 +18,24 @@ from cat.env import get_env
 from cat.log import log
 
 
+class AuthUserInfo(BaseModel):
+    """
+    Class to represent token content after the token has been decoded.
+    Will be creted by AuthHandler(s) to standardize their output.
+    Core will use this object to retrieve or create a StrayCat (session)
+    """
+
+    # user_id, used to retrieve or create a StrayCat
+    user_id: str
+
+    # only put in here what you are comfortable to pass plugins:
+    # - profile data
+    # - custom attributes
+    # - roles
+    # - permissions
+    user_data: dict
+
+
 class BaseAuthHandler(ABC): # TODOAUTH: pydantic model?
     """
     Base class to build custom Auth systems that will live alongside core auth.
@@ -39,7 +57,7 @@ class BaseAuthHandler(ABC): # TODOAUTH: pydantic model?
             # env is set, must be same as header `access_token`
             env_key_is_correct = request.headers.get("access_token") == environment_api_key
         
-        return env_key_is_correct and self.is_http_allowed(request)
+        return env_key_is_correct and (await self.is_http_allowed(request))
 
     async def _is_ws_allowed(self, websocket: WebSocket):
 
@@ -55,7 +73,7 @@ class BaseAuthHandler(ABC): # TODOAUTH: pydantic model?
             # env is set, must be same as query param `access_token`
             env_key_is_correct = websocket.query_params.get("access_token") == environment_api_key
         
-        return env_key_is_correct and self.is_ws_allowed(websocket)
+        return env_key_is_correct and (await self.is_ws_allowed(websocket))
     
 
     @abstractmethod
@@ -65,6 +83,8 @@ class BaseAuthHandler(ABC): # TODOAUTH: pydantic model?
     @abstractmethod
     async def is_ws_allowed(self, websocket: WebSocket):
         pass
+
+    # TODOAUTH: all other abstract methods
 
 
 # Internal Auth, used as a standard for the admin panel and other community clients.
@@ -76,54 +96,72 @@ class CoreAuthHandler(BaseAuthHandler):
     algorithm = "HS256"
     access_token_expire_minutes = 30
 
-    async def get_full_authorization_url(self, request: Request):
+
+    async def get_full_authorization_url(self, request: Request) -> str:
 
         # Identity Provider login page
         auth_url = "http://localhost:1865/auth/core_login"
         return auth_url
     
 
-    async def get_token_from_identity_provider(self, request: Request):
+    async def get_token_from_identity_provider(self, request: Request) -> str | None:
 
         # when no external identity provider is present, core issues the token directly
         #  based on a key given in the admin # TODOAUTH
 
+        # get form data from submitted core login form (/auth/core_login)
         form_data = await request.form()
-        log.warning(form_data)
+
+        # check credentials
+        # TODOAUTH: where do we store admin user and pass?
+        if form_data["username"] == "admin" and form_data["password"] == "admin":
+            to_encode = dict(form_data).copy()
+            expire = datetime.utcnow() + timedelta(self.access_token_expire_minutes)
+            del to_encode["password"]
+            to_encode["exp"] = expire
+            # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
+
+            return jwt.encode(
+                to_encode,
+                self.secret_key,
+                algorithm=self.algorithm
+            )
+        
+        # could not obtain a token
+        return None
 
 
-        to_encode = dict(form_data).copy()
-        expire = datetime.utcnow() + timedelta(self.access_token_expire_minutes)
-        del to_encode["password"]
-        to_encode["exp"] = expire
-        # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
-
-        return jwt.encode(
-            to_encode,
-            self.secret_key,
-            algorithm=self.algorithm
-        )
-
-
-    async def verify_token(self, token: str) -> dict:
+    async def get_user_info_from_token(self, token: str) -> AuthUserInfo | None:
 
         try:
+            # decode token
             payload = jwt.decode(
                 token,
                 self.secret_key,
                 algorithms=[self.algorithm]
             )
-            return payload
-        except jwt.ExpiredSignatureError:
-            pass
-        except jwt.InvalidTokenError:
-            pass
+
+            # build a user info obj that core can understand
+            return AuthUserInfo(
+                user_id=payload["username"],
+                user_data=payload # TODOAUTH: maybe not the whole payload?
+            )
+        except Exception as e:
+            log.error("Could not decode JWT")
+
+        return None
+    
+
+    async def get_user_info_from_api_key(self, api_key: str, user_id: str) -> AuthUserInfo | None:
+
+        # build a user info obj that core can understand
+        return AuthUserInfo(
+            user_id=user_id,
+            user_data={}
+        )
 
 
-        #TODOAUTH: move exception out, this method should return be a simple boolean
-        raise HTTPException(status_code=403, detail="Token verification failed")
-
-    async def is_http_allowed(self, request: Request):
+    async def is_http_allowed(self, request: Request) -> bool:
 
         # check "Authorization" header
         auth_header = request.headers.get("Authorization")
@@ -132,13 +170,13 @@ class CoreAuthHandler(BaseAuthHandler):
         
         # verify token
         token = auth_header.split(" ")[1]
-        return await self.verify_token(token)
+        return await self.get_user_info_from_token(token)
 
-    async def is_ws_allowed(self, websocket: WebSocket):
-
+    async def is_ws_allowed(self, websocket: WebSocket) -> bool:
+        return True
         # verify token
-        token = websocket.query_params.get("token")
-        return await self.verify_token(token)
+        #token = websocket.query_params.get("token")
+        #return await self.get_user_info_from_token(token)
 
 
 class KeycloackAuthHandler(BaseAuthHandler):
@@ -213,7 +251,7 @@ class KeycloackAuthHandler(BaseAuthHandler):
             log.error("Error during code to token request")
             raise HTTPException(status_code=403, detail="Authorization token not granted from the Identity Provider")
     
-    async def verify_token(self, token: str) -> dict:
+    async def get_user_info_from_token(self, token: str) -> dict:
         try:
             token_info = self.keycloak_openid.introspect(token)
             if not token_info.get("active"):

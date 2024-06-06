@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi import Depends
 
-from cat.auth.headers import browser_auth
+from cat.auth.headers import admin_auth
 
 def mount(cheshire_cat_api):
 
@@ -21,7 +21,11 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/")
     @cheshire_cat_api.get("/admin/{page}")
     @cheshire_cat_api.get("/admin/{page}/")
-    def get_injected_admin(access_token: str = Depends(browser_auth)):
+    def get_injected_admin(stray: str = Depends(admin_auth)):
+
+        from cat.log import log
+        log.critical(stray)
+        print(stray)
 
         # the admin static build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue

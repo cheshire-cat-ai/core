@@ -27,6 +27,7 @@ class StrayCat:
             self,
             user_id: str,
             main_loop,
+            user_data: dict = {},
             ws: WebSocket = None,
         ):
         self.__user_id = user_id
@@ -38,6 +39,9 @@ class StrayCat:
         self.__main_loop = main_loop
 
         self.__loop = asyncio.new_event_loop()
+
+    def __repr__(self):
+        return f"StrayCat(user_id={self.user_id})"
 
     def __send_ws_json(self, data: Any):
             # Run the corutine in the main event loop in the main thread 
