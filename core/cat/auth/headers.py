@@ -116,15 +116,14 @@ async def http_auth(request: Request) -> None | StrayCat:
     else:
         # api_key (could be None).
         # check if api_key is correct
-        # we build AuthUserInfo manually (api_key contains no info on the user)
         user_id = request.headers.get("user_id", "user")
         user_info: AuthUserInfo = await auth_handler.get_user_info_from_api_key(credential, user_id)
 
-    if user_info and (await auth_handler._is_http_allowed(request)):
+    if user_info is None:
         # identity provider does not want this user to get in
         raise HTTPException(
             status_code=403,
-            detail={"error": "Forbidden resource"}
+            detail={"error": "Invalid Credentials"}
         )
 
 

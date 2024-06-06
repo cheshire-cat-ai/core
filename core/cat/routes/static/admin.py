@@ -23,9 +23,8 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/{page}/")
     def get_injected_admin(stray: str = Depends(admin_auth)):
 
-        from cat.log import log
-        log.critical(stray)
-        print(stray)
+        # TODOAUTH: what do we do with the stray here?
+        # TODOAUTH: stray should be a Depends in every endpoint
 
         # the admin static build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue

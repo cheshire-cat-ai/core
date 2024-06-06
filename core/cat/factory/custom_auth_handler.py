@@ -99,10 +99,10 @@ class CoreAuthHandler(BaseAuthHandler):
 
     async def get_full_authorization_url(self, request: Request) -> str:
 
-        # Identity Provider login page
-        auth_url = "http://localhost:1865/auth/core_login"
+        # Identity Provider login page (in this case, a core endpoint)
+        auth_url = "/auth/core_login"
         return auth_url
-    
+
 
     async def get_token_from_identity_provider(self, request: Request) -> str | None:
 
@@ -116,7 +116,7 @@ class CoreAuthHandler(BaseAuthHandler):
         # TODOAUTH: where do we store admin user and pass?
         if form_data["username"] == "admin" and form_data["password"] == "admin":
             to_encode = dict(form_data).copy()
-            expire = datetime.utcnow() + timedelta(self.access_token_expire_minutes)
+            expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
             del to_encode["password"]
             to_encode["exp"] = expire
             # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
@@ -141,6 +141,8 @@ class CoreAuthHandler(BaseAuthHandler):
                 algorithms=[self.algorithm]
             )
 
+            # TODOAUTH: verify token expiration
+
             # build a user info obj that core can understand
             return AuthUserInfo(
                 user_id=payload["username"],
@@ -149,16 +151,24 @@ class CoreAuthHandler(BaseAuthHandler):
         except Exception as e:
             log.error("Could not decode JWT")
 
+        # do not pass
         return None
     
 
-    async def get_user_info_from_api_key(self, api_key: str, user_id: str) -> AuthUserInfo | None:
+    async def get_user_info_from_api_key(self, api_key: str | None, user_id: str) -> AuthUserInfo | None:
 
-        # build a user info obj that core can understand
-        return AuthUserInfo(
-            user_id=user_id,
-            user_data={}
-        )
+        environment_api_key = get_env("CCAT_API_KEY")
+        
+        if api_key == environment_api_key: # Note this works also with None == None
+
+            # build a user info obj that core can understand
+            return AuthUserInfo(
+                user_id=user_id,
+                user_data={}
+            )
+        
+        # do not pass
+        return None
 
 
     async def is_http_allowed(self, request: Request) -> bool:

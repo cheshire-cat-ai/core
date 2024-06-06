@@ -72,6 +72,7 @@ async def get_access_token(creds: UserCredentials):
 
 @router.get("/core_login")
 async def auth_index(request: Request):
+    """Core login form, used when no external Identity Provider is configured"""
 
     return HTMLResponse("""
 <form action="/auth/token" method="POST">
@@ -94,6 +95,7 @@ async def auth_index(request: Request):
 
 @router.get("/login")
 async def auth_login(request: Request):
+    """Send request to the Identity Provider login endpoint"""
 
     auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
 
@@ -106,6 +108,11 @@ async def auth_login(request: Request):
 
 @router.post("/token")
 async def auth_token(request: Request):
+    """Endpoint called from the identity provider after user successfully logged in.
+    Request may include a code, from which the auth_handler can retrieve the actual token (explicit OAuth2).
+    Request may include dierectly the token (implicit OAuth2).
+    Actual token creation / retrieval is delegated to the auth_handler.
+    """
 
     auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
 
@@ -119,13 +126,14 @@ async def auth_token(request: Request):
         #token_data = await auth_handler.get_user_info_from_token(access_token)
         
         return RedirectResponse(
-            url = f"/admin?access_token={access_token}",
+            url = f"/admin?access_token={access_token}", # TODOAUTH: what happens with machine to machine? is there a redirect uri?
             status_code=302
         )
     
-    # Redirect the browser to the identity provider's authorization page
+    # Cannot access. Redirect the browser to the identity provider's authorization url
     return RedirectResponse(
-        url = await auth_handler.get_full_authorization_url(request)
+        url = await auth_handler.get_full_authorization_url(request),
+        status_code=302
     )
 
 
