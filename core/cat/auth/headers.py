@@ -127,8 +127,8 @@ async def http_auth(request: Request) -> None | StrayCat:
         )
 
 
-async def admin_auth(request: Request) -> None | StrayCat:
-    """Authenticate the admin with access token.
+async def frontend_auth(request: Request) -> None | StrayCat:
+    """Authenticate the admin panle and other webapps / single page apps, with access token in GET query params.
 
     Parameters
     ----------
@@ -177,6 +177,7 @@ async def admin_auth(request: Request) -> None | StrayCat:
 
 
 # get or create session (StrayCat)
+# TODOAUTH: substitute this with http_auth
 def session(request: Request) -> StrayCat:
 
     strays = request.app.state.strays
