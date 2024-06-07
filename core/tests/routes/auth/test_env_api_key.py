@@ -62,3 +62,5 @@ def test_api_key_ws(secure_client):
     assert "You did not configure" in res["content"]
     
 
+
+

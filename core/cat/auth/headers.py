@@ -116,6 +116,9 @@ async def http_auth(request: Request) -> None | StrayCat:
     else:
         # api_key (could be None).
         # check if api_key is correct
+
+        # TODOAUTH: check env variable here
+
         user_id = request.headers.get("user_id", "user")
         user_info: AuthUserInfo = await auth_handler.get_user_info_from_api_key(credential, user_id)
 
