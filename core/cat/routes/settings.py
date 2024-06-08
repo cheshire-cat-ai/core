@@ -1,5 +1,7 @@
 from typing import Annotated
-from fastapi import Body, Response, APIRouter, HTTPException, status
+from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.headers import http_auth
+from fastapi import Body, Depends, APIRouter, HTTPException, status
 from cat.db import models
 from cat.db import crud
 
@@ -7,7 +9,7 @@ from cat.db import crud
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.LIST))])
 def get_settings(search: str = ""):
     """Get the entire list of settings available in the database"""
 
@@ -18,7 +20,7 @@ def get_settings(search: str = ""):
     }
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))])
 def create_setting(payload: models.SettingBody):
     """Create a new setting in the database"""
 
@@ -33,7 +35,7 @@ def create_setting(payload: models.SettingBody):
     }
 
 
-@router.get("/{settingId}")
+@router.get("/{settingId}", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
 def get_setting(settingId: str):
     """Get the a specific setting from the database"""
 
@@ -50,7 +52,7 @@ def get_setting(settingId: str):
     }
 
 
-@router.put("/{settingId}")
+@router.put("/{settingId}", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))])
 def update_setting(settingId: str, payload: models.SettingBody):
     """Update a specific setting in the database if it exists"""
 
@@ -76,7 +78,7 @@ def update_setting(settingId: str, payload: models.SettingBody):
     }
 
 
-@router.delete("/{settingId}")
+@router.delete("/{settingId}", dependencies=[Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.DELETE))])
 def delete_setting(settingId: str):
     """Delete a specific setting in the database"""
 

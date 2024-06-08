@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Request, Body, Query
 from typing import Dict
 import tomli
-from cat.auth.headers import session
+from cat.auth.utils import AuthPermission, AuthResource 
+from cat.auth.headers import http_auth, session
 
 from cat.convo.messages import CatMessage
 
@@ -9,7 +10,7 @@ router = APIRouter()
 
 
 # server status
-@router.get("/")
+@router.get("/", dependencies=[Depends(http_auth(AuthResource.STATUS, AuthPermission.READ))])
 async def home() -> Dict:
     """Server status""" 
     with open("pyproject.toml", "rb") as f:
@@ -21,7 +22,7 @@ async def home() -> Dict:
     }
 
 
-@router.post("/message", response_model=CatMessage)
+@router.post("/message", dependencies=[Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.WRITE))], response_model=CatMessage)
 async def message_with_cat(
     payload: Dict = Body({"text": "hello!"}),
     stray = Depends(session),

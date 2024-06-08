@@ -5,9 +5,9 @@ from pydantic import BaseModel, ConfigDict
 from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
+    ApiKeyAuthHandler,
     BaseAuthHandler,
-    CoreAuthHandler,
-    KeycloackAuthHandler,
+    NoAuthHandler,
     #, AuthEnvironmentVariables, AuthApiKey
 )
 
@@ -24,28 +24,29 @@ class AuthHandlerConfig(BaseModel):
         return cls._pyclass.default(**config)
 
 
-class CoreAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = CoreAuthHandler
+class NoAuthHandlerConfig(AuthHandlerConfig):
+    _pyclass: Type = NoAuthHandler
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Internal OAuth2 Handler",
+            "humanReadableName": "No Auth Handler",
+            "description": "Used by default.",
+            "link": "",
+        }
+    )
+
+
+class ApiKeyAuthHandlerConfig(AuthHandlerConfig):
+    _pyclass: Type = ApiKeyAuthHandler
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Api Key Auth Handler",
             "description": "Yeeeeah.",
             "link": "",
         }
     )
 
-
-class KeycloackAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = KeycloackAuthHandler
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "Keycloak Auth Handler",
-            "description": "Based on OpenID connect (OAuth2 dialect).",
-            "link": "",
-        }
-    )
 
 """
 class AuthEnvironmentVariablesConfig(AuthHandlerConfig):
@@ -75,8 +76,8 @@ class AuthApiKeyConfig(AuthHandlerConfig):
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        CoreAuthHandlerConfig,
-        KeycloackAuthHandlerConfig,
+        NoAuthHandler,
+        ApiKeyAuthHandler,
         #AuthEnvironmentVariablesConfig,
         #AuthApiKeyConfig,
     ]

@@ -1,10 +1,13 @@
 
 from typing import Dict
 import asyncio
+from cat.env import get_env
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, Request, Body, Query, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
+from datetime import datetime, timedelta
+import jwt
 
 #from cat.auth.jwt import create_access_token
 from cat.factory.custom_auth_handler import BaseAuthHandler
@@ -101,39 +104,46 @@ async def auth_login(request: Request):
 
     # Redirect the browser to the identity provider's authorization page
     return RedirectResponse(
-        url = await auth_handler.get_full_authorization_url(request)
+        url = '/auth/core_login'
     )
 
 # TODOAUTH /logout endpoint
 
 @router.post("/token")
 async def auth_token(request: Request):
-    """Endpoint called from the identity provider after user successfully logged in.
-    Request may include a code, from which the auth_handler can retrieve the actual token (explicit OAuth2).
-    Request may include dierectly the token (implicit OAuth2).
-    Actual token creation / retrieval is delegated to the auth_handler.
+    """Endpoint called from client to authenticate user from local identity provider.
     """
 
-    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
+    async def authenticate_local_user(username: str, password: str) -> str | None:
+        # authenticate local user credentials
 
-    # use code sent by Identity Provider to get access token
-    #  or, if using implicit OAuth2, just get the token
-    access_token = await auth_handler.get_token_from_identity_provider(request)
+        # check credentials
+        # TODOAUTH: where do we store admin user and pass?
+        if username == "admin" and password == "admin":
+            expire = datetime.utcnow() + timedelta(minutes=get_env("CCAT_JWT_EXPIRE_MINUTES"))
+            # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
+            return jwt.encode(
+                dict(
+                    exp=expire,
+                    username=username
+                ),
+                get_env("CCAT_JWT_SECRET"),
+                algorithm=get_env("CCAT_JWT_ALGORITHM")
+            )
+        return None
+    
+    # get form data from submitted core login form (/auth/core_login)
+    form_data = await request.form()
 
+    # use username and password to authenticate user from local identity provider and get token
+    access_token = await authenticate_local_user(form_data["username"], form_data["password"])
 
     if access_token:
-        # verify token (not necessary) #TODOAUTH take away?
-        #token_data = await auth_handler.get_user_info_from_token(access_token)
-        
-        return RedirectResponse(
-            url = f"/admin?access_token={access_token}", # TODOAUTH: what happens with machine to machine? is there a redirect uri?
-            status_code=302
-        )
+        return {
+            "token": access_token
+        }
     
-    # Cannot access. Redirect the browser to the identity provider's authorization url
-    return RedirectResponse(
-        url = await auth_handler.get_full_authorization_url(request),
-        status_code=302
-    )
+    # Invalid username or password
+    raise HTTPException(status_code=403, detail="Invalid username or password")
 
 
