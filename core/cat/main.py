@@ -75,8 +75,8 @@ cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth") # endpoint to get JWT, no Depends
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
 # TODOAUTH move http_auth dep in router verb
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
-cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
+cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
 cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])

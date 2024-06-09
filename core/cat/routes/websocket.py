@@ -30,16 +30,12 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
-    user_id: str = "user",
     stray = Depends(ws_auth(AuthResource.CONVERSATION, AuthPermission.WRITE))
 ):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
     
-    log.info('test start')
-    log.info(stray)
-
     # Add the new WebSocket connection to the manager.
     await websocket.accept()
     try:

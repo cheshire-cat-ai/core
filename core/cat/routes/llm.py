@@ -1,6 +1,8 @@
 from typing import Dict
 
-from fastapi import Request, APIRouter, Body, HTTPException
+from cat.auth.headers import http_auth
+from cat.auth.utils import AuthPermission, AuthResource
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models
@@ -20,7 +22,7 @@ LLM_SELECTED_NAME = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
-@router.get("/settings")
+@router.get("/settings", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.LIST))])
 def get_llms_settings() -> Dict:
     """Get the list of the Large Language Models"""
     LLM_SCHEMAS = get_llms_schemas()
@@ -54,7 +56,7 @@ def get_llms_settings() -> Dict:
 
 
 # get LLM settings and its schema
-@router.get("/settings/{languageModelName}")
+@router.get("/settings/{languageModelName}", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.READ))])
 def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     """Get settings and schema of the specified Large Language Model"""
     LLM_SCHEMAS = get_llms_schemas()
@@ -84,7 +86,7 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     }
     
 
-@router.put("/settings/{languageModelName}")
+@router.put("/settings/{languageModelName}", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.EDIT))])
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,

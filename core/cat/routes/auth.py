@@ -72,8 +72,8 @@ async def get_access_token(creds: UserCredentials):
 #async def prova(stray: dict = Depends(get_stray)):
 #    return stray
 
-
-@router.get("/core_login")
+# TODOAUTH to define core login flow
+@router.get("/login")
 async def auth_index(request: Request):
     """Core login form, used when no external Identity Provider is configured"""
 
@@ -95,17 +95,6 @@ async def auth_index(request: Request):
 </form>
 """)
 
-
-@router.get("/login")
-async def auth_login(request: Request):
-    """Send request to the Identity Provider login endpoint"""
-
-    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
-
-    # Redirect the browser to the identity provider's authorization page
-    return RedirectResponse(
-        url = '/auth/core_login'
-    )
 
 # TODOAUTH /logout endpoint
 

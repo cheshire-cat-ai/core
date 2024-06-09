@@ -1,11 +1,7 @@
-import os
-import re
-import json
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from fastapi import Depends
-
-from cat.auth.headers import frontend_auth
+# from cat.auth.headers import frontend_auth
 
 def mount(cheshire_cat_api):
 
@@ -21,7 +17,8 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/")
     @cheshire_cat_api.get("/admin/{page}")
     @cheshire_cat_api.get("/admin/{page}/")
-    def get_injected_admin(stray: str = Depends(frontend_auth)):
+    # TODOAUTH to defined login flow def get_injected_admin(stray: str = Depends(frontend_auth)):
+    def get_injected_admin():
 
         # TODOAUTH: what do we do with the stray here?
         # TODOAUTH: stray should be a Depends in every endpoint

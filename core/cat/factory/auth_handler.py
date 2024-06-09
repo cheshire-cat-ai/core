@@ -2,13 +2,12 @@ from os import getenv
 from typing import Type
 from pydantic import BaseModel, ConfigDict
 
-from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
     ApiKeyAuthHandler,
     BaseAuthHandler,
-    NoAuthHandler,
-    #, AuthEnvironmentVariables, AuthApiKey
+    CoreAuthHandler,
+    CloseAuthHandler,
 )
 
 
@@ -24,13 +23,24 @@ class AuthHandlerConfig(BaseModel):
         return cls._pyclass.default(**config)
 
 
-class NoAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = NoAuthHandler
+class CoreAuthHandlerConfig(AuthHandlerConfig):
+    _pyclass: Type = CoreAuthHandler
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "No Auth Handler",
-            "description": "Used by default.",
+            "humanReadableName": "Core Auth Handler",
+            "description": "Core idp auth handler.",
+            "link": "",
+        }
+    )
+
+class CloseAuthHandlerConfig(AuthHandlerConfig):
+    _pyclass: Type = CloseAuthHandler
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Close Auth Handler",
+            "description": "Deny all m2m connection.",
             "link": "",
         }
     )
@@ -76,7 +86,7 @@ class AuthApiKeyConfig(AuthHandlerConfig):
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        NoAuthHandler,
+        CloseAuthHandler,
         ApiKeyAuthHandler,
         #AuthEnvironmentVariablesConfig,
         #AuthApiKeyConfig,

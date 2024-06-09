@@ -1,6 +1,8 @@
 from typing import Dict
 
-from fastapi import Request, APIRouter, Body, HTTPException
+from cat.auth.headers import http_auth
+from cat.auth.utils import AuthPermission, AuthResource
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.embedder import get_allowed_embedder_models,get_embedders_schemas
 from cat.db import crud, models
@@ -20,7 +22,7 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 
 # get configured Embedders and configuration schemas
-@router.get("/settings")
+@router.get("/settings", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.LIST))])
 def get_embedders_settings(request: Request) -> Dict:
     """Get the list of the Embedders"""
 
@@ -62,7 +64,7 @@ def get_embedders_settings(request: Request) -> Dict:
 
 
 # get Embedder settings and its schema
-@router.get("/settings/{languageEmbedderName}")
+@router.get("/settings/{languageEmbedderName}", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.READ))])
 def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     """Get settings and schema of the specified Embedder"""
     
@@ -92,7 +94,7 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     }
 
 
-@router.put("/settings/{languageEmbedderName}")
+@router.put("/settings/{languageEmbedderName}", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.EDIT))])
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
