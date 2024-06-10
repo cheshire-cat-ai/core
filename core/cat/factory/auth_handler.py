@@ -86,8 +86,8 @@ class AuthApiKeyConfig(AuthHandlerConfig):
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        CloseAuthHandler,
-        ApiKeyAuthHandler,
+        CloseAuthHandlerConfig,
+        ApiKeyAuthHandlerConfig,
         #AuthEnvironmentVariablesConfig,
         #AuthApiKeyConfig,
     ]

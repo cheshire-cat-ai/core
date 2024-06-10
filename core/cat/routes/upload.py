@@ -6,7 +6,8 @@ from copy import deepcopy
 
 from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
-from cat.auth.headers import session
+from cat.auth.headers import session, http_auth
+from cat.auth.utils import AuthPermission, AuthResource
 from cat.log import log
 
 router = APIRouter()
@@ -17,7 +18,7 @@ def format_upload_file(upload_file: UploadFile) -> UploadFile:
     return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
 # receive files via http endpoint
-@router.post("/")
+@router.post("/", dependencies=[Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))])
 async def upload_file(
     request: Request,
     file: UploadFile,
@@ -63,7 +64,7 @@ async def upload_file(
     }
 
 
-@router.post("/web")
+@router.post("/web", dependencies=[Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))])
 async def upload_url(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -115,7 +116,7 @@ async def upload_url(
         )
 
 
-@router.post("/memory")
+@router.post("/memory", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))])
 async def upload_memory(
     request: Request,
     file: UploadFile,
@@ -145,7 +146,7 @@ async def upload_memory(
     }
 
 
-@router.get("/allowed-mimetypes")
+@router.get("/allowed-mimetypes", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))])
 async def get_allowed_mimetypes(request: Request) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 

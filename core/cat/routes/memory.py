@@ -1,12 +1,13 @@
 from typing import Dict
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
-from cat.auth.headers import session
+from cat.auth.headers import session, http_auth
+from cat.auth.utils import AuthPermission, AuthResource
 
 router = APIRouter()
 
 # GET memories from recall
-@router.get("/recall")
+@router.get("/recall", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))])
 async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
@@ -64,7 +65,7 @@ async def recall_memories_from_text(
 
 
 # GET collection list with some metadata
-@router.get("/collections")
+@router.get("/collections", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))])
 async def get_collections(request: Request) -> Dict:
     """Get list of available collections"""
 
@@ -87,7 +88,7 @@ async def get_collections(request: Request) -> Dict:
 
 
 # DELETE all collections
-@router.delete("/collections")
+@router.delete("/collections", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))])
 async def wipe_collections(
     request: Request,
 ) -> Dict:
@@ -111,7 +112,7 @@ async def wipe_collections(
 
 
 # DELETE one collection
-@router.delete("/collections/{collection_id}")
+@router.delete("/collections/{collection_id}", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))])
 async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
     """Delete and recreate a collection"""
 
@@ -140,7 +141,7 @@ async def wipe_single_collection(request: Request, collection_id: str) -> Dict:
 
 
 # DELETE memories
-@router.delete("/collections/{collection_id}/points/{memory_id}")
+@router.delete("/collections/{collection_id}/points/{memory_id}", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))])
 async def wipe_memory_point(
     request: Request,
     collection_id: str,
@@ -178,7 +179,7 @@ async def wipe_memory_point(
     }
 
 
-@router.delete("/collections/{collection_id}/points")
+@router.delete("/collections/{collection_id}/points", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))])
 async def wipe_memory_points_by_metadata(
     request: Request,
     collection_id: str,
@@ -198,7 +199,7 @@ async def wipe_memory_points_by_metadata(
 
 
 # DELETE conversation history from working memory
-@router.delete("/conversation_history")
+@router.delete("/conversation_history", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))])
 async def wipe_conversation_history(
     request: Request,
     stray = Depends(session),
