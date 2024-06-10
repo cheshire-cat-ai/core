@@ -23,18 +23,7 @@ class AuthHandlerConfig(BaseModel):
         return cls._pyclass.default(**config)
 
 
-class CoreAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = CoreAuthHandler
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "Core Auth Handler",
-            "description": "Core idp auth handler.",
-            "link": "",
-        }
-    )
-
-class CloseAuthHandlerConfig(AuthHandlerConfig):
+class CloseAuthConfig(AuthHandlerConfig):
     _pyclass: Type = CloseAuthHandler
 
     model_config = ConfigDict(
@@ -46,7 +35,7 @@ class CloseAuthHandlerConfig(AuthHandlerConfig):
     )
 
 
-class ApiKeyAuthHandlerConfig(AuthHandlerConfig):
+class ApiKeyAuthConfig(AuthHandlerConfig):
     _pyclass: Type = ApiKeyAuthHandler
 
     model_config = ConfigDict(
@@ -86,8 +75,8 @@ class AuthApiKeyConfig(AuthHandlerConfig):
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        CloseAuthHandlerConfig,
-        ApiKeyAuthHandlerConfig,
+        CloseAuthConfig,
+        ApiKeyAuthConfig,
         #AuthEnvironmentVariablesConfig,
         #AuthApiKeyConfig,
     ]
