@@ -12,7 +12,8 @@ from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from cat.factory.auth_handler import CoreAuthHandlerConfig, get_auth_handler_from_name
+from cat.factory.auth_handler import get_auth_handler_from_name
+from cat.factory.custom_auth_handler import CoreAuthHandler
 import cat.factory.auth_handler as auth_handlers
 from cat.db import crud, models
 from cat.factory.custom_llm import CustomOpenAI
@@ -277,10 +278,10 @@ class CheshireCat:
 
              # TODOAUTH: use Default
             auth_handler = \
-                auth_handlers.CloseAuthHandlerConfig.get_auth_handler_from_config({})
+                auth_handlers.CloseAuthConfig.get_auth_handler_from_config({})
         
         self.custom_auth_handler = auth_handler
-        self.core_auth_handler = CoreAuthHandlerConfig.get_auth_handler_from_config({})
+        self.core_auth_handler = CoreAuthHandler()
 
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""

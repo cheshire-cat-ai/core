@@ -6,7 +6,6 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
     ApiKeyAuthHandler,
     BaseAuthHandler,
-    CoreAuthHandler,
     CloseAuthHandler,
 )
 
