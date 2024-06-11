@@ -214,7 +214,7 @@ async def wipe_conversation_history(
 
 
 # GET conversation history from working memory
-@router.get("/conversation_history")
+@router.get("/conversation_history", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))])
 async def get_conversation_history(
     request: Request,
     stray = Depends(session),
