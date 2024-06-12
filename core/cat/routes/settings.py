@@ -9,8 +9,11 @@ from cat.db import crud
 router = APIRouter()
 
 
-@router.get("/", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.LIST))])
-def get_settings(search: str = ""):
+@router.get("/")
+def get_settings(
+    search: str = "",
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.LIST))
+):
     """Get the entire list of settings available in the database"""
 
     settings = crud.get_settings(search=search)
@@ -20,8 +23,11 @@ def get_settings(search: str = ""):
     }
 
 
-@router.post("/", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))])
-def create_setting(payload: models.SettingBody):
+@router.post("/")
+def create_setting(
+    payload: models.SettingBody,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))
+):
     """Create a new setting in the database"""
 
     # complete the payload with setting_id and updated_at
@@ -35,8 +41,11 @@ def create_setting(payload: models.SettingBody):
     }
 
 
-@router.get("/{settingId}", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))])
-def get_setting(settingId: str):
+@router.get("/{settingId}")
+def get_setting(
+    settingId: str,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))
+):
     """Get the a specific setting from the database"""
 
     setting = crud.get_setting_by_id(settingId)
@@ -52,8 +61,12 @@ def get_setting(settingId: str):
     }
 
 
-@router.put("/{settingId}", dependencies=[Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))])
-def update_setting(settingId: str, payload: models.SettingBody):
+@router.put("/{settingId}")
+def update_setting(
+    settingId: str, 
+    payload: models.SettingBody,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.EDIT))
+):
     """Update a specific setting in the database if it exists"""
 
     # does the setting exist?
@@ -78,8 +91,11 @@ def update_setting(settingId: str, payload: models.SettingBody):
     }
 
 
-@router.delete("/{settingId}", dependencies=[Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.DELETE))])
-def delete_setting(settingId: str):
+@router.delete("/{settingId}")
+def delete_setting(
+    settingId: str,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.DELETE))
+):
     """Delete a specific setting in the database"""
 
     # does the setting exist?

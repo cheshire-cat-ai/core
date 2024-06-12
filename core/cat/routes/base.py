@@ -10,8 +10,10 @@ router = APIRouter()
 
 
 # server status
-@router.get("/", dependencies=[Depends(http_auth(AuthResource.STATUS, AuthPermission.READ))])
-async def home() -> Dict:
+@router.get("/")
+async def home(
+    stray = Depends(http_auth(AuthResource.STATUS, AuthPermission.READ))
+) -> Dict:
     """Server status""" 
     with open("pyproject.toml", "rb") as f:
         project_toml = tomli.load(f)["project"]
@@ -22,10 +24,10 @@ async def home() -> Dict:
     }
 
 
-@router.post("/message", dependencies=[Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.WRITE))], response_model=CatMessage)
+@router.post("/message", response_model=CatMessage)
 async def message_with_cat(
     payload: Dict = Body({"text": "hello!"}),
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ) -> Dict:
     """Get a response from the Cat"""
     answer = await stray({"user_id": stray.user_id, **payload})

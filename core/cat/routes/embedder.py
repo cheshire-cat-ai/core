@@ -22,8 +22,11 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 
 # get configured Embedders and configuration schemas
-@router.get("/settings", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.LIST))])
-def get_embedders_settings(request: Request) -> Dict:
+@router.get("/settings")
+def get_embedders_settings(
+    request: Request,
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.LIST))
+) -> Dict:
     """Get the list of the Embedders"""
 
     SUPPORTED_EMDEDDING_MODELS = get_allowed_embedder_models()
@@ -64,8 +67,12 @@ def get_embedders_settings(request: Request) -> Dict:
 
 
 # get Embedder settings and its schema
-@router.get("/settings/{languageEmbedderName}", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.READ))])
-def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
+@router.get("/settings/{languageEmbedderName}")
+def get_embedder_settings(
+    request: Request, 
+    languageEmbedderName: str,
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.READ))
+) -> Dict:
     """Get settings and schema of the specified Embedder"""
     
     EMBEDDER_SCHEMAS = get_embedders_schemas()
@@ -94,11 +101,12 @@ def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
     }
 
 
-@router.put("/settings/{languageEmbedderName}", dependencies=[Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.EDIT))])
+@router.put("/settings/{languageEmbedderName}")
 def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
     payload: Dict = Body({"openai_api_key": "your-key-here"}),
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.EDIT))
 ) -> Dict:
     """Upsert the Embedder setting"""
 

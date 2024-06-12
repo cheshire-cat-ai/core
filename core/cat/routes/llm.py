@@ -22,8 +22,10 @@ LLM_SELECTED_NAME = "llm_selected"
 
 
 # get configured LLMs and configuration schemas
-@router.get("/settings", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.LIST))])
-def get_llms_settings() -> Dict:
+@router.get("/settings")
+def get_llms_settings(
+    stray = Depends(http_auth(AuthResource.LLM, AuthPermission.LIST))
+) -> Dict:
     """Get the list of the Large Language Models"""
     LLM_SCHEMAS = get_llms_schemas()
 
@@ -56,8 +58,12 @@ def get_llms_settings() -> Dict:
 
 
 # get LLM settings and its schema
-@router.get("/settings/{languageModelName}", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.READ))])
-def get_llm_settings(request: Request, languageModelName: str) -> Dict:
+@router.get("/settings/{languageModelName}")
+def get_llm_settings(
+    request: Request, 
+    languageModelName: str,
+    stray = Depends(http_auth(AuthResource.LLM, AuthPermission.READ))
+) -> Dict:
     """Get settings and schema of the specified Large Language Model"""
     LLM_SCHEMAS = get_llms_schemas()
 
@@ -86,11 +92,12 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     }
     
 
-@router.put("/settings/{languageModelName}", dependencies=[Depends(http_auth(AuthResource.LLM, AuthPermission.EDIT))])
+@router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,
     payload: Dict = Body({"openai_api_key": "your-key-here"}),
+    stray = Depends(http_auth(AuthResource.LLM, AuthPermission.EDIT))
 ) -> Dict:
     """Upsert the Large Language Model setting"""
     LLM_SCHEMAS = get_llms_schemas()

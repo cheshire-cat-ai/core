@@ -18,7 +18,7 @@ def format_upload_file(upload_file: UploadFile) -> UploadFile:
     return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
 # receive files via http endpoint
-@router.post("/", dependencies=[Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))])
+@router.post("/")
 async def upload_file(
     request: Request,
     file: UploadFile,
@@ -28,7 +28,7 @@ async def upload_file(
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
     chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -64,7 +64,7 @@ async def upload_file(
     }
 
 
-@router.post("/web", dependencies=[Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))])
+@router.post("/web")
 async def upload_url(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -76,7 +76,7 @@ async def upload_url(
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
     chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -116,12 +116,12 @@ async def upload_url(
         )
 
 
-@router.post("/memory", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))])
+@router.post("/memory")
 async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
@@ -146,8 +146,11 @@ async def upload_memory(
     }
 
 
-@router.get("/allowed-mimetypes", dependencies=[Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))])
-async def get_allowed_mimetypes(request: Request) -> Dict:
+@router.get("/allowed-mimetypes")
+async def get_allowed_mimetypes(
+    request: Request,
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
+) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 
     ccat = request.app.state.ccat
