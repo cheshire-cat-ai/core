@@ -227,7 +227,7 @@ async def frontend_auth(request: Request) -> None | StrayCat:
     raise HTTPException(
         status_code=307,
         headers={
-            "Location": "/auth/login"
+            "Location": "/auth/core_login"
         }
     )
 
