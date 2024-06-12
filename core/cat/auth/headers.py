@@ -203,12 +203,11 @@ async def frontend_auth(request: Request) -> None | StrayCat:
 
     """
 
-    token = request.query_params.get("access_token")
+    token = request.cookies.get("ccat_user_token")
     if token:
-
         # decode token
-        auth_handler = request.app.state.ccat.auth_handler
-        user_info: AuthUserInfo = await auth_handler.get_user_info_from_token(token)
+        core_auth_handler = request.app.state.ccat.core_auth_handler
+        user_info: AuthUserInfo = await core_auth_handler.authorize_user_from_token(token, AuthResource.ADMIN, AuthPermission.READ)
         
         if user_info:
             strays = request.app.state.strays
