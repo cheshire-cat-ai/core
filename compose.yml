@@ -13,13 +13,10 @@ services:
       - ${CCAT_CORE_PORT:-1865}:80
       - 5678:5678 # only for development purposes (take away in production)
     environment:
-      # Timezone for Windows
-      - TZ=${TZ:-UTC}
+      # Timezone
+      - TZ=${CCAT_TIMEZONE:-UTC}
     volumes:
       - ./core:/app
-      # Timezones for Linux and MacOS
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     command:
       - python
       - "-m"
