@@ -104,14 +104,11 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/cheshi
 ### Your First Code Contribution
 
 1. Fork the Project (all branches) and clone the forked repository to your machine (`git clone "url of repository"`), where the "url of repository" means the url of your fork of the project.
-2. Add pre-commit git hook (**Optional**):
-   1. Remove old hook `rm -f .git/hooks/pre-commit`
-   2. Add the new one `ln -s ../../hooks/pre-commit .git/hooks/pre-commit`
-3. Checkout the `develop` branch (`git checkout develop` and then `git pull origin develop`)
-4. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-5. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-6. Push to the Branch (`git push origin feature/AmazingFeature`)
-7. Open a Pull Request against the `develop` branch (if it contains lots of code, please discuss it beforehand opening a issue)
+2. Checkout the `develop` branch (`git checkout develop` and then `git pull origin develop`)
+3. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the Branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request against the `develop` branch (if it contains lots of code, please discuss it beforehand opening a issue)
 
 Try to keep your PRs small and in line with roadmap and issues.
 
