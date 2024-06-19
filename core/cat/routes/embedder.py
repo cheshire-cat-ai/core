@@ -30,6 +30,7 @@ def get_embedders_settings(request: Request) -> Dict:
     if selected is not None:
         selected = selected["value"]["name"]
     else:
+        # TODO: take away automatic embedder settings in v2
         # If DB does not contain a selected embedder, it means an embedder was automatically selected.
         # Deduce selected embedder:
         ccat = request.app.state.ccat
@@ -117,11 +118,19 @@ def upsert_embedder_setting(
 
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
-        models.Setting(name=languageEmbedderName, category=EMBEDDER_CATEGORY, value=payload)
+        models.Setting(
+            name=languageEmbedderName,
+            category=EMBEDDER_CATEGORY,
+            value=payload
+        )
     )
 
     crud.upsert_setting_by_name(
-        models.Setting(name=EMBEDDER_SELECTED_NAME, category=EMBEDDER_SELECTED_CATEGORY, value={"name":languageEmbedderName})
+        models.Setting(
+            name=EMBEDDER_SELECTED_NAME,
+            category=EMBEDDER_SELECTED_CATEGORY,
+            value={"name":languageEmbedderName}
+        )
     )
 
     status = {

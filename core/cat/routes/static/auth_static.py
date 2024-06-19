@@ -1,6 +1,6 @@
 from fastapi.staticfiles import StaticFiles
 from fastapi import Request
-from cat.headers import check_api_key
+from cat.auth.headers import http_auth
 
 class AuthStatic(StaticFiles):
     def __init__(self, *args, **kwargs) -> None:
@@ -8,5 +8,5 @@ class AuthStatic(StaticFiles):
 
     async def __call__(self, scope, receive, send) -> None:
         request = Request(scope, receive=receive)
-        check_api_key(request.headers.get("access_token"))
+        http_auth(request) # TODOAUTH: verify static files follow the auth
         await super().__call__(scope, receive, send)

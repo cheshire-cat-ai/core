@@ -9,7 +9,6 @@ venv
 
 .DS_Store
 .idea
-.vscode
 
 # DBs
 long_term_memory
@@ -32,9 +31,6 @@ core/cat/data/*
 core/cat/plugins/*
 # plugins readme can stay
 !core/cat/plugins/how-to-write-a-plugin.md
-
-# tests plugin folder
-plugin_folder
 
 # cache embedder
 core/local_cache/*

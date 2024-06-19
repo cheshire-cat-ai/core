@@ -2,6 +2,8 @@ import time
 from typing import List, Dict
 from typing_extensions import Protocol
 
+from fastapi import Request
+
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -10,7 +12,10 @@ from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from cat.db import crud
+from cat.factory.auth_handler import get_auth_handler_from_name
+import cat.factory.auth_handler as auth_handlers
+from cat.factory.custom_auth_handler import CoreAuthHandler
+from cat.db import crud, models
 from cat.factory.custom_llm import CustomOpenAI
 from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
@@ -56,8 +61,11 @@ class CheshireCat:
         At init time the Cat executes the bootstrap.
         """
         
-        # bootstrap the cat!
+        # bootstrap the Cat! ^._.^
         
+        # load AuthHandler
+        self.load_auth()
+
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
         
@@ -224,6 +232,59 @@ class CheshireCat:
 
         return embedder
 
+    def load_auth(self):
+        """Load auth systems."""
+
+        # Admin panel auth (internal, not customizable)
+        self.core_auth = CoreAuthHandler()
+
+        # Custom auth_handler # TODOAUTH: change the name to custom_auth
+        selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
+
+        # if no auth_handler is saved, use default one and save to db
+        if selected_auth_handler is None:
+            # create the auth settings
+            crud.upsert_setting_by_name(
+                models.Setting(
+                    name="AuthEnvironmentVariablesConfig",
+                    category="auth_handler_factory",
+                    value={}
+                )
+            )
+            crud.upsert_setting_by_name(
+                models.Setting(
+                    name="auth_handler_selected",
+                    category="auth_handler_factory",
+                    value={"name": "AuthEnvironmentVariablesConfig"}
+                )
+            )
+
+            # reload from db
+            selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
+
+        # get AuthHandler factory class
+        selected_auth_handler_class = selected_auth_handler["value"]["name"]
+        FactoryClass = get_auth_handler_from_name(selected_auth_handler_class)
+
+        # obtain configuration and instantiate AuthHandler
+        selected_auth_handler_config = crud.get_setting_by_name(
+            name=selected_auth_handler_class
+        )
+        try:
+            auth_handler = FactoryClass.get_auth_handler_from_config(
+                selected_auth_handler_config["value"]
+            )
+        except AttributeError as e:
+            import traceback
+
+            traceback.print_exc()
+
+             # TODOAUTH: use Default
+            auth_handler = \
+                auth_handlers.CoreAuthHandlerConfig.get_auth_handler_from_config({})
+        
+        self.auth_handler = auth_handler
+
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
         # Memory
@@ -356,3 +417,4 @@ class CheshireCat:
         # Check if self._llm is a chat model and call it as a completion model
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt)
+        
