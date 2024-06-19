@@ -5,7 +5,6 @@ import tomli
 
 from cat.env import get_env
 
-API_KEY = get_env("CCAT_API_KEY")
 
 
 def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
@@ -30,6 +29,7 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
         }
 
         # force security None on endpoints if API_KEY is not present
+        API_KEY = get_env("CCAT_API_KEY")
         if not API_KEY:
             openapi_schema["components"]["securitySchemes"] = None
 
