@@ -94,7 +94,8 @@ async def auth_index(request: Request):
 
 @router.post("/token")
 async def auth_token(request: Request):
-    """Endpoint called from client to authenticate user from local identity provider.
+    """Endpoint called from client to get a JWT from local identity provider.
+        This endpoint receives username and password as form-data, validates credentials and issues a JWT.
     """
     
     # get form data from submitted core login form (/auth/core_login)
@@ -107,6 +108,11 @@ async def auth_token(request: Request):
          return JWTResponse(access_token=access_token)
     
     # Invalid username or password
-    raise HTTPException(status_code=403, detail="Invalid username or password")
+    raise HTTPException(
+        status_code=403,
+        detail={
+            "error": f"Invalid Credentials"
+        }
+    )
 
 
