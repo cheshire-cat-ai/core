@@ -5,7 +5,7 @@ import pytest
 import time
 from tests.utils import send_websocket_message
 
-from cat.auth.headers import is_jwt
+from cat.auth.utils import is_jwt
 
 #@pytest.fixture
 #def secure_client(client):
