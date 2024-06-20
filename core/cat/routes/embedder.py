@@ -1,6 +1,8 @@
 from typing import Dict
 
-from fastapi import Request, APIRouter, Body, HTTPException
+from cat.auth.headers import http_auth
+from cat.auth.utils import AuthPermission, AuthResource
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.embedder import get_allowed_embedder_models,get_embedders_schemas
 from cat.db import crud, models
@@ -21,7 +23,10 @@ EMBEDDER_SELECTED_NAME = "embedder_selected"
 
 # get configured Embedders and configuration schemas
 @router.get("/settings")
-def get_embedders_settings(request: Request) -> Dict:
+def get_embedders_settings(
+    request: Request,
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.LIST))
+) -> Dict:
     """Get the list of the Embedders"""
 
     SUPPORTED_EMDEDDING_MODELS = get_allowed_embedder_models()
@@ -63,7 +68,11 @@ def get_embedders_settings(request: Request) -> Dict:
 
 # get Embedder settings and its schema
 @router.get("/settings/{languageEmbedderName}")
-def get_embedder_settings(request: Request, languageEmbedderName: str) -> Dict:
+def get_embedder_settings(
+    request: Request, 
+    languageEmbedderName: str,
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.READ))
+) -> Dict:
     """Get settings and schema of the specified Embedder"""
     
     EMBEDDER_SCHEMAS = get_embedders_schemas()
@@ -97,6 +106,7 @@ def upsert_embedder_setting(
     request: Request,
     languageEmbedderName: str,
     payload: Dict = Body({"openai_api_key": "your-key-here"}),
+    stray = Depends(http_auth(AuthResource.EMBEDDER, AuthPermission.EDIT))
 ) -> Dict:
     """Upsert the Embedder setting"""
 

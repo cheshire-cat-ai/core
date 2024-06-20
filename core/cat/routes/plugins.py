@@ -1,12 +1,11 @@
 import mimetypes
 from copy import deepcopy
 from typing import Dict
-from tempfile import NamedTemporaryFile
-from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, BackgroundTasks
+from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, Depends
 from cat.log import log
 from cat.mad_hatter.registry import registry_search_plugins, registry_download_plugin
-from urllib.parse import urlparse
-import requests
+from cat.auth.headers import http_auth
+from cat.auth.utils import AuthPermission, AuthResource
 
 from pydantic import ValidationError
 
@@ -18,6 +17,7 @@ router = APIRouter()
 async def get_available_plugins(
     request: Request,
     query: str = None,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.LIST))
     #author: str = None, to be activated in case of more granular search
     #tag: str = None, to be activated in case of more granular search
 ) -> Dict:
@@ -74,6 +74,7 @@ async def get_available_plugins(
 async def install_plugin(
     request: Request,
     file: UploadFile,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE))
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
@@ -106,7 +107,8 @@ async def install_plugin(
 @router.post("/upload/registry")
 async def install_plugin_from_registry(
     request: Request,
-    payload: Dict = Body({"url": "https://github.com/plugin-dev-account/plugin-repo"})
+    payload: Dict = Body({"url": "https://github.com/plugin-dev-account/plugin-repo"}),
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE))
 ) -> Dict:
     """Install a new plugin from registry"""
 
@@ -132,7 +134,11 @@ async def install_plugin_from_registry(
 
 
 @router.put("/toggle/{plugin_id}", status_code=200)
-async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
+async def toggle_plugin(
+    plugin_id: str, 
+    request: Request,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE))
+) -> Dict:
     """Enable or disable a single plugin"""
 
     # access cat instance
@@ -159,7 +165,10 @@ async def toggle_plugin(plugin_id: str, request: Request) -> Dict:
     
 
 @router.get("/settings")
-async def get_plugins_settings(request: Request) -> Dict:
+async def get_plugins_settings(
+    request: Request,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ))
+) -> Dict:
     """Returns the settings of all the plugins"""
 
     # access cat instance
@@ -188,7 +197,11 @@ async def get_plugins_settings(request: Request) -> Dict:
 
 
 @router.get("/settings/{plugin_id}")
-async def get_plugin_settings(request: Request, plugin_id: str) -> Dict:
+async def get_plugin_settings(
+    request: Request, 
+    plugin_id: str,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ))
+) -> Dict:
     """Returns the settings of a specific plugin"""
 
     # access cat instance
@@ -224,6 +237,7 @@ async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
     payload: Dict = Body({"setting_a": "some value", "setting_b": "another value"}),
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.EDIT))
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
@@ -259,7 +273,11 @@ async def upsert_plugin_settings(
 
 
 @router.get("/{plugin_id}")
-async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
+async def get_plugin_details(
+    plugin_id: str, 
+    request: Request,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ))
+) -> Dict:
     """Returns information on a single plugin"""
 
     # access cat instance
@@ -287,7 +305,11 @@ async def get_plugin_details(plugin_id: str, request: Request) -> Dict:
 
 
 @router.delete("/{plugin_id}")
-async def delete_plugin(plugin_id: str, request: Request) -> Dict:
+async def delete_plugin(
+    plugin_id: str, 
+    request: Request,
+    stray = Depends(http_auth(AuthResource.PLUGINS, AuthPermission.DELETE))
+) -> Dict:
     """Physically remove plugin."""
 
     # access cat instance

@@ -1,71 +1,16 @@
-import jwt
-from jwt.exceptions import InvalidTokenError
-
+import asyncio
+from cat.auth.utils import AuthPermission, AuthResource, AuthUserInfo
 from fastapi import (
     WebSocket,
     Request,
 )
-from fastapi import Security, HTTPException, WebSocketException
-from fastapi.security.api_key import APIKeyHeader
-
+from fastapi import HTTPException, WebSocketException
 from cat.looking_glass.stray_cat import StrayCat
-from cat.factory.custom_auth_handler import AuthUserInfo
-from cat.env import get_env
 from cat.log import log
+from urllib.parse import parse_qs
 
 
-# TODOAUTH: test token and api_key both from Authorization and access_token header
-
-def is_jwt(token: str) -> bool:
-    """
-    Returns whether a given string is a JWT.
-    """
-    try:
-        # Decode the JWT without verification to check its structure
-        jwt.decode(token, options={"verify_signature": False})
-        return True
-    except InvalidTokenError:
-        return False
-
-
-async def ws_auth(
-        websocket: WebSocket,
-        user_id="user",
-    ) -> None | StrayCat:
-    """Authenticate websocket connection.
-
-    Parameters
-    ----------
-    websocket : WebSocket
-        Websocket connection.
-
-    Returns
-    -------
-    None
-        Does not raise an exception if the message is allowed.
-
-    Raises
-    ------
-    WebsocketDisconnect
-        Websocket disconnection
-
-    """
-
-    return # TODOAUTH recover ws
-
-    ccat = websocket.app.state.ccat
-    strays = websocket.app.state.strays
-
-    # Internal auth or custom auth must return True
-    allowed = await ccat.auth_handler._is_ws_allowed(websocket)
-    if not allowed:
-        raise WebSocketException(
-            code=1004,
-            reason="Invalid Credentials"
-        )
-
-
-def extract_credential(request):
+async def http_extract_credential(request: Request) -> str | None:
     """
     Get JWT token or api key passed with the request
     """
@@ -85,50 +30,158 @@ def extract_credential(request):
         return access_token_header
 
     # no token found
-    return None    
+    return None  
 
-
-async def http_auth(request: Request) -> None | StrayCat:
-    """Authenticate endpoint.
-
-    Parameters
-    ----------
-    request : Request
-        HTTP request.
-
-    Returns
-    -------
-    None
-        Does not raise an exception if the request is allowed.
-
-    Raises
-    ------
-    HTTPException
-        Error with status code `403` if the request is not allowed.
+async def ws_extract_credential(websocket: WebSocket) -> AuthUserInfo | None:
     """
+    Extract token from WebSocket query string
+    """
+    query_params = parse_qs(websocket.url.query)
+    return query_params.get("token", [None])[0]
 
-    credential = extract_credential(request)
 
-    auth_handler = request.app.state.ccat.auth_handler
-    if is_jwt(credential):
-        # decode token
-        user_info: AuthUserInfo = await auth_handler.get_user_info_from_token(credential)
-    else:
-        # api_key (could be None).
-        # check if api_key is correct
+def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayCat:
+    """ws_auth factory.
 
-        # TODOAUTH: check env variable here
+        Parameters
+        ----------
+        resource : AuthResource
+            requested resource.
+        permission : AuthPermission
+            requested permission.
 
-        user_id = request.headers.get("user_id", "user")
-        user_info: AuthUserInfo = await auth_handler.get_user_info_from_api_key(credential, user_id)
+        Returns
+        -------
+        StrayCat
+            Authorized user's StrayCat instance.
 
-    if user_info is None:
-        # identity provider does not want this user to get in
+        Raises
+        ------
+        WebsocketDisconnect
+            Websocket disconnection
+
+        """
+    async def ws_auth(
+            websocket: WebSocket
+        ) -> None | StrayCat:
+        """Authenticate websocket connection.
+
+        Parameters
+        ----------
+        websocket : WebSocket
+            Websocket connection.
+
+        Returns
+        -------
+        None
+            Does not raise an exception if the message is allowed.
+
+        Raises
+        ------
+        WebsocketDisconnect
+            Websocket disconnection
+
+        """
+
+        async def get_user_stray(user_info: AuthUserInfo):
+            strays = websocket.app.state.strays
+
+            user_id = user_info.user_id
+            if user_id in strays.keys():
+                stray = strays[user_id]       
+                # Close previus ws connection
+                if stray._StrayCat__ws:
+                    await stray._StrayCat__ws.close()
+                # Set new ws connection
+                stray._StrayCat__ws = websocket 
+                log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
+                return stray
+                
+            else:
+                stray = StrayCat(
+                    ws=websocket,
+                    user_id=user_id,
+                    user_data=user_info.user_data,
+                    main_loop=asyncio.get_running_loop()
+                )
+                strays[user_id] = stray
+                return stray
+
+
+        # extract credential from request
+        credential = await ws_extract_credential(websocket)
+
+        # try to get user from local idp
+        core_auth_handler = websocket.app.state.ccat.core_auth_handler
+        local_user_info = await core_auth_handler.authorize_user_from_token(credential, resource, permission)
+        if local_user_info:
+            return await get_user_stray(local_user_info)
+
+        # try to get user from auth_handler
+        custom_auth_handler = websocket.app.state.ccat.custom_auth_handler
+        auth_handler_user_info: AuthUserInfo = await custom_auth_handler.authorize_user_from_token(credential, resource, permission)
+        if auth_handler_user_info:
+            return await get_user_stray(auth_handler_user_info)
+        
+        raise WebSocketException(
+            code=1004,
+            reason="Invalid Credentials"
+        )
+    return ws_auth
+  
+def http_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayCat:
+    async def http_auth(request: Request) -> None | StrayCat:
+        """Authenticate endpoint.
+
+        Parameters
+        ----------
+        request : Request
+            HTTP request.
+
+        Returns
+        -------
+        None
+            Does not raise an exception if the request is allowed.
+
+        Raises
+        ------
+        HTTPException
+            Error with status code `403` if the request is not allowed.
+        """
+
+        def get_user_stray(user_info: AuthUserInfo):
+            strays = request.app.state.strays
+            event_loop = request.app.state.event_loop
+
+            user_id = user_info.user_id        
+            if user_id not in strays.keys():
+                strays[user_id] = StrayCat(
+                    user_id=user_id,
+                    user_data=user_info.user_data,
+                    main_loop=event_loop
+                )
+            return strays[user_id]
+        
+        # extract credential from request
+        credential = await http_extract_credential(request)
+
+        # try to get user from local idp
+        core_auth_handler = request.app.state.ccat.core_auth_handler
+        local_auth = await core_auth_handler.authorize_user_from_token(credential, resource, permission) 
+        if local_auth:
+            return get_user_stray(local_auth)
+
+        # try to get user from auth_handler
+        custom_auth_handler = request.app.state.ccat.custom_auth_handler
+        user_info: AuthUserInfo = await custom_auth_handler.authorize_user_from_token(credential, resource, permission)
+        if user_info:
+            return get_user_stray(user_info)
+
         raise HTTPException(
             status_code=403,
             detail={"error": "Invalid Credentials"}
-        )
-
+        )   
+    return http_auth
 
 async def frontend_auth(request: Request) -> None | StrayCat:
     """Authenticate the admin panle and other webapps / single page apps, with access token in GET query params.
@@ -150,12 +203,11 @@ async def frontend_auth(request: Request) -> None | StrayCat:
 
     """
 
-    token = request.query_params.get("access_token")
+    token = request.cookies.get("ccat_user_token")
     if token:
-
         # decode token
-        auth_handler = request.app.state.ccat.auth_handler
-        user_info: AuthUserInfo = await auth_handler.get_user_info_from_token(token)
+        core_auth_handler = request.app.state.ccat.core_auth_handler
+        user_info: AuthUserInfo = await core_auth_handler.authorize_user_from_token(token, AuthResource.ADMIN, AuthPermission.READ)
         
         if user_info:
             strays = request.app.state.strays
@@ -174,10 +226,9 @@ async def frontend_auth(request: Request) -> None | StrayCat:
     raise HTTPException(
         status_code=307,
         headers={
-            "Location": "/auth/login"
+            "Location": "/auth/core_login"
         }
     )
-
 
 # get or create session (StrayCat)
 # TODOAUTH: substitute this with http_auth

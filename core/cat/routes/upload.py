@@ -6,7 +6,8 @@ from copy import deepcopy
 
 from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
-from cat.auth.headers import session
+from cat.auth.headers import session, http_auth
+from cat.auth.utils import AuthPermission, AuthResource
 from cat.log import log
 
 router = APIRouter()
@@ -27,7 +28,7 @@ async def upload_file(
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
     chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -75,7 +76,7 @@ async def upload_url(
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
     chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -120,7 +121,7 @@ async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    stray = Depends(session),
+    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
@@ -146,7 +147,10 @@ async def upload_memory(
 
 
 @router.get("/allowed-mimetypes")
-async def get_allowed_mimetypes(request: Request) -> Dict:
+async def get_allowed_mimetypes(
+    request: Request,
+    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
+) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 
     ccat = request.app.state.ccat

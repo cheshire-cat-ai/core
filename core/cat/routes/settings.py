@@ -1,5 +1,7 @@
 from typing import Annotated
-from fastapi import Body, Response, APIRouter, HTTPException, status
+from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.headers import http_auth
+from fastapi import Body, Depends, APIRouter, HTTPException, status
 from cat.db import models
 from cat.db import crud
 
@@ -8,7 +10,10 @@ router = APIRouter()
 
 
 @router.get("/")
-def get_settings(search: str = ""):
+def get_settings(
+    search: str = "",
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.LIST))
+):
     """Get the entire list of settings available in the database"""
 
     settings = crud.get_settings(search=search)
@@ -19,7 +24,10 @@ def get_settings(search: str = ""):
 
 
 @router.post("/")
-def create_setting(payload: models.SettingBody):
+def create_setting(
+    payload: models.SettingBody,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE))
+):
     """Create a new setting in the database"""
 
     # complete the payload with setting_id and updated_at
@@ -34,7 +42,10 @@ def create_setting(payload: models.SettingBody):
 
 
 @router.get("/{settingId}")
-def get_setting(settingId: str):
+def get_setting(
+    settingId: str,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))
+):
     """Get the a specific setting from the database"""
 
     setting = crud.get_setting_by_id(settingId)
@@ -51,7 +62,11 @@ def get_setting(settingId: str):
 
 
 @router.put("/{settingId}")
-def update_setting(settingId: str, payload: models.SettingBody):
+def update_setting(
+    settingId: str, 
+    payload: models.SettingBody,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.EDIT))
+):
     """Update a specific setting in the database if it exists"""
 
     # does the setting exist?
@@ -77,7 +92,10 @@ def update_setting(settingId: str, payload: models.SettingBody):
 
 
 @router.delete("/{settingId}")
-def delete_setting(settingId: str):
+def delete_setting(
+    settingId: str,
+    stray = Depends(http_auth(AuthResource.SETTINGS, AuthPermission.DELETE))
+):
     """Delete a specific setting in the database"""
 
     # does the setting exist?

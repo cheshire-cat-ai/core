@@ -13,8 +13,8 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from cat.factory.auth_handler import get_auth_handler_from_name
-import cat.factory.auth_handler as auth_handlers
 from cat.factory.custom_auth_handler import CoreAuthHandler
+import cat.factory.auth_handler as auth_handlers
 from cat.db import crud, models
 from cat.factory.custom_llm import CustomOpenAI
 from cat.factory.embedder import get_embedder_from_name
@@ -235,9 +235,6 @@ class CheshireCat:
     def load_auth(self):
         """Load auth systems."""
 
-        # Admin panel auth (internal, not customizable)
-        self.core_auth = CoreAuthHandler()
-
         # Custom auth_handler # TODOAUTH: change the name to custom_auth
         selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
 
@@ -281,9 +278,10 @@ class CheshireCat:
 
              # TODOAUTH: use Default
             auth_handler = \
-                auth_handlers.CoreAuthHandlerConfig.get_auth_handler_from_config({})
+                auth_handlers.CloseAuthConfig.get_auth_handler_from_config({})
         
-        self.auth_handler = auth_handler
+        self.custom_auth_handler = auth_handler
+        self.core_auth_handler = CoreAuthHandler()
 
     def load_memory(self):
         """Load LongTerMemory and WorkingMemory."""
