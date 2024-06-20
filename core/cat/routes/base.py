@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request, Body, Query
 from typing import Dict
 import tomli
 from cat.auth.utils import AuthPermission, AuthResource 
-from cat.auth.headers import http_auth, session
+from cat.auth.headers import http_auth
 
 from cat.convo.messages import CatMessage
 

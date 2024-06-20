@@ -51,7 +51,7 @@ class CoreAuthHandler(BaseAuthHandler):
         return None
     
 
-# Default Auth, always deny auth by default.
+# Default Auth, always deny auth by default (only core auth decides).
 class CloseAuthHandler(BaseAuthHandler):
     async def authorize_user_from_token(self, credential: str, auth_resource: AuthResource, auth_permission: AuthPermission) -> AuthUserInfo | None:       
         return None

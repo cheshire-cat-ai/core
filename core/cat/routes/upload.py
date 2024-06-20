@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
 
-from cat.auth.headers import session, http_auth
+from cat.auth.headers import http_auth
 from cat.auth.utils import AuthPermission, AuthResource
 from cat.log import log
 

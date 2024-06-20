@@ -1,13 +1,18 @@
 import asyncio
-from cat.auth.utils import AuthPermission, AuthResource, AuthUserInfo
 from fastapi import (
-    WebSocket,
     Request,
+    HTTPException,
+    WebSocket,
+    WebSocketException,
 )
-from fastapi import HTTPException, WebSocketException
+
+from cat.auth.utils import (
+    AuthPermission,
+    AuthResource,
+    AuthUserInfo,
+)
 from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
-from urllib.parse import parse_qs
 
 
 async def http_extract_credential(request: Request) -> str | None:
@@ -29,15 +34,16 @@ async def http_extract_credential(request: Request) -> str | None:
         )
         return access_token_header
 
-    # no token found
+    # no token found 
     return None  
 
-async def ws_extract_credential(websocket: WebSocket) -> AuthUserInfo | None:
+async def ws_extract_credential(websocket: WebSocket) -> str | None:
     """
     Extract token from WebSocket query string
     """
-    query_params = parse_qs(websocket.url.query)
-    return query_params.get("token", [None])[0]
+    # TODOAUTH: is there a more secure way to pass the token over websocket?
+    #   Headers do not work from the browser
+    return websocket.query_params.get("token", None)
 
 
 def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayCat:
@@ -62,7 +68,8 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
 
         """
     async def ws_auth(
-            websocket: WebSocket
+            websocket: WebSocket,
+            legacy_user_id: str = None, # legacy user_id passed in websocket url path
         ) -> None | StrayCat:
         """Authenticate websocket connection.
 
@@ -111,17 +118,18 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
         # extract credential from request
         credential = await ws_extract_credential(websocket)
 
-        # try to get user from local idp
-        core_auth_handler = websocket.app.state.ccat.core_auth_handler
-        local_user_info = await core_auth_handler.authorize_user_from_token(credential, resource, permission)
-        if local_user_info:
-            return await get_user_stray(local_user_info)
-
-        # try to get user from auth_handler
-        custom_auth_handler = websocket.app.state.ccat.custom_auth_handler
-        auth_handler_user_info: AuthUserInfo = await custom_auth_handler.authorize_user_from_token(credential, resource, permission)
-        if auth_handler_user_info:
-            return await get_user_stray(auth_handler_user_info)
+        auth_handlers = [
+            # try to get user from local idp
+            websocket.app.state.ccat.core_auth_handler,
+            # try to get user from auth_handler
+            websocket.app.state.ccat.custom_auth_handler
+        ]
+        for ah in auth_handlers:
+            user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
+            if user_info:
+                if legacy_user_id:
+                    user_info.user_id = legacy_user_id
+                return await get_user_stray(user_info)
         
         raise WebSocketException(
             code=1004,
@@ -149,7 +157,7 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> None | Stra
             Error with status code `403` if the request is not allowed.
         """
 
-        def get_user_stray(user_info: AuthUserInfo):
+        async def get_user_stray(user_info: AuthUserInfo):
             strays = request.app.state.strays
             event_loop = request.app.state.event_loop
 
@@ -164,18 +172,20 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> None | Stra
         
         # extract credential from request
         credential = await http_extract_credential(request)
+        legacy_user_id = request.headers.get("user_id", "user")
 
-        # try to get user from local idp
-        core_auth_handler = request.app.state.ccat.core_auth_handler
-        local_auth = await core_auth_handler.authorize_user_from_token(credential, resource, permission) 
-        if local_auth:
-            return get_user_stray(local_auth)
-
-        # try to get user from auth_handler
-        custom_auth_handler = request.app.state.ccat.custom_auth_handler
-        user_info: AuthUserInfo = await custom_auth_handler.authorize_user_from_token(credential, resource, permission)
-        if user_info:
-            return get_user_stray(user_info)
+        auth_handlers = [
+            # try to get user from local idp
+            request.app.state.ccat.core_auth_handler,
+            # try to get user from auth_handler
+            request.app.state.ccat.custom_auth_handler
+        ]
+        for ah in auth_handlers:
+            user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
+            if user_info:
+                if legacy_user_id:
+                    user_info.user_id = legacy_user_id
+                return await get_user_stray(user_info)
 
         raise HTTPException(
             status_code=403,
@@ -231,13 +241,13 @@ async def frontend_auth(request: Request) -> None | StrayCat:
     )
 
 # get or create session (StrayCat)
-# TODOAUTH: substitute this with http_auth
-def session(request: Request) -> StrayCat:
+# TODOAUTH: remove this method
+# def session(request: Request) -> StrayCat:
 
-    strays = request.app.state.strays
-    user_id = request.headers.get("user_id", "user")
-    event_loop = request.app.state.event_loop
+#     strays = request.app.state.strays
+#     user_id = request.headers.get("user_id", "user")
+#     event_loop = request.app.state.event_loop
     
-    if user_id not in strays.keys():
-        strays[user_id] = StrayCat(user_id=user_id, main_loop=event_loop)
-    return strays[user_id]
+#     if user_id not in strays.keys():
+#         strays[user_id] = StrayCat(user_id=user_id, main_loop=event_loop)
+#     return strays[user_id]

@@ -1,7 +1,7 @@
 from typing import Dict
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
-from cat.auth.headers import session, http_auth
+from cat.auth.headers import http_auth
 from cat.auth.utils import AuthPermission, AuthResource
 
 router = APIRouter()
