@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-AuthResource = Enum('AuthResource', ['STATUS', 'MEMORY', 'CONVERSATION', 'SETTINGS', 'LLM', 'EMBEDDER', 'AUTH_HANDLER', 'UPLOAD', 'PLUGINS', "ADMIN"])
+AuthResource = Enum('AuthResource', ['STATUS', 'MEMORY', 'CONVERSATION', 'SETTINGS', 'LLM', 'EMBEDDER', 'AUTH_HANDLER', 'UPLOAD', 'PLUGINS', "ADMIN", "STATIC"])
 AuthPermission = Enum('AuthPermission', ['WRITE', 'EDIT', 'LIST', 'READ', 'DELETE'])
 
 class AuthUserInfo(BaseModel):
