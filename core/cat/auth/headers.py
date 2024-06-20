@@ -69,7 +69,7 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
         """
     async def ws_auth(
             websocket: WebSocket,
-            legacy_user_id: str = None, # legacy user_id passed in websocket url path
+            legacy_user_id: str = "user", # legacy user_id passed in websocket url path
         ) -> None | StrayCat:
         """Authenticate websocket connection.
 
@@ -128,6 +128,7 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
             user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
             if user_info:
                 if legacy_user_id:
+                    log.warning("Deprecation Warning: Passing `user_id` via endpoint path as /ws/{user_id}/ will not be supported in v2.")
                     user_info.user_id = legacy_user_id
                 return await get_user_stray(user_info)
         
@@ -184,6 +185,7 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> None | Stra
             user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
             if user_info:
                 if legacy_user_id:
+                    log.warning("Deprecation Warning: Passing `user_id` via request headers will not be supported in v2.")
                     user_info.user_id = legacy_user_id
                 return await get_user_stray(user_info)
 
