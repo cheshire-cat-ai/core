@@ -8,8 +8,9 @@ from langchain_community.llms import (
 from langchain_openai import ChatOpenAI
 from langchain_cohere import ChatCohere
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.chat_models import BedrockChat
 
-from typing import Type
+from typing import Type, ClassVar
 import json
 from pydantic import BaseModel, ConfigDict
 
@@ -283,6 +284,28 @@ class LLMGeminiChatConfig(LLMSettings):
     )
 
 
+class LLMBedrockChatConfig(LLMSettings):
+    """Configuration for Bedrock Chat model
+    """
+
+    model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0"
+    model_kwargs: ClassVar = {
+        "temperature": 0.7,
+        "top_p": 1,
+        "top_k": 2,
+    }
+
+    _pyclass: Type = BedrockChat
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "AWS Bedrock",
+            "description": "Configuration for Bedrock AWS LLM",
+            "link": "",
+        }
+    )
+
+
 def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
@@ -297,6 +320,7 @@ def get_allowed_language_models():
         LLMOpenAICompatibleConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
+        LLMBedrockChatConfig,
     ]
 
     mad_hatter_instance = MadHatter()
