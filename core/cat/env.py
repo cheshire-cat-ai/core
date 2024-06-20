@@ -16,6 +16,9 @@ def get_supported_env_variables():
         "CCAT_QDRANT_API_KEY": None,
         "CCAT_SAVE_MEMORY_SNAPSHOTS": "false",
         "CCAT_METADATA_FILE": "cat/data/metadata.json",
+        "AWS_ACCESS_KEY_ID": "",
+        "AWS_SECRET_ACCESS_KEY": "",
+        "AWS_DEFAULT_REGION": "",
     }
 
 

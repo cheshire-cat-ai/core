@@ -20,6 +20,7 @@ COPY ./pyproject.toml /app/pyproject.toml
 WORKDIR /app
 RUN pip install -U pip && \
     pip install --no-cache-dir . &&\
+    pip install boto3 &&\
     python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')"
 
 ### COPY CAT CODE INSIDE THE CONTAINER (so it can be run standalone) ###
