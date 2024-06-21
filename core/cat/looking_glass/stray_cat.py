@@ -417,7 +417,7 @@ class StrayCat:
             # Send error as websocket message
             self.send_error(e)
     
-    def classify(self, sentence: str, labels: List[str] | Dict[str, List[str]]) -> str:
+    def classify(self, sentence: str, labels: List[str] | Dict[str, List[str]]) -> str | None:
         """Classify a sentence.
         
         Parameters
@@ -448,7 +448,7 @@ class StrayCat:
 
         """
 
-        if type(labels) in [dict, Dict]:
+        if isinstance(labels, dict):
             labels_names = labels.keys()
             examples_list = "\n\nExamples:"
             for label, examples in labels.items():
@@ -469,11 +469,10 @@ Allowed classes are:
 "{sentence}" -> """
 
         response = self.llm(prompt)
-        log.critical(response)
+        log.info(response)
 
-        for l in labels_names:
-            if l in response:
-                return l
+        if response in labels_names:
+            return response
         
         return None
 
