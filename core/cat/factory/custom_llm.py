@@ -88,13 +88,6 @@ class CustomOpenAI(ChatOpenAI):
 
 class CustomOllama(ChatOllama):
     def __init__(self, **kwargs: Any) -> None:
-        if "localhost" in kwargs["base_url"]:
-            log.error(
-                "you cannot use localhost as host, use instead the machine ip. You can find it by using 'ifconfig' in "
-                "linux or 'ipconfig' in windows")
-            raise HTTPException(400,
-                                "you cannot use localhost as host, use instead the machine ip. You can find it by "
-                                "using 'ifconfig' in linux or 'ipconfig' in windows")
         if kwargs["base_url"].endswith("/"):
             kwargs["base_url"] = kwargs["base_url"][:-1]
         super().__init__(**kwargs)

@@ -2,7 +2,9 @@ from typing import Dict
 
 from cat.db import crud, models
 from cat.factory.auth_handler import get_allowed_auth_handler_strategies, get_auth_handlers_schemas
-from fastapi import Request, APIRouter, Body, HTTPException
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from cat.auth.headers import http_auth
+from cat.auth.utils import AuthPermission, AuthResource
 
 router = APIRouter()
 
@@ -10,7 +12,7 @@ AUTH_HANDLER_SELECTED_NAME = "auth_handler_selected"
 
 AUTH_HANDLER_CATEGORY = "auth_handler_factory"
 
-@router.get("/settings")
+@router.get("/settings", dependencies=[Depends(http_auth(AuthResource.AUTH_HANDLER, AuthPermission.LIST))])
 def get_auth_handler_settings(request: Request) -> Dict:
     """Get the list of the AuthHandlers"""
 
@@ -43,7 +45,7 @@ def get_auth_handler_settings(request: Request) -> Dict:
         "selected_configuration": selected,
     }
 
-@router.get("/settings/{auth_handler_name}")
+@router.get("/settings/{auth_handler_name}", dependencies=[Depends(http_auth(AuthResource.AUTH_HANDLER, AuthPermission.READ))])
 def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
     """Get the settings of a specific AuthHandler"""
 
@@ -72,7 +74,7 @@ def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
         "schema": schema
     }
 
-@router.put("/settings/{auth_handler_name}")
+@router.put("/settings/{auth_handler_name}", dependencies=[Depends(http_auth(AuthResource.AUTH_HANDLER, AuthPermission.EDIT))])
 def upsert_authenticator_setting(
     request: Request,
     auth_handler_name: str,

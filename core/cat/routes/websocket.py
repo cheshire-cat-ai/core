@@ -1,7 +1,9 @@
 import traceback
 import asyncio
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from cat.auth.utils import AuthPermission, AuthResource 
+from cat.auth.headers import ws_auth
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
@@ -25,43 +27,15 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
 
 
 @router.websocket("/ws")
-@router.websocket("/ws/{user_id}")
+@router.websocket("/ws/{legacy_user_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
-    user_id: str = "user",
-    token: str | None = None,
-    access_token: str | None = None
-    # other query params can be added (i.e. for custom auth)
-    #  and they will be stored in websocket.query_params
+    stray = Depends(ws_auth(AuthResource.CONVERSATION, AuthPermission.WRITE))
 ):
     """
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
-
-    # Retrieve sessions
-    strays = websocket.app.state.strays
-
-    # Skip the coroutine if the same user is already connected via WebSocket.
-    if user_id in strays.keys():
-        stray = strays[user_id]       
-        # Close previus ws connection
-        if stray._StrayCat__ws:
-            await stray._StrayCat__ws.close()
-        # Set new ws connection
-        stray._StrayCat__ws = websocket 
-        log.info(f"New websocket connection for user '{user_id}', the old one has been closed.")
-        
-    else:
-        # Temporary conversation-based `cat` object as seen from hooks and tools.
-        # Contains working_memory and utility pointers to main framework modules
-        # It is passed to both memory recall and agent to read/write working memory
-        stray = StrayCat(
-            ws=websocket,
-            user_id=user_id,
-            main_loop=asyncio.get_running_loop()
-        )
-        strays[user_id] = stray
-
+    
     # Add the new WebSocket connection to the manager.
     await websocket.accept()
     try:

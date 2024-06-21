@@ -48,15 +48,16 @@ def test_api_key_ws(secure_client):
 
     # forbid access if CCAT_API_KEY_WS is wrong
     query_params = {
-        "access_token": "wrong"
+        "token": "wrong"
     }
     with pytest.raises(Exception) as e_info:
         res = send_websocket_message(mex, secure_client, query_params=query_params)
     assert str(e_info.type.__name__) == 'WebSocketDisconnect'
     
     # allow access if CCAT_API_KEY_WS is right
+    # TODOAUTH: is there a more secure way to pass the token over websocket?
     query_params = {
-        "access_token": "meow_ws"
+        "token": "meow_ws"
     }
     res = send_websocket_message(mex, secure_client, query_params=query_params)
     assert "You did not configure" in res["content"]
