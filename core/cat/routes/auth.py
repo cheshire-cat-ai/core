@@ -100,7 +100,7 @@ async def auth_index(request: Request, referer: str = Query(None), retry: int = 
     templates = Jinja2Templates(directory="cat/routes/static/core_static_folder/")
     return templates.TemplateResponse(
         request=request,
-        name="login/login.html",
+        name="auth/login.html",
         context=template_context
     )
 
