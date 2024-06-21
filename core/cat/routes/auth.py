@@ -9,6 +9,8 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
 
 #from cat.auth.jwt import create_access_token
 from cat.env import get_env
@@ -66,7 +68,10 @@ async def core_login_token(request: Request, response: Response):
     
     # credentials are wrong, wait a second (for brute force attacks) and go back to login
     await asyncio.sleep(1)
-    referer_query = urlencode({"referer": form_data["referer"]})
+    referer_query = urlencode({
+        "referer": form_data["referer"],
+        "retry": 1,
+    })
     login_url = f"/auth/login?{referer_query}"
     response = RedirectResponse(
         url=login_url,
@@ -77,27 +82,27 @@ async def core_login_token(request: Request, response: Response):
 
 # TODOAUTH to define core login flow
 @router.get("/login")
-async def auth_index(request: Request, referer: str = Query(None)):
+async def auth_index(request: Request, referer: str = Query(None), retry: int = Query(0)):
     """Core login form, used when no external Identity Provider is configured"""
 
-    return HTMLResponse(f"""                   
-<form action="/auth/redirect" method="POST">
-    <h1>^._.^</h1>
-    <h3>Enjoy this top notch login form design.</h3>
-    <div>
-        <input type="text" id="username" name="username" required placeholder="Username">
-    </div>
-    <div>
-        <input type="password" id="password" name="password" required placeholder="Password">
-    </div>
-    <div>
-        <input type="hidden" name="referer" value="{referer}">
-    </div>
-    <div>
-        <button type="submit">Login</button>
-    </div>
-</form>
-    """)
+    error_message = ""
+    if retry == 1:
+        error_message = "Invalid Credentials"
+
+    if referer is None:
+        referer = "/admin/"
+
+    template_context = {
+        "referer": referer,
+        "error_message": error_message
+    }
+
+    templates = Jinja2Templates(directory="cat/routes/static/core_static_folder/")
+    return templates.TemplateResponse(
+        request=request,
+        name="login/login.html",
+        context=template_context
+    )
 
 
 # TODOAUTH /logout endpoint

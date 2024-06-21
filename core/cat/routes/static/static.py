@@ -24,5 +24,11 @@ class AuthStatic(StaticFiles):
             )
 
 def mount(cheshire_cat_api):
+
+    # static files folder available to plugins
+    # TODOAUTH: test static files auth
     cheshire_cat_api.mount("/static/", AuthStatic(directory="cat/static"), name="static")
+
+    # internal static files folder
+    cheshire_cat_api.mount("/core-static/", StaticFiles(directory="cat/routes/static/core_static_folder/"), name="core-static")
 
