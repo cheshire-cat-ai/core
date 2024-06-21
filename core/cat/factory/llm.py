@@ -17,6 +17,8 @@ from pydantic import BaseModel, ConfigDict
 from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
 from cat.mad_hatter.mad_hatter import MadHatter
 
+from cat.factory.custom_llm import CustomBedrock
+
 
 # Base class to manage LLM configuration.
 class LLMSettings(BaseModel):
@@ -289,19 +291,21 @@ class LLMBedrockChatConfig(LLMSettings):
     """
 
     model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0"
-    model_kwargs: ClassVar = {
-        "temperature": 0.7,
-        "top_p": 1,
-        "top_k": 2,
-    }
+    temperature: float = 0.7
+    top_p: float = 1
+    top_k: float = 2
 
-    _pyclass: Type = BedrockChat
+    _pyclass: Type = CustomBedrock
+
+    @classmethod
+    def get_llm_from_config(cls, config):
+        return cls._pyclass.default(**config)
 
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "AWS Bedrock",
-            "description": "Configuration for Bedrock AWS LLM",
-            "link": "",
+            "description": "Configuration for AWS Bedrock LLMs",
+            "link": "https://aws.amazon.com/bedrock/",
         }
     )
 
@@ -319,8 +323,8 @@ def get_allowed_language_models():
         LLMOllamaConfig,
         LLMOpenAICompatibleConfig,
         LLMCustomConfig,
-        LLMDefaultConfig,
         LLMBedrockChatConfig,
+        LLMDefaultConfig,
     ]
 
     mad_hatter_instance = MadHatter()
