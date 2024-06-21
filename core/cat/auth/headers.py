@@ -1,10 +1,13 @@
 import asyncio
+from urllib.parse import urlencode
+
 from fastapi import (
     Request,
     HTTPException,
     WebSocket,
     WebSocketException,
 )
+from fastapi.responses import RedirectResponse
 
 from cat.auth.utils import (
     AuthPermission,
@@ -196,7 +199,7 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> None | Stra
     return http_auth
 
 async def frontend_auth(request: Request) -> None | StrayCat:
-    """Authenticate the admin panle and other webapps / single page apps, with access token in GET query params.
+    """Authenticate the admin panel and other core webapps / single page apps, with ccat_user_token cookie.
 
     Parameters
     ----------
@@ -235,21 +238,12 @@ async def frontend_auth(request: Request) -> None | StrayCat:
             return strays[user_id]
 
     # no token or invalid token, redirect to login
+    referer_query = urlencode({"referer": request.url.path})
     raise HTTPException(
         status_code=307,
         headers={
-            "Location": "/auth/core_login"
+            "Location": f"/auth/login?{referer_query}"
+            # TODOAUTH: cannot manage to make the Referer header to work
+            # "Referer": request.url.path
         }
     )
-
-# get or create session (StrayCat)
-# TODOAUTH: remove this method
-# def session(request: Request) -> StrayCat:
-
-#     strays = request.app.state.strays
-#     user_id = request.headers.get("user_id", "user")
-#     event_loop = request.app.state.event_loop
-    
-#     if user_id not in strays.keys():
-#         strays[user_id] = StrayCat(user_id=user_id, main_loop=event_loop)
-#     return strays[user_id]

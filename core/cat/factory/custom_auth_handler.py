@@ -45,7 +45,7 @@ class CoreAuthHandler(BaseAuthHandler):
                 user_data=payload # TODOAUTH: maybe not the whole payload?
             )
         except Exception as e:
-            log.error("Could not decode JWT")
+            log.error(f"Could not decode JWT {credential}; {e}")
 
         # do not pass
         return None

@@ -1,8 +1,10 @@
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from cat.auth.headers import frontend_auth
 from fastapi import Depends
+
+from cat.auth.headers import frontend_auth
+from cat.looking_glass.stray_cat import StrayCat
 
 def mount(cheshire_cat_api):
 
@@ -18,8 +20,7 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/")
     @cheshire_cat_api.get("/admin/{page}")
     @cheshire_cat_api.get("/admin/{page}/")
-    # TODOAUTH to defined login flow def get_injected_admin(stray: str = Depends(frontend_auth)):
-    def get_injected_admin(stray: str = Depends(frontend_auth)):
+    def get_injected_admin(stray: StrayCat = Depends(frontend_auth)):
 
         # TODOAUTH: what do we do with the stray here?
         # TODOAUTH: stray should be a Depends in every endpoint

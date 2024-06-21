@@ -29,7 +29,7 @@ async def test_issue_jwt(client):
         "username": "admin",
         "password": "admin" # TODOAUTH: check custom credentials
     }
-    res = client.post("/auth/token", data=creds)
+    res = client.post("/auth/token", json=creds)
 
     assert res.status_code == 200
 
@@ -66,7 +66,7 @@ def test_refuse_issue_jwt(client):
         "username": "admin",
         "password": "wrong"
     }
-    res = client.post("/auth/token", data=creds)
+    res = client.post("/auth/token", json=creds)
 
     # wrong credentials
     assert res.status_code == 403
