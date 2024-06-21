@@ -56,11 +56,11 @@ class CloseAuthHandler(BaseAuthHandler):
     async def authorize_user_from_token(self, credential: str, auth_resource: AuthResource, auth_permission: AuthPermission) -> AuthUserInfo | None:       
         return None
         
-# Api Key Auth, require CCAT_API_KEY usage for admin permissions and CCAT_PUBLIC_API_KEY for chat only permission
+# Api Key Auth, require CCAT_API_KEY usage for admin permissions and CCAT_API_KEY_WS for chat only permission
 class ApiKeyAuthHandler(BaseAuthHandler):
     async def authorize_user_from_token(self, credential: str, auth_resource: AuthResource, auth_persmission: AuthPermission) -> AuthUserInfo | None:       
         environment_api_key = get_env("CCAT_API_KEY")
-        environment_public_api_key = get_env("CCAT_PUBLIC_API_KEY")
+        environment_public_api_key = get_env("CCAT_API_KEY_WS")
 
         if auth_resource == AuthResource.CONVERSATION and auth_persmission == AuthPermission.WRITE and credential == environment_public_api_key:
             return AuthUserInfo(

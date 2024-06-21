@@ -46,38 +46,10 @@ class ApiKeyAuthConfig(AuthHandlerConfig):
     )
 
 
-"""
-class AuthEnvironmentVariablesConfig(AuthHandlerConfig):
-    _pyclass: Type = AuthEnvironmentVariables
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "No AuthHandler",
-            "description": "No auth_handler is used. All requests are allowed.",
-            "link": "",
-        }
-    )
-
-class AuthApiKeyConfig(AuthHandlerConfig):
-    api_key_http: str
-    api_key_ws: str
-    _pyclass: Type = AuthApiKey
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "API Key AuthHandler",
-            "description": 'Authorize requests based on API key',
-            "link": "",
-        }
-    )
-"""
-
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
         CloseAuthConfig,
         ApiKeyAuthConfig,
-        #AuthEnvironmentVariablesConfig,
-        #AuthApiKeyConfig,
     ]
 
     mad_hatter_instance = MadHatter()

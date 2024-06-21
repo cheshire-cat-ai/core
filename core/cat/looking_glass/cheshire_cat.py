@@ -243,7 +243,7 @@ class CheshireCat:
             # create the auth settings
             crud.upsert_setting_by_name(
                 models.Setting(
-                    name="AuthEnvironmentVariablesConfig",
+                    name="CloseAuthConfig",
                     category="auth_handler_factory",
                     value={}
                 )
@@ -252,7 +252,7 @@ class CheshireCat:
                 models.Setting(
                     name="auth_handler_selected",
                     category="auth_handler_factory",
-                    value={"name": "AuthEnvironmentVariablesConfig"}
+                    value={"name": "CloseAuthConfig"}
                 )
             )
 
@@ -271,12 +271,11 @@ class CheshireCat:
             auth_handler = FactoryClass.get_auth_handler_from_config(
                 selected_auth_handler_config["value"]
             )
-        except AttributeError as e:
+        except Exception as e:
             import traceback
 
             traceback.print_exc()
 
-             # TODOAUTH: use Default
             auth_handler = \
                 auth_handlers.CloseAuthConfig.get_auth_handler_from_config({})
         
