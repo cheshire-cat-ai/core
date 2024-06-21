@@ -1,10 +1,11 @@
-from typing import Optional, List, Any, Mapping, Dict
+from typing import Optional, List, Any, Mapping, Dict, ClassVar, Type
 import requests
 from fastapi import HTTPException
 
 from langchain_core.language_models.llms import LLM
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_community.chat_models.ollama import ChatOllama
+from langchain_community.chat_models import BedrockChat
 
 from cat.log import log
 
@@ -85,7 +86,6 @@ class CustomOpenAI(ChatOpenAI):
         )
 
 
-
 class CustomOllama(ChatOllama):
     def __init__(self, **kwargs: Any) -> None:
         if "localhost" in kwargs["base_url"]:
@@ -98,3 +98,19 @@ class CustomOllama(ChatOllama):
         if kwargs["base_url"].endswith("/"):
             kwargs["base_url"] = kwargs["base_url"][:-1]
         super().__init__(**kwargs)
+
+
+class CustomBedrock(BedrockChat):
+    """Configuration for Bedrock Chat model
+    """
+
+    def __init__(self, model_id, temperature, top_p, top_k, **kwargs: Any):
+        super().__init__(
+            model_id=model_id,
+            model_kwargs={
+                "temperature": temperature,
+                "top_p": top_p,
+                "top_k": top_k,
+            },
+            **kwargs
+        )
