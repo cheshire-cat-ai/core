@@ -22,8 +22,8 @@ def test_stray_nlp(stray):
     assert "You did not configure" in res
 
     embedding = stray.embedder.embed_documents(["hey"])
-    assert type(embedding[0]) == list
-    assert type(embedding[0][0]) == float
+    assert isinstance(embedding[0], list)
+    assert isinstance(embedding[0][0], float)
 
 
 def test_stray_call(stray):

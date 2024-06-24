@@ -28,7 +28,7 @@ def test_memory_collection_episodic_stores_messages(client):
     # send message via websocket
     message = {"text": "Meow"}
     res = send_websocket_message(message, client)
-    assert type(res["content"]) == str
+    assert isinstance(res["content"], str)
 
     # episodic memory should now contain one point
     collections_n_points = get_collections_names_and_point_count(client)
@@ -49,7 +49,7 @@ def test_memory_collection_episodic_cleared(client):
     # send message via websocket
     message = {"text": "Meow"}
     res = send_websocket_message(message, client)
-    assert type(res["content"]) == str
+    assert isinstance(res["content"], str)
 
     # episodic memory should now contain one point
     collections_n_points = get_collections_names_and_point_count(client)

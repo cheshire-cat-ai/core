@@ -9,7 +9,7 @@ def test_get_all_auth_handler_settings(client):
     json = response.json()
 
     assert response.status_code == 200
-    assert type(json["settings"]) == list
+    assert isinstance(json["settings"], list)
     assert len(json["settings"]) == len(AUTH_HANDLER_SCHEMAS)
 
     for setting in json["settings"]:

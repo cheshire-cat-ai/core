@@ -8,7 +8,7 @@ def test_get_all_plugin_settings(client, just_installed_plugin):
     installed_plugins = ["core_plugin", "mock_plugin"]
 
     assert response.status_code == 200
-    assert type(json["settings"]) == list
+    assert isinstance(json["settings"], list)
     assert len(json["settings"]) == len(installed_plugins)
 
     for setting in json["settings"]:

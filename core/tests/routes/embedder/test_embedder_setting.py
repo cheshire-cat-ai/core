@@ -10,7 +10,7 @@ def test_get_all_embedder_settings(client):
     json = response.json()
 
     assert response.status_code == 200
-    assert type(json["settings"]) == list
+    assert isinstance(json["settings"], list)
     assert len(json["settings"]) == len(EMBEDDER_SCHEMAS)
 
     for setting in json["settings"]:

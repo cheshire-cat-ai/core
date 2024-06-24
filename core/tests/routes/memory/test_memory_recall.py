@@ -10,8 +10,8 @@ def test_memory_recall_default_success(client):
 
     # query was received and embedded
     assert json["query"]["text"] == params["text"]
-    assert type(json["query"]["vector"]) == list
-    assert type(json["query"]["vector"][0]) == float
+    assert isinstance(json["query"]["vector"], list)
+    assert isinstance(json["query"]["vector"][0], float)
 
     # results are grouped by collection
     assert len(json["vectors"]["collections"]) == 3
@@ -21,7 +21,7 @@ def test_memory_recall_default_success(client):
 
     # initial collections contents
     for collection in json["vectors"]["collections"].keys():
-        assert type(json["vectors"]["collections"][collection]) == list
+        assert isinstance(json["vectors"]["collections"][collection], list)
         if collection == "procedural":
             assert len(json["vectors"]["collections"][collection]) > 0
         else:

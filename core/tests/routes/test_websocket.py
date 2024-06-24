@@ -7,7 +7,7 @@ def check_correct_websocket_reply(reply):
         assert k in reply.keys()
 
     assert reply["type"] != "error"
-    assert type(reply["content"]) == str
+    assert isinstance(reply["content"], str)
     assert "You did not configure" in reply["content"]
     assert len(reply["why"].keys()) > 0
 

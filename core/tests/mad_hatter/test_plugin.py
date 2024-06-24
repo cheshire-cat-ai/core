@@ -46,7 +46,7 @@ def test_create_plugin(plugin):
     assert plugin.id == "mock_plugin"
 
     # manifest
-    assert type(plugin.manifest) == dict
+    assert isinstance(plugin.manifest, dict)
     assert plugin.manifest["id"] == plugin.id
     assert plugin.manifest["name"] == "MockPlugin"
     assert "Description not found" in plugin.manifest["description"]

@@ -90,7 +90,7 @@ def test_points_deleted_by_metadata(client):
     # check memory contents
     assert res.status_code == 200
     json = res.json()
-    assert type(json["deleted"]) == list
+    assert isinstance(json["deleted"], list)
     # assert len(json["deleted"]) == expected_chunks
     declarative_memories = get_declarative_memory_contents(client)
     assert len(declarative_memories) == expected_chunks
