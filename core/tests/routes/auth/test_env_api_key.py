@@ -1,17 +1,8 @@
-import os
 import pytest
 from tests.utils import send_websocket_message
 
-
-@pytest.fixture
-def secure_client(client):
-    # set ENV variables
-    os.environ["CCAT_API_KEY"] = "meow_http"
-    os.environ["CCAT_API_KEY_WS"] = "meow_ws"
-    yield client
-    del os.environ["CCAT_API_KEY"]
-    del os.environ["CCAT_API_KEY_WS"]
-
+# these tests use the secure_client fixture defined in conftest.py
+# the fixture sets both CCAT_API_KEY and CCAT_API_KEY_WS to "meow_http" and "meow_ws" respectively
 
 @pytest.mark.parametrize("header_name", ["Authorization", "access_token"])
 def test_api_key_http(secure_client, header_name):

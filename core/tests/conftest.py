@@ -6,7 +6,6 @@ from typing import Generator
 
 from qdrant_client import QdrantClient
 
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import pytest
@@ -87,11 +86,22 @@ def client(monkeypatch) -> Generator[TestClient, Any, None]:
     # clean up tmp files and folders (useful when tests fail)
     clean_up_mocks()
 
+# This fixture sets the CCAT_API_KEY and CCAT_API_KEY_WS environment variables,
+# making mandatory for clients to possess api keys or JWT
+@pytest.fixture(scope="function")
+def secure_client(client):
+    # set ENV variables
+    os.environ["CCAT_API_KEY"] = "meow_http"
+    os.environ["CCAT_API_KEY_WS"] = "meow_ws"
+    yield client
+    del os.environ["CCAT_API_KEY"]
+    del os.environ["CCAT_API_KEY_WS"]
+
 
 # This fixture is useful to write tests in which
 #   a plugin was just uploaded via http.
 #   It wraps any test function having `just_installed_plugin` as an argument
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def just_installed_plugin(client):
     ### executed before each test function
 
