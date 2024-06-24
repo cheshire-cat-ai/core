@@ -35,7 +35,9 @@ async def authenticate_local_user(username: str, password: str) -> str | None:
     # TODOAUTH: where do we store admin user and pass?
     if username == "admin" and password == "admin":
         # TODOAUTH: expiration with timezone needs to be tested
-        expire = datetime.now(utc) + timedelta(minutes=get_env("CCAT_JWT_EXPIRE_MINUTES"))
+        # using seconds for easier testing
+        expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60
+        expire = datetime.now(utc) + timedelta(seconds=expire_delta_in_seconds)
         # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
         return jwt.encode(
             dict(
