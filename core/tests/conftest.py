@@ -67,33 +67,25 @@ def clean_up_mocks():
                 os.remove(tbr)
 
 
+# Main fixture for the FastAPI app
 @pytest.fixture(scope="function")
-def app(monkeypatch) -> Generator[FastAPI, Any, None]:
-    """
-    Create a new setup on each test case, with new mocks for both Qdrant and TinyDB
-    """
-
-    # monkeypatch classes
-    mock_classes(monkeypatch)
-
-    # clean up tmp files and folders
-    clean_up_mocks()
-
-    # delete all singletons!!!
-    utils.singleton.instances = {}
-
-    _app = cheshire_cat_api
-    yield _app
-
-
-@pytest.fixture(scope="function")
-def client(app: FastAPI, monkeypatch) -> Generator[TestClient, Any, None]:
+def client(monkeypatch) -> Generator[TestClient, Any, None]:
     """
     Create a new FastAPI TestClient.
     """
 
-    with TestClient(app) as client:
+    # clean up tmp files and folders
+    clean_up_mocks()
+    # monkeypatch classes
+    mock_classes(monkeypatch)
+    # delete all singletons!!!
+    utils.singleton.instances = {}
+    
+    with TestClient(cheshire_cat_api) as client:
         yield client
+
+    # clean up tmp files and folders (useful when tests fail)
+    clean_up_mocks()
 
 
 # This fixture is useful to write tests in which

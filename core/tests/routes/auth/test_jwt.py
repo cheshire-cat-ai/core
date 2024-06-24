@@ -110,3 +110,5 @@ async def test_jwt_expiration(client):
     # restore default envs
     del os.environ["CCAT_JWT_EXPIRE_MINUTES"]
     del os.environ["CCAT_API_KEY"]
+
+# TODOAUTH: test ws endpoint can get user_id from JWT
