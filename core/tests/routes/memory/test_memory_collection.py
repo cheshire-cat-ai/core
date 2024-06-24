@@ -57,7 +57,6 @@ def test_memory_collection_episodic_cleared(client):
 
     # delete episodic memory
     response = client.delete("/memory/collections/episodic")
-    json = response.json()
     assert response.status_code == 200
 
     # episodic memory should be empty
@@ -72,7 +71,6 @@ def test_memory_collection_procedural_has_tools_after_clear(client):
 
     # delete procedural memory
     response = client.delete("/memory/collections/procedural")
-    json = response.json()
     assert response.status_code == 200
 
     # tool should be automatically re-embedded after memory deletion
@@ -83,7 +81,7 @@ def test_memory_collection_procedural_has_tools_after_clear(client):
 def test_memory_collections_wipe(client):
     # create episodic memory
     message = {"text": "Meow"}
-    res = send_websocket_message(message, client)
+    send_websocket_message(message, client)
 
     # create declarative memories
     file_name = "sample.txt"
@@ -99,7 +97,6 @@ def test_memory_collections_wipe(client):
 
     # wipe out all memories
     response = client.delete("/memory/collections")
-    json = response.json()
     assert response.status_code == 200
 
     collections_n_points = get_collections_names_and_point_count(client)

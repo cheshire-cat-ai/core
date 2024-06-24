@@ -62,6 +62,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     assert response.status_code == 200
     json = response.json()
     assert json["data"]["id"] == "mock_plugin"
+    assert isinstance(json["data"]["active"], bool)
     assert json["data"]["active"]
 
     # GET plugins endpoint lists the plugin
@@ -72,6 +73,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     assert "mock_plugin" in installed_plugins_names
     # both core_plugin and new_plugin are active
     for p in installed_plugins:
+        assert isinstance(p["active"], bool)
         assert p["active"]
 
     # plugin has been actually extracted in (mock) plugins folder
@@ -88,7 +90,7 @@ def test_list_registry_plugins_without_duplicating_installed_plugins(client):
     # 2. get available plugins searching for the one just installed
     params = {"query": "podcast"}
     response = client.get("/plugins", params=params)
-    json = response.json()
+    #json = response.json()
 
     # 3. plugin should show up among installed by not among registry ones
     assert response.status_code == 200

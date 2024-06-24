@@ -18,10 +18,12 @@ def test_deactivate_plugin(client, just_installed_plugin):
     installed_plugins = response.json()["installed"]
     mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
     assert len(mock_plugin) == 1  # plugin installed
+    assert isinstance(mock_plugin[0]["active"], bool)
     assert not mock_plugin[0]["active"]  # plugin NOT active
 
     # GET single plugin info, plugin is not active
     response = client.get("/plugins/mock_plugin")
+    assert isinstance(response.json()["data"]["active"], bool)
     assert not response.json()["data"]["active"]
 
     # tool has been taken away
@@ -53,10 +55,12 @@ def test_reactivate_plugin(client, just_installed_plugin):
     installed_plugins = response.json()["installed"]
     mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
     assert len(mock_plugin) == 1  # plugin installed
+    assert isinstance(mock_plugin[0]["active"], bool)
     assert mock_plugin[0]["active"]  # plugin active
 
     # GET single plugin info, plugin is active
     response = client.get("/plugins/mock_plugin")
+    assert isinstance(response.json()["data"]["active"], bool)
     assert response.json()["data"]["active"]
 
     # check whether procedures have been re-embedded

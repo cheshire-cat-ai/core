@@ -43,7 +43,7 @@ def test_upload_memory_check_mimetype(client):
         files = {"file": (file_name, f, content_type)}
 
         response = client.post("/rabbithole/memory/", files=files)
-
+    
     assert response.status_code == 400
     assert (
         f"MIME type {content_type} not supported." in response.json()["detail"]["error"]
@@ -63,6 +63,7 @@ def test_upload_memory_check_embedder(client):
                 "file": ("test_file.json", json.dumps(fake_memory), "application/json")
             },
         )
+        assert response.status_code == 200
 
     # ...but found a different embedder
     assert (
@@ -86,6 +87,7 @@ def test_upload_memory_check_dimensionality(client):
                 "file": ("test_file.json", json.dumps(fake_memory), "application/json")
             },
         )
+        assert response.status_code == 200
 
     # ...but found a different embedder
     assert "Embedding size mismatch" in str(e.value)

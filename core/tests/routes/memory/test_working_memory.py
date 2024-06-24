@@ -15,7 +15,7 @@ def test_convo_history_update(client):
     message = "It's late! It's late!"
 
     # send websocket messages
-    res = send_websocket_message({"text": message}, client)
+    send_websocket_message({"text": message}, client)
 
     # check working memory update
     response = client.get("/memory/conversation_history")
@@ -31,7 +31,7 @@ def test_convo_history_update(client):
 
 def test_convo_history_reset(client):
     # send websocket messages
-    res = send_websocket_message({"text": "It's late! It's late!"}, client)
+    send_websocket_message({"text": "It's late! It's late!"}, client)
 
     # delete convo history
     response = client.delete("/memory/conversation_history")
@@ -57,7 +57,7 @@ def test_convo_history_by_user(client):
     for user_id, n_messages in convos.items():
         for m in range(n_messages):
             time.sleep(0.1)
-            res = send_websocket_message(
+            send_websocket_message(
                 {"text": f"Mex n.{m} from {user_id}"}, client, user_id=user_id
             )
 
