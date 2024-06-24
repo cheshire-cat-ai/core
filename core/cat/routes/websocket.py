@@ -1,5 +1,3 @@
-import traceback
-import asyncio
 
 from cat.auth.utils import AuthPermission, AuthResource
 from cat.auth.headers import ws_auth

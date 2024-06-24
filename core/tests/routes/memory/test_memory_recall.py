@@ -1,10 +1,10 @@
-from tests.utils import send_websocket_message, send_n_websocket_messages
+from tests.utils import send_n_websocket_messages
 
 
 # search on default startup memory
 def test_memory_recall_default_success(client):
     params = {"text": "Red Queen"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
 
@@ -30,7 +30,7 @@ def test_memory_recall_default_success(client):
 
 # search without query should throw error
 def test_memory_recall_without_query_error(client):
-    response = client.get(f"/memory/recall")
+    response = client.get("/memory/recall")
     json = response.json()
     assert response.status_code == 400
 
@@ -43,7 +43,7 @@ def test_memory_recall_success(client):
 
     # recall
     params = {"text": "Red Queen"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
     episodic_memories = json["vectors"]["collections"]["episodic"]
@@ -59,7 +59,7 @@ def test_memory_recall_with_k_success(client):
     # recall at max k memories
     max_k = 2
     params = {"k": max_k, "text": "Red Queen"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
     episodic_memories = json["vectors"]["collections"]["episodic"]

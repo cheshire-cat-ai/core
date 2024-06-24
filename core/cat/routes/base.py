@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Body, Query
+from fastapi import APIRouter, Depends, Body
 from typing import Dict
 import tomli
 from cat.auth.utils import AuthPermission, AuthResource

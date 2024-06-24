@@ -1,5 +1,3 @@
-import os
-import time
 
 
 def test_list_plugins(client):

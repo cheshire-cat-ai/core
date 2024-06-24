@@ -25,7 +25,7 @@ def test_create_plugin_wrong_folder():
     with pytest.raises(Exception) as e:
         Plugin("/non/existent/folder")
 
-    assert f"Cannot create" in str(e.value)
+    assert "Cannot create" in str(e.value)
 
 
 def test_create_plugin_empty_folder():
@@ -36,7 +36,7 @@ def test_create_plugin_empty_folder():
     with pytest.raises(Exception) as e:
         Plugin(path)
 
-    assert f"Cannot create" in str(e.value)
+    assert "Cannot create" in str(e.value)
 
 
 def test_create_plugin(plugin):

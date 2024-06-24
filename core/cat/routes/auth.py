@@ -1,4 +1,3 @@
-from typing import Dict
 from pytz import utc
 import asyncio
 from urllib.parse import urlencode
@@ -7,15 +6,13 @@ import jwt
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 
 # from cat.auth.jwt import create_access_token
 from cat.env import get_env
-from cat.factory.custom_auth_handler import BaseAuthHandler
 
-from cat.log import log
 
 router = APIRouter()
 
@@ -122,4 +119,4 @@ async def auth_token(credentials: UserCredentials):
     # Invalid username or password
     # wait a little to avoid brute force attacks
     await asyncio.sleep(1)
-    raise HTTPException(status_code=403, detail={"error": f"Invalid Credentials"})
+    raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})

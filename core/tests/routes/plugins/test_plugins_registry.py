@@ -43,7 +43,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     )
 
     # during tests, the cat uses a different folder for plugins
-    new_plugin_final_folder = f"tests/mocks/mock_plugin_folder/mock_plugin"
+    new_plugin_final_folder = "tests/mocks/mock_plugin_folder/mock_plugin"
 
     if os.path.exists(new_plugin_final_folder):
         shutil.rmtree(new_plugin_final_folder)
@@ -58,7 +58,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     assert response.json()["info"] == "Plugin is being installed asynchronously"
 
     # GET plugin endpoint responds
-    response = client.get(f"/plugins/mock_plugin")
+    response = client.get("/plugins/mock_plugin")
     assert response.status_code == 200
     json = response.json()
     assert json["data"]["id"] == "mock_plugin"

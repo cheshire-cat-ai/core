@@ -1,8 +1,6 @@
-import time
 from json import dumps
 from fastapi.encoders import jsonable_encoder
 from cat.factory.auth_handler import get_auth_handlers_schemas
-from tests.utils import get_procedural_memory_contents
 
 
 def test_get_all_auth_handler_settings(client):

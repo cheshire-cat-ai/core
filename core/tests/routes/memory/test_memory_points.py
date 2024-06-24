@@ -7,7 +7,7 @@ def test_point_deleted(client):
 
     # get point back
     params = {"text": "Mad Hatter"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
     assert len(json["vectors"]["collections"]["episodic"]) == 1
@@ -20,7 +20,7 @@ def test_point_deleted(client):
     assert res.json()["detail"]["error"] == "Collection does not exist."
 
     # delete point (wrong id)
-    res = client.delete(f"/memory/collections/episodic/points/wrong_id")
+    res = client.delete("/memory/collections/episodic/points/wrong_id")
     assert res.status_code == 400
     assert res.json()["detail"]["error"] == "Point does not exist."
 
@@ -31,7 +31,7 @@ def test_point_deleted(client):
 
     # there is no point now
     params = {"text": "Mad Hatter"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
     assert len(json["vectors"]["collections"]["episodic"]) == 0

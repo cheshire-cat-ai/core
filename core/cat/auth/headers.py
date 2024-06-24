@@ -8,7 +8,6 @@ from fastapi import (
     WebSocket,
     WebSocketException,
 )
-from fastapi.responses import RedirectResponse
 
 from cat.auth.utils import (
     AuthPermission,

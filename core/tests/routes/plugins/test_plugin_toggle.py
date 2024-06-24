@@ -1,5 +1,4 @@
 from tests.utils import get_procedural_memory_contents
-from fixture_just_installed_plugin import just_installed_plugin
 
 
 def test_toggle_non_existent_plugin(client, just_installed_plugin):

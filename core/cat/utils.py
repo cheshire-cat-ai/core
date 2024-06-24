@@ -1,7 +1,6 @@
 """Various utiles used from the projects."""
 
 import os
-import inspect
 import traceback
 from datetime import timedelta
 from urllib.parse import urlparse
@@ -115,7 +114,7 @@ def is_https(url):
     try:
         parsed_url = urlparse(url)
         return parsed_url.scheme == "https"
-    except Exception as e:
+    except Exception:
         return False
 
 

@@ -1,4 +1,3 @@
-from os import getenv
 from typing import Type
 from pydantic import BaseModel, ConfigDict
 

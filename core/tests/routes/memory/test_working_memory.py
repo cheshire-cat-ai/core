@@ -4,7 +4,7 @@ from tests.utils import send_websocket_message
 
 def test_convo_history_absent(client):
     # no ws connection, so no convo history available
-    response = client.get(f"/memory/conversation_history")
+    response = client.get("/memory/conversation_history")
     json = response.json()
     assert response.status_code == 200
     assert "history" in json
@@ -18,7 +18,7 @@ def test_convo_history_update(client):
     res = send_websocket_message({"text": message}, client)
 
     # check working memory update
-    response = client.get(f"/memory/conversation_history")
+    response = client.get("/memory/conversation_history")
     json = response.json()
     assert response.status_code == 200
     assert "history" in json
@@ -34,11 +34,11 @@ def test_convo_history_reset(client):
     res = send_websocket_message({"text": "It's late! It's late!"}, client)
 
     # delete convo history
-    response = client.delete(f"/memory/conversation_history")
+    response = client.delete("/memory/conversation_history")
     assert response.status_code == 200
 
     # check working memory update
-    response = client.get(f"/memory/conversation_history")
+    response = client.get("/memory/conversation_history")
     json = response.json()
     assert response.status_code == 200
     assert "history" in json
@@ -64,7 +64,7 @@ def test_convo_history_by_user(client):
     # check working memories
     for user_id, n_messages in convos.items():
         response = client.get(
-            f"/memory/conversation_history/", headers={"user_id": user_id}
+            "/memory/conversation_history/", headers={"user_id": user_id}
         )
         json = response.json()
         assert response.status_code == 200
@@ -82,20 +82,20 @@ def test_convo_history_by_user(client):
 
     # delete White Rabbit convo
     response = client.delete(
-        f"/memory/conversation_history/", headers={"user_id": "White Rabbit"}
+        "/memory/conversation_history/", headers={"user_id": "White Rabbit"}
     )
     assert response.status_code == 200
 
     # check convo deletion per user
     ### White Rabbit convo is empty
     response = client.get(
-        f"/memory/conversation_history/", headers={"user_id": "White Rabbit"}
+        "/memory/conversation_history/", headers={"user_id": "White Rabbit"}
     )
     json = response.json()
     assert len(json["history"]) == 0
     ### Alice convo still the same
     response = client.get(
-        f"/memory/conversation_history/", headers={"user_id": "Alice"}
+        "/memory/conversation_history/", headers={"user_id": "Alice"}
     )
     json = response.json()
     assert len(json["history"]) == convos["Alice"] * 2

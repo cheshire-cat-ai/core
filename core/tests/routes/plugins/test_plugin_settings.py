@@ -1,4 +1,3 @@
-from fixture_just_installed_plugin import just_installed_plugin
 
 
 # endpoint to get settings and settings schema
@@ -24,7 +23,7 @@ def test_get_plugin_settings_non_existent(client, just_installed_plugin):
     json = response.json()
 
     assert response.status_code == 404
-    assert f"not found" in json["detail"]["error"]
+    assert "not found" in json["detail"]["error"]
 
 
 # endpoint to get settings and settings schema

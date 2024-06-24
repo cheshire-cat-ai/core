@@ -2,7 +2,7 @@ import uvicorn
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -23,7 +23,6 @@ from cat.routes import (
     auth,
 )
 from cat.routes.static import public, admin, static
-from cat.auth.headers import AuthPermission, AuthResource, http_auth, ws_auth
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 

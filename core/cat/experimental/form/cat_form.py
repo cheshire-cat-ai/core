@@ -1,8 +1,7 @@
 import json
 from enum import Enum
 from typing import List, Dict
-from dataclasses import dataclass
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ValidationError
 
 from langchain.chains import LLMChain
 from langchain_core.prompts.prompt import PromptTemplate

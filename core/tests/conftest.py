@@ -10,13 +10,11 @@ from fastapi.testclient import TestClient
 
 
 from cat.db.database import Database
-from cat.log import log
 
 import cat.utils as utils
 
 from qdrant_client import QdrantClient
 from cat.memory.vector_memory import VectorMemory
-from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.plugin import Plugin
 
 from cat.main import cheshire_cat_api

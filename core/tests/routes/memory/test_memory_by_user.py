@@ -14,7 +14,7 @@ def test_episodic_memory_by_user(client):
 
     # episodic recall (no user)
     params = {"text": "I am user"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     assert response.status_code == 200
     episodic_memories = json["vectors"]["collections"]["episodic"]
@@ -23,7 +23,7 @@ def test_episodic_memory_by_user(client):
     # episodic recall (memories from non existing user)
     params = {"text": "I am user not existing"}
     response = client.get(
-        f"/memory/recall/", params=params, headers={"user_id": "not_existing"}
+        "/memory/recall/", params=params, headers={"user_id": "not_existing"}
     )
     json = response.json()
     assert response.status_code == 200
@@ -32,7 +32,7 @@ def test_episodic_memory_by_user(client):
 
     # episodic recall (memories from user C)
     params = {"text": "I am user C"}
-    response = client.get(f"/memory/recall/", params=params, headers={"user_id": "C"})
+    response = client.get("/memory/recall/", params=params, headers={"user_id": "C"})
     json = response.json()
     assert response.status_code == 200
     episodic_memories = json["vectors"]["collections"]["episodic"]

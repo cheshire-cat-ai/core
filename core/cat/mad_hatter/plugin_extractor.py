@@ -1,12 +1,9 @@
 import os
 import uuid
-import tarfile
-import zipfile
 import shutil
 import mimetypes
 from slugify import slugify
 
-from cat.log import log
 
 
 class PluginExtractor:

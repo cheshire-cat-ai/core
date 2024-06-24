@@ -3,7 +3,6 @@ from tinydb import Query
 
 from cat.db import models
 from cat.db.database import get_db
-from cat.log import log
 
 
 def get_settings(search: str = "") -> List[Dict]:

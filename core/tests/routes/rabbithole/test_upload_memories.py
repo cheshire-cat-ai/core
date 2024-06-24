@@ -3,10 +3,8 @@ import time
 import uuid
 import random
 import pytest
-from fastapi import HTTPException
 
 from tests.utils import (
-    get_declarative_memory_contents,
     get_collections_names_and_point_count,
 )
 
@@ -90,7 +88,7 @@ def test_upload_memory_check_dimensionality(client):
         )
 
     # ...but found a different embedder
-    assert f"Embedding size mismatch" in str(e.value)
+    assert "Embedding size mismatch" in str(e.value)
     # and did not update collection
     collections_n_points = get_collections_names_and_point_count(client)
     assert collections_n_points["declarative"] == 0

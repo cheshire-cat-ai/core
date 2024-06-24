@@ -1,4 +1,3 @@
-import os
 import shutil
 from urllib.parse import urlencode
 
@@ -22,7 +21,7 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
 def send_n_websocket_messages(num_messages, client):
     responses = []
 
-    with client.websocket_connect(f"/ws") as websocket:
+    with client.websocket_connect("/ws") as websocket:
         for m in range(num_messages):
             message = {"text": f"Red Queen {m}"}
             # sed ws message
@@ -60,7 +59,7 @@ def create_mock_plugin_zip(flat: bool):
 # utility to retrieve embedded tools from endpoint
 def get_procedural_memory_contents(client):
     params = {"text": "random"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     json = response.json()
     return json["vectors"]["collections"]["procedural"]
 
@@ -68,7 +67,7 @@ def get_procedural_memory_contents(client):
 # utility to retrieve declarative memory contents
 def get_declarative_memory_contents(client):
     params = {"text": "Something"}
-    response = client.get(f"/memory/recall/", params=params)
+    response = client.get("/memory/recall/", params=params)
     assert response.status_code == 200
     json = response.json()
     declarative_memories = json["vectors"]["collections"]["declarative"]

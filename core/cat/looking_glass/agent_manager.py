@@ -1,4 +1,3 @@
-import os
 import time
 import json
 import random
@@ -15,7 +14,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
-from langchain.callbacks.tracers import ConsoleCallbackHandler
 
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.mad_hatter import MadHatter

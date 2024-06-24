@@ -1,4 +1,3 @@
-import time
 from json import dumps
 from fastapi.encoders import jsonable_encoder
 from cat.factory.embedder import get_embedders_schemas

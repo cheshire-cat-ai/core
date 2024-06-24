@@ -1,5 +1,4 @@
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 
 
 def mount(cheshire_cat_api):

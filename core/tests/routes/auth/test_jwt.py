@@ -1,9 +1,7 @@
 import os
-import asyncio
 import pytest
 import time
 import jwt
-from tests.utils import send_websocket_message
 
 from cat.env import get_env
 from cat.auth.utils import is_jwt, AuthPermission, AuthResource

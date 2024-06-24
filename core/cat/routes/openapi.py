@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 import tomli
 
-from cat.env import get_env
 
 
 def get_openapi_configuration_function(cheshire_cat_api: FastAPI):

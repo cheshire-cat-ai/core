@@ -1,6 +1,3 @@
-import time
-import os
-import shutil
 import pytest
 from tests.utils import create_mock_plugin_zip
 

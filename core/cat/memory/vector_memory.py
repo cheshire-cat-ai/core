@@ -1,12 +1,8 @@
 import sys
-import uuid
 import socket
-from typing import Any, List, Iterable, Optional
-import requests
 from cat.utils import extract_domain_from_url, is_https
 
 from qdrant_client import QdrantClient
-from qdrant_client.qdrant_remote import QdrantRemote
 
 from cat.memory.vector_memory_collection import VectorMemoryCollection
 from cat.log import log

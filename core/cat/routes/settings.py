@@ -1,7 +1,6 @@
-from typing import Annotated
 from cat.auth.utils import AuthPermission, AuthResource
 from cat.auth.headers import http_auth
-from fastapi import Body, Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException
 from cat.db import models
 from cat.db import crud
 

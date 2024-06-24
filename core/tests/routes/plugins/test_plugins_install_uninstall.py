@@ -1,8 +1,5 @@
 import os
-import time
-import shutil
 from tests.utils import get_procedural_memory_contents
-from fixture_just_installed_plugin import just_installed_plugin
 
 
 # NOTE: here we test zip upload install
@@ -14,7 +11,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     #### PLUGIN IS ALREADY ACTIVE
 
     # GET plugin endpoint responds
-    response = client.get(f"/plugins/mock_plugin")
+    response = client.get("/plugins/mock_plugin")
     assert response.status_code == 200
     json = response.json()
     assert json["data"]["id"] == "mock_plugin"

@@ -2,13 +2,11 @@ import time
 from typing import List, Dict
 from typing_extensions import Protocol
 
-from fastapi import Request
 
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_community.llms import Cohere, OpenAI, AzureOpenAI
-from langchain_community.chat_models import AzureChatOpenAI
+from langchain_community.llms import Cohere, OpenAI
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -16,7 +14,6 @@ from cat.factory.auth_handler import get_auth_handler_from_name
 from cat.factory.custom_auth_handler import CoreAuthHandler
 import cat.factory.auth_handler as auth_handlers
 from cat.db import crud, models
-from cat.factory.custom_llm import CustomOpenAI
 from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
@@ -144,7 +141,7 @@ class CheshireCat:
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             try:
                 llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-            except Exception as e:
+            except Exception:
                 import traceback
 
                 traceback.print_exc()
@@ -187,7 +184,7 @@ class CheshireCat:
                 embedder = FactoryClass.get_embedder_from_config(
                     selected_embedder_config["value"]
                 )
-            except AttributeError as e:
+            except AttributeError:
                 import traceback
 
                 traceback.print_exc()
@@ -270,7 +267,7 @@ class CheshireCat:
             auth_handler = FactoryClass.get_auth_handler_from_config(
                 selected_auth_handler_config["value"]
             )
-        except Exception as e:
+        except Exception:
             import traceback
 
             traceback.print_exc()

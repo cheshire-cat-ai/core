@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum

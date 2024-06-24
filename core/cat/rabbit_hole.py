@@ -4,7 +4,6 @@ import json
 import mimetypes
 import httpx
 from typing import List, Union
-from urllib.request import urlopen
 from urllib.parse import urlparse
 from urllib.error import HTTPError
 

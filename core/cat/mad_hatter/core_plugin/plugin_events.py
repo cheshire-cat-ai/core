@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from cat.mad_hatter.decorators import plugin
 
-from cat.log import log
 
 
 # this class represents settings for the core plugin (at the moment empty)

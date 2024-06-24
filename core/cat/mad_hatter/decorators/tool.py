@@ -1,4 +1,3 @@
-import time
 import asyncio
 import inspect
 import concurrent
@@ -8,7 +7,6 @@ from inspect import signature
 
 from langchain_core.tools import BaseTool
 
-from cat.log import log
 
 
 # All @tool decorated functions in plugins become a CatTool.

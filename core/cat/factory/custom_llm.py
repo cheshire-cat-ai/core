@@ -1,12 +1,10 @@
 from typing import Optional, List, Any, Mapping, Dict
 import requests
-from fastapi import HTTPException
 
 from langchain_core.language_models.llms import LLM
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_community.chat_models.ollama import ChatOllama
 
-from cat.log import log
 
 
 class LLMDefault(LLM):

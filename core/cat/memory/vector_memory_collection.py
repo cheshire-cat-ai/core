@@ -1,11 +1,8 @@
 import os
-import sys
 import uuid
-import socket
 from typing import Any, List, Iterable, Optional
 import requests
 
-from qdrant_client import QdrantClient
 from qdrant_client.qdrant_remote import QdrantRemote
 from qdrant_client.http.models import (
     PointStruct,
@@ -285,9 +282,9 @@ class VectorMemoryCollection:
         port = self.client._client._port
 
         if os.path.isdir(folder):
-            log.info(f"Directory dormouse exists")
+            log.info("Directory dormouse exists")
         else:
-            log.warning(f"Directory dormouse does NOT exists, creating it.")
+            log.warning("Directory dormouse does NOT exists, creating it.")
             os.mkdir(folder)
 
         self.snapshot_info = self.client.create_snapshot(

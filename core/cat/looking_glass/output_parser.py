@@ -1,6 +1,6 @@
 import json
 from langchain.agents import AgentOutputParser
-from langchain.schema import AgentAction, AgentFinish, OutputParserException
+from langchain.schema import AgentAction, AgentFinish
 from typing import Union
 
 from cat.mad_hatter.mad_hatter import MadHatter

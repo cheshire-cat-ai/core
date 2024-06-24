@@ -52,7 +52,7 @@ def test_parse_json():
     invalid_json = """yaml is better"""
     with pytest.raises(Exception) as e:
         utils.parse_json(invalid_json) == expected_json
-    assert f"substring not found" in str(e.value)
+    assert "substring not found" in str(e.value)
 
 
 # BaseModelDict to be deprecated in v2

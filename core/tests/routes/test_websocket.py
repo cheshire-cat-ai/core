@@ -1,7 +1,5 @@
-from cat.log import log
 
 from tests.utils import send_websocket_message, send_n_websocket_messages
-from tests.routes.plugins.fixture_just_installed_plugin import just_installed_plugin
 
 
 def check_correct_websocket_reply(reply):

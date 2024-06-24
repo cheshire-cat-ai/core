@@ -1,4 +1,3 @@
-import pytest
 
 from cat.looking_glass.stray_cat import StrayCat
 

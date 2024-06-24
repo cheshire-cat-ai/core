@@ -1,5 +1,5 @@
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse
 from fastapi import Depends
 
 from cat.auth.headers import frontend_auth
