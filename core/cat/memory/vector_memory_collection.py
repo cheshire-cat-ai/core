@@ -30,7 +30,7 @@ from cat.log import log
 from cat.env import get_env
 
 
-class VectorMemoryCollection():
+class VectorMemoryCollection:
     def __init__(
         self,
         client: Any,
@@ -38,7 +38,6 @@ class VectorMemoryCollection():
         embedder_name: str,
         embedder_size: int,
     ):
-
         # Set attributes (metadata on the embedder are useful because it may change at runtime)
         self.client = client
         self.collection_name = collection_name
@@ -54,7 +53,6 @@ class VectorMemoryCollection():
         # log collection info
         log.debug(f"Collection {self.collection_name}:")
         log.debug(self.client.get_collection(self.collection_name))
-
 
     def check_embedding_size(self):
         # having the same size does not necessarily imply being the same embedder
@@ -84,7 +82,6 @@ class VectorMemoryCollection():
             self.client.delete_collection(self.collection_name)
             log.warning(f"Collection '{self.collection_name}' deleted")
             self.create_collection()
-
 
     def create_db_collection_if_not_exists(self):
         # is collection present in DB?
@@ -130,7 +127,6 @@ class VectorMemoryCollection():
 
     # adapted from https://github.com/langchain-ai/langchain/blob/bfc12a4a7644cfc4d832cc4023086a7a5374f46a/libs/langchain/langchain/vectorstores/qdrant.py#L1965
     def _qdrant_filter_from_dict(self, filter: dict) -> Filter:
-
         if not filter:
             return None
 
@@ -141,10 +137,9 @@ class VectorMemoryCollection():
                 for condition in self._build_condition(key, value)
             ]
         )
-    
+
     # adapted from https://github.com/langchain-ai/langchain/blob/bfc12a4a7644cfc4d832cc4023086a7a5374f46a/libs/langchain/langchain/vectorstores/qdrant.py#L1941
     def _build_condition(self, key: str, value: Any) -> List[FieldCondition]:
-
         out = []
 
         if isinstance(value, dict):
@@ -190,20 +185,18 @@ class VectorMemoryCollection():
         # TODO: may be adapted to upload batches of points as langchain does.
         # Not necessary now as the bottleneck is the embedder
         point = PointStruct(
-                    id=id or uuid.uuid4().hex,
-                    payload={
-                        "page_content": content,
-                        "metadata": metadata,
-                    },
-                    vector=vector
-                )
+            id=id or uuid.uuid4().hex,
+            payload={
+                "page_content": content,
+                "metadata": metadata,
+            },
+            vector=vector,
+        )
 
         update_status = self.client.upsert(
-            collection_name=self.collection_name,
-            points=[point],
-            **kwargs
+            collection_name=self.collection_name, points=[point], **kwargs
         )
- 
+
         if update_status.status == "completed":
             # returnign stored point
             return point
@@ -242,12 +235,12 @@ class VectorMemoryCollection():
                 quantization=QuantizationSearchParams(
                     ignore=False,
                     rescore=True,
-                    oversampling=2.0 # Available as of v1.3.0
+                    oversampling=2.0,  # Available as of v1.3.0
                 )
             ),
         )
 
-        # convert Qdrant points to langchain.Document        
+        # convert Qdrant points to langchain.Document
         langchain_documents_from_points = []
         for m in memories:
             langchain_documents_from_points.append(

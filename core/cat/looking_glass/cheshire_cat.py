@@ -60,15 +60,15 @@ class CheshireCat:
 
         At init time the Cat executes the bootstrap.
         """
-        
+
         # bootstrap the Cat! ^._.^
-        
+
         # load AuthHandler
         self.load_auth()
 
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
-        
+
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
 
@@ -214,7 +214,6 @@ class CheshireCat:
                 }
             )
 
-        
         elif type(self._llm) in [ChatGoogleGenerativeAI]:
             embedder = embedders.EmbedderGeminiChatConfig.get_embedder_from_config(
                 {
@@ -243,21 +242,21 @@ class CheshireCat:
             # create the auth settings
             crud.upsert_setting_by_name(
                 models.Setting(
-                    name="CoreOnlyAuthConfig",
-                    category="auth_handler_factory",
-                    value={}
+                    name="CoreOnlyAuthConfig", category="auth_handler_factory", value={}
                 )
             )
             crud.upsert_setting_by_name(
                 models.Setting(
                     name="auth_handler_selected",
                     category="auth_handler_factory",
-                    value={"name": "CoreOnlyAuthConfig"}
+                    value={"name": "CoreOnlyAuthConfig"},
                 )
             )
 
             # reload from db
-            selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")
+            selected_auth_handler = crud.get_setting_by_name(
+                name="auth_handler_selected"
+            )
 
         # get AuthHandler factory class
         selected_auth_handler_class = selected_auth_handler["value"]["name"]
@@ -276,9 +275,10 @@ class CheshireCat:
 
             traceback.print_exc()
 
-            auth_handler = \
+            auth_handler = (
                 auth_handlers.CoreOnlyAuthConfig.get_auth_handler_from_config({})
-        
+            )
+
         self.custom_auth_handler = auth_handler
         self.core_auth_handler = CoreAuthHandler()
 
@@ -305,7 +305,6 @@ class CheshireCat:
         self.memory = LongTermMemory(vector_memory_config=vector_memory_config)
 
     def build_embedded_procedures_hashes(self, embedded_procedures):
-
         hashes = {}
         for ep in embedded_procedures:
             # log.warning(ep)
@@ -321,7 +320,6 @@ class CheshireCat:
         return hashes
 
     def build_active_procedures_hashes(self, active_procedures):
-
         hashes = {}
         for ap in active_procedures:
             for trigger_type, trigger_list in ap.triggers_map.items():
@@ -337,7 +335,6 @@ class CheshireCat:
         return hashes
 
     def embed_procedures(self):
-
         # Retrieve from vectorDB all procedural embeddings
         embedded_procedures = self.memory.vectors.procedural.get_all_points()
         embedded_procedures_hashes = self.build_embedded_procedures_hashes(
@@ -350,10 +347,12 @@ class CheshireCat:
         )
 
         # points_to_be_kept     = set(active_procedures_hashes.keys()) and set(embedded_procedures_hashes.keys()) not necessary
-        points_to_be_deleted = \
-            set(embedded_procedures_hashes.keys()) - set(active_procedures_hashes.keys())
-        points_to_be_embedded = \
-            set(active_procedures_hashes.keys()) - set(embedded_procedures_hashes.keys())
+        points_to_be_deleted = set(embedded_procedures_hashes.keys()) - set(
+            active_procedures_hashes.keys()
+        )
+        points_to_be_embedded = set(active_procedures_hashes.keys()) - set(
+            embedded_procedures_hashes.keys()
+        )
 
         points_to_be_deleted_ids = [
             embedded_procedures_hashes[p] for p in points_to_be_deleted
@@ -366,7 +365,6 @@ class CheshireCat:
             active_procedures_hashes[p] for p in points_to_be_embedded
         ]
         for t in active_triggers_to_be_embedded:
-           
             metadata = {
                 "source": t["source"],
                 "type": t["type"],
@@ -380,7 +378,7 @@ class CheshireCat:
                 trigger_embedding[0],
                 metadata,
             )
-           
+
             log.warning(
                 f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}"
             )
@@ -414,4 +412,3 @@ class CheshireCat:
         # Check if self._llm is a chat model and call it as a completion model
         if isinstance(self._llm, BaseChatModel):
             return self._llm.call_as_llm(prompt)
-        

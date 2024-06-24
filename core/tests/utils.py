@@ -2,9 +2,9 @@ import os
 import shutil
 from urllib.parse import urlencode
 
+
 # utility function to communicate with the cat via websocket
 def send_websocket_message(msg, client, user_id="user", query_params=None):
-
     url = f"/ws/{user_id}"
     if query_params:
         url += "?" + urlencode(query_params)
@@ -14,20 +14,17 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
         websocket.send_json(msg)
         # get reply
         reply = websocket.receive_json()
-    
+
     return reply
 
 
 # utility to send n messages via chat
 def send_n_websocket_messages(num_messages, client):
-
     responses = []
 
     with client.websocket_connect(f"/ws") as websocket:
         for m in range(num_messages):
-            message = {
-                "text": f"Red Queen {m}"
-            }
+            message = {"text": f"Red Queen {m}"}
             # sed ws message
             websocket.send_json(message)
             # get reply
@@ -45,27 +42,24 @@ def key_in_json(key, json):
 # - Used to test plugin upload.
 # - zip can be created flat (plugin files in root dir) or nested (plugin files in zipped folder)
 def create_mock_plugin_zip(flat: bool):
-
     if flat:
         root_dir = "tests/mocks/mock_plugin"
-        base_dir="./"
+        base_dir = "./"
     else:
         root_dir = "tests/mocks/"
-        base_dir="mock_plugin"
+        base_dir = "mock_plugin"
 
     return shutil.make_archive(
         base_name="tests/mocks/mock_plugin",
         format="zip",
         root_dir=root_dir,
-        base_dir=base_dir
+        base_dir=base_dir,
     )
 
 
 # utility to retrieve embedded tools from endpoint
 def get_procedural_memory_contents(client):
-    params = {
-        "text": "random"
-    }
+    params = {"text": "random"}
     response = client.get(f"/memory/recall/", params=params)
     json = response.json()
     return json["vectors"]["collections"]["procedural"]
@@ -73,9 +67,7 @@ def get_procedural_memory_contents(client):
 
 # utility to retrieve declarative memory contents
 def get_declarative_memory_contents(client):
-    params = {
-        "text": "Something"
-    }
+    params = {"text": "Something"}
     response = client.get(f"/memory/recall/", params=params)
     assert response.status_code == 200
     json = response.json()
@@ -85,9 +77,8 @@ def get_declarative_memory_contents(client):
 
 # utility to get collections and point count from `GET /memory/collections` in a simpler format
 def get_collections_names_and_point_count(client):
-
     response = client.get("/memory/collections")
     json = response.json()
     assert response.status_code == 200
-    collections_n_points = { c["name"]: c["vectors_count"] for c in json["collections"]}
+    collections_n_points = {c["name"]: c["vectors_count"] for c in json["collections"]}
     return collections_n_points

@@ -18,7 +18,6 @@ fake_responses_map = {
 # langchin FakeLLMs only support lists
 # https://api.python.langchain.com/en/latest/_modules/langchain_community/llms/fake.html
 class FakeTestLLM(LLM):
-
     responses: Dict = fake_responses_map
 
     @property
@@ -27,11 +26,8 @@ class FakeTestLLM(LLM):
 
     def _call(self, prompt: str, stop=None) -> str:
         """Return mapped response"""
-        return self.responses.get(
-            prompt,
-            "No reply available in FakeTestLLM."
-        )
-    
+        return self.responses.get(prompt, "No reply available in FakeTestLLM.")
+
     async def _acall(self, prompt: str, stop=None) -> str:
         return self._call(prompt)
 
@@ -48,6 +44,7 @@ class FakeTestLLMConfig(LLMSettings):
             "link": "",
         }
     )
+
 
 @hook
 def factory_allowed_llms(allowed, cat) -> List:

@@ -54,6 +54,6 @@ class WorkingMemory(BaseModelDict):
                 "message": message,
                 "why": why,
                 "when": time.time(),
-                "role": Role.AI if who == "AI" else Role.Human
+                "role": Role.AI if who == "AI" else Role.Human,
             }
         )

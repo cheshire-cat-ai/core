@@ -1,14 +1,26 @@
-
-
-
-
 from enum import Enum
 from pydantic import BaseModel
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-AuthResource = Enum('AuthResource', ['STATUS', 'MEMORY', 'CONVERSATION', 'SETTINGS', 'LLM', 'EMBEDDER', 'AUTH_HANDLER', 'UPLOAD', 'PLUGINS', "ADMIN", "STATIC"])
-AuthPermission = Enum('AuthPermission', ['WRITE', 'EDIT', 'LIST', 'READ', 'DELETE'])
+AuthResource = Enum(
+    "AuthResource",
+    [
+        "STATUS",
+        "MEMORY",
+        "CONVERSATION",
+        "SETTINGS",
+        "LLM",
+        "EMBEDDER",
+        "AUTH_HANDLER",
+        "UPLOAD",
+        "PLUGINS",
+        "ADMIN",
+        "STATIC",
+    ],
+)
+AuthPermission = Enum("AuthPermission", ["WRITE", "EDIT", "LIST", "READ", "DELETE"])
+
 
 class AuthUserInfo(BaseModel):
     """
@@ -26,6 +38,7 @@ class AuthUserInfo(BaseModel):
     # - roles
     # - permissions
     user_data: dict
+
 
 def is_jwt(token: str) -> bool:
     """

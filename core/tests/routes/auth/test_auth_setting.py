@@ -25,13 +25,13 @@ def test_get_all_auth_handler_settings(client):
 
 
 def test_get_auth_handler_settings_non_existent(client):
-
     non_existent_auth_handler_name = "AuthHandlerNonExistent"
     response = client.get(f"/auth_handler/settings/{non_existent_auth_handler_name}")
     json = response.json()
 
     assert response.status_code == 400
     assert f"{non_existent_auth_handler_name} not supported" in json["detail"]["error"]
+
 
 # TODOAUTH: have at least another auth_handler class to test
 """

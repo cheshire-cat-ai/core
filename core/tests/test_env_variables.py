@@ -1,9 +1,8 @@
-
 import os
 from cat.env import get_supported_env_variables, get_env
 
-def test_get_env(client):
 
+def test_get_env(client):
     # container envs
     assert get_env("PYTHONUNBUFFERED") == "1"
     assert get_env("WATCHFILES_FORCE_POLLING") == "true"
@@ -24,4 +23,3 @@ def test_get_env(client):
         # TODO: take away in v2
         # missing prefix (legacy)
         assert get_env(k.replace("CCAT_", "")) == v
-    

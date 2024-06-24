@@ -1,4 +1,3 @@
-
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi import Depends
@@ -6,8 +5,8 @@ from fastapi import Depends
 from cat.auth.headers import frontend_auth
 from cat.looking_glass.stray_cat import StrayCat
 
-def mount(cheshire_cat_api):
 
+def mount(cheshire_cat_api):
     # mount admin Single Page App (static build downloaded from the admin-vue repo)
     mount_admin_spa(cheshire_cat_api)
 
@@ -16,7 +15,6 @@ def mount(cheshire_cat_api):
 
 
 def mount_admin_spa(cheshire_cat_api):
-
     @cheshire_cat_api.get("/admin/")
     @cheshire_cat_api.get("/admin/{page}")
     @cheshire_cat_api.get("/admin/{page}/")
@@ -25,5 +23,3 @@ def mount_admin_spa(cheshire_cat_api):
         # https://github.com/cheshire-cat-ai/admin-vue
         # the files live inside the /admin folder (not visible in volume / cat code)
         return FileResponse("/admin/index.html")
-
-

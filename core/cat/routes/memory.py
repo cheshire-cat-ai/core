@@ -6,13 +6,14 @@ from cat.auth.utils import AuthPermission, AuthResource
 
 router = APIRouter()
 
+
 # GET memories from recall
 @router.get("/recall")
 async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -30,20 +31,15 @@ async def recall_memories_from_text(
     collections = list(vector_memory.collections.keys())
     recalled = {}
     for c in collections:
-
         # only episodic collection has users
         user_id = stray.user_id
         if c == "episodic":
-            user_filter = {
-                'source': user_id
-            }
+            user_filter = {"source": user_id}
         else:
             user_filter = None
 
         memories = vector_memory.collections[c].recall_memories_from_embedding(
-            query_embedding,
-            k=k,
-            metadata=user_filter
+            query_embedding, k=k, metadata=user_filter
         )
 
         recalled[c] = []
@@ -58,17 +54,18 @@ async def recall_memories_from_text(
     return {
         "query": query,
         "vectors": {
-            "embedder": str(ccat.embedder.__class__.__name__),  # TODO: should be the config class name
-            "collections": recalled
-        }
+            "embedder": str(
+                ccat.embedder.__class__.__name__
+            ),  # TODO: should be the config class name
+            "collections": recalled,
+        },
     }
 
 
 # GET collection list with some metadata
 @router.get("/collections")
 async def get_collections(
-    request: Request,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))
+    request: Request, stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))
 ) -> Dict:
     """Get list of available collections"""
 
@@ -80,21 +77,16 @@ async def get_collections(
 
     for c in collections:
         coll_meta = vector_memory.vector_db.get_collection(c)
-        collections_metadata += [{
-            "name": c,
-            "vectors_count": coll_meta.vectors_count
-        }]
+        collections_metadata += [{"name": c, "vectors_count": coll_meta.vectors_count}]
 
-    return {
-        "collections": collections_metadata
-    }
+    return {"collections": collections_metadata}
 
 
 # DELETE all collections
 @router.delete("/collections")
 async def wipe_collections(
     request: Request,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and create all collections"""
 
@@ -118,9 +110,9 @@ async def wipe_collections(
 # DELETE one collection
 @router.delete("/collections/{collection_id}")
 async def wipe_single_collection(
-    request: Request, 
+    request: Request,
     collection_id: str,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and recreate a collection"""
 
@@ -131,8 +123,7 @@ async def wipe_single_collection(
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
-            status_code=400,
-            detail={"error": "Collection does not exist."}
+            status_code=400, detail={"error": "Collection does not exist."}
         )
 
     to_return = {}
@@ -154,7 +145,7 @@ async def wipe_memory_point(
     request: Request,
     collection_id: str,
     memory_id: str,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete a specific point in memory"""
 
@@ -165,8 +156,7 @@ async def wipe_memory_point(
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
-            status_code=400,
-            detail={"error": "Collection does not exist."}
+            status_code=400, detail={"error": "Collection does not exist."}
         )
 
     # check if point exists
@@ -175,17 +165,12 @@ async def wipe_memory_point(
         ids=[memory_id],
     )
     if points == []:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "Point does not exist."}
-        )
+        raise HTTPException(status_code=400, detail={"error": "Point does not exist."})
 
     # delete point
     vector_memory.collections[collection_id].delete_points([memory_id])
 
-    return {
-        "deleted": memory_id
-    }
+    return {"deleted": memory_id}
 
 
 @router.delete("/collections/{collection_id}/points")
@@ -193,7 +178,7 @@ async def wipe_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete points in memory by filter"""
 
@@ -204,7 +189,7 @@ async def wipe_memory_points_by_metadata(
     vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
 
     return {
-        "deleted": [] # TODO: Qdrant does not return deleted points?
+        "deleted": []  # TODO: Qdrant does not return deleted points?
     }
 
 
@@ -212,7 +197,7 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
@@ -227,10 +212,8 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    return {
-        "history": stray.working_memory.history
-    }
+    return {"history": stray.working_memory.history}

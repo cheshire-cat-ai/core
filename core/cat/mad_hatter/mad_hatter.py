@@ -21,6 +21,7 @@ from cat.mad_hatter.decorators.tool import CatTool
 
 from cat.experimental.form import CatForm
 
+
 # This class is responsible for plugins functionality:
 # - loading
 # - prioritizing
@@ -34,12 +35,13 @@ class MadHatter:
     # - exposes functionality to the cat
 
     def __init__(self):
+        self.plugins: Dict[str, Plugin] = {}  # plugins dictionary
 
-        self.plugins: Dict[str, Plugin] = {} # plugins dictionary
-
-        self.hooks: Dict[str, List[CatHook]] = {} # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...]) 
-        self.tools: List[CatTool] = [] # list of active plugins tools 
-        self.forms: List[CatForm] = [] # list of active plugins forms
+        self.hooks: Dict[
+            str, List[CatHook]
+        ] = {}  # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...])
+        self.tools: List[CatTool] = []  # list of active plugins tools
+        self.forms: List[CatForm] = []  # list of active plugins forms
 
         self.active_plugins: List[str] = []
 
@@ -51,7 +53,6 @@ class MadHatter:
         self.find_plugins()
 
     def install_plugin(self, package_plugin):
-
         # extract zip/tar file into plugin folder
         extractor = PluginExtractor(package_plugin)
         plugin_path = extractor.extract(self.plugins_folder)
@@ -61,17 +62,15 @@ class MadHatter:
 
         # get plugin id (will be its folder name)
         plugin_id = os.path.basename(plugin_path)
-        
+
         # create plugin obj
         self.load_plugin(plugin_path)
 
         # activate it
         self.toggle_plugin(plugin_id)
-        
+
     def uninstall_plugin(self, plugin_id):
-
         if self.plugin_exists(plugin_id) and (plugin_id != "core_plugin"):
-
             # deactivate plugin if it is active (will sync cache)
             if plugin_id in self.active_plugins:
                 self.toggle_plugin(plugin_id)
@@ -85,7 +84,6 @@ class MadHatter:
 
     # discover all plugins
     def find_plugins(self):
-
         # emptying plugin dictionary, plugins will be discovered from disk
         # and stored in a dictionary plugin_id -> plugin_obj
         self.plugins = {}
@@ -97,7 +95,9 @@ class MadHatter:
         core_plugin_folder = "cat/mad_hatter/core_plugin/"
 
         # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
-        all_plugin_folders = [core_plugin_folder] + glob.glob(f"{self.plugins_folder}*/")
+        all_plugin_folders = [core_plugin_folder] + glob.glob(
+            f"{self.plugins_folder}*/"
+        )
 
         log.info("ACTIVE PLUGINS:")
         log.info(self.active_plugins)
@@ -107,7 +107,7 @@ class MadHatter:
             self.load_plugin(folder)
 
             plugin_id = os.path.basename(os.path.normpath(folder))
-            
+
             if plugin_id in self.active_plugins:
                 try:
                     self.plugins[plugin_id].activate()
@@ -116,7 +116,6 @@ class MadHatter:
                     if plugin_id in self.active_plugins:
                         self.toggle_plugin(plugin_id)
                     raise e
-                
 
         self.sync_hooks_tools_and_forms()
 
@@ -133,9 +132,8 @@ class MadHatter:
             # Print the error and go on with the others.
             log.error(str(e))
 
-    # Load hooks, tools and forms of the active plugins into MadHatter 
+    # Load hooks, tools and forms of the active plugins into MadHatter
     def sync_hooks_tools_and_forms(self):
-
         # emptying tools, hooks and forms
         self.hooks = {}
         self.tools = []
@@ -144,7 +142,6 @@ class MadHatter:
         for _, plugin in self.plugins.items():
             # load hooks, tools and forms from active plugins
             if plugin.id in self.active_plugins:
-
                 # cache tools
                 self.tools += plugin.tools
 
@@ -162,38 +159,33 @@ class MadHatter:
 
         # notify sync has finished (the Cat will ensure all tools are embedded in vector memory)
         self.on_finish_plugins_sync_callback()
-                
+
     # check if plugin exists
     def plugin_exists(self, plugin_id):
         return plugin_id in self.plugins.keys()
-    
+
     def load_active_plugins_from_db(self):
-        
         active_plugins = crud.get_setting_by_name("active_plugins")
-        
+
         if active_plugins is None:
             active_plugins = []
         else:
             active_plugins = active_plugins["value"]
-        
+
         # core_plugin is always active
         if "core_plugin" not in active_plugins:
             active_plugins += ["core_plugin"]
-        
+
         return active_plugins
 
     def save_active_plugins_to_db(self, active_plugins):
-        new_setting = {
-            "name": "active_plugins",
-            "value": active_plugins
-        }
+        new_setting = {"name": "active_plugins", "value": active_plugins}
         new_setting = Setting(**new_setting)
         crud.upsert_setting_by_name(new_setting)
 
     # activate / deactivate plugin
     def toggle_plugin(self, plugin_id):
         if self.plugin_exists(plugin_id):
-
             plugin_is_active = plugin_id in self.active_plugins
 
             # update list of active plugins
@@ -234,25 +226,26 @@ class MadHatter:
             # update DB with list of active plugins, delete duplicate plugins
             self.save_active_plugins_to_db(list(set(self.active_plugins)))
 
-            # update cache and embeddings     
+            # update cache and embeddings
             self.sync_hooks_tools_and_forms()
 
         else:
             raise Exception("Plugin {plugin_id} not present in plugins folder")
-        
+
     # execute requested hook
     def execute_hook(self, hook_name, *args, cat):
-
         # check if hook is supported
         if hook_name not in self.hooks.keys():
             raise Exception(f"Hook {hook_name} not present in any plugin")
-        
+
         # Hook has no arguments (aside cat)
         #  no need to pipe
         if len(args) == 0:
             for hook in self.hooks[hook_name]:
                 try:
-                    log.debug(f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}")
+                    log.debug(
+                        f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}"
+                    )
                     hook.function(cat=cat)
                 except Exception as e:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
@@ -261,25 +254,25 @@ class MadHatter:
                     log.warning(plugin_obj.plugin_specific_error_message())
                     traceback.print_exc()
             return
-            
+
         # Hook with arguments.
         #  First argument is passed to `execute_hook` is the pipeable one.
         #  We call it `tea_cup` as every hook called will receive it as an input,
         #  can add sugar, milk, or whatever, and return it for the next hook
         tea_cup = deepcopy(args[0])
-        
+
         # run hooks
         for hook in self.hooks[hook_name]:
             try:
                 # pass tea_cup to the hooks, along other args
                 # hook has at least one argument, and it will be piped
-                log.debug(f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}")
-                tea_spoon = hook.function(
-                    deepcopy(tea_cup),
-                    *deepcopy(args[1:]),
-                    cat=cat
+                log.debug(
+                    f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}"
                 )
-                #log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
+                tea_spoon = hook.function(
+                    deepcopy(tea_cup), *deepcopy(args[1:]), cat=cat
+                )
+                # log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
                     tea_cup = tea_spoon
             except Exception as e:

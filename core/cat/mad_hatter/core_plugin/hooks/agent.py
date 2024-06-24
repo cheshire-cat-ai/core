@@ -94,6 +94,3 @@ def agent_allowed_tools(allowed_tools: List[str], cat) -> List[str]:
     """
 
     return allowed_tools
-
-
-

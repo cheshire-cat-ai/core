@@ -14,16 +14,15 @@ from cat.env import get_env
 # from cat.utils import singleton
 
 
-#@singleton REFACTOR: worth it to have this (or LongTermMemory) as singleton?
+# @singleton REFACTOR: worth it to have this (or LongTermMemory) as singleton?
 class VectorMemory:
     local_vector_db = None
 
     def __init__(
-            self,
-            embedder_name=None,
-            embedder_size=None,
-        ) -> None:
-
+        self,
+        embedder_name=None,
+        embedder_size=None,
+    ) -> None:
         # connects to Qdrant and creates self.vector_db attribute
         self.connect_to_vector_memory()
 
@@ -60,8 +59,7 @@ class VectorMemory:
             # reconnect only if it's the first boot and not a reload
             if VectorMemory.local_vector_db is None:
                 VectorMemory.local_vector_db = QdrantClient(
-                    path=db_path,
-                    force_disable_check_same_thread=True
+                    path=db_path, force_disable_check_same_thread=True
                 )
 
             self.vector_db = VectorMemory.local_vector_db
@@ -86,5 +84,5 @@ class VectorMemory:
                 host=qdrant_host,
                 port=qdrant_port,
                 https=qdrant_https,
-                api_key=qdrant_api_key
+                api_key=qdrant_api_key,
             )

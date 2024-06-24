@@ -11,15 +11,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
 from cat.routes import (
-    base, settings,
-    llm, embedder, auth_handler,
-    memory, plugins, upload,
-    websocket, auth
+    base,
+    settings,
+    llm,
+    embedder,
+    auth_handler,
+    memory,
+    plugins,
+    upload,
+    websocket,
+    auth,
 )
 from cat.routes.static import public, admin, static
 from cat.auth.headers import AuthPermission, AuthResource, http_auth, ws_auth
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.looking_glass.cheshire_cat import CheshireCat 
+from cat.looking_glass.cheshire_cat import CheshireCat
 
 
 # TODO: take away in v2
@@ -55,8 +61,7 @@ def custom_generate_unique_id(route: APIRoute):
 
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan,
-    generate_unique_id_function=custom_generate_unique_id
+    lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id
 )
 
 # Configures the CORS middleware for the FastAPI app
@@ -74,12 +79,18 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth")
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm")
+cheshire_cat_api.include_router(
+    llm.router, tags=["Large Language Model"], prefix="/llm"
+)
 cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
 cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
 cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole")
-cheshire_cat_api.include_router(auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler")
+cheshire_cat_api.include_router(
+    upload.router, tags=["Rabbit Hole"], prefix="/rabbithole"
+)
+cheshire_cat_api.include_router(
+    auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler"
+)
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 # mount static files
@@ -108,14 +119,13 @@ cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
 
 # RUN!
 if __name__ == "__main__":
-
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
     if get_env("CCAT_DEBUG") == "true":
         debug_config = {
             "reload": True,
             "reload_includes": ["plugin.json"],
-            "reload_excludes": ["*test_*.*", "*mock_*.*"]
+            "reload_excludes": ["*test_*.*", "*mock_*.*"],
         }
 
     uvicorn.run(
@@ -124,5 +134,5 @@ if __name__ == "__main__":
         port=80,
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
-        **debug_config
+        **debug_config,
     )

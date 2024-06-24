@@ -1,16 +1,16 @@
 from typing import Union, Callable
 
+
 # class to represent a @hook
 class CatHook:
-
     def __init__(self, name: str, func: Callable, priority: int):
-        
         self.function = func
         self.name = name
         self.priority = priority
 
     def __repr__(self) -> str:
         return f"CatHook(name={self.name}, priority={self.priority})"
+
 
 # @hook decorator. Any function in a plugin decorated by @hook and named properly (among list of available hooks) is used by the Cat
 # @hook priority defaults to 1, the higher the more important. Hooks in the default core plugin have all priority=0 so they are automatically overwritten from plugins
@@ -29,16 +29,11 @@ def hook(*args: Union[str, Callable], priority: int = 1) -> Callable:
 
     def _make_with_name(hook_name: str) -> Callable:
         def _make_hook(func: Callable[[str], str]) -> CatHook:
-            hook_ = CatHook(
-                name=hook_name,
-                func=func,
-                priority=priority
-            )
+            hook_ = CatHook(name=hook_name, func=func, priority=priority)
             return hook_
 
         return _make_hook
 
-    
     if len(args) == 1 and isinstance(args[0], str):
         # if the argument is a string, then we use the string as the hook name
         # Example usage: @hook("search", priority=2)

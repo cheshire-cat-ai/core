@@ -12,6 +12,7 @@ class LongTermMemory:
     vectors : VectorMemory
         Vector Memory collection.
     """
+
     def __init__(self, vector_memory_config={}):
         # Vector based memory (will store embeddings and their metadata)
         self.vectors = VectorMemory(**vector_memory_config)

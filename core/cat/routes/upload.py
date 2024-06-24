@@ -4,7 +4,15 @@ import io
 from typing import Dict
 from copy import deepcopy
 
-from fastapi import Body, Depends, Request, APIRouter, UploadFile, BackgroundTasks, HTTPException
+from fastapi import (
+    Body,
+    Depends,
+    Request,
+    APIRouter,
+    UploadFile,
+    BackgroundTasks,
+    HTTPException,
+)
 
 from cat.auth.headers import http_auth
 from cat.auth.utils import AuthPermission, AuthResource
@@ -17,6 +25,7 @@ def format_upload_file(upload_file: UploadFile) -> UploadFile:
     file_content = upload_file.file.read()
     return UploadFile(filename=upload_file.filename, file=io.BytesIO(file_content))
 
+
 # receive files via http endpoint
 @router.post("/")
 async def upload_file(
@@ -27,8 +36,10 @@ async def upload_file(
         default=None,
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
-    chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
+    chunk_overlap: int | None = Body(
+        default=None, description="Chunk overlap (in tokens)"
+    ),
+    stray=Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE)),
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -46,14 +57,19 @@ async def upload_file(
         raise HTTPException(
             status_code=400,
             detail={
-                "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'}
+                "error": f'MIME type {content_type} not supported. Admitted types: {" - ".join(admitted_types)}'
+            },
         )
 
     # upload file to long term memory, in the background
     background_tasks.add_task(
         # we deepcopy the file because FastAPI does not keep the file in memory after the response returns to the client
         # https://github.com/tiangolo/fastapi/discussions/10936
-        stray.rabbit_hole.ingest_file, stray, deepcopy(format_upload_file(file)), chunk_size, chunk_overlap
+        stray.rabbit_hole.ingest_file,
+        stray,
+        deepcopy(format_upload_file(file)),
+        chunk_size,
+        chunk_overlap,
     )
 
     # reply to client
@@ -75,8 +91,10 @@ async def upload_url(
         default=None,
         description="Maximum length of each chunk after the document is split (in tokens)",
     ),
-    chunk_overlap: int | None = Body(default=None, description="Chunk overlap (in tokens)"),
-    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
+    chunk_overlap: int | None = Body(
+        default=None, description="Chunk overlap (in tokens)"
+    ),
+    stray=Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE)),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -85,14 +103,11 @@ async def upload_url(
     try:
         # Send a HEAD request to the specified URL
         response = requests.head(
-            url,
-            headers={"User-Agent": "Magic Browser"},
-            allow_redirects=True
+            url, headers={"User-Agent": "Magic Browser"}, allow_redirects=True
         )
         status_code = response.status_code
 
         if status_code == 200:
-
             # upload file to long term memory, in the background
             background_tasks.add_task(
                 stray.rabbit_hole.ingest_file, stray, url, chunk_size, chunk_overlap
@@ -101,18 +116,12 @@ async def upload_url(
         else:
             raise HTTPException(
                 status_code=400,
-                detail={
-                    "error": "Invalid URL",
-                    "url": url
-                },
+                detail={"error": "Invalid URL", "url": url},
             )
     except requests.exceptions.RequestException as _e:
         raise HTTPException(
             status_code=400,
-            detail={
-                "error": "Unable to reach the URL",
-                "url": url
-            },
+            detail={"error": "Unable to reach the URL", "url": url},
         )
 
 
@@ -121,7 +130,7 @@ async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    stray = Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE))
+    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.WRITE)),
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
@@ -133,7 +142,8 @@ async def upload_memory(
             status_code=400,
             detail={
                 "error": f"MIME type {content_type} not supported. Admitted types: 'application/json'"
-            })
+            },
+        )
 
     # Ingest memories in background and notify client
     background_tasks.add_task(stray.rabbit_hole.ingest_memory, stray, deepcopy(file))
@@ -142,14 +152,14 @@ async def upload_memory(
     return {
         "filename": file.filename,
         "content_type": file.content_type,
-        "info": "Memory is being ingested asynchronously"
+        "info": "Memory is being ingested asynchronously",
     }
 
 
 @router.get("/allowed-mimetypes")
 async def get_allowed_mimetypes(
     request: Request,
-    stray = Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE))
+    stray=Depends(http_auth(AuthResource.UPLOAD, AuthPermission.WRITE)),
 ) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 
@@ -157,6 +167,4 @@ async def get_allowed_mimetypes(
 
     admitted_types = list(ccat.rabbit_hole.file_handlers.keys())
 
-    return {
-        "allowed": admitted_types
-    }
+    return {"allowed": admitted_types}

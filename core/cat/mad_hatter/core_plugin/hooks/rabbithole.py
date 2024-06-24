@@ -175,8 +175,11 @@ def before_rabbithole_stores_documents(docs: List[Document], cat) -> List[Docume
 
     return docs
 
+
 @hook(priority=0)
-def after_rabbithole_stored_documents(source, stored_points: List[PointStruct], cat) -> None:
+def after_rabbithole_stored_documents(
+    source, stored_points: List[PointStruct], cat
+) -> None:
     """Hook the Document after is inserted in the vector memory.
 
     Allows editing and enhancing the list of Document after is inserted in the vector memory.
