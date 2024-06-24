@@ -9,7 +9,7 @@ from tests.utils import send_websocket_message
 from cat.env import get_env
 from cat.auth.utils import is_jwt, AuthPermission, AuthResource
 
-# TODOAUTH: test token invalidation / logoff
+# TODOAUTH: test token refresh / invalidation / logoff
 
 def test_is_jwt(client):
 
