@@ -174,7 +174,7 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
         
         # extract credential from request
         credential = await http_extract_credential(request)
-        legacy_user_id = request.headers.get("user_id", "user")
+        user_id = request.headers.get("user_id", "user")
 
         auth_handlers = [
             # try to get user from local idp
@@ -183,11 +183,8 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
             request.app.state.ccat.custom_auth_handler
         ]
         for ah in auth_handlers:
-            user_info: AuthUserInfo = await ah.authorize_user_from_credential(credential, resource, permission)
+            user_info: AuthUserInfo = await ah.authorize_user_from_credential(credential, resource, permission, user_id=user_id)
             if user_info:
-                if legacy_user_id:
-                    log.warning("Deprecation Warning: Passing `user_id` via request headers will not be supported in v2.")
-                    user_info.user_id = legacy_user_id
                 return await get_user_stray(user_info)
 
         raise HTTPException(
@@ -220,7 +217,7 @@ async def frontend_auth(request: Request) -> None | StrayCat:
     if token:
         # decode token
         core_auth_handler = request.app.state.ccat.core_auth_handler
-        user_info: AuthUserInfo = await core_auth_handler.authorize_user_from_token(token, AuthResource.ADMIN, AuthPermission.READ)
+        user_info: AuthUserInfo = await core_auth_handler.authorize_user_from_jwt(token, AuthResource.ADMIN, AuthPermission.READ)
         
         if user_info:
             strays = request.app.state.strays

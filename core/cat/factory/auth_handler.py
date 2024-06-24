@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
-    ApiKeyAuthHandler,
+    #ApiKeyAuthHandler,
     BaseAuthHandler,
     CoreOnlyAuthHandler,
 )
@@ -34,23 +34,23 @@ class CoreOnlyAuthConfig(AuthHandlerConfig):
         }
     )
 
+# TODOAUTH: have at least another auth_handler class to test
+# class ApiKeyAuthConfig(AuthHandlerConfig):
+#     _pyclass: Type = ApiKeyAuthHandler
 
-class ApiKeyAuthConfig(AuthHandlerConfig):
-    _pyclass: Type = ApiKeyAuthHandler
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "Api Key Auth Handler",
-            "description": "Yeeeeah.",
-            "link": "",
-        }
-    )
+#     model_config = ConfigDict(
+#         json_schema_extra={
+#             "humanReadableName": "Api Key Auth Handler",
+#             "description": "Yeeeeah.",
+#             "link": "",
+#         }
+#     )
 
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
         CoreOnlyAuthConfig,
-        ApiKeyAuthConfig,
+        #ApiKeyAuthConfig,
     ]
 
     mad_hatter_instance = MadHatter()

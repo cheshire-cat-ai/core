@@ -122,20 +122,20 @@ class CoreOnlyAuthHandler(BaseAuthHandler):
 
 # Api Key Auth, require CCAT_API_KEY usage for admin permissions and CCAT_API_KEY_WS for chat only permission
 # TODOAUTH: review
-class ApiKeyAuthHandler(BaseAuthHandler):
-    async def authorize_user_from_token(self, credential: str, auth_resource: AuthResource, auth_permission: AuthPermission) -> AuthUserInfo | None:       
-        environment_api_key = get_env("CCAT_API_KEY")
-        environment_public_api_key = get_env("CCAT_API_KEY_WS")
-
-        if auth_resource == AuthResource.CONVERSATION and auth_permission == AuthPermission.WRITE and credential == environment_public_api_key:
-            return AuthUserInfo(
-                user_id="user",
-                user_data={}
-            )
-        if credential == environment_api_key:
-            return AuthUserInfo(
-                user_id="admin",
-                user_data={}
-            )
+#class ApiKeyAuthHandler(BaseAuthHandler):
+#    async def authorize_user_from_token(self, credential: str, auth_resource: AuthResource, auth_permission: AuthPermission) -> AuthUserInfo | None:       
+#        environment_api_key = get_env("CCAT_API_KEY")
+#        environment_public_api_key = get_env("CCAT_API_KEY_WS")
+#
+#        if auth_resource == AuthResource.CONVERSATION and auth_permission == AuthPermission.WRITE and credential == environment_public_api_key:
+#            return AuthUserInfo(
+#                user_id="user",
+#                user_data={}
+#            )
+#        if credential == environment_api_key:
+#            return AuthUserInfo(
+#                user_id="admin",
+#                user_data={}
+#            )
     
     
