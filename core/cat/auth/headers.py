@@ -1,4 +1,5 @@
 import asyncio
+from typing import Callable
 from urllib.parse import urlencode
 
 from fastapi import (
@@ -49,7 +50,7 @@ async def ws_extract_credential(websocket: WebSocket) -> str | None:
     return websocket.query_params.get("token", None)
 
 
-def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayCat:
+def ws_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
     """ws_auth factory.
 
         Parameters
@@ -72,7 +73,7 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
         """
     async def ws_auth(
             websocket: WebSocket,
-            legacy_user_id: str = "user", # legacy user_id passed in websocket url path
+            user_id: str = "user", # legacy user_id passed in websocket url path
         ) -> None | StrayCat:
         """Authenticate websocket connection.
 
@@ -128,11 +129,8 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
             websocket.app.state.ccat.custom_auth_handler
         ]
         for ah in auth_handlers:
-            user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
+            user_info: AuthUserInfo = await ah.authorize_user_from_credential(credential, resource, permission, user_id=user_id)
             if user_info:
-                if legacy_user_id:
-                    log.warning("Deprecation Warning: Passing `user_id` via endpoint path as /ws/{user_id}/ will not be supported in v2.")
-                    user_info.user_id = legacy_user_id
                 return await get_user_stray(user_info)
         
         raise WebSocketException(
@@ -141,7 +139,7 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayC
         )
     return ws_auth
   
-def http_auth(resource: AuthResource, permission: AuthPermission) -> None | StrayCat:
+def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
     async def http_auth(request: Request) -> None | StrayCat:
         """Authenticate endpoint.
 
@@ -185,7 +183,7 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> None | Stra
             request.app.state.ccat.custom_auth_handler
         ]
         for ah in auth_handlers:
-            user_info: AuthUserInfo = await ah.authorize_user_from_token(credential, resource, permission)
+            user_info: AuthUserInfo = await ah.authorize_user_from_credential(credential, resource, permission)
             if user_info:
                 if legacy_user_id:
                     log.warning("Deprecation Warning: Passing `user_id` via request headers will not be supported in v2.")

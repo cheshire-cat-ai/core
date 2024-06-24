@@ -21,7 +21,7 @@ def test_get_all_auth_handler_settings(client):
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
     # automatically selected auth_handler
-    assert json["selected_configuration"] == "CloseAuthConfig"
+    assert json["selected_configuration"] == "CoreOnlyAuthConfig"
 
 
 def test_get_auth_handler_settings_non_existent(client):

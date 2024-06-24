@@ -243,7 +243,7 @@ class CheshireCat:
             # create the auth settings
             crud.upsert_setting_by_name(
                 models.Setting(
-                    name="CloseAuthConfig",
+                    name="CoreOnlyAuthConfig",
                     category="auth_handler_factory",
                     value={}
                 )
@@ -252,7 +252,7 @@ class CheshireCat:
                 models.Setting(
                     name="auth_handler_selected",
                     category="auth_handler_factory",
-                    value={"name": "CloseAuthConfig"}
+                    value={"name": "CoreOnlyAuthConfig"}
                 )
             )
 
@@ -277,7 +277,7 @@ class CheshireCat:
             traceback.print_exc()
 
             auth_handler = \
-                auth_handlers.CloseAuthConfig.get_auth_handler_from_config({})
+                auth_handlers.CoreOnlyAuthConfig.get_auth_handler_from_config({})
         
         self.custom_auth_handler = auth_handler
         self.core_auth_handler = CoreAuthHandler()

@@ -6,7 +6,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
     ApiKeyAuthHandler,
     BaseAuthHandler,
-    CloseAuthHandler,
+    CoreOnlyAuthHandler,
 )
 
 
@@ -22,14 +22,15 @@ class AuthHandlerConfig(BaseModel):
         return cls._pyclass.default(**config)
 
 
-class CloseAuthConfig(AuthHandlerConfig):
-    _pyclass: Type = CloseAuthHandler
+class CoreOnlyAuthConfig(AuthHandlerConfig):
+    _pyclass: Type = CoreOnlyAuthHandler
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Close Auth Handler",
-            "description": "Deny all m2m connection.",
-            "link": "",
+            "humanReadableName": "Standalone Core Auth Handler",
+            "description": "Delegate auth to Cat core, without any additional auth systems. "
+                        "Do not change this if you don't know what you are doing!",
+            "link": "", # TODO link to auth docs
         }
     )
 
@@ -48,7 +49,7 @@ class ApiKeyAuthConfig(AuthHandlerConfig):
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        CloseAuthConfig,
+        CoreOnlyAuthConfig,
         ApiKeyAuthConfig,
     ]
 
