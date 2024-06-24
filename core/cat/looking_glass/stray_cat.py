@@ -16,6 +16,8 @@ from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
 
+from cat.utils import levenshtein_distance
+
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 
@@ -471,10 +473,14 @@ Allowed classes are:
         response = self.llm(prompt)
         log.info(response)
 
-        if response in labels_names:
-            return response
-        
-        return None
+        # find the closest match and its score with levenshtein distance
+        best_label, score = min(
+            ((label, levenshtein_distance(response, label)) for label in labels_names),
+            key=lambda x: x[1]
+        )
+
+        # set 0.5 as threshold - let's see if it works properly
+        return best_label if score < 0.5 else None
 
     def stringify_chat_history(self, latest_n: int = 5) -> str:
         """Serialize chat history.
