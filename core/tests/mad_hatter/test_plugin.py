@@ -40,7 +40,7 @@ def test_create_plugin_empty_folder():
 
 
 def test_create_plugin(plugin):
-    assert plugin.active == False
+    assert not plugin.active
 
     assert plugin.path == mock_plugin_path
     assert plugin.id == "mock_plugin"

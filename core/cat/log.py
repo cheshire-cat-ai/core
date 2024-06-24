@@ -204,7 +204,7 @@ class CatLogEngine:
         if type(msg) in [dict, list, str]:  # TODO: should be recursive
             try:
                 msg = json.dumps(msg, indent=4)
-            except:
+            except Exception:
                 pass
         else:
             msg = pformat(msg)

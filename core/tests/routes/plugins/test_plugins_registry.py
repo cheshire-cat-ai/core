@@ -62,7 +62,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     assert response.status_code == 200
     json = response.json()
     assert json["data"]["id"] == "mock_plugin"
-    assert json["data"]["active"] == True
+    assert json["data"]["active"]
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
@@ -72,7 +72,7 @@ def test_plugin_install_from_registry(client, monkeypatch):
     assert "mock_plugin" in installed_plugins_names
     # both core_plugin and new_plugin are active
     for p in installed_plugins:
-        assert p["active"] == True
+        assert p["active"]
 
     # plugin has been actually extracted in (mock) plugins folder
     assert os.path.exists(new_plugin_final_folder)

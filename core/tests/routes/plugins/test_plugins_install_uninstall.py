@@ -15,7 +15,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     assert response.status_code == 200
     json = response.json()
     assert json["data"]["id"] == "mock_plugin"
-    assert json["data"]["active"] == True
+    assert json["data"]["active"]
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
@@ -24,7 +24,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin):
     assert "mock_plugin" in installed_plugins_names
     # both core_plugin and mock_plugin are active
     for p in installed_plugins:
-        assert p["active"] == True
+        assert p["active"]
 
     # plugin has been actually extracted in (mock) plugins folder
     assert os.path.exists(mock_plugin_final_folder)

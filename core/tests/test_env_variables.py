@@ -8,8 +8,8 @@ def test_get_env(client):
     assert get_env("WATCHFILES_FORCE_POLLING") == "true"
 
     # unexisting
-    assert get_env("UNEXISTING_ENV") == None
-    assert get_env("CCAT_UNEXISTING_ENV") == None
+    assert get_env("UNEXISTING_ENV") is None
+    assert get_env("CCAT_UNEXISTING_ENV") is None
 
     # set new
     os.environ["FAKE_ENV"] = "meow1"

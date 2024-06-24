@@ -19,7 +19,7 @@ def test_get_all_llm_settings(client):
         expected_schema = llms_schemas[setting["name"]]
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
-    assert json["selected_configuration"] == None  # no llm configured at startup
+    assert json["selected_configuration"] is None  # no llm configured at startup
 
 
 def test_get_llm_settings_non_existent(client):

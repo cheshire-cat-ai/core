@@ -46,7 +46,7 @@ def test_instantiation_discovery(mad_hatter):
         == "Useful to get the current time when asked. Input is always None."
     )
     assert isfunction(tool.func)
-    assert tool.return_direct == False
+    assert not tool.return_direct
     assert len(tool.start_examples) == 2
     assert "what time is it" in tool.start_examples
     assert "get the time" in tool.start_examples

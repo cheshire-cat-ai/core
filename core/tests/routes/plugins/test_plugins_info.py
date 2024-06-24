@@ -14,7 +14,7 @@ def test_list_plugins(client):
 
     # installed
     assert json["installed"][0]["id"] == "core_plugin"
-    assert json["installed"][0]["active"] == True
+    assert json["installed"][0]["active"]
 
     # registry (see more registry tests in `./test_plugins_registry.py`)
     assert type(json["registry"] == list)
@@ -29,7 +29,7 @@ def test_get_plugin_id(client):
     assert "data" in json.keys()
     assert json["data"] is not None
     assert json["data"]["id"] == "core_plugin"
-    assert json["data"]["active"] == True
+    assert json["data"]["active"]
 
 
 def test_get_non_existent_plugin(client):

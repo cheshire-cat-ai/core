@@ -1,11 +1,8 @@
 from typing import Dict
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.db import crud, models
-from cat.factory.auth_handler import (
-    get_allowed_auth_handler_strategies,
-    get_auth_handlers_schemas,
-)
-from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from cat.factory.auth_handler import get_auth_handlers_schemas
 from cat.auth.headers import http_auth
 from cat.auth.utils import AuthPermission, AuthResource
 
@@ -22,8 +19,6 @@ AUTH_HANDLER_CATEGORY = "auth_handler_factory"
 )
 def get_auth_handler_settings(request: Request) -> Dict:
     """Get the list of the AuthHandlers"""
-
-    SUPPORTED_AUTH_HANDLERS = get_allowed_auth_handler_strategies()
 
     # get selected AuthHandler
     selected = crud.get_setting_by_name(name=AUTH_HANDLER_SELECTED_NAME)
