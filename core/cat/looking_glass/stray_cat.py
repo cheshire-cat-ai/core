@@ -366,7 +366,6 @@ class StrayCat:
                 "Could not parse LLM output: `", ""
             ).replace("`", "")
             cat_message = {
-                "input": user_message_text,
                 "intermediate_steps": [],
                 "output": unparsable_llm_output,
             }

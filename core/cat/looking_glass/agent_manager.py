@@ -20,7 +20,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ChooseProcedureOutputParser
-from cat.utils import verbal_timedelta
+from cat.utils import verbal_timedelta, BaseModelDict
 from cat.log import log
 from cat.env import get_env
 from cat.looking_glass.callbacks import NewTokenHandler
@@ -143,7 +143,7 @@ class AgentManager:
         out["intermediate_steps"] = intermediate_steps
         return out
     
-    async def execute_procedures_agent(self, agent_input, stray):
+    async def execute_procedures_agent(self, stray):
 
         # Gather recalled procedures
         recalled_procedures_names = self.get_recalled_procedures_names(stray)
@@ -201,7 +201,11 @@ class AgentManager:
         )
 
         # Agent run
-        out = agent_executor.invoke(agent_input)
+        out = agent_executor.invoke(
+            # convert to dict before passing to langchain
+            # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
+            stray.working_memory.agent_input.dict()
+        )
 
         # Process intermediate steps and handle forms
         out = self.process_intermediate_steps(stray, out, return_direct_tools, allowed_procedures)
@@ -221,7 +225,7 @@ class AgentManager:
         return None  # no active form
 
     async def execute_memory_chain(
-        self, agent_input, prompt_prefix, prompt_suffix, stray
+        self, stray, prompt_prefix, prompt_suffix
     ):
         final_prompt = ChatPromptTemplate(
             messages=[
@@ -239,11 +243,14 @@ class AgentManager:
             | StrOutputParser()
         )
 
-        agent_input["output"] = memory_chain.invoke(
-            agent_input, config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
+        stray.working_memory.agent_input.output = memory_chain.invoke(
+            # convert to dict before passing to langchain
+            # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
+            stray.working_memory.agent_input.dict(),
+            config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
 
-        return agent_input
+        return stray.working_memory.agent_input
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
@@ -259,12 +266,14 @@ class AgentManager:
 
         # prepare input to be passed to the agent.
         #   Info will be extracted from working memory
-        agent_input = self.format_agent_input(stray)
+        # Note: agent_input works both as a dict and as an object
+        agent_input : BaseModelDict = self.format_agent_input(stray)
         agent_input = self.mad_hatter.execute_hook(
             "before_agent_starts", agent_input, cat=stray
         )
 
-        
+        # store the agent input inside the working memory
+        stray.working_memory.agent_input = agent_input
 
         # should we run the default agent?
         fast_reply = {}
@@ -294,9 +303,7 @@ class AgentManager:
             log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                procedures_result = await self.execute_procedures_agent(
-                    agent_input, stray
-                )
+                procedures_result = await self.execute_procedures_agent(stray)
                 if procedures_result.get("return_direct"):
                     # exit agent if a return_direct procedure was executed
                     return procedures_result
@@ -306,10 +313,10 @@ class AgentManager:
 
                 # Adding the tools_output key in agent input, needed by the memory chain
                 if len(intermediate_steps) > 0:
-                    agent_input["tools_output"] = "## Context of executed system tools: \n"
+                    agent_input.tools_output = "## Context of executed system tools: \n"
                     for proc_res in intermediate_steps:
                         # ((step[0].tool, step[0].tool_input), step[1])
-                        agent_input["tools_output"] += (
+                        agent_input.tools_output += (
                             f" - {proc_res[0][0]}: {proc_res[1]}\n"
                         )
 
@@ -321,13 +328,12 @@ class AgentManager:
         # - no procedures where recalled or selected or
         # - procedures have all return_direct=False or
         # - procedures agent crashed big time
-
-        memory_chain_output = await self.execute_memory_chain(
-            agent_input, prompt_prefix, prompt_suffix, stray
+        out = await self.execute_memory_chain(
+            stray, prompt_prefix, prompt_suffix
         )
-        memory_chain_output["intermediate_steps"] = intermediate_steps
+        out["intermediate_steps"] = intermediate_steps
 
-        return memory_chain_output
+        return out
 
     def format_agent_input(self, stray):
         """Format the input for the Agent.
@@ -337,8 +343,8 @@ class AgentManager:
 
         Returns
         -------
-        dict
-            Formatted output to be parsed by the Agent executor.
+        BaseModelDict
+            Formatted output to be parsed by the Agent executor. Works both as a dict and as an object.
 
         Notes
         -----
@@ -364,13 +370,13 @@ class AgentManager:
         # format conversation history to be inserted in the prompt
         # conversation_history_formatted_content = stray.stringify_chat_history()
 
-        return {
+        return BaseModelDict(**{
             "input": stray.working_memory.user_message_json.text,  # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
             # "chat_history": conversation_history_formatted_content,
             "tools_output": "",
-        }
+        })
 
     def agent_prompt_episodic_memories(
         self, memory_docs: List[Tuple[Document, float]]
