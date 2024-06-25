@@ -7,4 +7,3 @@ async def test_execute_procedures_agent(agent_manager, stray):
     assert True  # TODO: this is going to be a mess
 
 # TODO: test tool prompt
-# TODO: test tool output (well and badly formatted)
