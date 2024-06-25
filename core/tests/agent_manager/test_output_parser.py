@@ -30,6 +30,12 @@ def test_procedure_output_parser():
     assert out.tool == "some_action"
     assert out.tool_input == ""
 
+    # action with action_input None
+    out = parser.parse('{"action": "some_action", "action_input": null}')
+    assert isinstance(out, AgentAction)
+    assert out.tool == "some_action"
+    assert out.tool_input == ""
+
     # action with action_input string
     out = parser.parse('{"action": "some_action", "action_input": "some_input"}')
     assert isinstance(out, AgentAction)

@@ -23,8 +23,12 @@ class ChooseProcedureOutputParser(AgentOutputParser):
             parsed_output = {}
             parsed_output_log = f"Error during JSON parsing, LLM output was: {llm_output}."
 
-        if not "action" in parsed_output \
-            or parsed_output["action"] == "final_answer":
+        action = parsed_output.get("action", "final_answer")
+        action_input = parsed_output.get("action_input", "")
+        if action_input is None:
+            action_input = ""
+
+        if action == "final_answer":
             return AgentFinish(
                 # Return values is generally always a dictionary with a single `output` key
                 # It is not recommended to try anything else at the moment :)
@@ -32,17 +36,10 @@ class ChooseProcedureOutputParser(AgentOutputParser):
                 log=parsed_output_log,
             )
 
-        # Extract action
-        action = parsed_output["action"]
-        if not "action_input" in parsed_output.keys() or parsed_output["action_input"] is None:
-            parsed_output["action_input"] = ""
-        log.error(parsed_output)
         # Extract action input
         # TODOV2: return proper types (not only strings)
-        if isinstance(parsed_output["action_input"], str):
-            action_input = parsed_output["action_input"]
-        else:
-            action_input = json.dumps(parsed_output["action_input"])
+        if not isinstance(action_input, str):
+            action_input = json.dumps(action_input)
 
         for Form in MadHatter().forms:
             if Form.name == action:
@@ -50,6 +47,6 @@ class ChooseProcedureOutputParser(AgentOutputParser):
                     return_values={"output": None, "form": action},
                     log=parsed_output_log,
                 )
-        log.warning(action_input)
+
         # Return the action and action input
         return AgentAction(tool=action, tool_input=action_input, log=parsed_output_log)
