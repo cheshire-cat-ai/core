@@ -40,7 +40,7 @@ def test_procedure_output_parser():
     out = parser.parse('{"action": "some_action", "action_input": 42}')
     assert isinstance(out, AgentAction)
     assert out.tool == "some_action"
-    assert out.tool_input == "42"
+    assert out.tool_input == 42
 
     # action with action_input float
     out = parser.parse('{"action": "some_action", "action_input": 3.14}')
