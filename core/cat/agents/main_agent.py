@@ -32,8 +32,8 @@ class MainAgent(BaseAgent):
 
         Returns
         -------
-        agent_executor : agent reply
-            Reply of the Agent in the format `{"output": ..., "intermediate_steps": ...}`.
+        agent_output : AgentOutput
+            Reply of the agent, instance of AgentOutput.
         """
 
         # prepare input to be passed to the agent.
