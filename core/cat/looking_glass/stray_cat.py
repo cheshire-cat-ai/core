@@ -370,8 +370,7 @@ class StrayCat:
                 "output": unparsable_llm_output,
             }
 
-        log.info("cat_message:")
-        log.info(cat_message)
+        log.info(f'cat_message: {cat_message["output"]}')
 
         doc = Document(
             page_content=user_message_text,
