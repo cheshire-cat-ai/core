@@ -4,7 +4,7 @@ import time
 
 
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.looking_glass.agent_manager import AgentManager
+from cat.agents.agent_manager import AgentManager
 
 from tests.agent_manager.agent_fixtures import agent_manager, stray
 

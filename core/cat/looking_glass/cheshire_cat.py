@@ -18,7 +18,7 @@ from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
-from cat.looking_glass.agent_manager import AgentManager
+from cat.agents.agent_manager import AgentManager
 from cat.looking_glass.white_rabbit import WhiteRabbit
 from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter

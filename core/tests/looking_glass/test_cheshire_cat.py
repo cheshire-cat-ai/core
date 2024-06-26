@@ -8,7 +8,7 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.rabbit_hole import RabbitHole
 from cat.memory.long_term_memory import LongTermMemory
-from cat.looking_glass.agent_manager import AgentManager
+from cat.agents.agent_manager import AgentManager
 from cat.factory.custom_embedder import DumbEmbedder
 from cat.factory.custom_llm import LLMDefault
 
