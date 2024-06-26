@@ -5,6 +5,7 @@ import time
 
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.agents.main_agent import MainAgent
+from cat.agents.base_agent import AgentOutput
 
 from tests.agents.agent_fixtures import main_agent, stray
 
@@ -17,15 +18,11 @@ def test_main_agent_instantiation(main_agent):
 
 
 @pytest.mark.asyncio  # to test async functions
-async def test_execute_agent(main_agent, stray):
+async def test_execute_main_agent(main_agent, stray):
     # empty agent execution
-    out = await main_agent.execute_agent(stray)
-    assert out["input"] == "meow"
-    assert out["episodic_memory"] == ""
-    assert out["declarative_memory"] == ""
-    assert out["tools_output"] == ""
-    assert out["intermediate_steps"] == []
-    assert (
-        out["output"]
-        == "AI: You did not configure a Language Model. Do it in the settings!"
-    )
+    out = await main_agent.execute(stray)
+    assert isinstance(out, AgentOutput)
+    assert not out.return_direct
+    assert out.intermediate_steps == []
+    assert out.output == \
+        "AI: You did not configure a Language Model. Do it in the settings!"
