@@ -154,4 +154,29 @@ def test_delete_user(client):
     assert len(data) == 1 # admin
     assert data[0]["username"] == "admin"
 
+def test_users_no_permission(secure_client):
 
+    # create user
+    response = secure_client.post(
+        "/users",
+        json={"username": "Alice", "password": "wandering_in_wonderland"}
+    )
+    assert response.status_code == 403
+
+    # read users
+    response = secure_client.get("/users")
+    assert response.status_code == 403
+
+    # edit user
+    response = secure_client.put(
+        "/users/non_existent_id", # is does not exist, but request should be blocked before the check
+        json={"username": "Alice"}
+    )
+    assert response.status_code == 403
+
+    # check default list
+    headers = {"Authorization": "Bearer meow_http"}
+    response = secure_client.get("/users", headers=headers)
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["username"] == "admin"
