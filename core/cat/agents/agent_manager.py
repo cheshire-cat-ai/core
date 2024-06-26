@@ -6,7 +6,6 @@ from copy import deepcopy
 from typing import List, Dict, Union, Tuple
 from datetime import timedelta
 
-from langchain_core.utils import get_colored_text
 from langchain.agents import AgentExecutor
 from langchain.docstore.document import Document
 from langchain_core.output_parsers.string import StrOutputParser
@@ -25,6 +24,8 @@ from cat.log import log
 from cat.env import get_env
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.experimental.form import CatForm, CatFormState
+from cat.agents.memory_agent import MemoryAgent
+from cat.agents.procedures_agent import ProceduresAgent
 
 
 class AgentManager:
@@ -186,7 +187,7 @@ class AgentManager:
                 agent_scratchpad=lambda x: self.generate_scratchpad(x["intermediate_steps"])
             )
             | prompt
-            | RunnableLambda(lambda x: self.__log_prompt(x))
+            #| RunnableLambda(lambda x: self.__log_prompt(x))
             | stray._llm
             | ChooseProcedureOutputParser()
         )
@@ -223,34 +224,6 @@ class AgentManager:
                 return active_form.next()
 
         return None  # no active form
-
-    async def execute_memory_chain(
-        self, stray, prompt_prefix, prompt_suffix
-    ):
-        final_prompt = ChatPromptTemplate(
-            messages=[
-                SystemMessagePromptTemplate.from_template(
-                    template=prompt_prefix + prompt_suffix
-                ),
-                *(stray.langchainfy_chat_history()),
-            ]
-        )
-
-        memory_chain = (
-            final_prompt
-            | RunnableLambda(lambda x: self.__log_prompt(x))
-            | stray._llm
-            | StrOutputParser()
-        )
-
-        stray.working_memory.agent_input.output = memory_chain.invoke(
-            # convert to dict before passing to langchain
-            # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
-            stray.working_memory.agent_input.dict(),
-            config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
-        )
-
-        return stray.working_memory.agent_input
 
     async def execute_agent(self, stray):
         """Instantiate the Agent with tools.
@@ -291,6 +264,8 @@ class AgentManager:
             "agent_prompt_suffix", prompts.MAIN_PROMPT_SUFFIX, cat=stray
         )
 
+        procedures_agent = ProceduresAgent()
+
         # Run active form if present
         form_result = await self.execute_form_agent(stray)
         if form_result:
@@ -324,11 +299,12 @@ class AgentManager:
                 log.error(e)
                 traceback.print_exc()
 
-        # we run memory chain if:
+        # we run memory agent if:
         # - no procedures where recalled or selected or
         # - procedures have all return_direct=False or
         # - procedures agent crashed big time
-        out = await self.execute_memory_chain(
+        memory_agent = MemoryAgent()
+        out = await memory_agent.execute(
             stray, prompt_prefix, prompt_suffix
         )
         out["intermediate_steps"] = intermediate_steps
@@ -471,10 +447,4 @@ class AgentManager:
 
         return memory_content
 
-    def __log_prompt(self, x):
-        # The names are not shown in the chat history log, the model however receives the name correctly
-        log.info(
-            "The names are not shown in the chat history log, the model however receives the name correctly"
-        )
-        print("\n", get_colored_text(x.to_string(), "green"))
-        return x
+
