@@ -13,6 +13,7 @@ AuthResource = Enum(
         "LLM",
         "EMBEDDER",
         "AUTH_HANDLER",
+        "USERS",
         "UPLOAD",
         "PLUGINS",
         "ADMIN",

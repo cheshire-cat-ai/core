@@ -153,7 +153,7 @@ class ProceduresAgent(BaseAgent):
         out = agent_executor.invoke(
             # convert to dict before passing to langchain
             # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
-            stray.working_memory.agent_input.dict()
+            stray.working_memory.agent_input.model_dump()
         )
 
         # Process intermediate steps and handle forms

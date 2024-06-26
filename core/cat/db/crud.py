@@ -70,3 +70,30 @@ def upsert_setting_by_name(payload: models.Setting) -> models.Setting:
         get_db().update(payload, query.name == payload.name)
 
     return get_setting_by_name(payload.name)
+
+
+# We store users in a setting and when there will be a graph db in the cat, we will store them there.
+# P.S.: I'm not proud of this.
+
+from uuid import uuid4
+
+def get_users() -> Dict[str, Dict]:
+    users = get_setting_by_name("users")
+    if not users:
+        admin_id = str(uuid4())
+        update_users({
+            admin_id: {
+                "id": admin_id,
+                "username": "admin",
+                "password": "admin", # TODO: hash this password
+                "permissions": [] # TODO: permissions
+            }
+        })
+    return get_setting_by_name("users")["value"]
+
+def update_users(users: Dict[str, Dict]) -> Dict[str, Dict]:
+    updated_users = models.Setting(
+        name="users",
+        value=users
+    )
+    return upsert_setting_by_name(updated_users)

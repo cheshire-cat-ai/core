@@ -229,7 +229,6 @@ class CheshireCat:
         return embedder
 
     def load_auth(self):
-        """Load auth systems."""
 
         # Custom auth_handler # TODOAUTH: change the name to custom_auth
         selected_auth_handler = crud.get_setting_by_name(name="auth_handler_selected")

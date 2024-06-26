@@ -30,7 +30,7 @@ class MemoryAgent(BaseAgent):
         output = memory_chain.invoke(
             # convert to dict before passing to langchain
             # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
-            stray.working_memory.agent_input.dict(),
+            stray.working_memory.agent_input.model_dump(),
             config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
         )
 
