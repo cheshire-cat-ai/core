@@ -1,13 +1,10 @@
 import pytest
-import asyncio
-import time
 
 
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.agents.main_agent import MainAgent
 from cat.agents.base_agent import AgentOutput
 
-from tests.agents.agent_fixtures import main_agent, stray
 
 def test_main_agent_instantiation(main_agent):
     assert isinstance(main_agent, MainAgent)

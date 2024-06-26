@@ -1,11 +1,9 @@
 
 from langchain.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.output_parsers.string import StrOutputParser
 
-from cat.log import log
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.agents.base_agent import BaseAgent, AgentOutput
 

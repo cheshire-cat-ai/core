@@ -12,7 +12,7 @@ class AgentOutput(BaseModelDict):
     return_direct: bool = False
 
 
-class BaseAgent:
+class BaseAgent(ABC):
 
     @abstractmethod
     async def execute(*args, **kwargs) -> AgentOutput:

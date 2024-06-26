@@ -1,12 +1,11 @@
 import json
 import traceback
 import random
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union
 from copy import deepcopy
 
 from langchain.agents import AgentExecutor
 from langchain.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 

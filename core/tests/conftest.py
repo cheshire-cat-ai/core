@@ -1,15 +1,16 @@
+
+import asyncio
+import pytest
 import os
 import shutil
-
-from typing import Any
-from typing import Generator
+from typing import Any, Generator
 
 from qdrant_client import QdrantClient
-
 from fastapi.testclient import TestClient
 
-import pytest
 
+from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.looking_glass.stray_cat import StrayCat
 from cat.db.database import Database
 import cat.utils as utils
 from cat.memory.vector_memory import VectorMemory
@@ -124,3 +125,16 @@ def just_installed_plugin(client):
     ###
 
     # clean up of zip file and mock_plugin_folder is done for every test automatically (see client fixture)
+
+# fixtures to test the main agent
+@pytest.fixture
+def main_agent(client):
+    yield CheshireCat().main_agent  # each test receives as argument the main agent instance
+
+# fixture to have available an instance of StrayCat
+@pytest.fixture
+def stray(client):
+    user_id = "Alice"
+    stray_cat = StrayCat(user_id=user_id, main_loop=asyncio.new_event_loop())
+    stray_cat.working_memory.user_message_json = {"user_id": user_id, "text": "meow"}
+    yield stray_cat

@@ -1,5 +1,5 @@
 import time
-from typing import List, Dict, Union, Tuple
+from typing import List, Tuple
 from datetime import timedelta
 
 from langchain.docstore.document import Document
@@ -7,7 +7,6 @@ from langchain.docstore.document import Document
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass import prompts
 from cat.utils import verbal_timedelta, BaseModelDict
-from cat.log import log
 from cat.env import get_env
 from cat.agents.base_agent import BaseAgent, AgentOutput
 from cat.agents.memory_agent import MemoryAgent

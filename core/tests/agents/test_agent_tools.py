@@ -1,6 +1,5 @@
 import pytest
 
-from tests.agents.agent_fixtures import main_agent, stray
 
 @pytest.mark.asyncio
 async def test_execute_procedures_agent(main_agent, stray):
