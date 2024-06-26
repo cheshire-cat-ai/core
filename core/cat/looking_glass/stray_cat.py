@@ -15,6 +15,7 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
+from cat.agents.base_agent import AgentOutput
 
 from cat.utils import levenshtein_distance
 
@@ -350,7 +351,7 @@ class StrayCat:
 
         # reply with agent
         try:
-            cat_message = await self.agent_manager.execute_agent(self)
+            agent_output: AgentOutput = await self.main_agent.execute(self)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -365,12 +366,12 @@ class StrayCat:
             unparsable_llm_output = error_description.replace(
                 "Could not parse LLM output: `", ""
             ).replace("`", "")
-            cat_message = {
-                "intermediate_steps": [],
-                "output": unparsable_llm_output,
-            }
+            agent_output = AgentOutput(
+                output=unparsable_llm_output,
+            )
 
-        log.info(f'cat_message: {cat_message["output"]}')
+        log.info("Agent output returned to stray:")
+        log.info(agent_output)
 
         doc = Document(
             page_content=user_message_text,
@@ -391,11 +392,11 @@ class StrayCat:
 
         # why this response?
         why = self.__build_why()
-        why.intermediate_steps = cat_message.get("intermediate_steps", [])
+        why.intermediate_steps = agent_output.intermediate_steps
 
         # prepare final cat message
         final_output = CatMessage(
-            user_id=self.user_id, content=str(cat_message.get("output")), why=why
+            user_id=self.user_id, content=str(agent_output.output), why=why
         )
 
         # run message through plugins
@@ -560,8 +561,8 @@ Allowed classes are:
         return CheshireCat().mad_hatter
 
     @property
-    def agent_manager(self):
-        return CheshireCat().agent_manager
+    def main_agent(self):
+        return CheshireCat().main_agent
 
     @property
     def white_rabbit(self):

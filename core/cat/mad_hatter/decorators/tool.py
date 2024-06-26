@@ -26,7 +26,7 @@ class CatTool(BaseTool):
             name=name, func=func, description=description, return_direct=return_direct
         )
 
-        # StrayCat instance will be set by AgentManager
+        # StrayCat instance will be set by the agent
         self.cat = None
 
         self.func = func
@@ -49,7 +49,7 @@ class CatTool(BaseTool):
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
-    # used by the AgentManager to let a Tool access the cat instance
+    # used by the agent to let a Tool access the cat instance
     def assign_cat(self, cat):
         self.cat = cat
 

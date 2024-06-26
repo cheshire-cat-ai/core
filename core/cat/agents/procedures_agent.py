@@ -10,6 +10,7 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 
+from cat.agents.base_agent import BaseAgent, AgentOutput
 from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ChooseProcedureOutputParser
 from cat.experimental.form import CatForm, CatFormState
@@ -30,14 +31,14 @@ Agent API:
 
 """
 
-class ProceduresAgent:
+class ProceduresAgent(BaseAgent):
 
-    async def execute(self, stray):
+    async def execute(self, stray) -> AgentOutput:
         
         # Run active form if present
         form_result = await self.execute_form_agent(stray)
         if form_result:
-            return form_result  # exit agent with form output
+            return AgentOutput(**form_result)  # exit agent with form output
 
         # Select and run useful procedures
         intermediate_steps = []
@@ -49,7 +50,7 @@ class ProceduresAgent:
                 procedures_result = await self.execute_procedures_agent(stray)
                 if procedures_result.get("return_direct"):
                     # exit agent if a return_direct procedure was executed
-                    return procedures_result
+                    return AgentOutput(**procedures_result)
 
                 # store intermediate steps to enrich memory chain
                 intermediate_steps = procedures_result["intermediate_steps"]
@@ -67,10 +68,11 @@ class ProceduresAgent:
                 log.error(e)
                 traceback.print_exc()
 
-        return {
-            "return_direct": False,
-            "intermediate_steps": intermediate_steps
-        }
+        return AgentOutput(
+            output="",
+            intermediate_steps=intermediate_steps,
+            return_direct=False
+        )
 
     async def execute_form_agent(self, stray):
         active_form = stray.working_memory.active_form
@@ -134,7 +136,7 @@ class ProceduresAgent:
                 agent_scratchpad=lambda x: self.generate_scratchpad(x["intermediate_steps"])
             )
             | prompt
-            #| RunnableLambda(lambda x: self.__log_prompt(x))
+            | RunnableLambda(lambda x: self._log_prompt(x))
             | stray._llm
             | ChooseProcedureOutputParser()
         )

@@ -18,7 +18,7 @@ from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
-from cat.agents.agent_manager import AgentManager
+from cat.agents.main_agent import MainAgent
 from cat.looking_glass.white_rabbit import WhiteRabbit
 from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
@@ -83,8 +83,8 @@ class CheshireCat:
         self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
         self.embed_procedures()  # first time launched manually
 
-        # Agent manager instance (for reasoning)
-        self.agent_manager = AgentManager()
+        # Main agent instance (for reasoning)
+        self.main_agent = MainAgent()
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)  # :(
@@ -122,7 +122,7 @@ class CheshireCat:
         Notes
         -----
         Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
-        the *Agent Manager* and the *Rabbit Hole*.
+        the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
         """
 
@@ -154,8 +154,8 @@ class CheshireCat:
 
         Allows to modify how the Cat selects the embedder at bootstrap time.
 
-        Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-        the memories, the *Agent Manager* and the *Rabbit Hole*.
+        Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+        the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
         Parameters
         ----------
