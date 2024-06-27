@@ -7,11 +7,11 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 
 
 # from cat.auth.jwt import create_access_token
 from cat.env import get_env
+from cat.routes.static.templates import get_jinja_templates
 
 
 router = APIRouter()
@@ -91,9 +91,8 @@ async def auth_index(
     if referer is None:
         referer = "/admin/"
 
+    templates = get_jinja_templates()
     template_context = {"referer": referer, "error_message": error_message}
-
-    templates = Jinja2Templates(directory="cat/routes/static/core_static_folder/")
     return templates.TemplateResponse(
         request=request, name="auth/login.html", context=template_context
     )

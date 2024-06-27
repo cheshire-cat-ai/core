@@ -9,11 +9,11 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query, Depends
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 
 from cat.env import get_env
 from cat.auth.headers import frontend_auth
 from cat.looking_glass.stray_cat import StrayCat
+from cat.routes.static.templates import get_jinja_templates
 
 
 router = APIRouter()
@@ -27,9 +27,8 @@ async def users_manager_page(
     """Create, update and delete users and their permissions"""
 
     
+    templates = get_jinja_templates()
     template_context = {}
-
-    templates = Jinja2Templates(directory="cat/routes/static/core_static_folder/")
     return templates.TemplateResponse(
         request=request, name="users/manager.html", context=template_context
     )

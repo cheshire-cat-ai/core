@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 from uuid import uuid4
 
@@ -17,14 +17,11 @@ from cat.auth.headers import http_auth
 router = APIRouter()
 
 class UserBase(BaseModel):
-    username: str
+    username: str = Field(min_length=5)
     permissions: List[str] = []
 
 class UserCreate(UserBase):
-    password: str
-
-class UserUpdate(UserBase):
-    username: str
+    password: str = Field(min_length=5)
 
 class UserResponse(UserBase):
     id: str
@@ -35,6 +32,7 @@ def create_user(
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.WRITE)),
 ):
+    # TODO: avoid user duplication
     new_id = str(uuid4())
     users_db[new_id] = {
         "id": new_id,
@@ -66,7 +64,7 @@ def read_user(
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user(
     user_id: str,
-    user: UserUpdate,
+    user: UserBase,
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.EDIT)),
 ):
@@ -84,6 +82,7 @@ def delete_user(
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.DELETE)),
 ):
+    # TODO: prevent admin deletion
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})
     user = users_db.pop(user_id)
