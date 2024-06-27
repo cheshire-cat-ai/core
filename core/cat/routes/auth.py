@@ -27,7 +27,7 @@ class JWTResponse(BaseModel):
 
 
 # set cookies and redirect to origin page after login
-@router.post("/redirect")
+@router.post("/redirect", include_in_schema=False)
 async def core_login_token(request: Request, response: Response):
     # get form data from submitted core login form (/auth/core_login)
     form_data = await request.form()
@@ -57,7 +57,7 @@ async def core_login_token(request: Request, response: Response):
     return response
 
 
-@router.get("/login")
+@router.get("/login", include_in_schema=False)
 async def auth_index(
     request: Request, referer: str = Query(None), retry: int = Query(0)
 ):
