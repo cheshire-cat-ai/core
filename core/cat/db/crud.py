@@ -10,7 +10,10 @@ from cat.db.database import get_db
 
 def get_settings(search: str = "") -> List[Dict]:
     query = Query()
-    return get_db().search(query.name.matches(search))
+    settings = get_db().search(query.name.matches(search))
+    # Workaround: do not expose users in the settings list
+    settings = [s for s in settings if s["name"] != "users"]
+    return settings
 
 
 def get_settings_by_category(category: str) -> List[Dict]:
