@@ -12,7 +12,10 @@
 
 <body class="font-serif">
     <div x-data="$store.usersStore" id="content">
-        <h1>Users management</h1>
+        <div id="header">
+            <img id="logo" src="[[ url_for('core-static', path='/img/logo_no_writing.svg') ]]">
+            <h2>Users management</h2>
+        </div>
 
         <form id="user-create-form" @submit.prevent>
             <div id="user-create-inputs">

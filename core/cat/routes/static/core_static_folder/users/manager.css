@@ -3,6 +3,18 @@
     padding: 0% 20%;
 }
 
+#header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+#logo {
+    width: 100px;
+    height: 100px;
+}
+
 #users-list {
   padding: 10px;
 }
