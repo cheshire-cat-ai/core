@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict
 from uuid import uuid4
 
 from fastapi import Depends, APIRouter, HTTPException
@@ -7,18 +7,15 @@ from fastapi import Depends, APIRouter, HTTPException
 from cat.log import log
 from cat.db import models
 from cat.db import crud
-from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.utils import AuthPermission, AuthResource, get_default_permissions
 from cat.auth.headers import http_auth
 
-# users dict dependency injection
-#def users_db():
-#    return crud.get_users()
 
 router = APIRouter()
 
 class UserBase(BaseModel):
     username: str = Field(min_length=5)
-    permissions: List[str] = []
+    permissions: Dict[AuthResource, List[AuthPermission]] = get_default_permissions()
 
 class UserCreate(UserBase):
     password: str = Field(min_length=5)
@@ -32,7 +29,16 @@ def create_user(
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.WRITE)),
 ):
-    # TODO: avoid user duplication
+    
+    # check for user duplication with shameful loop
+    for id, u in users_db.items():
+        if u["username"] == new_user.username:
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "Cannot duplicate user"}
+            )
+        
+    # create user
     new_id = str(uuid4())
     users_db[new_id] = {
         "id": new_id,

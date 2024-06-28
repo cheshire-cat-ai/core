@@ -1,9 +1,10 @@
 from uuid import UUID
+from cat.auth.utils import get_default_permissions, get_permissions_matrix
 
 def check_user_fields(u):
     assert set(u.keys()) == {"id", "username", "permissions"}
     assert isinstance(u["username"], str)
-    assert isinstance(u["permissions"], list)
+    assert isinstance(u["permissions"], dict)
     try:
         # Attempt to create a UUID object from the string to validate it
         uuid_obj = UUID(u["id"], version=4)
@@ -22,15 +23,22 @@ def test_create_user(client):
 
     # create user
     data = create_new_user(client)
-    response = client.post("/users", json={"username": "Alice", "password": "wandering_in_wonderland"})
-    assert response.status_code == 200
-    data = response.json()
 
     # assertion on user structure
     check_user_fields(data)
 
     assert data["username"] == "Alice"
-    assert data["permissions"] == [] # TODO: default permissions
+    assert data["permissions"] == get_default_permissions()
+
+def test_cannot_create_duplicate_user(client):
+
+    # create user
+    response = create_new_user(client)
+
+    # create user with same username
+    response = client.post("/users", json={"username": "Alice", "password": "ecilA"})
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Cannot duplicate user"
 
 def test_get_users(client):
 
@@ -55,7 +63,10 @@ def test_get_users(client):
     for idx, d in enumerate(data):
         check_user_fields(d)
         assert d["username"] in ["admin", "Alice"]
-        assert d["permissions"] == [] # TODO: default permissions
+        if d["username"] == "Alice":
+            assert d["permissions"] == get_default_permissions()
+        else:
+            assert d["permissions"] == get_permissions_matrix()
 
 def test_get_user(client):
 
@@ -75,7 +86,7 @@ def test_get_user(client):
     # check user integrity and values
     check_user_fields(data)
     assert data["username"] == "Alice"
-    assert data["permissions"] == [] # TODO: default permissions
+    assert data["permissions"] == get_default_permissions()
 
 def test_update_user(client):
 
@@ -93,7 +104,7 @@ def test_update_user(client):
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "Alice"
-    assert data["permissions"] == []
+    assert data["permissions"] == get_default_permissions()
     assert "something" not in data.keys()
     
     # change username
@@ -102,15 +113,16 @@ def test_update_user(client):
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "Alice2"
-    assert data["permissions"] == []
+    assert data["permissions"] == get_default_permissions()
 
     # change username and permissions
-    updated_user = {"username": "Alice3", "permissions": ["read"]}
+    updated_user = {"username": "Alice3", "permissions": {"UPLOAD":["WRITE"]}}
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "Alice3"
-    assert data["permissions"] == ["read"]
+    expected_permissions = {"UPLOAD":["WRITE"]}
+    assert data["permissions"] == expected_permissions
 
     # get list of users, should be admin and Alice3
     response = client.get("/users")
@@ -121,9 +133,9 @@ def test_update_user(client):
         check_user_fields(d)
         assert d["username"] in ["admin", "Alice3"]
         if d["username"] == "Alice3":
-            assert d["permissions"] == ["read"]
+            assert d["permissions"] == expected_permissions
         else:
-            assert d["permissions"] == []
+            assert d["permissions"] == get_permissions_matrix()
 
 def test_delete_user(client):
 
@@ -154,7 +166,17 @@ def test_delete_user(client):
     assert len(data) == 1 # admin
     assert data[0]["username"] == "admin"
 
-def test_users_no_permission(secure_client):
+def test_superuser(client):
+
+    # cannot create another user called admin (it's the only one available at install)
+    response = client.post("/users", json={"username": "admin", "password": "password"})
+    assert response.status_code == 403
+
+    # cannot edit admin user
+    response = client.put("/users/admin", json={"permissions": {"MEMORY": ["READ"]}})
+
+# note: using secure client (api key set both for http and ws)
+def test_no_access_if_api_keys_active(secure_client):
 
     # create user
     response = secure_client.post(
@@ -174,9 +196,11 @@ def test_users_no_permission(secure_client):
     )
     assert response.status_code == 403
 
-    # check default list
+    # check default list giving the correct CCAT_API_KEY
     headers = {"Authorization": "Bearer meow_http"}
     response = secure_client.get("/users", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) == 1
     assert response.json()[0]["username"] == "admin"
+
+# TODOAUTH: test endpoints with different permissions

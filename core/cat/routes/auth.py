@@ -1,5 +1,6 @@
 from pytz import utc
 import asyncio
+from typing import Dict, List
 from urllib.parse import urlencode
 from datetime import datetime, timedelta
 import jwt
@@ -9,7 +10,7 @@ from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
 
-# from cat.auth.jwt import create_access_token
+from cat.auth.utils import AuthPermission, AuthResource, get_permissions_matrix
 from cat.db.crud import get_users
 from cat.env import get_env
 from cat.routes.static.templates import get_jinja_templates
@@ -79,8 +80,12 @@ async def auth_index(
 
 # TODOAUTH /logout endpoint
 
+@router.get("/available-permissions", response_model=Dict[AuthResource, List[AuthPermission]])
+async def get_available_permissions():
+    """Returns all available resources and permissions."""
+    return get_permissions_matrix()
 
-@router.post("/token")
+@router.post("/token", response_model=JWTResponse)
 async def auth_token(credentials: UserCredentials):
     """Endpoint called from client to get a JWT from local identity provider.
     This endpoint receives username and password as form-data, validates credentials and issues a JWT.

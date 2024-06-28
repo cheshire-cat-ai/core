@@ -1,26 +1,29 @@
 from enum import Enum
+from typing import Dict, List
 from pydantic import BaseModel
 import jwt
 from jwt.exceptions import InvalidTokenError
 
-AuthResource = Enum(
-    "AuthResource",
-    [
-        "STATUS",
-        "MEMORY",
-        "CONVERSATION",
-        "SETTINGS",
-        "LLM",
-        "EMBEDDER",
-        "AUTH_HANDLER",
-        "USERS",
-        "UPLOAD",
-        "PLUGINS",
-        "ADMIN",
-        "STATIC",
-    ],
-)
-AuthPermission = Enum("AuthPermission", ["WRITE", "EDIT", "LIST", "READ", "DELETE"])
+class AuthResource(str, Enum):
+    STATUS = "STATUS"
+    MEMORY = "MEMORY"
+    CONVERSATION = "CONVERSATION"
+    SETTINGS = "SETTINGS"
+    LLM = "LLM"
+    EMBEDDER = "EMBEDDER"
+    AUTH_HANDLER = "AUTH_HANDLER"
+    USERS = "USERS"
+    UPLOAD = "UPLOAD"
+    PLUGINS = "PLUGINS"
+    ADMIN = "ADMIN"
+    STATIC = "STATIC"
+
+class AuthPermission(str, Enum):
+    WRITE = "WRITE"
+    EDIT = "EDIT"
+    LIST = "LIST"
+    READ = "READ"
+    DELETE = "DELETE"
 
 
 class AuthUserInfo(BaseModel):
@@ -39,6 +42,28 @@ class AuthUserInfo(BaseModel):
     # - roles
     # - permissions
     user_data: dict
+
+
+def get_permissions_matrix() -> Dict[AuthResource, List[AuthPermission]]:
+    """
+    Returns all available resources and permissions.
+    """
+    perms = {}
+    for res in AuthResource:
+        perms[res.name] = [p.name for p in AuthPermission]
+    return perms
+
+
+def get_default_permissions() -> Dict[AuthResource, List[AuthPermission]]:
+    """
+    Returns the default permissions for new users (chat only!).
+    """
+    perms = {
+        AuthResource.CONVERSATION.name: [],
+    }
+    for p in AuthPermission:
+        perms[AuthResource.CONVERSATION].append(p.name)
+    return perms
 
 
 def is_jwt(token: str) -> bool:
