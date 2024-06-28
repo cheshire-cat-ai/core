@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta
+from pytz import utc
 import jwt
 
 from cat.db.crud import get_users
 from cat.auth.utils import (
-    AuthPermission, AuthResource, AuthUserInfo, get_base_permissions, get_full_permissions, is_jwt
+    AuthPermission, AuthResource, AuthUserInfo, get_base_permissions, get_full_permissions, is_jwt, check_password
 )
 from cat.env import get_env
 from cat.log import log
@@ -56,6 +58,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
 
 # Core auth handler, verify token on local idp
 class CoreAuthHandler(BaseAuthHandler):
+
     async def authorize_user_from_jwt(
         self, token: str, auth_resource: AuthResource, auth_permission: AuthPermission
     ) -> AuthUserInfo | None:
@@ -117,6 +120,34 @@ class CoreAuthHandler(BaseAuthHandler):
             )
 
         # do not pass
+        return None
+    
+    async def issue_jwt(self, username: str, password: str) -> str | None:
+        # authenticate local user credentials and return a JWT token
+
+        # brutal search over users, which are stored in a simple dictionary.
+        # waiting to have graph in core to store them properly
+        # TODOAUTH: get rid of this shameful loop
+        users = get_users()
+        for user_id, user in users.items():
+            if user["username"] == username and check_password(password, user["password"]):
+                # TODOAUTH: expiration with timezone needs to be tested
+                # using seconds for easier testing
+                expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60
+                expires = datetime.now(utc) + timedelta(seconds=expire_delta_in_seconds)
+                # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
+
+                jwt_content = {
+                    "sub": user_id,                      # Subject (the user ID)
+                    "username": username,                # Username
+                    "permissions": user["permissions"],  # User permissions
+                    "exp": expires                       # Expiry date as a Unix timestamp
+                }
+                return jwt.encode(
+                    jwt_content,
+                    get_env("CCAT_JWT_SECRET"),
+                    algorithm=get_env("CCAT_JWT_ALGORITHM"),
+                )
         return None
 
 

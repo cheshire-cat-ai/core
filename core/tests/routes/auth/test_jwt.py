@@ -39,7 +39,6 @@ async def test_issue_jwt(client):
         "password": "admin"
     }
     res = client.post("/auth/token", json=creds)
-
     assert res.status_code == 200
 
     # did we obtain a JWT?
@@ -52,11 +51,8 @@ async def test_issue_jwt(client):
     user_info = await auth_handler.authorize_user_from_jwt(
         received_token, AuthResource.ADMIN, AuthPermission.WRITE
     )
-    assert user_info.user_id == "admin"
-    assert user_info.user_data["username"] == "admin"
-    assert (
-        user_info.user_data["exp"] - time.time() < 60 * 60 * 24
-    )  # expires in less than 24 hours
+    assert len(user_info.id) == 36 and len(user_info.id.split("-")) == 5 # uuid4
+    assert user_info.name == "admin"
 
     # manual JWT verification
     try:

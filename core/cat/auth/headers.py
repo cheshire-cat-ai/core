@@ -113,8 +113,8 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
             else:
                 stray = StrayCat(
                     ws=websocket,
-                    user_id=user.id,
-                    user_data=user.extra,
+                    user_id=user.name, # TODOV2: user_id should be the user.id
+                    user_data=user,
                     main_loop=asyncio.get_running_loop(),
                 )
                 strays[user.id] = stray
@@ -167,7 +167,8 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
 
             if user.id not in strays.keys():
                 strays[user.id] = StrayCat(
-                    user_id=user.id, user_data=user.extra, main_loop=event_loop
+                     # TODOV2: user_id should be the user.id
+                    user_id=user.name, user_data=user, main_loop=event_loop
                 )
             return strays[user.id]
 
@@ -227,7 +228,8 @@ async def frontend_auth(request: Request) -> None | StrayCat:
 
             if user.id not in strays.keys():
                 strays[user.id] = StrayCat(
-                    user_id=user.id, user_data=user.extra, main_loop=event_loop
+                     # TODOV2: user_id should be the user.id
+                    user_id=user.name, user_data=user, main_loop=event_loop
                 )
             return strays[user.id]
 

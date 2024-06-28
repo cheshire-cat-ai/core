@@ -1,20 +1,14 @@
-from pytz import utc
 import asyncio
 from typing import Dict, List
 from urllib.parse import urlencode
-from datetime import datetime, timedelta
-import jwt
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
 
-from cat.auth.utils import AuthPermission, AuthResource, get_full_permissions, check_password
-from cat.db.crud import get_users
-from cat.env import get_env
+from cat.auth.utils import AuthPermission, AuthResource, get_full_permissions
 from cat.routes.static.templates import get_jinja_templates
-
 
 router = APIRouter()
 
@@ -34,7 +28,8 @@ async def core_login_token(request: Request, response: Response):
     form_data = await request.form()
 
     # use username and password to authenticate user from local identity provider and get token
-    access_token = await authenticate_local_user(
+    auth_handler = request.app.state.ccat.core_auth_handler
+    access_token = await auth_handler.issue_jwt(
         form_data["username"], form_data["password"]
     )
 
@@ -86,13 +81,14 @@ async def get_available_permissions():
     return get_full_permissions()
 
 @router.post("/token", response_model=JWTResponse)
-async def auth_token(credentials: UserCredentials):
+async def auth_token(request: Request, credentials: UserCredentials):
     """Endpoint called from client to get a JWT from local identity provider.
     This endpoint receives username and password as form-data, validates credentials and issues a JWT.
     """
 
     # use username and password to authenticate user from local identity provider and get token
-    access_token = await authenticate_local_user(
+    auth_handler = request.app.state.ccat.core_auth_handler
+    access_token = await auth_handler.issue_jwt(
         credentials.username, credentials.password
     )
 
@@ -103,33 +99,3 @@ async def auth_token(credentials: UserCredentials):
     # wait a little to avoid brute force attacks
     await asyncio.sleep(1)
     raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})
-
-
-async def authenticate_local_user(username: str, password: str) -> str | None:
-    # authenticate local user credentials and return a JWT token
-
-    # brutal search over users, which are stored in a simple dictionary.
-    # waiting to have graph in core to store them properly
-    # TODOAUTH: get rid of this shameful loop
-    users = get_users()
-    for user_id, user in users.items():
-        if user["username"] == username and check_password(password, user["password"]):
-            # TODOAUTH: expiration with timezone needs to be tested
-            # using seconds for easier testing
-            expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60
-            expires = datetime.now(utc) + timedelta(seconds=expire_delta_in_seconds)
-            # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
-            # TODOAUTH: move this method in auth.utils
-
-            jwt_content = {
-                "sub": user_id,                      # Subject (the user ID)
-                "username": username,                # Username
-                "permissions": user["permissions"],  # User permissions
-                "exp": expires                       # Expiry date as a Unix timestamp
-            }
-            return jwt.encode(
-                jwt_content,
-                get_env("CCAT_JWT_SECRET"),
-                algorithm=get_env("CCAT_JWT_ALGORITHM"),
-            )
-    return None
