@@ -1,6 +1,9 @@
 from typing import Dict, List
+from uuid import uuid4
+
 from tinydb import Query
 
+from cat.auth.utils import get_permissions_matrix
 from cat.db import models
 from cat.db.database import get_db
 
@@ -74,10 +77,6 @@ def upsert_setting_by_name(payload: models.Setting) -> models.Setting:
 
 # We store users in a setting and when there will be a graph db in the cat, we will store them there.
 # P.S.: I'm not proud of this.
-
-from uuid import uuid4
-from cat.auth.utils import get_permissions_matrix
-
 def get_users() -> Dict[str, Dict]:
     users = get_setting_by_name("users")
     if not users:

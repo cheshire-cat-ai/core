@@ -91,7 +91,7 @@ def test_get_user(client):
 def test_update_user(client):
 
     # update unexisting user
-    response = client.put(f"/users/non_existent_id", json={"username": "Red Queen"})
+    response = client.put("/users/non_existent_id", json={"username": "Red Queen"})
     assert response.status_code == 404
     assert response.json()["detail"]["error"] == "User not found"
 
@@ -155,7 +155,7 @@ def test_update_user(client):
 def test_delete_user(client):
 
     # delete unexisting user
-    response = client.delete(f"/users/non_existent_id")
+    response = client.delete("/users/non_existent_id")
     assert response.status_code == 404
     assert response.json()["detail"]["error"] == "User not found"
 

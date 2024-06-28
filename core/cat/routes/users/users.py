@@ -4,8 +4,6 @@ from uuid import uuid4
 
 from fastapi import Depends, APIRouter, HTTPException
 
-from cat.log import log
-from cat.db import models
 from cat.db import crud
 from cat.auth.utils import AuthPermission, AuthResource, get_default_permissions
 from cat.auth.headers import http_auth
