@@ -98,6 +98,7 @@ def test_update_user(client):
     # create user and obtain id
     user_id = create_new_user(client)["id"]
 
+
     # update unexisting attribute (shoud be ignored)
     updated_user = {"username": "Alice", "something": 42}
     response = client.put(f"/users/{user_id}", json=updated_user)
@@ -107,6 +108,13 @@ def test_update_user(client):
     assert data["permissions"] == get_default_permissions()
     assert "something" not in data.keys()
     
+    # change nothing
+    response = client.put(f"/users/{user_id}", json={})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "Alice"
+    assert data["permissions"] == get_default_permissions()
+    
     # change username
     updated_user = {"username": "Alice2"}
     response = client.put(f"/users/{user_id}", json=updated_user)
@@ -115,14 +123,21 @@ def test_update_user(client):
     assert data["username"] == "Alice2"
     assert data["permissions"] == get_default_permissions()
 
+    # change permissions
+    updated_user = {"permissions": {"MEMORY": ["READ"]}}
+    response = client.put(f"/users/{user_id}", json=updated_user)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "Alice2"
+    assert data["permissions"] == {"MEMORY": ["READ"]}
+
     # change username and permissions
     updated_user = {"username": "Alice3", "permissions": {"UPLOAD":["WRITE"]}}
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "Alice3"
-    expected_permissions = {"UPLOAD":["WRITE"]}
-    assert data["permissions"] == expected_permissions
+    assert data["permissions"] == {"UPLOAD":["WRITE"]}
 
     # get list of users, should be admin and Alice3
     response = client.get("/users")
@@ -133,7 +148,7 @@ def test_update_user(client):
         check_user_fields(d)
         assert d["username"] in ["admin", "Alice3"]
         if d["username"] == "Alice3":
-            assert d["permissions"] == expected_permissions
+            assert d["permissions"] == {"UPLOAD":["WRITE"]}
         else:
             assert d["permissions"] == get_permissions_matrix()
 
@@ -168,12 +183,28 @@ def test_delete_user(client):
 
 def test_superuser(client):
 
+    # get list of users (there should be only admin)
+    response = client.get("/users")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["username"] == "admin"
+
+    admin_id = data[0]["id"]
+
     # cannot create another user called admin (it's the only one available at install)
     response = client.post("/users", json={"username": "admin", "password": "password"})
     assert response.status_code == 403
 
     # cannot edit admin user
-    response = client.put("/users/admin", json={"permissions": {"MEMORY": ["READ"]}})
+    response = client.put(f"/users/{admin_id}", json={"permissions": {"MEMORY": ["READ"]}})
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Cannot edit admin user"
+
+    # cannot delete admin user
+    response = client.delete(f"/users/{admin_id}")
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Cannot delete admin user"
 
 # note: using secure client (api key set both for http and ws)
 def test_no_access_if_api_keys_active(secure_client):

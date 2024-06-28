@@ -20,6 +20,10 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(min_length=5)
 
+class UserUpdate(UserBase):
+    username: str = Field(default=None, min_length=5)
+    permissions: Dict[AuthResource, List[AuthPermission]] = None
+
 class UserResponse(UserBase):
     id: str
 
@@ -29,7 +33,6 @@ def create_user(
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.WRITE)),
 ):
-    
     # check for user duplication with shameful loop
     for id, u in users_db.items():
         if u["username"] == new_user.username:
@@ -70,13 +73,20 @@ def read_user(
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user(
     user_id: str,
-    user: UserBase,
+    user: UserUpdate,
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.EDIT)),
 ):
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})
+    
     stored_user = users_db[user_id]
+    if stored_user["username"] == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "Cannot edit admin user"}
+        )
+    
     updated_user = stored_user | user.model_dump(exclude_unset=True)
     users_db[user_id] = updated_user
     crud.update_users(users_db)
@@ -88,9 +98,14 @@ def delete_user(
     users_db = Depends(crud.get_users),
     stray=Depends(http_auth(AuthResource.USERS, AuthPermission.DELETE)),
 ):
-    # TODO: prevent admin deletion
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})
+    if users_db[user_id]["username"] == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "Cannot delete admin user"}
+        )
+    
     user = users_db.pop(user_id)
     crud.update_users(users_db)
     return user
