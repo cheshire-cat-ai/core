@@ -1,5 +1,5 @@
 
-from cat.auth.utils import get_permissions_matrix
+from cat.auth.utils import get_full_permissions
 
 def test_get_available_permissions(client):
 
@@ -8,4 +8,4 @@ def test_get_available_permissions(client):
     data = response.json()
     
     assert isinstance(data, dict)
-    assert data == get_permissions_matrix()
+    assert data == get_full_permissions()

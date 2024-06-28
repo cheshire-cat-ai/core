@@ -1,9 +1,10 @@
 from enum import Enum
 from typing import Dict, List
-from pydantic import BaseModel
 import bcrypt
 import jwt
 from jwt.exceptions import InvalidTokenError
+
+from cat.utils import BaseModelDict
 
 class AuthResource(str, Enum):
     STATUS = "STATUS"
@@ -27,25 +28,7 @@ class AuthPermission(str, Enum):
     DELETE = "DELETE"
 
 
-class AuthUserInfo(BaseModel):
-    """
-    Class to represent token content after the token has been decoded.
-    Will be creted by AuthHandler(s) to standardize their output.
-    Core will use this object to retrieve or create a StrayCat (session)
-    """
-
-    # user_id, used to retrieve or create a StrayCat
-    user_id: str
-
-    # only put in here what you are comfortable to pass plugins:
-    # - profile data
-    # - custom attributes
-    # - roles
-    # - permissions
-    user_data: dict
-
-
-def get_permissions_matrix() -> Dict[AuthResource, List[AuthPermission]]:
+def get_full_permissions() -> Dict[AuthResource, List[AuthPermission]]:
     """
     Returns all available resources and permissions.
     """
@@ -55,7 +38,7 @@ def get_permissions_matrix() -> Dict[AuthResource, List[AuthPermission]]:
     return perms
 
 
-def get_default_permissions() -> Dict[AuthResource, List[AuthPermission]]:
+def get_base_permissions() -> Dict[AuthResource, List[AuthPermission]]:
     """
     Returns the default permissions for new users (chat only!).
     """
@@ -65,6 +48,28 @@ def get_default_permissions() -> Dict[AuthResource, List[AuthPermission]]:
     for p in AuthPermission:
         perms[AuthResource.CONVERSATION].append(p.name)
     return perms
+
+
+class AuthUserInfo(BaseModelDict):
+    """
+    Class to represent token content after the token has been decoded.
+    Will be creted by AuthHandler(s) to standardize their output.
+    Core will use this object to retrieve or create a StrayCat (session)
+    """
+
+    # TODOAUTH: id & username can be confused when is time to retrieve or create a StrayCat
+    # (id should be used)
+    id: str
+    name: str
+
+    # permissions
+    permissions: Dict[AuthResource, List[AuthPermission]] = get_base_permissions()
+
+    # only put in here what you are comfortable to pass plugins:
+    # - profile data
+    # - custom attributes
+    # - roles
+    extra: BaseModelDict = {}
 
 
 def is_jwt(token: str) -> bool:
@@ -77,6 +82,7 @@ def is_jwt(token: str) -> bool:
         return True
     except InvalidTokenError:
         return False
+
     
 def hash_password(password: str) -> str:
     try:

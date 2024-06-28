@@ -1,5 +1,5 @@
 from uuid import UUID
-from cat.auth.utils import get_default_permissions, get_permissions_matrix
+from cat.auth.utils import get_base_permissions, get_full_permissions
 
 def check_user_fields(u):
     assert set(u.keys()) == {"id", "username", "permissions"}
@@ -28,7 +28,7 @@ def test_create_user(client):
     check_user_fields(data)
 
     assert data["username"] == "Alice"
-    assert data["permissions"] == get_default_permissions()
+    assert data["permissions"] == get_base_permissions()
 
 def test_cannot_create_duplicate_user(client):
 
@@ -64,9 +64,9 @@ def test_get_users(client):
         check_user_fields(d)
         assert d["username"] in ["admin", "Alice"]
         if d["username"] == "Alice":
-            assert d["permissions"] == get_default_permissions()
+            assert d["permissions"] == get_base_permissions()
         else:
-            assert d["permissions"] == get_permissions_matrix()
+            assert d["permissions"] == get_full_permissions()
 
 def test_get_user(client):
 
@@ -86,7 +86,7 @@ def test_get_user(client):
     # check user integrity and values
     check_user_fields(data)
     assert data["username"] == "Alice"
-    assert data["permissions"] == get_default_permissions()
+    assert data["permissions"] == get_base_permissions()
 
 def test_update_user(client):
 
@@ -104,7 +104,7 @@ def test_update_user(client):
     assert response.status_code == 400
 
     # update password (bad request)
-    updated_user = {"password": "1234"}
+    updated_user = {"password": "12345"}
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 400
     
@@ -115,7 +115,7 @@ def test_update_user(client):
 
     # nothing changed so far
     assert data["username"] == "Alice"
-    assert data["permissions"] == get_default_permissions()
+    assert data["permissions"] == get_base_permissions()
     
     # change username
     updated_user = {"username": "Alice2"}
@@ -123,7 +123,7 @@ def test_update_user(client):
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "Alice2"
-    assert data["permissions"] == get_default_permissions()
+    assert data["permissions"] == get_base_permissions()
 
     # change permissions
     updated_user = {"permissions": {"MEMORY": ["READ"]}}
@@ -152,7 +152,7 @@ def test_update_user(client):
         if d["username"] == "Alice3":
             assert d["permissions"] == {"UPLOAD":["WRITE"]}
         else:
-            assert d["permissions"] == get_permissions_matrix()
+            assert d["permissions"] == get_full_permissions()
 
 def test_delete_user(client):
 
@@ -199,7 +199,7 @@ def test_superuser(client):
     assert response.status_code == 403
 
     # cannot change password (bad request)
-    response = client.put(f"/users/{admin_id}", json={"password": "1234"})
+    response = client.put(f"/users/{admin_id}", json={"password": "12345"})
     assert response.status_code == 400
 
     # cannot edit admin user
@@ -216,18 +216,18 @@ def test_superuser(client):
 # note: using secure client (api key set both for http and ws)
 def test_no_access_if_api_keys_active(secure_client):
 
-    # create user
+    # create user (forbidden)
     response = secure_client.post(
         "/users",
         json={"username": "Alice", "password": "wandering_in_wonderland"}
     )
     assert response.status_code == 403
 
-    # read users
+    # read users (forbidden)
     response = secure_client.get("/users")
     assert response.status_code == 403
 
-    # edit user
+    # edit user (forbidden)
     response = secure_client.put(
         "/users/non_existent_id", # is does not exist, but request should be blocked before the check
         json={"username": "Alice"}
@@ -240,5 +240,3 @@ def test_no_access_if_api_keys_active(secure_client):
     assert response.status_code == 200
     assert len(response.json()) == 1
     assert response.json()[0]["username"] == "admin"
-
-# TODOAUTH: test endpoints with different permissions

@@ -5,7 +5,7 @@ from uuid import uuid4
 from fastapi import Depends, APIRouter, HTTPException
 
 from cat.db import crud
-from cat.auth.utils import AuthPermission, AuthResource, get_default_permissions, hash_password
+from cat.auth.utils import AuthPermission, AuthResource, get_base_permissions, hash_password
 from cat.auth.headers import http_auth
 
 
@@ -13,7 +13,7 @@ router = APIRouter()
 
 class UserBase(BaseModel):
     username: str = Field(min_length=2)
-    permissions: Dict[AuthResource, List[AuthPermission]] = get_default_permissions()
+    permissions: Dict[AuthResource, List[AuthPermission]] = get_base_permissions()
 
 class UserCreate(UserBase):
     password: str = Field(min_length=5)

@@ -95,30 +95,29 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
 
         """
 
-        async def get_user_stray(user_info: AuthUserInfo):
+        async def get_user_stray(user: AuthUserInfo):
             strays = websocket.app.state.strays
 
-            user_id = user_info.user_id
-            if user_id in strays.keys():
-                stray = strays[user_id]
+            if user.id in strays.keys():
+                stray = strays[user.id]
                 # Close previus ws connection
                 if stray._StrayCat__ws:
                     await stray._StrayCat__ws.close()
                 # Set new ws connection
                 stray._StrayCat__ws = websocket
                 log.info(
-                    f"New websocket connection for user '{user_id}', the old one has been closed."
+                    f"New websocket connection for user '{user.id}', the old one has been closed."
                 )
                 return stray
 
             else:
                 stray = StrayCat(
                     ws=websocket,
-                    user_id=user_id,
-                    user_data=user_info.user_data,
+                    user_id=user.id,
+                    user_data=user.extra,
                     main_loop=asyncio.get_running_loop(),
                 )
-                strays[user_id] = stray
+                strays[user.id] = stray
                 return stray
 
         # extract credential from request
@@ -131,11 +130,11 @@ def ws_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
             websocket.app.state.ccat.custom_auth_handler,
         ]
         for ah in auth_handlers:
-            user_info: AuthUserInfo = await ah.authorize_user_from_credential(
+            user: AuthUserInfo = await ah.authorize_user_from_credential(
                 credential, resource, permission, user_id=user_id
             )
-            if user_info:
-                return await get_user_stray(user_info)
+            if user:
+                return await get_user_stray(user)
 
         raise WebSocketException(code=1004, reason="Invalid Credentials")
 
@@ -162,16 +161,15 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
             Error with status code `403` if the request is not allowed.
         """
 
-        async def get_user_stray(user_info: AuthUserInfo):
+        async def get_user_stray(user: AuthUserInfo):
             strays = request.app.state.strays
             event_loop = request.app.state.event_loop
 
-            user_id = user_info.user_id
-            if user_id not in strays.keys():
-                strays[user_id] = StrayCat(
-                    user_id=user_id, user_data=user_info.user_data, main_loop=event_loop
+            if user.id not in strays.keys():
+                strays[user.id] = StrayCat(
+                    user_id=user.id, user_data=user.extra, main_loop=event_loop
                 )
-            return strays[user_id]
+            return strays[user.id]
 
         # extract credential from request
         credential = await http_extract_credential(request)
@@ -184,11 +182,11 @@ def http_auth(resource: AuthResource, permission: AuthPermission) -> Callable:
             request.app.state.ccat.custom_auth_handler,
         ]
         for ah in auth_handlers:
-            user_info: AuthUserInfo = await ah.authorize_user_from_credential(
+            user: AuthUserInfo = await ah.authorize_user_from_credential(
                 credential, resource, permission, user_id=user_id
             )
-            if user_info:
-                return await get_user_stray(user_info)
+            if user:
+                return await get_user_stray(user)
 
         raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})
 
@@ -219,20 +217,19 @@ async def frontend_auth(request: Request) -> None | StrayCat:
     if token:
         # decode token
         core_auth_handler = request.app.state.ccat.core_auth_handler
-        user_info: AuthUserInfo = await core_auth_handler.authorize_user_from_jwt(
+        user: AuthUserInfo = await core_auth_handler.authorize_user_from_jwt(
             token, AuthResource.ADMIN, AuthPermission.READ
         )
 
-        if user_info:
+        if user:
             strays = request.app.state.strays
             event_loop = request.app.state.event_loop
 
-            user_id = user_info.user_id
-            if user_id not in strays.keys():
-                strays[user_id] = StrayCat(
-                    user_id=user_id, user_data=user_info.user_data, main_loop=event_loop
+            if user.id not in strays.keys():
+                strays[user.id] = StrayCat(
+                    user_id=user.id, user_data=user.extra, main_loop=event_loop
                 )
-            return strays[user_id]
+            return strays[user.id]
 
     # no token or invalid token, redirect to login
     referer_query = urlencode({"referer": request.url.path})

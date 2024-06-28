@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
-
-from cat.auth.utils import AuthPermission, AuthResource, AuthUserInfo, is_jwt
 import jwt
+
+from cat.db.crud import get_users
+from cat.auth.utils import (
+    AuthPermission, AuthResource, AuthUserInfo, get_base_permissions, get_full_permissions, is_jwt
+)
 from cat.env import get_env
 from cat.log import log
 
@@ -64,15 +67,22 @@ class CoreAuthHandler(BaseAuthHandler):
                 algorithms=[get_env("CCAT_JWT_ALGORITHM")],
             )
 
-            # TODOAUTH: verify token expiration
+            # get user from DB
+            users = get_users()
+            if payload["sub"] in users:
+                user = users[payload["sub"]]
+                # TODOAUTH: permissions check should be done in a method
+                if auth_resource in user["permissions"].keys() and \
+                        auth_permission in user["permissions"][auth_resource]:
+                    return AuthUserInfo(
+                        id=payload["sub"],
+                        name=payload["username"],
+                        permissions=user["permissions"],
+                        extra=user,
+                    )
 
-            # build a user info obj that core can understand
-            return AuthUserInfo(
-                user_id=payload["username"],
-                user_data=payload,  # TODOAUTH: maybe not the whole payload?
-            )
         except Exception as e:
-            log.error(f"Could not decode JWT: {e}")
+            log.error(f"Could not auth user from JWT: {e}")
 
         # do not pass
         return None
@@ -87,13 +97,24 @@ class CoreAuthHandler(BaseAuthHandler):
         http_api_key = get_env("CCAT_API_KEY")
         ws_api_key = get_env("CCAT_API_KEY_WS")
 
+        # TODOAUTH: should we consider the user_id or just give
+        #    admin permissions to all users with the right api keys?
+
         # chatting over websocket
         if auth_resource == AuthResource.CONVERSATION and api_key == ws_api_key:
-            return AuthUserInfo(user_id=user_id, user_data={})
+            return AuthUserInfo(
+                id=user_id,
+                name=user_id,
+                permissions=get_base_permissions()
+            )
 
         # any http endpoint
         if api_key == http_api_key:
-            return AuthUserInfo(user_id=user_id, user_data={})
+            return AuthUserInfo(
+                id=user_id,
+                name=user_id,
+                permissions=get_full_permissions()
+            )
 
         # do not pass
         return None

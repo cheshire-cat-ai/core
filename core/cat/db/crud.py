@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from tinydb import Query
 
-from cat.auth.utils import get_permissions_matrix, hash_password
+from cat.auth.utils import get_full_permissions, hash_password
 from cat.db import models
 from cat.db.database import get_db
 
@@ -91,7 +91,7 @@ def get_users() -> Dict[str, Dict]:
                 "username": "admin",
                 "password": hash_password("admin"),
                 # admin has all permissions
-                "permissions": get_permissions_matrix()
+                "permissions": get_full_permissions()
             }
         })
     return get_setting_by_name("users")["value"]

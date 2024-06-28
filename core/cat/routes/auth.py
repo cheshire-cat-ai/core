@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
 
-from cat.auth.utils import AuthPermission, AuthResource, get_permissions_matrix, check_password
+from cat.auth.utils import AuthPermission, AuthResource, get_full_permissions, check_password
 from cat.db.crud import get_users
 from cat.env import get_env
 from cat.routes.static.templates import get_jinja_templates
@@ -83,7 +83,7 @@ async def auth_index(
 @router.get("/available-permissions", response_model=Dict[AuthResource, List[AuthPermission]])
 async def get_available_permissions():
     """Returns all available resources and permissions."""
-    return get_permissions_matrix()
+    return get_full_permissions()
 
 @router.post("/token", response_model=JWTResponse)
 async def auth_token(credentials: UserCredentials):
@@ -106,21 +106,29 @@ async def auth_token(credentials: UserCredentials):
 
 
 async def authenticate_local_user(username: str, password: str) -> str | None:
-    # authenticate local user credentials
+    # authenticate local user credentials and return a JWT token
 
-    # brutal search over users, which are stored in a simple JSON list.
+    # brutal search over users, which are stored in a simple dictionary.
     # waiting to have graph in core to store them properly
     # TODOAUTH: get rid of this shameful loop
     users = get_users()
-    for id, user in users.items():
+    for user_id, user in users.items():
         if user["username"] == username and check_password(password, user["password"]):
             # TODOAUTH: expiration with timezone needs to be tested
             # using seconds for easier testing
             expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60
-            expire = datetime.now(utc) + timedelta(seconds=expire_delta_in_seconds)
+            expires = datetime.now(utc) + timedelta(seconds=expire_delta_in_seconds)
             # TODOAUTH: add issuer and redirect_uri (and verify them when a token is validated)
+            # TODOAUTH: move this method in auth.utils
+
+            jwt_content = {
+                "sub": user_id,                      # Subject (the user ID)
+                "username": username,                # Username
+                "permissions": user["permissions"],  # User permissions
+                "exp": expires                       # Expiry date as a Unix timestamp
+            }
             return jwt.encode(
-                dict(exp=expire, username=username),
+                jwt_content,
                 get_env("CCAT_JWT_SECRET"),
                 algorithm=get_env("CCAT_JWT_ALGORITHM"),
             )
