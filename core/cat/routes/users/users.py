@@ -12,14 +12,14 @@ from cat.auth.headers import http_auth
 router = APIRouter()
 
 class UserBase(BaseModel):
-    username: str = Field(min_length=5)
+    username: str = Field(min_length=2)
     permissions: Dict[AuthResource, List[AuthPermission]] = get_default_permissions()
 
 class UserCreate(UserBase):
     password: str = Field(min_length=5)
 
 class UserUpdate(UserBase):
-    username: str = Field(default=None, min_length=5)
+    username: str = Field(default=None, min_length=2)
     permissions: Dict[AuthResource, List[AuthPermission]] = None
 
 class UserResponse(UserBase):

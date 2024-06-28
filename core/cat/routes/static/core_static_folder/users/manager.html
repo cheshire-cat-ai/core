@@ -28,16 +28,18 @@
 
         <div id="users-list">
             <template x-for="u in users" :key="u.id">
-                <div class="user-row">
-                    <span>
-                        <span x-text="u.username"></span>
-                        <span x-text="u.permissions"></span>
-                    </span>
-                    <span>
-                        <button @click="editUser(u.id)">Edit</button>
-                        <button x- @click="deleteUser(u.id)">Delete</button>
-                    </span>
-                </div>
+                <template x-if="u.username != 'admin'">
+                    <div class="user-row">
+                        <span>
+                            <span x-text="u.username"></span>
+                            <span x-text="u.permissions"></span>
+                        </span>
+                        <span>
+                            <button @click="editUser(u.id)">Edit</button>
+                            <button x- @click="deleteUser(u.id)">Delete</button>
+                        </span>
+                    </div>
+                </template>
             </template>
         </div>
     </div>
