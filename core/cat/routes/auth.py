@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
 
-from cat.auth.utils import AuthPermission, AuthResource, get_permissions_matrix
+from cat.auth.utils import AuthPermission, AuthResource, get_permissions_matrix, check_password
 from cat.db.crud import get_users
 from cat.env import get_env
 from cat.routes.static.templates import get_jinja_templates
@@ -113,7 +113,7 @@ async def authenticate_local_user(username: str, password: str) -> str | None:
     # TODOAUTH: get rid of this shameful loop
     users = get_users()
     for id, user in users.items():
-        if user["username"] == username and user["password"] == password:
+        if user["username"] == username and check_password(password, user["password"]):
             # TODOAUTH: expiration with timezone needs to be tested
             # using seconds for easier testing
             expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60

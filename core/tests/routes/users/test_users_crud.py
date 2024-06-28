@@ -98,20 +98,22 @@ def test_update_user(client):
     # create user and obtain id
     user_id = create_new_user(client)["id"]
 
-
-    # update unexisting attribute (shoud be ignored)
+    # update unexisting attribute (bad request)
     updated_user = {"username": "Alice", "something": 42}
     response = client.put(f"/users/{user_id}", json=updated_user)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["username"] == "Alice"
-    assert data["permissions"] == get_default_permissions()
-    assert "something" not in data.keys()
+    assert response.status_code == 400
+
+    # update password (bad request)
+    updated_user = {"password": "1234"}
+    response = client.put(f"/users/{user_id}", json=updated_user)
+    assert response.status_code == 400
     
     # change nothing
     response = client.put(f"/users/{user_id}", json={})
     assert response.status_code == 200
     data = response.json()
+
+    # nothing changed so far
     assert data["username"] == "Alice"
     assert data["permissions"] == get_default_permissions()
     
@@ -196,10 +198,15 @@ def test_superuser(client):
     response = client.post("/users", json={"username": "admin", "password": "password"})
     assert response.status_code == 403
 
+    # cannot change password (bad request)
+    response = client.put(f"/users/{admin_id}", json={"password": "1234"})
+    assert response.status_code == 400
+
     # cannot edit admin user
     response = client.put(f"/users/{admin_id}", json={"permissions": {"MEMORY": ["READ"]}})
     assert response.status_code == 403
     assert response.json()["detail"]["error"] == "Cannot edit admin user"
+
 
     # cannot delete admin user
     response = client.delete(f"/users/{admin_id}")

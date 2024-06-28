@@ -1,11 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict
 from uuid import uuid4
 
 from fastapi import Depends, APIRouter, HTTPException
 
 from cat.db import crud
-from cat.auth.utils import AuthPermission, AuthResource, get_default_permissions
+from cat.auth.utils import AuthPermission, AuthResource, get_default_permissions, hash_password
 from cat.auth.headers import http_auth
 
 
@@ -17,10 +17,13 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=5)
+    # no additional fields allowed
+    model_config: ConfigDict = {"extra": "forbid"}
 
 class UserUpdate(UserBase):
     username: str = Field(default=None, min_length=2)
     permissions: Dict[AuthResource, List[AuthPermission]] = None
+    model_config: ConfigDict = {"extra": "forbid"}
 
 class UserResponse(UserBase):
     id: str
@@ -38,6 +41,9 @@ def create_user(
                 status_code=403,
                 detail={"error": "Cannot duplicate user"}
             )
+        
+    #hash password
+    new_user.password = hash_password(new_user.password)
         
     # create user
     new_id = str(uuid4())
