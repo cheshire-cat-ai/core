@@ -36,7 +36,7 @@ def test_refuse_issue_jwt(client):
 async def test_issue_jwt(client):
     creds = {
         "username": "admin",
-        "password": "admin",  # TODOAUTH: check custom credentials
+        "password": "admin"
     }
     res = client.post("/auth/token", json=creds)
 
@@ -72,6 +72,33 @@ async def test_issue_jwt(client):
     except jwt.exceptions.DecodeError:
         assert False
 
+@pytest.mark.asyncio
+async def test_issue_jwt_for_new_user(client):
+
+    # create new user
+    creds = {
+        "username": "Alice",
+        "password": "Alice",
+    }
+
+    # we sohuld not obtain a JWT for this user
+    # because it does not exist
+    res = client.post("/auth/token", json=creds)
+    assert res.status_code == 403
+    assert res.json()["detail"]["error"] == "Invalid Credentials"
+
+    # let's create the user
+    res = client.post("/users", json=creds)
+    assert res.status_code == 200
+
+    # now we should get a JWT
+    res = client.post("/auth/token", json=creds)
+    assert res.status_code == 200
+
+    # did we obtain a JWT?
+    res.json()["token_type"] == "bearer"
+    received_token = res.json()["access_token"]
+    assert is_jwt(received_token)
 
 # test token expiration after successfull login
 # NOTE: here we are using the secure_client fixture (see conftest.py)
