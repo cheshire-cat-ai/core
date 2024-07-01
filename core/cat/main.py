@@ -1,6 +1,7 @@
 import uvicorn
 import asyncio
 from contextlib import asynccontextmanager
+from scalar_fastapi import get_scalar_api_reference
 
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
@@ -61,7 +62,9 @@ def custom_generate_unique_id(route: APIRoute):
 
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id
+    lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id,
+    docs_url=None, redoc_url=None, title="Cheshire-Cat API",
+    license_info={"name": "GPL-3", "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"},
 )
 
 # Configures the CORS middleware for the FastAPI app
@@ -118,6 +121,14 @@ async def validation_exception_handler(request, exc):
 
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
+
+@cheshire_cat_api.get("/docs", include_in_schema=False)
+async def scalar_docs():
+    return get_scalar_api_reference(
+        openapi_url=cheshire_cat_api.openapi_url,
+        title=cheshire_cat_api.title,
+        scalar_favicon_url="https://cheshirecat.ai/wp-content/uploads/2023/10/Logo-Cheshire-Cat.svg",
+    )
 
 # RUN!
 if __name__ == "__main__":

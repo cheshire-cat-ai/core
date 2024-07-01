@@ -14,6 +14,7 @@ dependencies = [
     "python-multipart==0.0.6",
     "pydantic==2.4.2",
     "fastapi==0.110.2",
+    "scalar-fastapi==1.0.2",
     "websockets==10.4",
     "PyJWT==2.8.0",
     "bcrypt==4.1.3",
