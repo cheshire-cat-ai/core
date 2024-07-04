@@ -1,4 +1,5 @@
 import requests
+import random
 
 from cat.log import log
 
@@ -40,7 +41,11 @@ async def registry_search_plugins(
 
             # check the connection's status
             if response.status_code == 200:
-                return response.json()["plugins"]
+                # TODO: registry should pluginssort by score,
+                #  until then we sort here at random
+                registry_plugins = response.json()["plugins"]
+                random.shuffle(registry_plugins)
+                return registry_plugins
             else:
                 log.error(
                     f"Error with registry response {response.status_code}: {response.text}"
