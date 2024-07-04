@@ -18,7 +18,7 @@ def test_list_plugins(client):
     assert json["installed"][0]["active"]
 
     # registry (see more registry tests in `./test_plugins_registry.py`)
-    assert type(json["registry"] == list)
+    assert isinstance(json["registry"], list)
     assert len(json["registry"]) > 0
 
 

@@ -11,11 +11,11 @@ def test_list_registry_plugins(client):
 
     assert response.status_code == 200
     assert "registry" in json.keys()
-    assert type(json["registry"] == list)
+    assert isinstance(json["registry"], list)
     assert len(json["registry"]) > 0
 
     # registry (see more registry tests in `./test_plugins_registry.py`)
-    assert type(json["registry"] == list)
+    assert isinstance(json["registry"], list)
     assert len(json["registry"]) > 0
 
     # query

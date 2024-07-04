@@ -40,7 +40,7 @@ def get_embedders_settings(
         # Deduce selected embedder:
         ccat = request.app.state.ccat
         for embedder_config_class in reversed(SUPPORTED_EMDEDDING_MODELS):
-            if embedder_config_class._pyclass.default == type(ccat.embedder):
+            if isinstance(embedder_config_class._pyclass.default, ccat.embedder):
                 selected = embedder_config_class.__name__
 
     saved_settings = crud.get_settings_by_category(category=EMBEDDER_CATEGORY)

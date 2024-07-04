@@ -31,11 +31,11 @@ def test_stray_call(stray):
 
     reply = stray.loop.run_until_complete(stray.__call__(msg))
 
-    assert type(reply) == CatMessage
+    assert isinstance(reply, CatMessage)
     assert "You did not configure" in reply.content
     assert reply.user_id == "Alice"
     assert reply.type == "chat"
-    assert type(reply.why) == MessageWhy
+    assert isinstance(reply.why, MessageWhy)
 
 
 # TODO: update these tests once we have a real LLM in tests
