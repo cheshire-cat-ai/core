@@ -4,7 +4,8 @@ import time
 import jwt
 
 from cat.env import get_env
-from cat.auth.utils import is_jwt, AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.auth_utils import is_jwt
 
 from tests.utils import send_websocket_message
 

@@ -4,8 +4,8 @@ from typing import Dict
 from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, Depends
 from cat.log import log
 from cat.mad_hatter.registry import registry_search_plugins, registry_download_plugin
-from cat.auth.headers import http_auth
-from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.connection import HTTPAuth
+from cat.auth.permissions import AuthPermission, AuthResource
 
 from pydantic import ValidationError
 
@@ -17,7 +17,7 @@ router = APIRouter()
 async def get_available_plugins(
     request: Request,
     query: str = None,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.LIST)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.LIST)),
     # author: str = None, to be activated in case of more granular search
     # tag: str = None, to be activated in case of more granular search
 ) -> Dict:
@@ -79,7 +79,7 @@ async def get_available_plugins(
 async def install_plugin(
     request: Request,
     file: UploadFile,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.WRITE)),
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
@@ -113,7 +113,7 @@ async def install_plugin(
 async def install_plugin_from_registry(
     request: Request,
     payload: Dict = Body({"url": "https://github.com/plugin-dev-account/plugin-repo"}),
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.WRITE)),
 ) -> Dict:
     """Install a new plugin from registry"""
 
@@ -136,7 +136,7 @@ async def install_plugin_from_registry(
 async def toggle_plugin(
     plugin_id: str,
     request: Request,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.WRITE)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.WRITE)),
 ) -> Dict:
     """Enable or disable a single plugin"""
 
@@ -158,7 +158,7 @@ async def toggle_plugin(
 @router.get("/settings")
 async def get_plugins_settings(
     request: Request,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.READ)),
 ) -> Dict:
     """Returns the settings of all the plugins"""
 
@@ -191,7 +191,7 @@ async def get_plugins_settings(
 async def get_plugin_settings(
     request: Request,
     plugin_id: str,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.READ)),
 ) -> Dict:
     """Returns the settings of a specific plugin"""
 
@@ -218,7 +218,7 @@ async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
     payload: Dict = Body({"setting_a": "some value", "setting_b": "another value"}),
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.EDIT)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.EDIT)),
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
@@ -251,7 +251,7 @@ async def upsert_plugin_settings(
 async def get_plugin_details(
     plugin_id: str,
     request: Request,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.READ)),
 ) -> Dict:
     """Returns information on a single plugin"""
 
@@ -280,7 +280,7 @@ async def get_plugin_details(
 async def delete_plugin(
     plugin_id: str,
     request: Request,
-    stray=Depends(http_auth(AuthResource.PLUGINS, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.DELETE)),
 ) -> Dict:
     """Physically remove plugin."""
 

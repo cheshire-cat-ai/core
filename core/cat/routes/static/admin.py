@@ -2,7 +2,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi import Depends
 
-from cat.auth.headers import frontend_auth
+from cat.auth.permissions import AuthResource, AuthPermission
+from cat.auth.connection import CoreFrontendAuth
 from cat.looking_glass.stray_cat import StrayCat
 
 
@@ -18,7 +19,11 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/", include_in_schema=False)
     @cheshire_cat_api.get("/admin/{page}", include_in_schema=False)
     @cheshire_cat_api.get("/admin/{page}/", include_in_schema=False)
-    def get_admin_single_page_app(stray: StrayCat = Depends(frontend_auth)):
+    def get_admin_single_page_app(
+        stray: StrayCat = Depends(
+            CoreFrontendAuth(AuthResource.ADMIN, AuthPermission.WRITE)
+        )
+    ):
         # the admin static build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue
         # the files live inside the /admin folder (not visible in volume / cat code)

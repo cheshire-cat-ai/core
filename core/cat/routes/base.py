@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Body
 from typing import Dict
 import tomli
-from cat.auth.utils import AuthPermission, AuthResource
-from cat.auth.headers import http_auth
+from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.connection import HTTPAuth
 
 from cat.convo.messages import CatMessage
 
@@ -12,7 +12,7 @@ router = APIRouter()
 # server status
 @router.get("/")
 async def home(
-    stray=Depends(http_auth(AuthResource.STATUS, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.STATUS, AuthPermission.READ)),
 ) -> Dict:
     """Server status"""
     with open("pyproject.toml", "rb") as f:
@@ -24,7 +24,7 @@ async def home(
 @router.post("/message", response_model=CatMessage)
 async def message_with_cat(
     payload: Dict = Body({"text": "hello!"}),
-    stray=Depends(http_auth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
+    stray=Depends(HTTPAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ) -> Dict:
     """Get a response from the Cat"""
     answer = await stray({"user_id": stray.user_id, **payload})

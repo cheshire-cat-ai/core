@@ -1,5 +1,5 @@
 from uuid import UUID
-from cat.auth.utils import get_base_permissions, get_full_permissions
+from cat.auth.permissions import get_base_permissions, get_full_permissions
 
 def check_user_fields(u):
     assert set(u.keys()) == {"id", "username", "permissions"}

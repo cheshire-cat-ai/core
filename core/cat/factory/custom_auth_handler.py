@@ -4,9 +4,10 @@ from pytz import utc
 import jwt
 
 from cat.db.crud import get_users
-from cat.auth.utils import (
-    AuthPermission, AuthResource, AuthUserInfo, get_base_permissions, get_full_permissions, is_jwt, check_password
+from cat.auth.permissions import (
+    AuthPermission, AuthResource, AuthUserInfo, get_base_permissions, get_full_permissions
 )
+from cat.auth.auth_utils import is_jwt, check_password
 from cat.env import get_env
 from cat.log import log
 
@@ -24,6 +25,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
         auth_resource: AuthResource,
         auth_permission: AuthPermission,
         # when there is no JWT, user id is passed via `user_id: xxx` header or via websocket path
+        # with JWT, the user id is in the token ad has priority
         user_id: str = "user",
     ) -> AuthUserInfo | None:
         if is_jwt(credential):

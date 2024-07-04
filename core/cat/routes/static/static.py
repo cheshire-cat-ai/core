@@ -1,8 +1,8 @@
 from fastapi import Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 
-from cat.auth.headers import http_auth
-from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.connection import HTTPAuth
+from cat.auth.permissions import AuthPermission, AuthResource
 
 
 class AuthStatic(StaticFiles):
@@ -11,8 +11,8 @@ class AuthStatic(StaticFiles):
 
     async def __call__(self, scope, receive, send) -> None:
         request = Request(scope, receive=receive)
-        stray_http_auth = http_auth(
-            permission=AuthPermission.READ, resource=AuthResource.STATIC
+        stray_http_auth = HTTPAuth(
+            resource=AuthResource.STATIC, permission=AuthPermission.READ
         )
         allowed = await stray_http_auth(request)
         if allowed:

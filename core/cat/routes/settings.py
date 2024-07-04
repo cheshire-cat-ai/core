@@ -1,5 +1,5 @@
-from cat.auth.utils import AuthPermission, AuthResource
-from cat.auth.headers import http_auth
+from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.connection import HTTPAuth
 from fastapi import Depends, APIRouter, HTTPException
 from cat.db import models
 from cat.db import crud
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/")
 def get_settings(
     search: str = "",
-    stray=Depends(http_auth(AuthResource.SETTINGS, AuthPermission.LIST)),
+    stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.LIST)),
 ):
     """Get the entire list of settings available in the database"""
 
@@ -23,7 +23,7 @@ def get_settings(
 @router.post("/")
 def create_setting(
     payload: models.SettingBody,
-    stray=Depends(http_auth(AuthResource.SETTINGS, AuthPermission.WRITE)),
+    stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.WRITE)),
 ):
     """Create a new setting in the database"""
 
@@ -38,7 +38,7 @@ def create_setting(
 
 @router.get("/{settingId}")
 def get_setting(
-    settingId: str, stray=Depends(http_auth(AuthResource.SETTINGS, AuthPermission.READ))
+    settingId: str, stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.READ))
 ):
     """Get the a specific setting from the database"""
 
@@ -57,7 +57,7 @@ def get_setting(
 def update_setting(
     settingId: str,
     payload: models.SettingBody,
-    stray=Depends(http_auth(AuthResource.SETTINGS, AuthPermission.EDIT)),
+    stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.EDIT)),
 ):
     """Update a specific setting in the database if it exists"""
 
@@ -84,7 +84,7 @@ def update_setting(
 @router.delete("/{settingId}")
 def delete_setting(
     settingId: str,
-    stray=Depends(http_auth(AuthResource.SETTINGS, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.DELETE)),
 ):
     """Delete a specific setting in the database"""
 

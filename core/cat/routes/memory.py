@@ -1,8 +1,8 @@
 from typing import Dict
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
-from cat.auth.headers import http_auth
-from cat.auth.utils import AuthPermission, AuthResource
+from cat.auth.connection import HTTPAuth
+from cat.auth.permissions import AuthPermission, AuthResource
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Search k memories similar to given text."""
 
@@ -65,7 +65,7 @@ async def recall_memories_from_text(
 # GET collection list with some metadata
 @router.get("/collections")
 async def get_collections(
-    request: Request, stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ))
+    request: Request, stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
 ) -> Dict:
     """Get list of available collections"""
 
@@ -86,7 +86,7 @@ async def get_collections(
 @router.delete("/collections")
 async def wipe_collections(
     request: Request,
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and create all collections"""
 
@@ -112,7 +112,7 @@ async def wipe_collections(
 async def wipe_single_collection(
     request: Request,
     collection_id: str,
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and recreate a collection"""
 
@@ -145,7 +145,7 @@ async def wipe_memory_point(
     request: Request,
     collection_id: str,
     memory_id: str,
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete a specific point in memory"""
 
@@ -178,7 +178,7 @@ async def wipe_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete points in memory by filter"""
 
@@ -197,7 +197,7 @@ async def wipe_memory_points_by_metadata(
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
@@ -212,7 +212,7 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
-    stray=Depends(http_auth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 

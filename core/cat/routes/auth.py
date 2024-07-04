@@ -7,7 +7,7 @@ from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
 
-from cat.auth.utils import AuthPermission, AuthResource, get_full_permissions
+from cat.auth.permissions import AuthPermission, AuthResource, get_full_permissions
 from cat.routes.static.templates import get_jinja_templates
 
 router = APIRouter()
