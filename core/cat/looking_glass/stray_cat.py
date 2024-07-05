@@ -1,6 +1,7 @@
 import time
 import asyncio
 import traceback
+import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
@@ -12,9 +13,9 @@ from fastapi import WebSocket
 
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.looking_glass.callbacks import NewTokenHandler
+from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
-from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
+from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, ModelInteraction
 from cat.agents.base_agent import AgentOutput
 
 from cat.utils import levenshtein_distance
@@ -78,6 +79,7 @@ class StrayCat:
                 "declarative": declarative_report,
                 "procedural": procedural_report,
             },
+            model_interactions=self.working_memory.model_interactions,
         )
 
         return why
@@ -193,6 +195,18 @@ class StrayCat:
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
         self.working_memory.recall_query = recall_query
+        
+        # keep track of embedder model usage
+        self.working_memory.model_interactions.append(
+            ModelInteraction(
+                model_type="embedder",
+                source="recall",
+                prompt=recall_query,
+                reply=recall_query_embedding,
+                input_tokens=len(tiktoken.get_encoding("cl100k_base").encode(recall_query)),
+                output_tokens=0,
+            )
+        )
 
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories", cat=self)
@@ -277,6 +291,9 @@ class StrayCat:
         if stream:
             callbacks.append(NewTokenHandler(self))
 
+        # Add a token counter to the callbacks
+        callbacks.append(ModelInteractionHandler(self, self.__class__.__name__))
+
         # Check if self._llm is a completion model and generate a response
         if isinstance(self._llm, BaseLLM):
             return self._llm(prompt, callbacks=callbacks)
@@ -316,6 +333,9 @@ class StrayCat:
 
         # set a few easy access variables
         self.working_memory.user_message_json = user_message
+
+        # keeping track of model interactions
+        self.working_memory.model_interactions = []
 
         # hook to modify/enrich user input
         self.working_memory.user_message_json = self.mad_hatter.execute_hook(

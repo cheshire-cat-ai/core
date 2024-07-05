@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum
@@ -7,6 +7,16 @@ from enum import Enum
 class Role(Enum):
     AI = "AI"
     Human = "Human"
+
+class ModelInteraction(BaseModelDict):
+    """Class for wrapping model interaction"""
+
+    model_type: Literal["llm", "embedder"]
+    source: str
+    prompt: str
+    reply: str | List[float]
+    input_tokens: int
+    output_tokens: int
 
 
 class MessageWhy(BaseModelDict):
@@ -21,6 +31,7 @@ class MessageWhy(BaseModelDict):
     input: str
     intermediate_steps: List
     memory: dict
+    model_interactions: List[ModelInteraction]
 
 
 class CatMessage(BaseModelDict):

@@ -4,7 +4,7 @@ from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.output_parsers.string import StrOutputParser
 
-from cat.looking_glass.callbacks import NewTokenHandler
+from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.agents.base_agent import BaseAgent, AgentOutput
 
 class MemoryAgent(BaseAgent):
@@ -31,7 +31,7 @@ class MemoryAgent(BaseAgent):
             # convert to dict before passing to langchain
             # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
             stray.working_memory.agent_input.model_dump(),
-            config=RunnableConfig(callbacks=[NewTokenHandler(stray)])
+            config=RunnableConfig(callbacks=[NewTokenHandler(stray), ModelInteractionHandler(stray, self.__class__.__name__)])
         )
 
         return AgentOutput(output=output)

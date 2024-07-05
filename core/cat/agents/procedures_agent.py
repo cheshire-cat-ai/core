@@ -7,7 +7,7 @@ from copy import deepcopy
 from langchain.agents import AgentExecutor
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnableConfig, RunnablePassthrough, RunnableLambda
 
 from cat.agents.base_agent import BaseAgent, AgentOutput
 from cat.looking_glass import prompts
@@ -17,6 +17,7 @@ from cat.mad_hatter.decorators.tool import CatTool
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.plugin import Plugin
 from cat.log import log
+from cat.looking_glass.callbacks import ModelInteractionHandler
 
 
 """
@@ -153,7 +154,8 @@ class ProceduresAgent(BaseAgent):
         out = agent_executor.invoke(
             # convert to dict before passing to langchain
             # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
-            stray.working_memory.agent_input.model_dump()
+            stray.working_memory.agent_input.model_dump(),
+            config=RunnableConfig(callbacks=[ModelInteractionHandler(stray, self.__class__.__name__)])
         )
 
         # Process intermediate steps and handle forms
