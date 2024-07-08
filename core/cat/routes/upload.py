@@ -18,6 +18,7 @@ from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.log import log
 
+
 router = APIRouter()
 
 
@@ -38,6 +39,10 @@ async def upload_file(
     ),
     chunk_overlap: int | None = Body(
         default=None, description="Chunk overlap (in tokens)"
+    ),
+    metadata: Dict = Body(
+        default={},
+        description="Metadata to be stored with each chunk (e.g. author, category, etc.)"
     ),
     stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
 ) -> Dict:
@@ -70,6 +75,7 @@ async def upload_file(
         deepcopy(format_upload_file(file)),
         chunk_size,
         chunk_overlap,
+        metadata=metadata,
     )
 
     # reply to client
@@ -94,6 +100,10 @@ async def upload_url(
     chunk_overlap: int | None = Body(
         default=None, description="Chunk overlap (in tokens)"
     ),
+    metadata: Dict = Body(
+        default={},
+        description="Metadata to be stored with each chunk (e.g. author, category, etc.)"
+    ),
     stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
@@ -110,7 +120,12 @@ async def upload_url(
         if status_code == 200:
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                stray.rabbit_hole.ingest_file, stray, url, chunk_size, chunk_overlap
+                stray.rabbit_hole.ingest_file,
+                stray,
+                url,
+                chunk_size,
+                chunk_overlap,
+                metadata=metadata,
             )
             return {"url": url, "info": "URL is being ingested asynchronously"}
         else:
@@ -130,6 +145,10 @@ async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
+    metadata: Dict = Body(
+        default={},
+        description="Metadata to be stored with each chunk (e.g. author, category, etc.)"
+    ),
     stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
@@ -146,7 +165,12 @@ async def upload_memory(
         )
 
     # Ingest memories in background and notify client
-    background_tasks.add_task(stray.rabbit_hole.ingest_memory, stray, deepcopy(file))
+    background_tasks.add_task(
+        stray.rabbit_hole.ingest_memory,
+        stray,
+        deepcopy(file),
+        metadata=metadata
+    )
 
     # reply to client
     return {

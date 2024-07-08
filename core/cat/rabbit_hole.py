@@ -60,13 +60,21 @@ class RabbitHole:
             "rabbithole_instantiates_splitter", self.__text_splitter, cat=self.__cat
         )
 
-    def ingest_memory(self, stray, file: UploadFile):
+    def ingest_memory(
+            self,
+            stray,
+            file: UploadFile,
+            metadata: dict = {}
+        ):
         """Upload memories to the declarative memory from a JSON file.
 
         Parameters
         ----------
         file : UploadFile
             File object sent via `rabbithole/memory` hook.
+
+        metadata : dict
+            Metadata to be stored with each chunk.
 
         Notes
         -----
@@ -126,6 +134,7 @@ class RabbitHole:
         file: Union[str, UploadFile],
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
+        metadata: dict = {}
     ):
         """Load a file in the Cat's declarative memory.
 
@@ -141,6 +150,8 @@ class RabbitHole:
             Number of tokens in each document chunk.
         chunk_overlap : int
             Number of overlapping tokens between consecutive chunks.
+        metadata : dict
+            Metadata to be stored with each chunk.
 
         Notes
         ----------
