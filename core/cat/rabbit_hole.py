@@ -63,8 +63,7 @@ class RabbitHole:
     def ingest_memory(
             self,
             stray,
-            file: UploadFile,
-            metadata: dict = {}
+            file: UploadFile
         ):
         """Upload memories to the declarative memory from a JSON file.
 
@@ -72,9 +71,6 @@ class RabbitHole:
         ----------
         file : UploadFile
             File object sent via `rabbithole/memory` hook.
-
-        metadata : dict
-            Metadata to be stored with each chunk.
 
         Notes
         -----
@@ -156,6 +152,7 @@ class RabbitHole:
         Notes
         ----------
         Currently supported formats are `.txt`, `.pdf` and `.md`.
+        You cn add custom ones or substitute the above via RabbitHole hooks.
 
         See Also
         ----------
@@ -164,7 +161,10 @@ class RabbitHole:
 
         # split file into a list of docs
         docs = self.file_to_docs(
-            stray=stray, file=file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+            stray=stray,
+            file=file,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
         )
 
         # store in memory
@@ -173,14 +173,14 @@ class RabbitHole:
         else:
             filename = file.filename
 
-        self.store_documents(stray=stray, docs=docs, source=filename)
+        self.store_documents(stray=stray, docs=docs, source=filename, metadata=metadata)
 
     def file_to_docs(
         self,
         stray,
         file: Union[str, UploadFile],
         chunk_size: int | None = None,
-        chunk_overlap: int | None = None,
+        chunk_overlap: int | None = None
     ) -> List[Document]:
         """Load and convert files to Langchain `Document`.
 
@@ -251,7 +251,7 @@ class RabbitHole:
             source=source,
             content_type=content_type,
             chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_overlap=chunk_overlap
         )
 
     def string_to_docs(
@@ -261,7 +261,7 @@ class RabbitHole:
         source: str = None,
         content_type: str = "text/plain",
         chunk_size: int | None = None,
-        chunk_overlap: int | None = None,
+        chunk_overlap: int | None = None
     ) -> List[Document]:
         """Convert string to Langchain `Document`.
 
@@ -280,8 +280,6 @@ class RabbitHole:
             Number of tokens in each document chunk.
         chunk_overlap : int
             Number of overlapping tokens between consecutive chunks.
-        send_message: bool
-            If true will send parsing message information to frontend.
 
         Returns
         -------
@@ -312,7 +310,13 @@ class RabbitHole:
         )
         return docs
 
-    def store_documents(self, stray, docs: List[Document], source: str) -> None:
+    def store_documents(
+            self,
+            stray,
+            docs: List[Document],
+            source: str, # TODOV2: is this necessary?
+            metadata: dict = {}
+        ) -> None:
         """Add documents to the Cat's declarative memory.
 
         This method loops a list of Langchain `Document` and adds some metadata. Namely, the source filename and the
@@ -324,6 +328,8 @@ class RabbitHole:
             List of Langchain `Document` to be inserted in the Cat's declarative memory.
         source : str
             Source name to be added as a metadata. It can be a file name or an URL.
+        metadata : dict
+            Metadata to be stored with each chunk.
 
         Notes
         -------
@@ -354,8 +360,13 @@ class RabbitHole:
                 stray.send_ws_message(read_message)
                 log.warning(read_message)
 
+            # add default metadata
             doc.metadata["source"] = source
             doc.metadata["when"] = time.time()
+            # add custom metadata (sent via endpoint)
+            for k,v in metadata.items():
+                doc.metadata[k] = v
+
             doc = stray.mad_hatter.execute_hook(
                 "before_rabbithole_insert_memory", doc, cat=stray
             )
