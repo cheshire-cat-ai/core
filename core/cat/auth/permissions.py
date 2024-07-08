@@ -15,7 +15,6 @@ class AuthResource(str, Enum):
     USERS = "USERS"
     UPLOAD = "UPLOAD"
     PLUGINS = "PLUGINS"
-    ADMIN = "ADMIN"
     STATIC = "STATIC"
 
 class AuthPermission(str, Enum):
@@ -40,12 +39,12 @@ def get_base_permissions() -> Dict[AuthResource, List[AuthPermission]]:
     """
     Returns the default permissions for new users (chat only!).
     """
-    perms = {
-        AuthResource.CONVERSATION.name: [],
+    return {
+        "STATUS": ["READ"],
+        "MEMORY": ["READ", "LIST"],
+        "CONVERSATION": ["WRITE", "EDIT", "LIST", "READ", "DELETE"],
+        "STATIC": ["READ"],
     }
-    for p in AuthPermission:
-        perms[AuthResource.CONVERSATION].append(p.name)
-    return perms
 
 
 class AuthUserInfo(BaseModelDict):

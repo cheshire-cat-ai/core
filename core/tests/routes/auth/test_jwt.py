@@ -50,7 +50,7 @@ async def test_issue_jwt(client):
     # is the JWT correct for core auth handler?
     auth_handler = client.app.state.ccat.core_auth_handler
     user_info = await auth_handler.authorize_user_from_jwt(
-        received_token, AuthResource.ADMIN, AuthPermission.WRITE
+        received_token, AuthResource.LLM, AuthPermission.WRITE
     )
     assert len(user_info.id) == 36 and len(user_info.id.split("-")) == 5 # uuid4
     assert user_info.name == "admin"

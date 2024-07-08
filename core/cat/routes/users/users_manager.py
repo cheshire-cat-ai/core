@@ -16,7 +16,7 @@ router = APIRouter()
 async def users_manager_page(
     request: Request,
     stray: StrayCat = Depends(
-        CoreFrontendAuth(AuthResource.ADMIN, AuthPermission.WRITE)
+        CoreFrontendAuth(AuthResource.USERS, AuthPermission.WRITE)
     )
 ):
     """Create, update and delete users and their permissions"""

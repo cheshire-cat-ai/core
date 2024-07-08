@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from tinydb import Query
 
-from cat.auth.permissions import get_full_permissions
+from cat.auth.permissions import get_full_permissions, get_base_permissions
 from cat.auth.auth_utils import hash_password
 from cat.db import models
 from cat.db.database import get_db
@@ -84,8 +84,10 @@ def upsert_setting_by_name(payload: models.Setting) -> models.Setting:
 def get_users() -> Dict[str, Dict]:
     users = get_setting_by_name("users")
     if not users:
-        # create admin user
+        # create admin user and an ordinary user
         admin_id = str(uuid4())
+        user_id = str(uuid4())
+
         update_users({
             admin_id: {
                 "id": admin_id,
@@ -93,6 +95,13 @@ def get_users() -> Dict[str, Dict]:
                 "password": hash_password("admin"),
                 # admin has all permissions
                 "permissions": get_full_permissions()
+            },
+            user_id: {
+                "id": user_id,
+                "username": "user",
+                "password": hash_password("user"),
+                # user has minor permissions
+                "permissions": get_base_permissions()
             }
         })
     return get_setting_by_name("users")["value"]
