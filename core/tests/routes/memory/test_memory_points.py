@@ -1,3 +1,4 @@
+import pytest
 from tests.utils import send_websocket_message, get_declarative_memory_contents
 
 
@@ -104,3 +105,60 @@ def test_points_deleted_by_metadata(client):
     assert res.status_code == 200
     declarative_memories = get_declarative_memory_contents(client)
     assert len(declarative_memories) == 0
+
+
+def create_point_wrong_collection(client):
+
+    req_json = {
+        "content": "Hello dear"
+    }
+
+    # wrong collection
+    res = client.post(
+        "/memory/collections/wrongcollection/points", json=req_json
+    )
+    assert res.status_code == 400
+    assert "Collection does not exist" in res.json()["detail"]["error"]
+
+    # cannot write procedural point
+    res = client.post(
+        "/memory/collections/procedural/points", json=req_json
+    )
+    assert res.status_code == 400
+    assert "Procedural memory is read-only" in res.json()["detail"]["error"]
+
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_create_memory_point(client, collection):
+
+    # create a point
+    content = "Hello dear"
+    metadata = {"custom_key": "custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+    res = client.post(
+        f"/memory/collections/{collection}/points", json=req_json
+    )
+    assert res.status_code == 200
+    json = res.json()
+    assert json["content"] == content
+    expected_metadata = {"source": "user", **metadata}
+    assert json["metadata"] == expected_metadata
+    assert "id" in json
+    assert "vector" in json
+    assert isinstance(json["vector"], list)
+    assert isinstance(json["vector"][0], float)
+
+    # check memory contents
+    params = {"text": "dear, hello"}
+    response = client.get("/memory/recall/", params=params)
+    json = response.json()
+    assert response.status_code == 200
+    assert len(json["vectors"]["collections"][collection]) == 1
+    memory = json["vectors"]["collections"][collection][0]
+    assert memory["page_content"] == content
+    assert memory["metadata"] == expected_metadata
+
+

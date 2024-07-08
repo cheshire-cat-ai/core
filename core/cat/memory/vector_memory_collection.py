@@ -169,7 +169,7 @@ class VectorMemoryCollection:
         """Add a point (and its metadata) to the vectorstore.
 
         Args:
-            text: original text.
+            content: original text.
             vector: Embedding vector.
             metadata: Optional metadata dict associated with the text.
             id:
@@ -196,7 +196,7 @@ class VectorMemoryCollection:
 
         if update_status.status == "completed":
             # returnign stored point
-            return point
+            return point # TODOV2 return internal MemoryPoint
         else:
             return None
 
