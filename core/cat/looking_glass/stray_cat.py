@@ -539,6 +539,10 @@ Allowed classes are:
     @property
     def user_id(self):
         return self.__user_id
+    
+    @property
+    def user_message(self):
+        return self.working_memory.user_message_json.text
 
     @property
     def _llm(self):
