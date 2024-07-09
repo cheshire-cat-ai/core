@@ -15,7 +15,7 @@ from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
-from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, ModelInteraction
+from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents.base_agent import AgentOutput
 
 from cat.utils import levenshtein_distance
@@ -198,13 +198,10 @@ class StrayCat:
         
         # keep track of embedder model usage
         self.working_memory.model_interactions.append(
-            ModelInteraction(
-                model_type="embedder",
-                source="recall",
+            EmbedderModelInteraction(
                 prompt=recall_query,
                 reply=recall_query_embedding,
                 input_tokens=len(tiktoken.get_encoding("cl100k_base").encode(recall_query)),
-                output_tokens=0,
             )
         )
 
