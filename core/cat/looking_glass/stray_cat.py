@@ -4,18 +4,27 @@ import traceback
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
+from langchain_core.embeddings import Embeddings
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain.base_language import BaseLanguageModel
+from qdrant_client import QdrantClient
+from cat.memory.vector_memory_collection import VectorMemoryCollection
+from cat.looking_glass.white_rabbit import WhiteRabbit
+from cat.mad_hatter.mad_hatter import MadHatter
+from cat.memory.long_term_memory import LongTermMemory
+from cat.rabbit_hole import RabbitHole
 from langchain_community.llms import BaseLLM
 from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
-
+from cat.factory.embedder import EmbedderSettings
 from fastapi import WebSocket
+
 
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role
-from cat.agents.base_agent import AgentOutput
+from cat.agents.base_agent import AgentOutput, BaseAgent
 
 from cat.utils import levenshtein_distance
 
@@ -537,35 +546,55 @@ Allowed classes are:
         return langchain_chat_history
 
     @property
-    def user_id(self):
+    def user_id(self) -> str:
         return self.__user_id
-
+    
     @property
-    def _llm(self):
+    def user_message(self) -> str:
+        return self.working_memory.user_message_json.text
+    
+    @property
+    def memory_vector_client(self) -> QdrantClient:
+        return CheshireCat().memory.vectors.vector_db
+    
+    @property
+    def episodic_memory(self) -> VectorMemoryCollection:
+        return CheshireCat().memory.vectors.episodic
+    
+    @property
+    def declarative_memory(self) -> VectorMemoryCollection:
+        return CheshireCat().memory.vectors.declarative
+    
+    @property
+    def procedural_memory(self) -> VectorMemoryCollection:
+        return CheshireCat().memory.vectors.procedural
+    
+    @property
+    def _llm(self) -> BaseLanguageModel:
         return CheshireCat()._llm
 
     @property
-    def embedder(self):
+    def embedder(self) -> Embeddings:
         return CheshireCat().embedder
 
     @property
-    def memory(self):
+    def memory(self) -> LongTermMemory:
         return CheshireCat().memory
 
     @property
-    def rabbit_hole(self):
+    def rabbit_hole(self) -> RabbitHole:
         return CheshireCat().rabbit_hole
 
     @property
-    def mad_hatter(self):
+    def mad_hatter(self) -> MadHatter:
         return CheshireCat().mad_hatter
 
     @property
-    def main_agent(self):
+    def main_agent(self) -> BaseAgent:
         return CheshireCat().main_agent
 
     @property
-    def white_rabbit(self):
+    def white_rabbit(self) -> WhiteRabbit:
         return CheshireCat().white_rabbit
 
     @property

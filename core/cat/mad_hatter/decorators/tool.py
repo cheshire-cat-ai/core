@@ -99,18 +99,20 @@ def tool(
 ) -> Callable:
     """
     Make tools out of functions, can be used with or without arguments.
+    
     Requires:
         - Function must be of type (str, cat) -> str
         - Function must have a docstring
+        
     Examples:
         .. code-block:: python
             @tool
             def search_api(query: str, cat) -> str:
-                # Searches the API for the query.
+                \"\"\"Searches the API for the query.\"\"\"
                 return "https://api.com/search?q=" + query
             @tool("search", return_direct=True)
             def search_api(query: str, cat) -> str:
-                # Searches the API for the query.
+               \"\"\"Searches the API for the query.\"\"\"
                 return "https://api.com/search?q=" + query
     """
 

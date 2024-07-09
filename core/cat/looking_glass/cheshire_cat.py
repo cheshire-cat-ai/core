@@ -5,6 +5,7 @@ from typing_extensions import Protocol
 
 from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
+from langchain_core.embeddings import Embeddings
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.llms import Cohere, OpenAI
 from langchain_openai import ChatOpenAI
@@ -17,6 +18,7 @@ from cat.db import crud, models
 from cat.factory.embedder import get_embedder_from_name
 import cat.factory.embedder as embedders
 from cat.factory.llm import LLMDefaultConfig
+from cat.factory.embedder import EmbedderSettings
 from cat.factory.llm import get_llm_from_name
 from cat.agents.main_agent import MainAgent
 from cat.looking_glass.white_rabbit import WhiteRabbit
@@ -149,7 +151,7 @@ class CheshireCat:
 
         return llm
 
-    def load_language_embedder(self) -> embedders.EmbedderSettings:
+    def load_language_embedder(self) -> Embeddings:
         """Hook into the  embedder selection.
 
         Allows to modify how the Cat selects the embedder at bootstrap time.
