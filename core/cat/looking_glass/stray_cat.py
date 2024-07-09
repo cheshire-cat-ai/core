@@ -543,7 +543,11 @@ Allowed classes are:
     @property
     def user_message(self):
         return self.working_memory.user_message_json.text
-
+    
+    @property
+    def memory_vector_client(self):
+        return CheshireCat().memory.vectors.vector_db
+    
     @property
     def _llm(self):
         return CheshireCat()._llm
