@@ -135,8 +135,9 @@ class ProceduresAgent(BaseAgent):
                 agent_scratchpad=lambda x: self.generate_scratchpad(x["intermediate_steps"])
             )
             | prompt
-            | RunnableLambda(lambda x: self._log_prompt(x))
+            | RunnableLambda(lambda x: self._log_prompt(x, "TOOL PROMPT"))
             | stray._llm
+            | RunnableLambda(lambda x: self._log_output(x, "TOOL PROMPT OUTPUT"))
             | ChooseProcedureOutputParser()
         )
 
@@ -145,7 +146,7 @@ class ProceduresAgent(BaseAgent):
             agent=agent,
             tools=allowed_tools,
             return_intermediate_steps=True,
-            verbose=True,
+            verbose=False,
             max_iterations=5,
         )
 

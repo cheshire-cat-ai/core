@@ -19,10 +19,19 @@ class BaseAgent(ABC):
         pass
 
     # TODO: this is here to debug langchain, take it away
-    def _log_prompt(self, x):
-        # The names are not shown in the chat history log, the model however receives the name correctly
-        log.info(
-            "The names are not shown in the chat history log, the model however receives the name correctly"
-        )
-        print("\n", get_colored_text(x.to_string(), "green"))
-        return x
+    def _log_prompt(self, langchain_prompt, title):
+        print("\n")
+        print(get_colored_text(f"==================== {title} ====================", "green"))
+        for m in langchain_prompt.messages:
+            print(get_colored_text(type(m).__name__, "green"))
+            print(m.content)
+        print(get_colored_text(f"========================================", "green"))
+        return langchain_prompt
+    
+    # TODO: this is here to debug langchain, take it away
+    def _log_output(self, langchain_output, title):
+        print("\n")
+        print(get_colored_text(f"==================== {title} ====================", "blue"))
+        print(langchain_output.content)
+        print(get_colored_text(f"========================================", "blue"))
+        return langchain_output
