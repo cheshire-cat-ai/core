@@ -31,6 +31,9 @@ class BaseAgent(ABC):
     def _log_output(self, langchain_output, title):
         print("\n")
         print(get_colored_text(f"==================== {title} ====================", "blue"))
-        print(langchain_output.content)
+        if hasattr(langchain_output, 'content'):
+            print(langchain_output.content)
+        else:
+            print(langchain_output)
         print(get_colored_text("========================================", "blue"))
         return langchain_output
