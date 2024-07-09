@@ -62,7 +62,7 @@ async def upload_file(
 
     Note
     ----------
-    `chunk_size`, `chunk_overlap` anad `metadata` must be passed as form data.
+    `chunk_size`, `chunk_overlap` and `metadata` must be passed as form data.
     This is necessary because the HTTP protocol does not allow file uploads to be sent as JSON.
 
     Example
