@@ -1,12 +1,35 @@
-from typing import List
+from typing import List, Literal
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum
+from pydantic import BaseModel, Field
+import time
 
 
 class Role(Enum):
     AI = "AI"
     Human = "Human"
+
+
+class ModelInteraction(BaseModel):
+    model_type: Literal["llm", "embedder"]
+    source: str
+    prompt: str
+    input_tokens: int
+    started_at: float = Field(default_factory=lambda: time.time())
+
+
+class LLMModelInteraction(ModelInteraction):
+    model_type: Literal["llm"] = Field(default="llm")
+    reply: str
+    output_tokens: int
+    ended_at: float
+
+
+class EmbedderModelInteraction(ModelInteraction):
+    model_type: Literal["embedder"] = Field(default="embedder")
+    source: str = Field(default="recall")
+    reply: List[float]
 
 
 class MessageWhy(BaseModelDict):
@@ -16,11 +39,13 @@ class MessageWhy(BaseModelDict):
         input (str): input message
         intermediate_steps (List): intermediate steps
         memory (dict): memory
+        model_interactions (List[LLMModelInteraction | EmbedderModelInteraction]): model interactions
     """
 
     input: str
     intermediate_steps: List
     memory: dict
+    model_interactions: List[LLMModelInteraction | EmbedderModelInteraction]
 
 
 class CatMessage(BaseModelDict):
@@ -50,7 +75,7 @@ class UserMessage(BaseModelDict):
 
 
 def convert_to_Langchain_message(
-    messages: List[UserMessage | CatMessage],
+        messages: List[UserMessage | CatMessage],
 ) -> List[BaseMessage]:
     messages = []
     for m in messages:
