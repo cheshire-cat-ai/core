@@ -1,7 +1,7 @@
 import time
 from typing import List
 from cat.utils import BaseModelDict
-from cat.convo.messages import Role, UserMessage
+from cat.convo.messages import Role, UserMessage, ModelInteraction
 from cat.experimental.form import CatForm
 
 
@@ -31,6 +31,9 @@ class WorkingMemory(BaseModelDict):
     episodic_memories: List = []
     declarative_memories: List = []
     procedural_memories: List = []
+
+    # track models usage
+    model_interactions: List[ModelInteraction] = []
 
     def update_conversation_history(self, who, message, why={}):
         """Update the conversation history.
