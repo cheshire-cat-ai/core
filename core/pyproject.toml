@@ -21,7 +21,7 @@ dependencies = [
     "Jinja2==3.1.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
-    "qdrant_client==1.8.0",
+    "qdrant_client==1.9.0",
     "langchain==0.2.1",
     "langchain-community==0.2.1",
     "langchain-openai==0.1.7",
