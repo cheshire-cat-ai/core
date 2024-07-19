@@ -1,6 +1,8 @@
 from typing import Dict
 
-from fastapi import Request, APIRouter, Body, HTTPException
+from cat.auth.connection import HTTPAuth
+from cat.auth.permissions import AuthPermission, AuthResource
+from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models
@@ -21,7 +23,9 @@ LLM_SELECTED_NAME = "llm_selected"
 
 # get configured LLMs and configuration schemas
 @router.get("/settings")
-def get_llms_settings() -> Dict:
+def get_llms_settings(
+    stray=Depends(HTTPAuth(AuthResource.LLM, AuthPermission.LIST)),
+) -> Dict:
     """Get the list of the Large Language Models"""
     LLM_SCHEMAS = get_llms_schemas()
 
@@ -29,23 +33,24 @@ def get_llms_settings() -> Dict:
     selected = crud.get_setting_by_name(name=LLM_SELECTED_NAME)
     if selected is not None:
         selected = selected["value"]["name"]
-    
+
     saved_settings = crud.get_settings_by_category(category=LLM_CATEGORY)
-    saved_settings = { s["name"]: s for s in saved_settings }
+    saved_settings = {s["name"]: s for s in saved_settings}
 
     settings = []
     for class_name, schema in LLM_SCHEMAS.items():
-        
         if class_name in saved_settings:
             saved_setting = saved_settings[class_name]["value"]
         else:
             saved_setting = {}
 
-        settings.append({
-            "name"  : class_name,
-            "value" : saved_setting,
-            "schema": schema,
-        })
+        settings.append(
+            {
+                "name": class_name,
+                "value": saved_setting,
+                "schema": schema,
+            }
+        )
 
     return {
         "settings": settings,
@@ -55,7 +60,11 @@ def get_llms_settings() -> Dict:
 
 # get LLM settings and its schema
 @router.get("/settings/{languageModelName}")
-def get_llm_settings(request: Request, languageModelName: str) -> Dict:
+def get_llm_settings(
+    request: Request,
+    languageModelName: str,
+    stray=Depends(HTTPAuth(AuthResource.LLM, AuthPermission.READ)),
+) -> Dict:
     """Get settings and schema of the specified Large Language Model"""
     LLM_SCHEMAS = get_llms_schemas()
 
@@ -66,9 +75,9 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
             status_code=400,
             detail={
                 "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
-            }
+            },
         )
-    
+
     setting = crud.get_setting_by_name(name=languageModelName)
     schema = LLM_SCHEMAS[languageModelName]
 
@@ -77,18 +86,15 @@ def get_llm_settings(request: Request, languageModelName: str) -> Dict:
     else:
         setting = setting["value"]
 
-    return {
-        "name": languageModelName,
-        "value": setting,
-        "schema": schema
-    }
-    
+    return {"name": languageModelName, "value": setting, "schema": schema}
+
 
 @router.put("/settings/{languageModelName}")
 def upsert_llm_setting(
     request: Request,
     languageModelName: str,
     payload: Dict = Body({"openai_api_key": "your-key-here"}),
+    stray=Depends(HTTPAuth(AuthResource.LLM, AuthPermission.EDIT)),
 ) -> Dict:
     """Upsert the Large Language Model setting"""
     LLM_SCHEMAS = get_llms_schemas()
@@ -100,22 +106,23 @@ def upsert_llm_setting(
             status_code=400,
             detail={
                 "error": f"{languageModelName} not supported. Must be one of {allowed_configurations}"
-            }
+            },
         )
-    
+
     # create the setting and upsert it
     final_setting = crud.upsert_setting_by_name(
         models.Setting(name=languageModelName, category=LLM_CATEGORY, value=payload)
     )
 
     crud.upsert_setting_by_name(
-        models.Setting(name=LLM_SELECTED_NAME, category=LLM_SELECTED_CATEGORY, value={"name":languageModelName})
+        models.Setting(
+            name=LLM_SELECTED_NAME,
+            category=LLM_SELECTED_CATEGORY,
+            value={"name": languageModelName},
+        )
     )
 
-    status = {
-        "name": languageModelName,
-        "value": final_setting["value"]
-    }
+    status = {"name": languageModelName, "value": final_setting["value"]}
 
     ccat = request.app.state.ccat
     # reload llm and embedder of the cat
@@ -131,10 +138,7 @@ def upsert_llm_setting(
         crud.delete_settings_by_category(category=LLM_SELECTED_CATEGORY)
         crud.delete_settings_by_category(category=LLM_CATEGORY)
         raise HTTPException(
-            status_code=400,
-            detail={
-                "error": utils.explicit_error_message(e)
-            }
+            status_code=400, detail={"error": utils.explicit_error_message(e)}
         )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()

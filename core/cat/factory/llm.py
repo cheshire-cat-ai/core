@@ -96,7 +96,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "gpt-3.5-turbo"
+    model_name: str = "gpt-4o-mini"
     temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = ChatOpenAI

@@ -13,8 +13,8 @@ from langchain.docstore.document import Document
 def before_cat_bootstrap(cat) -> None:
     """Hook into the Cat start up.
 
-    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-    the memories, the *Agent Manager* and the *Rabbit Hole*.
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+    the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
     This hook allows to intercept such process and is executed in the middle of plugins and
     natural language objects loading.
@@ -26,7 +26,7 @@ def before_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Called after cat bootstrap
@@ -34,8 +34,8 @@ def before_cat_bootstrap(cat) -> None:
 def after_cat_bootstrap(cat) -> None:
     """Hook into the end of the Cat start up.
 
-    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-    the memories, the *Agent Manager* and the *Rabbit Hole*.
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+    the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
     This hook allows to intercept the end of such process and is executed right after the Cat has finished loading
     its components.
@@ -47,7 +47,7 @@ def after_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Called when a user message arrives.
@@ -149,7 +149,7 @@ def before_cat_recalls_memories(cat) -> None:
         Cheshire Cat instance.
 
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 @hook(priority=0)
@@ -182,7 +182,9 @@ def before_cat_recalls_episodic_memories(episodic_recall_config: dict, cat) -> d
 
 
 @hook(priority=0)
-def before_cat_recalls_declarative_memories(declarative_recall_config: dict, cat) -> dict:
+def before_cat_recalls_declarative_memories(
+    declarative_recall_config: dict, cat
+) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -253,7 +255,7 @@ def after_cat_recalls_memories(cat) -> None:
         Cheshire Cat instance.
 
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Hook called just before sending response to a client.

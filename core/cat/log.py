@@ -3,13 +3,12 @@
 import logging
 import sys
 import inspect
-import traceback
 import json
-from itertools import takewhile
 from pprint import pformat
 from loguru import logger
 
 from cat.env import get_env
+
 
 def get_log_level():
     """Return the global LOG level."""
@@ -84,7 +83,7 @@ class CatLogEngine:
                 format=log_format,
                 backtrace=True,
                 diagnose=True,
-                filter=self.show_log_level
+                filter=self.show_log_level,
             )
         else:
             return logger.add(
@@ -92,7 +91,7 @@ class CatLogEngine:
                 colorize=True,
                 format=log_format,
                 filter=self.show_log_level,
-                level=self.LOG_LEVEL
+                level=self.LOG_LEVEL,
             )
 
     def get_caller_info(self, skip=3):
@@ -202,10 +201,10 @@ class CatLogEngine:
         )
 
         # prettify
-        if type(msg) in [dict, list, str]: # TODO: should be recursive
+        if type(msg) in [dict, list, str]:  # TODO: should be recursive
             try:
                 msg = json.dumps(msg, indent=4)
-            except:
+            except Exception:
                 pass
         else:
             msg = pformat(msg)
@@ -216,21 +215,22 @@ class CatLogEngine:
     def welcome(self):
         """Welcome message in the terminal."""
         secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
-        if secure != '':
-            secure = 's'
+        if secure != "":
+            secure = "s"
 
         cat_host = get_env("CCAT_CORE_HOST")
         cat_port = get_env("CCAT_CORE_PORT")
-        cat_address = f'http{secure}://{cat_host}:{cat_port}'
+        cat_address = f"http{secure}://{cat_host}:{cat_port}"
 
-        with open("cat/welcome.txt", 'r') as f:
+        with open("cat/welcome.txt", "r") as f:
             print(f.read())
 
-        print('\n=============== ^._.^ ===============\n')
-        print(f'Cat REST API:   {cat_address}/docs')
-        print(f'Cat PUBLIC:     {cat_address}/public')
-        print(f'Cat ADMIN:      {cat_address}/admin\n')
-        print('======================================')
+        print("\n=============== ^._.^ ===============\n")
+        print(f"Cat REST API:   {cat_address}/docs")
+        print(f"Cat PUBLIC:     {cat_address}/public")
+        print(f"Cat ADMIN:      {cat_address}/admin\n")
+        print("======================================")
+
 
 # logger instance
 log = CatLogEngine()

@@ -1,12 +1,8 @@
 import sys
-import uuid
 import socket
-from typing import Any, List, Iterable, Optional
-import requests
 from cat.utils import extract_domain_from_url, is_https
 
 from qdrant_client import QdrantClient
-from qdrant_client.qdrant_remote import QdrantRemote
 
 from cat.memory.vector_memory_collection import VectorMemoryCollection
 from cat.log import log
@@ -14,16 +10,15 @@ from cat.env import get_env
 # from cat.utils import singleton
 
 
-#@singleton REFACTOR: worth it to have this (or LongTermMemory) as singleton?
+# @singleton REFACTOR: worth it to have this (or LongTermMemory) as singleton?
 class VectorMemory:
     local_vector_db = None
 
     def __init__(
-            self,
-            embedder_name=None,
-            embedder_size=None,
-        ) -> None:
-
+        self,
+        embedder_name=None,
+        embedder_size=None,
+    ) -> None:
         # connects to Qdrant and creates self.vector_db attribute
         self.connect_to_vector_memory()
 
@@ -53,15 +48,14 @@ class VectorMemory:
         db_path = "cat/data/local_vector_memory/"
         qdrant_host = get_env("CCAT_QDRANT_HOST")
 
-        if len(qdrant_host) == 0:
+        if not qdrant_host:
             log.info(f"Qdrant path: {db_path}")
             # Qdrant local vector DB client
 
             # reconnect only if it's the first boot and not a reload
             if VectorMemory.local_vector_db is None:
                 VectorMemory.local_vector_db = QdrantClient(
-                    path=db_path,
-                    force_disable_check_same_thread=True
+                    path=db_path, force_disable_check_same_thread=True
                 )
 
             self.vector_db = VectorMemory.local_vector_db
@@ -86,5 +80,5 @@ class VectorMemory:
                 host=qdrant_host,
                 port=qdrant_port,
                 https=qdrant_https,
-                api_key=qdrant_api_key
+                api_key=qdrant_api_key,
             )

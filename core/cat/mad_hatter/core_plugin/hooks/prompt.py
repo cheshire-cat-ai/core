@@ -4,8 +4,6 @@ Here is a collection of methods to hook the prompts components that instruct the
 
 """
 
-import time
-from typing import List, Dict
 
 from cat.mad_hatter.decorators import hook
 
