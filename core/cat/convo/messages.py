@@ -2,7 +2,7 @@ from typing import List, Literal
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import time
 
 
@@ -17,6 +17,10 @@ class ModelInteraction(BaseModel):
     prompt: str
     input_tokens: int
     started_at: float = Field(default_factory=lambda: time.time())
+
+    model_config = ConfigDict(
+        protected_namespaces=()
+    )
 
 
 class LLMModelInteraction(ModelInteraction):

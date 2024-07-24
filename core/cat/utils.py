@@ -215,6 +215,7 @@ class BaseModelDict(BaseModel):
         extra="allow",
         validate_assignment=True,
         arbitrary_types_allowed=True,
+        protected_namespaces=() # avoid warning for `model_xxx` attributes
     )
 
     def __getitem__(self, key):
