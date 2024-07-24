@@ -14,11 +14,6 @@ You can use one of these actions:
 ```
 
 {examples}
-
-{chat_history}
-
-{agent_scratchpad}
-
 """
 
 
@@ -30,11 +25,9 @@ You answer Human shortly and with a focus on the following context."""
 MAIN_PROMPT_SUFFIX = """
 
 # Context
-
 {episodic_memory}
 
 {declarative_memory}
 
 {tools_output}
-
-# Conversation until now:"""
+"""
