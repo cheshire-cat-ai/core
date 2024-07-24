@@ -114,14 +114,15 @@ class MainAgent(BaseAgent):
         )
 
         # format conversation history to be inserted in the prompt
-        # conversation_history_formatted_content = stray.stringify_chat_history()
+        # TODOV2: take away
+        conversation_history_formatted_content = stray.stringify_chat_history()
 
         return BaseModelDict(**{
-            "input": stray.working_memory.user_message_json.text,  # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
-            # "chat_history": conversation_history_formatted_content,
             "tools_output": "",
+            "input": stray.working_memory.user_message_json.text,  # TODOV2: take away
+            "chat_history": conversation_history_formatted_content, # TODOV2: take away
         })
 
     def agent_prompt_episodic_memories(
