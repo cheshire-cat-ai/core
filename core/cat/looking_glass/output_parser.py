@@ -1,5 +1,5 @@
 import json
-from typing import Union, Dict
+from typing import Union, Dict, Any
 from pydantic import BaseModel
 from langchain_core.output_parsers.transform import BaseCumulativeTransformOutputParser
 
@@ -9,8 +9,8 @@ from cat.log import log
 
 
 class LLMAction(BaseModel):
-    action: Union[str, None] = None
-    action_input: Union[str, None] = None
+    action: Any = None
+    action_input: Any = None
 
 class ChooseProcedureOutputParser(BaseCumulativeTransformOutputParser):
 
@@ -25,7 +25,7 @@ class ChooseProcedureOutputParser(BaseCumulativeTransformOutputParser):
         # Extract action input
         # TODOV2: return proper types (not only strings)
         if llm_action.action_input and \
-                not isinstance(llm_action.action_input, str):
-            llm_action.action_input = json.dumps(llm_action.action_input)
+                type(llm_action.action_input) not in [str, None]:
+            llm_action.action_input = json.dumps(llm_action.action_input) # TODOV2: remove this dumps and return proper type
 
         return llm_action

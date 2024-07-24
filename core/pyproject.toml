@@ -45,7 +45,7 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "httpx",
-    "fastembed==0.2.2",
+    "fastembed==0.3.4",
     "rapidfuzz==3.6.1",
     "APScheduler==3.10.4",
     "ruff==0.4.7",

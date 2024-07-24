@@ -164,6 +164,7 @@ def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
 
     # parse
     parsed = parser.parse(json_string_clean[start_index:])
+    
     if pydantic_model:
         return pydantic_model(**parsed)
     return parsed
