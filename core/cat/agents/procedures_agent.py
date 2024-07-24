@@ -211,10 +211,10 @@ class ProceduresAgent(BaseAgent):
                 list_examples += """
 Question: I have no questions
 ```json
-{{
-    "action": "final_answer",
+{
+    "action": "no_answer",
     "action_input": null
-}}
+}
 ```"""
         return list_examples
 

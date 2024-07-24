@@ -19,10 +19,10 @@ def test_procedure_output_parser():
     assert out.action is None
     assert out.action_input is None
 
-    # final answer
-    out = parser.parse('{"action": "final_answer"}')
+    # no action
+    out = parser.parse('{"action": "no_action"}')
     assert isinstance(out, LLMAction)
-    assert out.action == "final_answer"
+    assert out.action == "no_action"
     assert out.action_input is None
 
     # action without action_input
