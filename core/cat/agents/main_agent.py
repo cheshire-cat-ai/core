@@ -67,6 +67,9 @@ class MainAgent(BaseAgent):
         procedures_agent_out : AgentOutput = await procedures_agent.execute(stray)
         if procedures_agent_out.return_direct:
             return procedures_agent_out
+        
+        from cat.log import log
+        log.warning(procedures_agent_out)
 
         # we run memory agent if:
         # - no procedures were recalled or selected or

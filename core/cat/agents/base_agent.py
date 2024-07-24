@@ -6,7 +6,7 @@ from langchain_core.utils import get_colored_text
 from cat.utils import BaseModelDict
 
 class AgentOutput(BaseModelDict):
-    output: str
+    output: str | None = None
     intermediate_steps: List = []
     return_direct: bool = False
 

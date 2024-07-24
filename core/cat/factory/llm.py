@@ -287,14 +287,14 @@ def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
+        LLMOpenAICompatibleConfig,
+        LLMOllamaConfig,
         LLMGeminiChatConfig,
         LLMCohereConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
-        LLMOllamaConfig,
-        LLMOpenAICompatibleConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
     ]

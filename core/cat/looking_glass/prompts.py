@@ -1,8 +1,8 @@
 
-TOOL_PROMPT = """Create a JSON action to complete the action sequence, with the correct "action" and "action_input" to help the Human.
+TOOL_PROMPT = """Create a JSON with the correct "action" and "action_input" to help the Human.
 You can use one of these actions:
 {tools}
-- "final_answer": Use this action to finish or if no relevant action is available. Input is always null.
+- "final_answer": Use this action if no relevant action is available. Input is always null.
 
 ## The JSON must have the following structure:
 
@@ -15,31 +15,10 @@ You can use one of these actions:
 
 {examples}
 
-## Action output
-
-After each action there will be an action output in this format:
-```json
-{{
-    "action_output": // output of the preceding action
-}}
-```
-
-## Final answer / no action available
-When you have a final answer (or no tools are relevant), use the following format:
-```json
-{{
-    "action": "final_answer",
-    "action_input": null
-}}
-```
-
-## Conversation with Human:
 {chat_history}
 
-## Actions sequence used until now:
 {agent_scratchpad}
 
-# Next Action to perform or final_answer:
 """
 
 
