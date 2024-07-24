@@ -88,7 +88,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI-compatible API",
-            "description": "Configuration for self-hosted OpenAI-compatible API server, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM",
+            "description": "Configuration for OpenAI-compatible APIs, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM, TogetherAI and many others.",
             "link": "",
         }
     )

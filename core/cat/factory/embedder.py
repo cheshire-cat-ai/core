@@ -62,7 +62,7 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI-compatible API embedder",
-            "description": "Configuration for self-hosted OpenAI-compatible API embeddings",
+            "description": "Configuration for OpenAI-compatible API embeddings",
             "link": "",
         }
     )
