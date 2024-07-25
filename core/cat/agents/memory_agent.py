@@ -30,9 +30,9 @@ class MemoryAgent(BaseAgent):
 
         chain = (
             prompt
-            | RunnableLambda(lambda x: self._log_prompt(x, "MAIN PROMPT"))
+            | RunnableLambda(lambda x: utils.langchain_log_prompt(x, "MAIN PROMPT"))
             | stray._llm
-            | RunnableLambda(lambda x: self._log_output(x, "MAIN PROMPT OUTPUT"))
+            | RunnableLambda(lambda x: utils.langchain_log_output(x, "MAIN PROMPT OUTPUT"))
             | StrOutputParser()
         )
 

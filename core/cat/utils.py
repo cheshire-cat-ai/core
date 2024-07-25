@@ -2,6 +2,7 @@
 
 import os
 import traceback
+import inspect
 from datetime import timedelta
 from urllib.parse import urlparse
 from typing import Dict, Tuple
@@ -10,6 +11,7 @@ from pydantic import BaseModel, ConfigDict
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
+from langchain_core.utils import get_colored_text
 
 from cat.log import log
 from cat.env import get_env
@@ -202,6 +204,43 @@ def match_prompt_variables(
             log.warning(f"Placeholder '{m}' not found in prompt variables, removed")
             
     return prompt_variables, prompt_template
+
+
+def get_caller_info():
+    # go 2 steps up the stack
+    try:
+        calling_frame = inspect.currentframe()
+        grand_father_frame = calling_frame.f_back.f_back
+        grand_father_name = grand_father_frame.f_code.co_name
+        
+        # check if the grand_father_frame is in a class method
+        if 'self' in grand_father_frame.f_locals:
+            return grand_father_frame.f_locals['self'].__class__.__name__ + "." + grand_father_name
+        return grand_father_name
+    except Exception as e:
+        log.error(e)
+        return None
+
+
+def langchain_log_prompt(langchain_prompt, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "green"))
+    for m in langchain_prompt.messages:
+        print(get_colored_text(type(m).__name__, "green"))
+        print(m.content)
+    print(get_colored_text("========================================", "green"))
+    return langchain_prompt
+
+
+def langchain_log_output(langchain_output, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "blue"))
+    if hasattr(langchain_output, 'content'):
+        print(langchain_output.content)
+    else:
+        print(langchain_output)
+    print(get_colored_text("========================================", "blue"))
+    return langchain_output
 
 
 # This is our masterwork during tea time

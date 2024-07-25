@@ -5,9 +5,7 @@ import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_community.llms import BaseLLM
-from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -20,8 +18,7 @@ from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents.base_agent import AgentOutput
-
-from cat.utils import levenshtein_distance
+from cat import utils
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
@@ -292,30 +289,34 @@ class StrayCat:
             callbacks.append(NewTokenHandler(self))
 
         # Add a token counter to the callbacks
-        callbacks.append(ModelInteractionHandler(self, self.__class__.__name__))
+        caller = utils.get_caller_info()
+        callbacks.append(ModelInteractionHandler(self, caller or "StrayCat"))
 
         
-        # TODO: add here optional convo history passed to the method, or taken from working memory
-        messages=[
-            HumanMessage(content=prompt)
-        ]
 
-        # Check if self._llm is a completion model and generate a response
-        # TODOV2: do not support non-chat models
-        #if isinstance(self._llm, BaseLLM):
-        #    log.critical("LLM")
-        #    return self._llm.invoke(
-        #        prompt,
-        #        config=RunnableConfig(callbacks=callbacks)
-        #    )
+        # here we deal with motherfucking langchain
+        prompt = ChatPromptTemplate(
+            # TODO: add here optional convo history passed to the method, or taken from working memory
+            messages=[
+                SystemMessage(content=prompt)
+            ]
+        )
 
-        # Check if self._llm is a chat model and call it as a completion model
-        if True:#isinstance(self._llm, BaseChatModel):
-            log.critical("CHAT LLM")
-            return self._llm.invoke(
-                messages,
-                config=RunnableConfig(callbacks=callbacks)
-            ).content # returns AIMessage
+        chain = (
+            prompt
+            | RunnableLambda(lambda x: utils.langchain_log_prompt(x, f"{caller} prompt"))
+            | self._llm
+            | RunnableLambda(lambda x: utils.langchain_log_output(x, f"{caller} prompt output"))
+            | StrOutputParser()
+        )
+
+        output = chain.invoke(
+            {}, # in case we need to pass info to the template
+            config=RunnableConfig(callbacks=callbacks)
+        )
+
+        return output
+
 
     async def __call__(self, message_dict):
         """Call the Cat instance.
@@ -516,7 +517,7 @@ Allowed classes are:
 
         # find the closest match and its score with levenshtein distance
         best_label, score = min(
-            ((label, levenshtein_distance(response, label)) for label in labels_names),
+            ((label, utils.levenshtein_distance(response, label)) for label in labels_names),
             key=lambda x: x[1],
         )
 
