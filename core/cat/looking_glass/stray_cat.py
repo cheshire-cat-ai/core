@@ -296,9 +296,10 @@ class StrayCat:
 
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
-            # TODO: add here optional convo history passed to the method, or taken from working memory
             messages=[
                 SystemMessage(content=prompt)
+                # TODO: add here optional convo history passed to the method, 
+                #  or taken from working memory
             ]
         )
 
