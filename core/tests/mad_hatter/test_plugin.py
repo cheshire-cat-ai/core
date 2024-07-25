@@ -9,7 +9,6 @@ from tests.conftest import clean_up_mocks
 
 from cat.mad_hatter.mad_hatter import Plugin
 from cat.mad_hatter.decorators import CatHook, CatTool
-from cat.log import log
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 

@@ -1,9 +1,8 @@
 import json
-from typing import Union, Dict, Any
+from typing import Any
 from pydantic import BaseModel
 from langchain_core.output_parsers.transform import BaseCumulativeTransformOutputParser
 
-from cat.mad_hatter.mad_hatter import MadHatter
 from cat.utils import parse_json
 from cat.log import log
 

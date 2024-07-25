@@ -4,9 +4,8 @@ from typing_extensions import Protocol
 
 
 from langchain.base_language import BaseLanguageModel
-from langchain.docstore.document import Document
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
-from langchain_core.runnables import RunnableConfig, RunnableLambda
+from langchain_core.messages import SystemMessage
+from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
 from langchain_community.llms import Cohere
@@ -23,7 +22,6 @@ from cat.factory.llm import LLMDefaultConfig
 from cat.factory.llm import get_llm_from_name
 from cat.agents.main_agent import MainAgent
 from cat.looking_glass.white_rabbit import WhiteRabbit
-from cat.looking_glass.callbacks import ModelInteractionHandler
 from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory

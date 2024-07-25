@@ -1,7 +1,6 @@
 from typing import List
 from abc import ABC, abstractmethod
 
-from langchain_core.utils import get_colored_text
 
 from cat.utils import BaseModelDict
 
