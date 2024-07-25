@@ -156,14 +156,22 @@ def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
     # instantiate parser
     parser = JsonOutputParser(pydantic_object=pydantic_model)
 
-    # clean escapes (small LLM error)
-    json_string_clean = json_string.replace("\_", "_").replace("\-", "-").replace("None", "null")
+    # clean to help small LLMs
+    replaces = {
+        "\_": "_",
+        "\-": "-",
+        "None": "null",
+        "{{": "{",
+        "}}": "}",
+    }
+    for k, v in replaces.items():
+        json_string = json_string.replace(k, v)
 
     # first "{" occurrence (required by parser)
-    start_index = json_string_clean.index("{")
+    start_index = json_string.index("{")
 
     # parse
-    parsed = parser.parse(json_string_clean[start_index:])
+    parsed = parser.parse(json_string[start_index:])
     
     if pydantic_model:
         return pydantic_model(**parsed)

@@ -8,6 +8,9 @@ from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.llms import BaseLLM
 from langchain_core.messages import AIMessage, HumanMessage, BaseMessage
+from langchain_core.runnables import RunnableConfig, RunnableLambda
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers.string import StrOutputParser
 
 from fastapi import WebSocket
 
@@ -291,13 +294,28 @@ class StrayCat:
         # Add a token counter to the callbacks
         callbacks.append(ModelInteractionHandler(self, self.__class__.__name__))
 
+        
+        # TODO: add here optional convo history passed to the method, or taken from working memory
+        messages=[
+            HumanMessage(content=prompt)
+        ]
+
         # Check if self._llm is a completion model and generate a response
-        if isinstance(self._llm, BaseLLM):
-            return self._llm(prompt, callbacks=callbacks)
+        # TODOV2: do not support non-chat models
+        #if isinstance(self._llm, BaseLLM):
+        #    log.critical("LLM")
+        #    return self._llm.invoke(
+        #        prompt,
+        #        config=RunnableConfig(callbacks=callbacks)
+        #    )
 
         # Check if self._llm is a chat model and call it as a completion model
-        if isinstance(self._llm, BaseChatModel):
-            return self._llm.call_as_llm(prompt, callbacks=callbacks)
+        if True:#isinstance(self._llm, BaseChatModel):
+            log.critical("CHAT LLM")
+            return self._llm.invoke(
+                messages,
+                config=RunnableConfig(callbacks=callbacks)
+            ).content # returns AIMessage
 
     async def __call__(self, message_dict):
         """Call the Cat instance.

@@ -3,9 +3,6 @@ from enum import Enum
 from typing import List, Dict
 from pydantic import BaseModel, ValidationError
 
-from langchain.chains import LLMChain
-from langchain_core.prompts.prompt import PromptTemplate
-
 from cat.utils import parse_json
 from cat.log import log
 
@@ -203,14 +200,7 @@ JSON:
         prompt = self.extraction_prompt()
         log.debug(prompt)
 
-        # Invoke LLM chain
-        extraction_chain = LLMChain(
-            prompt=PromptTemplate.from_template(prompt),
-            llm=self._cat._llm,
-            verbose=True,
-            output_key="output",
-        )
-        json_str = extraction_chain.invoke({})["output"]  # {"stop": ["```"]}
+        json_str = self.cat.llm(prompt)
 
         log.debug(f"Form JSON after parser:\n{json_str}")
 

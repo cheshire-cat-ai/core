@@ -9,7 +9,7 @@ You can use one of these actions:
 ```json
 {{
     "action": // str - The name of the action to take, should be one of [{tool_names}, "no_action"]
-    "action_input": // str or null - The input to the action according to it's description
+    "action_input": // str or null - The input to the action according to its description
 }}
 ```
 

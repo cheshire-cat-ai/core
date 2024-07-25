@@ -204,7 +204,7 @@ class ProceduresAgent(BaseAgent):
                 example_json = f"""
 {{
     "action": "{proc.name}",
-    "action_input": // Input of the action according to its description
+    "action_input": "...input here..."
 }}"""
                 list_examples += f"\nQuestion: {random.choice(proc.start_examples)}"
                 list_examples += f"\n```json\n{example_json}\n```"
