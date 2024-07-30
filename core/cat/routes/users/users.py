@@ -23,6 +23,7 @@ class UserCreate(UserBase):
 
 class UserUpdate(UserBase):
     username: str = Field(default=None, min_length=2)
+    password: str = Field(default=None, min_length=4)
     permissions: Dict[AuthResource, List[AuthPermission]] = None
     model_config: ConfigDict = {"extra": "forbid"}
 
@@ -91,7 +92,9 @@ def update_user(
             status_code=403,
             detail={"error": "Cannot edit admin user"}
         )
-    
+
+    if user.password:
+        user.password = hash_password(user.password)
     updated_user = stored_user | user.model_dump(exclude_unset=True)
     users_db[user_id] = updated_user
     crud.update_users(users_db)
