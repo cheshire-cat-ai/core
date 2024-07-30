@@ -140,6 +140,13 @@ if __name__ == "__main__":
             "reload_includes": ["plugin.json"],
             "reload_excludes": ["*test_*.*", "*mock_*.*"],
         }
+    # uvicorn running behind an https proxy
+    proxy_pass_config = {}
+    if get_env("CCAT_HTTPS_PROXY_MODE") in ("1", "true"):
+        proxy_pass_config = {
+            "proxy_headers": True,
+            "forwarded_allow_ips": get_env("CCAT_CORS_FORWARDED_ALLOW_IPS"),
+        }
 
     uvicorn.run(
         "cat.main:cheshire_cat_api",
@@ -148,4 +155,5 @@ if __name__ == "__main__":
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
         **debug_config,
+        **proxy_pass_config,
     )
