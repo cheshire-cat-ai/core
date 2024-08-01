@@ -24,7 +24,7 @@ from cat.routes import (
     upload,
     websocket,
 )
-from cat.routes.static import public, admin, static
+from cat.routes.static import admin, static
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 
@@ -105,8 +105,6 @@ cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)
 static.mount(cheshire_cat_api)
-# static files for hackable chat in cat/public
-public.mount(cheshire_cat_api)
 
 
 # error handling
