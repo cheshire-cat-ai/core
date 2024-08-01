@@ -1,8 +1,6 @@
 
 import pytest
-from cat.db import crud
 from cat.env import get_env
-from tests.utils import create_new_user
 
 # test endpoints with different user permissions
 # NOTE: we are using here the secure_client:
