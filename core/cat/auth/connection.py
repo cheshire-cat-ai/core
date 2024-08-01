@@ -171,7 +171,10 @@ class CoreFrontendAuth(HTTPAuth):
         """
 
         token = connection.cookies.get("ccat_user_token", None)
-        # core webapps should not be accessed without a cookie
+
+        # core webapps cannot be accessed without a cookie
+        if token is None or token == "":
+            self.not_allowed(connection)
 
         return "user", token
     
