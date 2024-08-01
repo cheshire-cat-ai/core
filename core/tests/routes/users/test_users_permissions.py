@@ -37,7 +37,6 @@ def test_users_endpoint_permissions(secure_client):
     res = secure_client.post("/auth/token", json=user_creds)
     assert res.status_code == 200
     user_token = res.json()["access_token"]
-    print(user_token)
 
     # user tries to create a new user (should be forbidden)
     third_user_cred = {

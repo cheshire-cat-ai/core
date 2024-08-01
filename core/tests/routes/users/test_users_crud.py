@@ -103,11 +103,6 @@ def test_update_user(client):
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 400
 
-    # update password (bad request)
-    updated_user = {"password": "12345"}
-    response = client.put(f"/users/{user_id}", json=updated_user)
-    assert response.status_code == 400
-    
     # change nothing
     response = client.put(f"/users/{user_id}", json={})
     assert response.status_code == 200
@@ -116,6 +111,16 @@ def test_update_user(client):
     # nothing changed so far
     assert data["username"] == "Alice"
     assert data["permissions"] == get_base_permissions()
+    
+    # update password
+    updated_user = {"password": "12345"}
+    response = client.put(f"/users/{user_id}", json=updated_user)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "Alice"
+    assert data["permissions"] == get_base_permissions()
+    assert "password" not in data # api will not send passwords around
+
     
     # change username
     updated_user = {"username": "Alice2"}
@@ -211,10 +216,12 @@ def test_superuser(client):
     assert response.json()["detail"]["error"] == "Cannot edit admin user"
 
 
-    # cannot delete admin user
+    # cannot delete admin user permissions
     response = client.delete(f"/users/{admin_id}")
     assert response.status_code == 403
     assert response.json()["detail"]["error"] == "Cannot delete admin user"
+
+
 
 # note: using secure client (api key set both for http and ws)
 def test_no_access_if_api_keys_active(secure_client):
