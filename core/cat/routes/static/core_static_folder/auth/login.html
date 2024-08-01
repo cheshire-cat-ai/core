@@ -22,6 +22,16 @@
         <div>
             <button type="submit">Login</button>
         </div>
+        {% if show_default_passwords %}
+            Default users included out of the box:
+            <ul>
+                <li>admin:admin</li>
+                <li>user:user</li>
+            </ul>
+            Change their passwords after initial login as admin.    
+        {% endif %}
+        <div>
+        </div>
         <div class="error-message">
             [[ error_message ]]
         </div>
