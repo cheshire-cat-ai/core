@@ -72,9 +72,12 @@ async def auth_index(
         "error_message": error_message,
         "show_default_passwords": len(crud.get_users().keys()) == 2,
     }
-    return templates.TemplateResponse(
+
+    response = templates.TemplateResponse(
         request=request, name="auth/login.html", context=template_context
     )
+    response.delete_cookie(key="ccat_user_token")
+    return response
 
 
 # TODOAUTH /logout endpoint
