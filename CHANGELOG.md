@@ -8,6 +8,8 @@ New in version 1.7
 - permission system
 - JWT support
 - Custom Auth support
+- White Rabbit
+- StrayCat.classify
 
 ## 1.5.0 ( 2024-03-07 )
 
