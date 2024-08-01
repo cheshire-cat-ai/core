@@ -14,6 +14,7 @@ from cat.env import get_env, fix_legacy_env_variables
 from cat.routes import (
     base,
     auth,
+    users,
     settings,
     llm,
     embedder,
@@ -23,7 +24,6 @@ from cat.routes import (
     upload,
     websocket,
 )
-from cat.routes.users import users, users_manager
 from cat.routes.static import public, admin, static
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
@@ -82,7 +82,6 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth")
 cheshire_cat_api.include_router(users.router, tags=["Users"], prefix="/users")
-cheshire_cat_api.include_router(users_manager.router, tags=["Users Manager"], prefix="/users-manager")
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
 cheshire_cat_api.include_router(
     llm.router, tags=["Large Language Model"], prefix="/llm"
