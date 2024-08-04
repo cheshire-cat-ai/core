@@ -171,25 +171,22 @@ class StrayCat:
             query = self.embedder.embed_query(query)
 
         if collections:
-            memory_collections = get_args(MEMORY_COLLECTION)
-            collections_not_allowed = [c for c in collections if c not in memory_collections]
-            if any(collections_not_allowed):
-                raise ValueError(
-                    f"Collections not allowed: {', '.join(collections_not_allowed)}. Collections should be any of {', '.join(memory_collections)}")
+            collections = [f"{c}_memories" for c in collections]
         else:
             collections = self.memory.vectors.collections.keys()
 
         for collection in collections:
+            if collection not in self.memory.vectors.collections.keys():
+                log.warning(f"{collection} is not a valid collection")
+                continue
             vector_memory = getattr(self.memory.vectors, collection)
-            if k:
-                memories = vector_memory.recall_memories_from_embedding(
-                    query, metadata, k, threshold
-                )
-                if override_working_memory:
-                    memory_key = f"{collection}_memories"
-                    setattr(self.working_memory, memory_key, memories)
-            else:
-                memories = vector_memory.get_all_points()
+
+            memories = vector_memory.recall_memories_from_embedding(
+                query, metadata, k, threshold
+            ) if k else vector_memory.get_all_points()
+
+            if override_working_memory:
+                setattr(self.working_memory, collection, memories)
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
