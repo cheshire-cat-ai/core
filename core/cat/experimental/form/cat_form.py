@@ -1,8 +1,7 @@
 import json
 from enum import Enum
 from typing import List, Dict
-from dataclasses import dataclass
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ValidationError
 
 from langchain.chains import LLMChain
 from langchain_core.prompts.prompt import PromptTemplate
@@ -13,31 +12,30 @@ from cat.log import log
 
 # Conversational Form State
 class CatFormState(Enum):
-    INCOMPLETE   = "incomplete"
-    COMPLETE     = "complete"
+    INCOMPLETE = "incomplete"
+    COMPLETE = "complete"
     WAIT_CONFIRM = "wait_confirm"
-    CLOSED       = "closed"
+    CLOSED = "closed"
 
 
 class CatForm:  # base model of forms
-
-    model_class:     BaseModel
-    procedure_type:  str = "form"
-    name:            str = None
-    description:     str
-    start_examples:  List[str]
-    stop_examples:   List[str] = []
-    ask_confirm:     bool = False
+    model_class: BaseModel
+    procedure_type: str = "form"
+    name: str = None
+    description: str
+    start_examples: List[str]
+    stop_examples: List[str] = []
+    ask_confirm: bool = False
     triggers_map = None
     _autopilot = False
 
     def __init__(self, cat) -> None:
         self._state = CatFormState.INCOMPLETE
         self._model: Dict = {}
-        
+
         self._cat = cat
 
-        self._errors: List[str]  = []
+        self._errors: List[str] = []
         self._missing_fields: List[str] = []
 
     @property
@@ -49,13 +47,11 @@ class CatForm:  # base model of forms
 
     # Check user confirm the form data
     def confirm(self) -> bool:
-        
         # Get user message
         user_message = self.cat.working_memory.user_message_json.text
-        
+
         # Confirm prompt
-        confirm_prompt = \
-f"""Your task is to produce a JSON representing whether a user is confirming or not.
+        confirm_prompt = f"""Your task is to produce a JSON representing whether a user is confirming or not.
 JSON must be in this format:
 ```json
 {{
@@ -72,11 +68,10 @@ JSON:
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(confirm_prompt)
         return "true" in response.lower()
-        
+
     # Check if the user wants to exit the form
     # it is run at the befginning of every form.next()
     def check_exit_intent(self) -> bool:
-
         # Get user message
         user_message = self.cat.working_memory.user_message_json.text
 
@@ -90,8 +85,7 @@ Examples where {"exit": true}:
             stop_examples += f"\n- {se}"
 
         # Check exit prompt
-        check_exit_prompt = \
-f"""Your task is to produce a JSON representing whether a user wants to exit or not.
+        check_exit_prompt = f"""Your task is to produce a JSON representing whether a user wants to exit or not.
 JSON must be in this format:
 ```json
 {{
@@ -113,10 +107,8 @@ JSON:
 
     # Execute the dialogue step
     def next(self):
-
         # could we enrich prompt completion with episodic/declarative memories?
-        #self.cat.working_memory.episodic_memories = []
-
+        # self.cat.working_memory.episodic_memories = []
 
         # If state is WAIT_CONFIRM, check user confirm response..
         if self._state == CatFormState.WAIT_CONFIRM:
@@ -144,53 +136,47 @@ JSON:
             else:
                 self._state = CatFormState.CLOSED
                 return self.submit(self._model)
-            
+
         # if state is still INCOMPLETE, recap and ask for new info
         return self.message()
 
     # Updates the form with the information extracted from the user's response
     # (Return True if the model is updated)
     def update(self):
-
         # Conversation to JSON
         json_details = self.extract()
         json_details = self.sanitize(json_details)
-        
+
         # model merge old and new
         new_model = self._model | json_details
 
         # Validate new_details
         new_model = self.validate(new_model)
 
-        return new_model    
-    
+        return new_model
+
     def message(self):
         state_methods = {
             CatFormState.CLOSED: self.message_closed,
             CatFormState.WAIT_CONFIRM: self.message_wait_confirm,
-            CatFormState.INCOMPLETE: self.message_incomplete
+            CatFormState.INCOMPLETE: self.message_incomplete,
         }
-        state_method = state_methods.get(self._state, lambda: {"output": "Invalid state"})
+        state_method = state_methods.get(
+            self._state, lambda: {"output": "Invalid state"}
+        )
         return state_method()
 
-        
     def message_closed(self):
-        return {
-            "output": f"Form {type(self).__name__} closed"
-        }
-    
+        return {"output": f"Form {type(self).__name__} closed"}
+
     def message_wait_confirm(self):
         output = self._generate_base_message()
         output += "\n --> Confirm? Yes or no?"
-        return {
-            "output": output
-        }
-    
+        return {"output": output}
+
     def message_incomplete(self):
-        return {
-            "output": self._generate_base_message()
-        }
-    
+        return {"output": self._generate_base_message()}
+
     def _generate_base_message(self):
         separator = "\n - "
         missing_fields = ""
@@ -214,32 +200,30 @@ JSON:
 
     # Extract model informations from user message
     def extract(self):
-        
         prompt = self.extraction_prompt()
         log.debug(prompt)
 
         # Invoke LLM chain
         extraction_chain = LLMChain(
-            prompt     = PromptTemplate.from_template(prompt),
-            llm        = self._cat._llm,
-            verbose    = True,
-            output_key = "output"
+            prompt=PromptTemplate.from_template(prompt),
+            llm=self._cat._llm,
+            verbose=True,
+            output_key="output",
         )
-        json_str = extraction_chain.invoke({})["output"] #{"stop": ["```"]}
-        
+        json_str = extraction_chain.invoke({})["output"]  # {"stop": ["```"]}
+
         log.debug(f"Form JSON after parser:\n{json_str}")
 
         # json parser
         try:
             output_model = parse_json(json_str)
         except Exception as e:
-            output_model = {} 
+            output_model = {}
             log.warning(e)
 
         return output_model
-    
-    def extraction_prompt(self):
 
+    def extraction_prompt(self):
         history = self.cat.stringify_chat_history()
 
         # JSON structure
@@ -250,12 +234,11 @@ JSON:
                 description = field.description
             else:
                 description = ""
-            JSON_structure += f'\n\t"{field_name}": // {description} Must be of type `{field.annotation.__name__}` or `null`' # field.required?
+            JSON_structure += f'\n\t"{field_name}": // {description} Must be of type `{field.annotation.__name__}` or `null`'  # field.required?
         JSON_structure += "\n}"
-    
+
         # TODO: reintroduce examples
-        prompt = \
-f"""Your task is to fill up a JSON out of a conversation.
+        prompt = f"""Your task is to fill up a JSON out of a conversation.
 The JSON must have this format:
 ```json
 {JSON_structure}
@@ -280,19 +263,17 @@ Updated JSON:
     # Sanitize model (take away unwanted keys and null values)
     # NOTE: unwanted keys are automatically taken away by pydantic
     def sanitize(self, model):
-
         # preserve only non-null fields
-        null_fields = [None, '', 'None', 'null', 'lower-case', 'unknown', 'missing']
+        null_fields = [None, "", "None", "null", "lower-case", "unknown", "missing"]
         model = {key: value for key, value in model.items() if value not in null_fields}
 
         return model
 
     # Validate model
     def validate(self, model):
-
         self._missing_fields = []
-        self._errors  = []
-                
+        self._errors = []
+
         try:
             # INFO TODO: In this case the optional fields are always ignored
 
@@ -305,8 +286,8 @@ Updated JSON:
         except ValidationError as e:
             # Collect ask_for and errors messages
             for error_message in e.errors():
-                field_name = error_message['loc'][0]
-                if error_message['type'] == 'missing':
+                field_name = error_message["loc"][0]
+                if error_message["type"] == "missing":
                     self._missing_fields.append(field_name)
                 else:
                     self._errors.append(f'{field_name}: {error_message["msg"]}')
@@ -314,5 +295,5 @@ Updated JSON:
 
             # Set state to INCOMPLETE
             self._state = CatFormState.INCOMPLETE
-        
+
         return model

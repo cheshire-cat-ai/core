@@ -1,4 +1,3 @@
-import time
 from json import dumps
 from fastapi.encoders import jsonable_encoder
 from cat.factory.embedder import get_embedders_schemas
@@ -11,7 +10,7 @@ def test_get_all_embedder_settings(client):
     json = response.json()
 
     assert response.status_code == 200
-    assert type(json["settings"]) == list
+    assert isinstance(json["settings"], list)
     assert len(json["settings"]) == len(EMBEDDER_SCHEMAS)
 
     for setting in json["settings"]:
@@ -25,7 +24,6 @@ def test_get_all_embedder_settings(client):
 
 
 def test_get_embedder_settings_non_existent(client):
-
     non_existent_embedder_name = "EmbedderNonExistentConfig"
     response = client.get(f"/embedder/settings/{non_existent_embedder_name}")
     json = response.json()
@@ -35,7 +33,6 @@ def test_get_embedder_settings_non_existent(client):
 
 
 def test_get_embedder_settings(client):
-
     embedder_name = "EmbedderDumbConfig"
     response = client.get(f"/embedder/settings/{embedder_name}")
     json = response.json()
@@ -48,12 +45,9 @@ def test_get_embedder_settings(client):
 
 
 def test_upsert_embedder_settings(client):
-    
     # set a different embedder from default one (same class different size # TODO: have another fake/test embedder class)
     new_embedder = "EmbedderFakeConfig"
-    embedder_config = {
-        "size": 64
-    }
+    embedder_config = {"size": 64}
     response = client.put(f"/embedder/settings/{new_embedder}", json=embedder_config)
     json = response.json()
 
@@ -67,7 +61,7 @@ def test_upsert_embedder_settings(client):
     json = response.json()
     assert response.status_code == 200
     assert json["selected_configuration"] == new_embedder
-    saved_config = [ c for c in json["settings"] if c["name"] == new_embedder ]
+    saved_config = [c for c in json["settings"] if c["name"] == new_embedder]
     assert saved_config[0]["value"]["size"] == embedder_config["size"]
 
     # check also specific embedder endpoint
@@ -80,15 +74,12 @@ def test_upsert_embedder_settings(client):
 
 
 def test_upsert_embedder_settings_updates_collections(client):
-
     procedures = get_procedural_memory_contents(client)
     assert len(procedures) == 3
     assert len(procedures[0]["vector"]) == 2367  # default embedder
-    
+
     # set a different embedder from default one (same class different size)
-    embedder_config = {
-        "size": 64
-    }
+    embedder_config = {"size": 64}
     response = client.put("/embedder/settings/EmbedderFakeConfig", json=embedder_config)
     assert response.status_code == 200
 
@@ -96,5 +87,3 @@ def test_upsert_embedder_settings_updates_collections(client):
     assert len(procedures) == 3
     for vec in procedures:
         assert len(vec["vector"]) == embedder_config["size"]
-
-

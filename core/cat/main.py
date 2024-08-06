@@ -1,8 +1,9 @@
 import uvicorn
 import asyncio
 from contextlib import asynccontextmanager
+from scalar_fastapi import get_scalar_api_reference
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -11,15 +12,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
 from cat.routes import (
-    base, settings,
-    llm, embedder, auth_handler,
-    memory, plugins, upload,
-    websocket, auth
+    base,
+    auth,
+    settings,
+    llm,
+    embedder,
+    auth_handler,
+    memory,
+    plugins,
+    upload,
+    websocket,
 )
+from cat.routes.users import users, users_manager
 from cat.routes.static import public, admin, static
-from cat.auth.headers import http_auth, ws_auth
 from cat.routes.openapi import get_openapi_configuration_function
-from cat.looking_glass.cheshire_cat import CheshireCat 
+from cat.looking_glass.cheshire_cat import CheshireCat
 
 
 # TODO: take away in v2
@@ -55,8 +62,9 @@ def custom_generate_unique_id(route: APIRoute):
 
 # REST API
 cheshire_cat_api = FastAPI(
-    lifespan=lifespan,
-    generate_unique_id_function=custom_generate_unique_id
+    lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id,
+    docs_url=None, redoc_url=None, title="Cheshire-Cat API",
+    license_info={"name": "GPL-3", "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"},
 )
 
 # Configures the CORS middleware for the FastAPI app
@@ -71,16 +79,24 @@ cheshire_cat_api.add_middleware(
 )
 
 # Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth") # endpoint to get JWT, no Depends
-cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(websocket.router, tags=["Websocket"], dependencies=[Depends(ws_auth)])
+cheshire_cat_api.include_router(base.router, tags=["Status"])
+cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth")
+cheshire_cat_api.include_router(users.router, tags=["Users"], prefix="/users")
+cheshire_cat_api.include_router(users_manager.router, tags=["Users Manager"], prefix="/users-manager")
+cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
+cheshire_cat_api.include_router(
+    llm.router, tags=["Large Language Model"], prefix="/llm"
+)
+cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder")
+cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins")
+cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory")
+cheshire_cat_api.include_router(
+    upload.router, tags=["Rabbit Hole"], prefix="/rabbithole"
+)
+cheshire_cat_api.include_router(
+    auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler"
+)
+cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
@@ -106,16 +122,23 @@ async def validation_exception_handler(request, exc):
 # openapi customization
 cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
 
+@cheshire_cat_api.get("/docs", include_in_schema=False)
+async def scalar_docs():
+    return get_scalar_api_reference(
+        openapi_url=cheshire_cat_api.openapi_url,
+        title=cheshire_cat_api.title,
+        scalar_favicon_url="https://cheshirecat.ai/wp-content/uploads/2023/10/Logo-Cheshire-Cat.svg",
+    )
+
 # RUN!
 if __name__ == "__main__":
-
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
     if get_env("CCAT_DEBUG") == "true":
         debug_config = {
             "reload": True,
             "reload_includes": ["plugin.json"],
-            "reload_excludes": ["*test_*.*", "*mock_*.*"]
+            "reload_excludes": ["*test_*.*", "*mock_*.*"],
         }
 
     uvicorn.run(
@@ -124,5 +147,5 @@ if __name__ == "__main__":
         port=80,
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
-        **debug_config
+        **debug_config,
     )

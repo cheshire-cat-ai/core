@@ -12,65 +12,52 @@ def stray(client):
 
 
 def test_stray_initialization(stray):
-
     assert isinstance(stray, StrayCat)
     assert stray.user_id == "Alice"
     assert isinstance(stray.working_memory, WorkingMemory)
 
 
 def test_stray_nlp(stray):
-
     res = stray.llm("hey")
     assert "You did not configure" in res
 
     embedding = stray.embedder.embed_documents(["hey"])
-    assert type(embedding[0]) == list
-    assert type(embedding[0][0]) == float
+    assert isinstance(embedding[0], list)
+    assert isinstance(embedding[0][0], float)
 
 
 def test_stray_call(stray):
+    msg = {"text": "Where do I go?", "user_id": "Alice"}
 
-    msg = {
-        "text": "Where do I go?",
-        "user_id": "Alice"
-    }
+    reply = stray.loop.run_until_complete(stray.__call__(msg))
 
-    reply = stray.loop.run_until_complete(
-        stray.__call__(msg)
-    )
-
-    assert type(reply) == CatMessage
+    assert isinstance(reply, CatMessage)
     assert "You did not configure" in reply.content
     assert reply.user_id == "Alice"
     assert reply.type == "chat"
-    assert type(reply.why) == MessageWhy
+    assert isinstance(reply.why, MessageWhy)
 
 
 # TODO: update these tests once we have a real LLM in tests
 def test_stray_classify(stray):
-    
     label = stray.classify("I feel good", labels=["positive", "negative"])
-    assert label == None # TODO: should be "positive"
+    assert label is None  # TODO: should be "positive"
 
-    label = stray.classify("I feel bad", labels={"positive": ["I'm happy"], "negative": ["I'm sad"]})
-    assert label == None # TODO: should be "negative"
+    label = stray.classify(
+        "I feel bad", labels={"positive": ["I'm happy"], "negative": ["I'm sad"]}
+    )
+    assert label is None  # TODO: should be "negative"
 
 
 def test_recall_to_working_memory(stray):
-
     # empty working memory / episodic
     assert stray.working_memory.episodic_memories == []
-    
+
     msg_text = "Where do I go?"
-    msg = {
-        "text": msg_text,
-        "user_id": "Alice"
-    }
-    
+    msg = {"text": msg_text, "user_id": "Alice"}
+
     # send message
-    stray.loop.run_until_complete(
-        stray.__call__(msg)
-    )
+    stray.loop.run_until_complete(stray.__call__(msg))
 
     # recall after episodic memory was stored
     stray.recall_relevant_memories_to_working_memory(msg_text)

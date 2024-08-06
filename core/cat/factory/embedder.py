@@ -2,16 +2,14 @@ from enum import Enum
 from typing import Type
 
 from pydantic import BaseModel, ConfigDict, Field
-from langchain_community.embeddings import (
-    FakeEmbeddings,
-    FastEmbedEmbeddings
-)
+from langchain_community.embeddings import FakeEmbeddings, FastEmbedEmbeddings
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from fastembed.embedding import TextEmbedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain_cohere import CohereEmbeddings
+
 
 # Base class to manage LLM configuration.
 class EmbedderSettings(BaseModel):
@@ -25,7 +23,7 @@ class EmbedderSettings(BaseModel):
     # instantiate an Embedder from configuration
     @classmethod
     def get_embedder_from_config(cls, config):
-        if cls._pyclass is None: 
+        if cls._pyclass is None:
             raise Exception(
                 "Embedder configuration class has self._pyclass==None. Should be a valid Embedder class"
             )

@@ -1,78 +1,183 @@
-
 import os
-import asyncio
 import pytest
 import time
+import jwt
+
+from cat.env import get_env
+from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.auth_utils import is_jwt
+
 from tests.utils import send_websocket_message
 
-from cat.auth.headers import is_jwt
-
-#@pytest.fixture
-#def secure_client(client):
-    # set CCAT_API_KEY
-#    os.environ["CCAT_API_KEY"] = "meow"
-#    yield client
-#    del os.environ["CCAT_API_KEY"]
+# TODOAUTH: test token refresh / invalidation / logoff
 
 
 def test_is_jwt(client):
+    assert not is_jwt("not_a_jwt.not_a_jwt.not_a_jwt")
 
-    # TODOAUTH: test is_jwt function
-    assert True
-
-
-@pytest.mark.asyncio # to test async functions
-async def test_issue_jwt(client):
-
-    creds = {
-        "username": "admin",
-        "password": "admin" # TODOAUTH: check custom credentials
-    }
-    res = client.post("/auth/token", data=creds)
-
-    assert res.status_code == 200
-
-    # we expect to be redirected to the admin after login
-    # TODOAUTH what happens when M2M
-    expected_redirect_url = "http://testserver/admin/?access_token="
-    assert str(res.url).startswith(expected_redirect_url)
-
-    # did we obtain a JWT?
-    received_token = str(res.url).replace(expected_redirect_url, "")
-    assert is_jwt(received_token)
-
-    # is the JWT correct?
-    auth_handler = client.app.state.ccat.auth_handler
-    user_info = await auth_handler.get_user_info_from_token(received_token)
-    assert user_info.user_id == "admin"
-    assert user_info.user_data["username"] == "admin"
-    assert user_info.user_data["exp"] - time.time() < 30 * 60 # expires in less than 30 minutes
-    # TODOAUTH roles and permissions
-
-    # TODOAUTH: in a machine2machine setting, we expect the token to be directly returned
-    #assert json["token_type"] == "bearer"
-    #assert type(json["access_token"]) == str
-    #assert len(json["access_token"]) > 100
+    actual_jwt = jwt.encode(
+        {"username": "Alice"},
+        get_env("CCAT_JWT_SECRET"),
+        algorithm=get_env("CCAT_JWT_ALGORITHM"),
+    )
+    assert is_jwt(actual_jwt)
 
 
 def test_refuse_issue_jwt(client):
+    creds = {"username": "admin", "password": "wrong"}
+    res = client.post("/auth/token", json=creds)
 
+    # wrong credentials
+    assert res.status_code == 403
+    json = res.json()
+    assert json["detail"]["error"] == "Invalid Credentials"
+
+
+@pytest.mark.asyncio  # to test async functions
+async def test_issue_jwt(client):
     creds = {
         "username": "admin",
-        "password": "wrong"
+        "password": "admin"
     }
-    res = client.post("/auth/token", data=creds)
-
-    # we should end up on the identity provider login page, no token
+    res = client.post("/auth/token", json=creds)
     assert res.status_code == 200
-    expected_redirect_url = "http://testserver/auth/core_login"
-    assert str(res.url) == expected_redirect_url
 
-    # TODOAUTH: what happens when machine2machine
-    #json = res.json()
-    #assert json["detail"]["error"] == "Invalid Credentials"
+    # did we obtain a JWT?
+    res.json()["token_type"] == "bearer"
+    received_token = res.json()["access_token"]
+    assert is_jwt(received_token)
+
+    # is the JWT correct for core auth handler?
+    auth_handler = client.app.state.ccat.core_auth_handler
+    user_info = await auth_handler.authorize_user_from_jwt(
+        received_token, AuthResource.LLM, AuthPermission.WRITE
+    )
+    assert len(user_info.id) == 36 and len(user_info.id.split("-")) == 5 # uuid4
+    assert user_info.name == "admin"
+
+    # manual JWT verification
+    try:
+        payload = jwt.decode(
+            received_token,
+            get_env("CCAT_JWT_SECRET"),
+            algorithms=[get_env("CCAT_JWT_ALGORITHM")],
+        )
+        assert payload["username"] == "admin"
+        assert (
+            payload["exp"] - time.time() < 60 * 60 * 24
+        )  # expires in less than 24 hours
+    except jwt.exceptions.DecodeError:
+        assert False
+
+@pytest.mark.asyncio
+async def test_issue_jwt_for_new_user(client):
+
+    # create new user
+    creds = {
+        "username": "Alice",
+        "password": "Alice",
+    }
+
+    # we sohuld not obtain a JWT for this user
+    # because it does not exist
+    res = client.post("/auth/token", json=creds)
+    assert res.status_code == 403
+    assert res.json()["detail"]["error"] == "Invalid Credentials"
+
+    # let's create the user
+    res = client.post("/users", json=creds)
+    assert res.status_code == 200
+
+    # now we should get a JWT
+    res = client.post("/auth/token", json=creds)
+    assert res.status_code == 200
+
+    # did we obtain a JWT?
+    res.json()["token_type"] == "bearer"
+    received_token = res.json()["access_token"]
+    assert is_jwt(received_token)
+
+# test token expiration after successfull login
+# NOTE: here we are using the secure_client fixture (see conftest.py)
+def test_jwt_expiration(secure_client):
+
+    # set ultrashort JWT expiration time
+    os.environ["CCAT_JWT_EXPIRE_MINUTES"] = "0.05"  # 3 seconds
+
+    # not allowed
+    response = secure_client.get("/")
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Invalid Credentials"
+
+    # request JWT
+    creds = {
+        "username": "admin",
+        "password": "admin",  # TODOAUTH: check custom credentials
+    }
+    res = secure_client.post("/auth/token", json=creds)
+    assert res.status_code == 200
+    token = res.json()["access_token"]
+
+    # allowed via JWT
+    headers = {"Authorization": f"Bearer {token}"}
+    response = secure_client.get("/", headers=headers)
+    assert response.status_code == 200
+
+    # wait for expiration time
+    time.sleep(3)
+
+    # not allowed because JWT expired
+    headers = {"Authorization": f"Bearer {token}"}
+    response = secure_client.get("/", headers=headers)
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Invalid Credentials"
+
+    # restore default env
+    del os.environ["CCAT_JWT_EXPIRE_MINUTES"]
 
 
-# TODOAUTH: test /auth/token endpoint (it is called from the identity provider)
-# TODOAUTH: token expiration
-# TODOAUTH: token invalidation / logoff
+# test ws and http endpoints can get user_id from JWT
+# NOTE: here we are using the secure_client fixture (see conftest.py)
+def test_jwt_imposes_user_id(secure_client):
+
+    # not allowed
+    response = secure_client.get("/")
+    assert response.status_code == 403
+    assert response.json()["detail"]["error"] == "Invalid Credentials"
+
+    # request JWT
+    creds = {
+        "username": "admin", # TODOAUTH: use another user?
+        "password": "admin",
+    }
+    res = secure_client.post("/auth/token", json=creds)
+    assert res.status_code == 200
+    token = res.json()["access_token"]
+
+    # we will send this message both via http and ws, having the user_id carried by the JWT
+    message = {
+        "text": "hey"
+    }
+
+    # send user specific message via http
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    response = secure_client.post("/message", headers=headers, json=message)
+    assert response.status_code == 200
+
+    # send user specific request via ws
+    query_params = {"token": token}
+    res = send_websocket_message(message, secure_client, query_params=query_params)
+
+    # we now recall episodic memories from the user, there should be two of them, both by admin
+    params = {"text": "hey"}
+    response = secure_client.get("/memory/recall/", headers=headers, params=params)
+    json = response.json()
+    assert response.status_code == 200
+    episodic_memories = json["vectors"]["collections"]["episodic"]
+    assert len(episodic_memories) == 2
+    for em in episodic_memories:
+        assert em["metadata"]["source"] == "admin"
+        assert em["page_content"] == "hey"
+    

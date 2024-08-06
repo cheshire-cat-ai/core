@@ -11,32 +11,15 @@ on:
     branches: [main, develop]
 
 jobs:
-  # pylint:
-  #   name: "Coding Standards"
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: ./core
-  #   strategy:
-  #     matrix:
-  #       python-version: ["3.10"]
-  #   steps:
-  #     - name: Download
-  #       uses: actions/checkout@v3
-  #     - name: Prepare Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #         cache: 'pip'
-  #         cache-dependency-path: pyproject.toml
-  #     - name: Download python dependencies
-  #       run: pip install .[dev]
-  #     - name: Pylint
-  #       run: pylint -f actions ./
+  linter:
+    name: "Run linter"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: chartboost/ruff-action@v1
   test:
-    # needs: [ pylint ]
     name: "Run Tests"
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
       - name: Cat up

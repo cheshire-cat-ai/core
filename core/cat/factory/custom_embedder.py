@@ -20,11 +20,10 @@ class DumbEmbedder(Embeddings):
     This class relies on the `CountVectorizer`[1]_ offered by Scikit-learn.
     This embedder uses a naive approach to extract features from a text and build an embedding vector.
     Namely, it looks for pairs of characters in text starting form a vocabulary with all possible pairs of
-    printable characters, digits excluded. 
+    printable characters, digits excluded.
     """
 
     def __init__(self):
-
         # Get all printable characters numbers excluded and make everything lowercase
         chars = [p.lower() for p in string.printable[10:]]
 
@@ -36,9 +35,7 @@ class DumbEmbedder(Embeddings):
 
         # Naive embedder that counts occurrences of couple of characters in text
         self.embedder = CountVectorizer(
-            vocabulary=voc,
-            analyzer=lambda s: re.findall("..", s),
-            binary=True
+            vocabulary=voc, analyzer=lambda s: re.findall("..", s), binary=True
         )
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
@@ -50,11 +47,9 @@ class DumbEmbedder(Embeddings):
         return self.embed_documents([text])[0]
 
 
-
 class CustomOpenAIEmbeddings(Embeddings):
-    """Use LLAMA2 as embedder by calling a self-hosted lama-cpp-python instance.
-    """
-    
+    """Use LLAMA2 as embedder by calling a self-hosted lama-cpp-python instance."""
+
     def __init__(self, url):
         self.url = os.path.join(url, "v1/embeddings")
 
@@ -62,11 +57,10 @@ class CustomOpenAIEmbeddings(Embeddings):
         payload = json.dumps({"input": texts})
         ret = httpx.post(self.url, data=payload, timeout=None)
         ret.raise_for_status()
-        return  [e['embedding'] for e in ret.json()['data']]
-    
+        return [e["embedding"] for e in ret.json()["data"]]
+
     def embed_query(self, text: str) -> List[float]:
         payload = json.dumps({"input": text})
         ret = httpx.post(self.url, data=payload, timeout=None)
         ret.raise_for_status()
-        return ret.json()['data'][0]['embedding']
-
+        return ret.json()["data"][0]["embedding"]

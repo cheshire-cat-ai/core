@@ -1,139 +1,101 @@
-
-from typing import Dict
 import asyncio
+from typing import Dict, List
+from urllib.parse import urlencode
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, Request, Body, Query, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Request, HTTPException, Response, status, Query
+from fastapi.responses import RedirectResponse
 
-#from cat.auth.jwt import create_access_token
-from cat.factory.custom_auth_handler import BaseAuthHandler
 
-from cat.log import log
+from cat.auth.permissions import AuthPermission, AuthResource, get_full_permissions
+from cat.routes.static.templates import get_jinja_templates
 
 router = APIRouter()
 
 class UserCredentials(BaseModel):
-    user_name: str
+    username: str
     password: str
 
 class JWTResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-"""
-@router.post("/token")
-async def get_access_token(creds: UserCredentials):
 
-    # TODOAUTH: have credentials in DB
-    if creds.user_name == "admin" and creds.password == "admin":
-        access_token = create_access_token({
-            "sub": creds.user_name
-        })
-        return JWTResponse(access_token=access_token)
-    
-    # credentials are wrong, wait a second (for brute force attacks) and then reply with error
-    await asyncio.sleep(1)
-    raise HTTPException(
-            status_code=401,
-            detail={
-                "error": f"Invalid Credentials"
-            }
+# set cookies and redirect to origin page after login
+@router.post("/redirect", include_in_schema=False)
+async def core_login_token(request: Request, response: Response):
+    # get form data from submitted core login form (/auth/core_login)
+    form_data = await request.form()
+
+    # use username and password to authenticate user from local identity provider and get token
+    auth_handler = request.app.state.ccat.core_auth_handler
+    access_token = await auth_handler.issue_jwt(
+        form_data["username"], form_data["password"]
+    )
+
+    if access_token:
+        response = RedirectResponse(
+            url=form_data["referer"], status_code=status.HTTP_303_SEE_OTHER
         )
-"""
+        response.set_cookie(key="ccat_user_token", value=access_token)
+        return response
+
+    # credentials are wrong, wait a second (for brute force attacks) and go back to login
+    await asyncio.sleep(1)
+    referer_query = urlencode(
+        {
+            "referer": form_data["referer"],
+            "retry": 1,
+        }
+    )
+    login_url = f"/auth/login?{referer_query}"
+    response = RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+    return response
 
 
-
-#from fastapi import Depends
-#from fastapi.security import OAuth2AuthorizationCodeBearer
-
-#oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    # ???
-#    authorizationUrl="http://localhost:8080/realms/gatto/protocol/openid-connect/auth",
-    # The URL to obtain the OAuth2 token
-#    tokenUrl="http://localhost:8080/realms/gatto/protocol/openid-connect/token",
-    # Where to obtain a new token
-#    refreshUrl="",
-#    scheme_name="OAuth2 for da Cat",
-#    auto_error=True,
-#)
-
-
-#async def get_stray(token: str = Depends(auth_handler.oauth2_scheme)):
-    # if token is None, it means that the Authorization header is not present
-    # otherwise you get the token itself
-#    log.warning(token)
-#    return {"user": 42}
-
-#@router.get("")
-#async def prova(stray: dict = Depends(get_stray)):
-#    return stray
-
-
-@router.get("/core_login")
-async def auth_index(request: Request):
+@router.get("/login", include_in_schema=False)
+async def auth_index(
+    request: Request, referer: str = Query(None), retry: int = Query(0)
+):
     """Core login form, used when no external Identity Provider is configured"""
 
-    return HTMLResponse("""
-<form action="/auth/token" method="POST">
-    <h1>^._.^</h1>
-    <h3>Enjoy this top notch login form design.</h3>
-    <div>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-    </div>
-    <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <div>
-        <button type="submit">Login</button>
-    </div>
-</form>
-""")
+    error_message = ""
+    if retry == 1:
+        error_message = "Invalid Credentials"
 
+    if referer is None:
+        referer = "/admin/"
 
-@router.get("/login")
-async def auth_login(request: Request):
-    """Send request to the Identity Provider login endpoint"""
-
-    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
-
-    # Redirect the browser to the identity provider's authorization page
-    return RedirectResponse(
-        url = await auth_handler.get_full_authorization_url(request)
+    templates = get_jinja_templates()
+    template_context = {"referer": referer, "error_message": error_message}
+    return templates.TemplateResponse(
+        request=request, name="auth/login.html", context=template_context
     )
+
 
 # TODOAUTH /logout endpoint
 
-@router.post("/token")
-async def auth_token(request: Request):
-    """Endpoint called from the identity provider after user successfully logged in.
-    Request may include a code, from which the auth_handler can retrieve the actual token (explicit OAuth2).
-    Request may include dierectly the token (implicit OAuth2).
-    Actual token creation / retrieval is delegated to the auth_handler.
+@router.get("/available-permissions", response_model=Dict[AuthResource, List[AuthPermission]])
+async def get_available_permissions():
+    """Returns all available resources and permissions."""
+    return get_full_permissions()
+
+@router.post("/token", response_model=JWTResponse)
+async def auth_token(request: Request, credentials: UserCredentials):
+    """Endpoint called from client to get a JWT from local identity provider.
+    This endpoint receives username and password as form-data, validates credentials and issues a JWT.
     """
 
-    auth_handler: BaseAuthHandler = request.app.state.ccat.auth_handler
-
-    # use code sent by Identity Provider to get access token
-    #  or, if using implicit OAuth2, just get the token
-    access_token = await auth_handler.get_token_from_identity_provider(request)
-
-
-    if access_token:
-        # verify token (not necessary) #TODOAUTH take away?
-        #token_data = await auth_handler.get_user_info_from_token(access_token)
-        
-        return RedirectResponse(
-            url = f"/admin?access_token={access_token}", # TODOAUTH: what happens with machine to machine? is there a redirect uri?
-            status_code=302
-        )
-    
-    # Cannot access. Redirect the browser to the identity provider's authorization url
-    return RedirectResponse(
-        url = await auth_handler.get_full_authorization_url(request),
-        status_code=302
+    # use username and password to authenticate user from local identity provider and get token
+    auth_handler = request.app.state.ccat.core_auth_handler
+    access_token = await auth_handler.issue_jwt(
+        credentials.username, credentials.password
     )
 
+    if access_token:
+        return JWTResponse(access_token=access_token)
 
+    # Invalid username or password
+    # wait a little to avoid brute force attacks
+    await asyncio.sleep(1)
+    raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})

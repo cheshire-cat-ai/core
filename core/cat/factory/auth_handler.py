@@ -1,14 +1,11 @@
-from os import getenv
 from typing import Type
 from pydantic import BaseModel, ConfigDict
 
-from cat.log import log
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.factory.custom_auth_handler import (
+    # ApiKeyAuthHandler,
     BaseAuthHandler,
-    CoreAuthHandler,
-    KeycloackAuthHandler,
-    #, AuthEnvironmentVariables, AuthApiKey
+    CoreOnlyAuthHandler,
 )
 
 
@@ -17,68 +14,46 @@ class AuthHandlerConfig(BaseModel):
 
     @classmethod
     def get_auth_handler_from_config(cls, config):
-        if cls._pyclass is None or issubclass(cls._pyclass.default, BaseAuthHandler) is False:
+        if (
+            cls._pyclass is None
+            or issubclass(cls._pyclass.default, BaseAuthHandler) is False
+        ):
             raise Exception(
                 "AuthHandler configuration class has self._pyclass==None. Should be a valid AuthHandler class"
             )
         return cls._pyclass.default(**config)
 
 
-class CoreAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = CoreAuthHandler
+class CoreOnlyAuthConfig(AuthHandlerConfig):
+    _pyclass: Type = CoreOnlyAuthHandler
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Internal OAuth2 Handler",
-            "description": "Yeeeeah.",
-            "link": "",
+            "humanReadableName": "Standalone Core Auth Handler",
+            "description": "Delegate auth to Cat core, without any additional auth systems. "
+            "Do not change this if you don't know what you are doing!",
+            "link": "",  # TODO link to auth docs
         }
     )
 
 
-class KeycloackAuthHandlerConfig(AuthHandlerConfig):
-    _pyclass: Type = KeycloackAuthHandler
+# TODOAUTH: have at least another auth_handler class to test
+# class ApiKeyAuthConfig(AuthHandlerConfig):
+#     _pyclass: Type = ApiKeyAuthHandler
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "Keycloak Auth Handler",
-            "description": "Based on OpenID connect (OAuth2 dialect).",
-            "link": "",
-        }
-    )
+#     model_config = ConfigDict(
+#         json_schema_extra={
+#             "humanReadableName": "Api Key Auth Handler",
+#             "description": "Yeeeeah.",
+#             "link": "",
+#         }
+#     )
 
-"""
-class AuthEnvironmentVariablesConfig(AuthHandlerConfig):
-    _pyclass: Type = AuthEnvironmentVariables
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "No AuthHandler",
-            "description": "No auth_handler is used. All requests are allowed.",
-            "link": "",
-        }
-    )
-
-class AuthApiKeyConfig(AuthHandlerConfig):
-    api_key_http: str
-    api_key_ws: str
-    _pyclass: Type = AuthApiKey
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "humanReadableName": "API Key AuthHandler",
-            "description": 'Authorize requests based on API key',
-            "link": "",
-        }
-    )
-"""
 
 def get_allowed_auth_handler_strategies():
     list_auth_handler_default = [
-        CoreAuthHandlerConfig,
-        KeycloackAuthHandlerConfig,
-        #AuthEnvironmentVariablesConfig,
-        #AuthApiKeyConfig,
+        CoreOnlyAuthConfig,
+        # ApiKeyAuthConfig,
     ]
 
     mad_hatter_instance = MadHatter()
@@ -88,14 +63,16 @@ def get_allowed_auth_handler_strategies():
 
     return list_auth_handler
 
+
 def get_auth_handlers_schemas():
     AUTH_HANDLER_SCHEMAS = {}
     for config_class in get_allowed_auth_handler_strategies():
         schema = config_class.model_json_schema()
         schema["auhrizatorName"] = schema["title"]
         AUTH_HANDLER_SCHEMAS[schema["title"]] = schema
-    
+
     return AUTH_HANDLER_SCHEMAS
+
 
 def get_auth_handler_from_name(name):
     list_auth_handler = get_allowed_auth_handler_strategies()

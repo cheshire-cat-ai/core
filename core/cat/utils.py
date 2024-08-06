@@ -1,6 +1,6 @@
 """Various utiles used from the projects."""
+
 import os
-import inspect
 import traceback
 from datetime import timedelta
 from urllib.parse import urlparse
@@ -83,45 +83,48 @@ def verbal_timedelta(td: timedelta) -> str:
 def get_base_url():
     """Allows exposing the base url."""
     secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
-    if secure not in ['', 'false', '0']:
-        secure = 's'
+    if secure not in ["", "false", "0"]:
+        secure = "s"
     cat_host = get_env("CCAT_CORE_HOST")
     cat_port = get_env("CCAT_CORE_PORT")
-    return f'http{secure}://{cat_host}:{cat_port}/'
+    return f"http{secure}://{cat_host}:{cat_port}/"
 
 
 def get_base_path():
     """Allows exposing the base path."""
-    return 'cat/'
+    return "cat/"
 
 
 def get_plugins_path():
     """Allows exposing the plugins' path."""
-    return os.path.join(get_base_path(), 'plugins/')
+    return os.path.join(get_base_path(), "plugins/")
 
 
 def get_static_url():
     """Allows exposing the static server url."""
-    return get_base_url() + 'static/'
+    return get_base_url() + "static/"
 
 
 def get_static_path():
     """Allows exposing the static files' path."""
-    return os.path.join(get_base_path(), 'static/')
+    return os.path.join(get_base_path(), "static/")
+
 
 def is_https(url):
     try:
         parsed_url = urlparse(url)
-        return parsed_url.scheme == 'https'
-    except Exception as e:
+        return parsed_url.scheme == "https"
+    except Exception:
         return False
-    
+
+
 def extract_domain_from_url(url):
     try:
-        parsed_url = urlparse(url)        
+        parsed_url = urlparse(url)
         return parsed_url.netloc + parsed_url.path
     except Exception:
         return url
+
 
 def explicit_error_message(e):
     # add more explicit info on "RateLimitError" by OpenAI, 'cause people can't get it
@@ -132,38 +135,40 @@ def explicit_error_message(e):
 You need a credit card - and money in it - to use OpenAI api.
 HOW TO FIX: go to your OpenAI accont and add a credit card"""
 
-        log.error(error_description) # just to make sure the message is read both front and backend
+        log.error(
+            error_description
+        )  # just to make sure the message is read both front and backend
 
     return error_description
 
 
 def levenshtein_distance(prediction: str, reference: str) -> int:
-    jaro_evaluator = load_evaluator(EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN)
+    jaro_evaluator = load_evaluator(
+        EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN
+    )
     result = jaro_evaluator.evaluate_strings(
         prediction=prediction,
         reference=reference,
     )
-    return result['score']
+    return result["score"]
 
 
 def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
-
     # instantiate parser
     parser = JsonOutputParser(pydantic_object=pydantic_model)
-    
+
     # clean escapes (small LLM error)
     json_string_clean = json_string.replace("\_", "_").replace("\-", "-")
 
     # first "{" occurrence (required by parser)
     start_index = json_string_clean.index("{")
-    
+
     # parse
     return parser.parse(json_string_clean[start_index:])
 
 
 # This is our masterwork during tea time
 class singleton:
-  
     instances = {}
 
     def __new__(cls, class_):
@@ -177,30 +182,31 @@ class singleton:
 
 # Class mixing pydantic BaseModel with dictionaries (added for backward compatibility, to be deprecated in v2)
 class BaseModelDict(BaseModel):
-
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         validate_assignment=True,
         arbitrary_types_allowed=True,
     )
 
     def __getitem__(self, key):
-
         # deprecate dictionary usage
         stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
-        log.warning(f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`")
+        line_code = traceback.format_list(stack)[0].split("\n")[1].strip()
+        log.warning(
+            f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`"
+        )
         log.warning(line_code)
 
         # return attribute
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-        
         # deprecate dictionary usage
         stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
-        log.warning(f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`')
+        line_code = traceback.format_list(stack)[0].split("\n")[1].strip()
+        log.warning(
+            f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`'
+        )
         log.warning(line_code)
 
         # set attribute
@@ -213,7 +219,7 @@ class BaseModelDict(BaseModel):
         delattr(self, key)
 
     def _get_all_attributes(self):
-        #return {**self.model_fields, **self.__pydantic_extra__}
+        # return {**self.model_fields, **self.__pydantic_extra__}
         return self.model_dump()
 
     def keys(self):

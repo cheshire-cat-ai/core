@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User manager</title>
+    <link rel="stylesheet" href="[[ url_for('core-static', path='/core.css') ]]">
+    <link rel="stylesheet" href="[[ url_for('core-static', path='/users/manager.css') ]]">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14/dist/cdn.min.js"></script>
+</head>
+
+<body class="font-serif">
+    <div x-data="$store.usersStore" id="content">
+        <div id="header">
+            <img id="logo" src="[[ url_for('core-static', path='/img/logo_no_writing.svg') ]]">
+            <h2>Users management</h2>
+        </div>
+
+        <form id="user-create-form" @submit.prevent>
+            <div id="user-create-inputs">
+                <input x-model="newUser.username" type="text" placeholder="User Name" required>
+                <input x-model="newUser.password" type="password" placeholder="Password" required>
+                <button type="submit" @click="createUser">Create</button>
+            </div>
+            <div x-text="newUserValidationMessage"></div>
+        </form>
+
+        <div id="users-list">
+            <template x-for="u in users" :key="u.id">
+                <template x-if="u.username != 'admin'">
+                    <div class="user-row">
+                        <span>
+                            <span x-text="u.username"></span>
+                            <span x-text="u.permissions"></span>
+                        </span>
+                        <span>
+                            <button @click="editUser(u.id)">Edit</button>
+                            <button x- @click="deleteUser(u.id)">Delete</button>
+                        </span>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+
+
+    <script>
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.store("usersStore", {
+
+                newUser: {},
+                newUserIsValid: false,
+                newUserValidationMessage: "",
+                users: [],
+                nome: "piero",
+                
+                checkNewUserIsValid(){
+                    if (this.newUser.username && this.newUser.password) {
+                        this.newUserIsValid = true
+                        this.newUserValidationMessage = ""
+                    } else {
+                        this.newUserIsValid = false
+                        this.newUserValidationMessage = "Please fill in all fields"
+                    }
+                },
+
+                fetchUsers() {
+
+                    fetch('/users')
+                        .then(response => response.json())
+                        .then(data => {
+                            data = data.sort((a, b) => a.username.localeCompare(b.username));
+                            this.users = data;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching users:', error);
+                        });
+                },
+
+                createUser(e) {
+                    e.preventDefault()
+
+                    fetch('/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            "username": this.newUser.username,
+                            "password": this.newUser.password,
+                        }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.error){
+                                this.newUserValidationMessage = "Invalid input"
+                            } else {
+                                this.newUser = {}
+                                this.newUserValidationMessage = ""
+                                this.fetchUsers()
+                            }
+                        })
+                },
+
+                deleteUser(id) {
+                    fetch(`/users/${id}`, {
+                        method: 'DELETE'
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.fetchUsers()
+                        })
+                },
+            })
+
+            Alpine.store("usersStore").fetchUsers()
+        })
+
+    </script>
+</body>
+
+</html>
