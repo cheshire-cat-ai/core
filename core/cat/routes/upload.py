@@ -163,31 +163,41 @@ async def upload_files(
     Example
     ----------
     ```
-    content_type = "application/pdf"
-    file_name = "sample.pdf"
-    file_path = f"tests/mocks/{file_name}"
-    metadata = {}
-    with open(file_path, "rb") as f:
-        files = [ ("files", ((file_name, f, content_type))) ]
+    files = []
+    files_to_upload = {"sample.pdf":"application/pdf","sample.txt":"application/txt"}
 
-        metadata[file_name] = {
+    for file_name in files_to_upload:
+        content_type = files_to_upload[file_name]
+        file_path = f"tests/mocks/{file_name}"
+        files.append(  ("files", ((file_name, open(file_path, "rb"), content_type))) )
+
+
+    metadata = {
+        "sample.pdf":{
             "source": "sample.pdf",
             "title": "Test title",
             "author": "Test author",
             "year": 2020
+        },
+        "sample.txt":{
+            "source": "sample.txt",
+            "title": "Test title",
+            "author": "Test author",
+            "year": 2021
         }
+    }
         
-        # upload file endpoint only accepts form-encoded data
-        payload = {
-            "chunk_size": 128,
-            "metadata": json.dumps(metadata)
-        }
+    # upload file endpoint only accepts form-encoded data
+    payload = {
+        "chunk_size": 128,
+        "metadata": json.dumps(metadata)
+    }
 
-        response = requests.post(
-            "http://localhost:1865/rabbithole/",
-            files=files,
-            data=payload
-        )
+    response = requests.post(
+        "http://localhost:1865/rabbithole/batch",
+        files=files,
+        data=payload
+    )
     ```
     """
 
