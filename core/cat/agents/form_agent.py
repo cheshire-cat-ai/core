@@ -1,6 +1,6 @@
 import traceback
 from cat.experimental.form import CatFormState
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
 from cat.log import log
 
 class FormAgent(BaseAgent):

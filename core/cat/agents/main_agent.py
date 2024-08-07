@@ -8,7 +8,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass import prompts
 from cat.utils import verbal_timedelta, BaseModelDict
 from cat.env import get_env
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
 from cat.agents.memory_agent import MemoryAgent
 from cat.agents.procedures_agent import ProceduresAgent
 

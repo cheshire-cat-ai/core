@@ -17,7 +17,7 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
-from cat.agents.base_agent import AgentOutput
+from cat.agents import AgentOutput
 from cat import utils
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]

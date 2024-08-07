@@ -6,7 +6,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
 from cat.agents.form_agent import FormAgent
 from cat.looking_glass import prompts
 from cat.looking_glass.output_parser import ChooseProcedureOutputParser, LLMAction

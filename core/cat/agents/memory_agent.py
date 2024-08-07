@@ -5,7 +5,7 @@ from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.output_parsers.string import StrOutputParser
 
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
 from cat import utils
 
 
