@@ -12,7 +12,7 @@ def check_correct_websocket_reply(reply):
 
     # why
     why = reply["why"]
-    assert {"input", "intermediate_steps", "memory", "model_interactions"} == set(why.keys())
+    assert {"input", "intermediate_steps", "memory", "model_interactions", "agent_output"} == set(why.keys())
     assert isinstance(why["input"], str)
     assert isinstance(why["intermediate_steps"], list)
     assert isinstance(why["memory"], dict)
