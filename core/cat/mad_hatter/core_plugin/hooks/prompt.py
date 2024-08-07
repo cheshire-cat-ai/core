@@ -13,25 +13,25 @@ def agent_prompt_prefix(prefix, cat) -> str:
     """Hook the main prompt prefix.
 
     Allows to edit the prefix of the *Main Prompt* that the Cat feeds to the *Agent*.
+    It describes the personality of your assistant and its general task.
 
-    The prefix is then composed with two other prompts components, i.e. the `agent_prompt_instructions`
-    and the `agent_prompt_suffix`.
+    The prefix is then completed with the `agent_prompt_suffix`.
 
     Parameters
     ----------
-    cat : CheshireCat
-        Cheshire Cat instance.
+    prefix : str
+        Main / System prompt with personality and general task to be accomplished.
+    cat : StrayCat
+        StrayCat instance.
 
     Returns
     -------
     prefix : str
-        The prefix string to be composed with the other two components to make up the *Main Prompt*.
+        Main / System prompt.
 
     Notes
     -----
     The default prefix describe who the AI is and how it is expected to answer the Human.
-    The next part of the prompt (generated form the *Agent*) contains the list of available Tools.
-
     """
 
     return prefix
@@ -41,34 +41,23 @@ def agent_prompt_prefix(prefix, cat) -> str:
 def agent_prompt_instructions(instructions: str, cat) -> str:
     """Hook the instruction prompt.
 
-    Allows to edit the instructions that the Cat feeds to the *Agent*.
-
-    The instructions are then composed with two other prompt components, i.e. `agent_prompt_prefix`
-    and `agent_prompt_suffix`.
+    Allows to edit the instructions that the Cat feeds to the *Agent* to select tools and forms.
 
     Parameters
     ----------
-    cat : CheshireCat
-        Cheshire Cat instance.
+    instructions : str
+        Instructions prompt to select tool or form.
+    cat : StrayCat
+        StrayCat instance.
 
     Returns
     -------
     instructions : str
-        The string with the set of instructions informing the *Agent* on how to format its reasoning to select a
-        proper tool for the task at hand.
+        Instructions prompt to select tool or form
 
     Notes
     -----
-    This prompt explains the *Agent* how to format its chain of reasoning when deciding when and which tool to use.
-    Default prompt splits the reasoning in::
-
-        - Thought: Yes/No answer to the question "Do I need to use a tool?";
-
-        - Action: a tool chosen among the available ones;
-
-        - Action Input: input to be passed to the tool. This is inferred as explained in the tool docstring;
-
-        - Observation: description of the result (which is the output of the @tool decorated function found in plugins).
+    This prompt explains the *Agent* how to select a tool or form.
 
     """
 
@@ -81,18 +70,17 @@ def agent_prompt_suffix(prompt_suffix: str, cat) -> str:
 
     Allows to edit the suffix of the *Main Prompt* that the Cat feeds to the *Agent*.
 
-    The suffix is then composed with two other prompts components, i.e. the `agent_prompt_prefix`
-    and the `agent_prompt_instructions`.
+    The suffix is concatenated to `agent_prompt_prefix` when RAG context is used.
 
     Parameters
     ----------
-    cat : CheshireCat
-        Cheshire Cat instance.
+    cat : StrayCat
+        StrayCat instance.
 
     Returns
     -------
-    suffix : str
-        The suffix string to be composed with the other two components that make up the *Main Prompt*.
+    prompt_suffix : str
+        The suffix string to be concatenated to the *Main Prompt* (prefix).
 
     Notes
     -----

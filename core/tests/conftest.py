@@ -5,6 +5,9 @@ import os
 import shutil
 from typing import Any, Generator
 
+import warnings
+from pydantic import PydanticDeprecatedSince20
+
 from qdrant_client import QdrantClient
 from fastapi.testclient import TestClient
 
@@ -17,6 +20,8 @@ from cat.memory.vector_memory import VectorMemory
 from cat.mad_hatter.plugin import Plugin
 from cat.main import cheshire_cat_api
 from tests.utils import create_mock_plugin_zip
+
+
 
 
 # substitute classes' methods where necessary for testing purposes
@@ -73,7 +78,7 @@ def client(monkeypatch) -> Generator[TestClient, Any, None]:
     """
     Create a new FastAPI TestClient.
     """
-
+    
     # clean up tmp files and folders
     clean_up_mocks()
     # monkeypatch classes
@@ -138,3 +143,9 @@ def stray(client):
     stray_cat = StrayCat(user_id=user_id, main_loop=asyncio.new_event_loop())
     stray_cat.working_memory.user_message_json = {"user_id": user_id, "text": "meow"}
     yield stray_cat
+
+# autouse fixture will be applied to *all* the tests
+@pytest.fixture(autouse=True)
+def apply_warning_filters():
+    # ignore deprecation warnings due to langchain not updating to pydantic v2
+    warnings.filterwarnings("ignore", category=PydanticDeprecatedSince20)

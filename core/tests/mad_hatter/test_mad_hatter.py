@@ -39,7 +39,6 @@ def test_instantiation_discovery(mad_hatter):
     tool = mad_hatter.tools[0]
     assert isinstance(tool, CatTool)
     assert tool.plugin_id == "core_plugin"
-    assert tool.cat is None
     assert tool.name == "get_the_time"
     assert (
         tool.description

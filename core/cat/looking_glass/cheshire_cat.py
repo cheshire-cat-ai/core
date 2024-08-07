@@ -3,11 +3,13 @@ from typing import List, Dict
 from typing_extensions import Protocol
 
 
-from langchain_core.language_models.llms import BaseLLM
 from langchain.base_language import BaseLanguageModel
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_community.llms import Cohere, OpenAI
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import SystemMessage
+from langchain_core.runnables import RunnableLambda
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers.string import StrOutputParser
+from langchain_community.llms import Cohere
+from langchain_openai import ChatOpenAI, OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from cat.factory.auth_handler import get_auth_handler_from_name
@@ -25,7 +27,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
-
+from cat import utils
 
 class Procedure(Protocol):
     name: str
@@ -401,10 +403,26 @@ class CheshireCat:
 
         """
 
-        # Check if self._llm is a completion model and generate a response
-        if isinstance(self._llm, BaseLLM):
-            return self._llm(prompt)
+        # Add a token counter to the callbacks
+        caller = utils.get_caller_info()
 
-        # Check if self._llm is a chat model and call it as a completion model
-        if isinstance(self._llm, BaseChatModel):
-            return self._llm.call_as_llm(prompt)
+        # here we deal with motherfucking langchain
+        prompt = ChatPromptTemplate(
+            messages=[
+                SystemMessage(content=prompt)
+            ]
+        )
+
+        chain = (
+            prompt
+            | RunnableLambda(lambda x: utils.langchain_log_prompt(x, f"{caller} prompt"))
+            | self._llm
+            | RunnableLambda(lambda x: utils.langchain_log_output(x, f"{caller} prompt output"))
+            | StrOutputParser()
+        )
+
+        output = chain.invoke(
+            {}, # in case we need to pass info to the template
+        )
+
+        return output

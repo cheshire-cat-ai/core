@@ -8,7 +8,7 @@ from cat.mad_hatter.mad_hatter import MadHatter
 from cat.looking_glass import prompts
 from cat.utils import verbal_timedelta, BaseModelDict
 from cat.env import get_env
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
 from cat.agents.memory_agent import MemoryAgent
 from cat.agents.procedures_agent import ProceduresAgent
 
@@ -51,8 +51,10 @@ class MainAgent(BaseAgent):
         fast_reply = self.mad_hatter.execute_hook(
             "agent_fast_reply", fast_reply, cat=stray
         )
-        if len(fast_reply.keys()) > 0:
+        if isinstance(fast_reply, AgentOutput):
             return fast_reply
+        if isinstance(fast_reply, dict) and "output" in fast_reply:
+            return AgentOutput(**fast_reply)
 
         # obtain prompt parts from plugins
         prompt_prefix = self.mad_hatter.execute_hook(
@@ -114,14 +116,15 @@ class MainAgent(BaseAgent):
         )
 
         # format conversation history to be inserted in the prompt
-        # conversation_history_formatted_content = stray.stringify_chat_history()
+        # TODOV2: take away
+        conversation_history_formatted_content = stray.stringify_chat_history()
 
         return BaseModelDict(**{
-            "input": stray.working_memory.user_message_json.text,  # TODO: deprecate, since it is included in chat history
             "episodic_memory": episodic_memory_formatted_content,
             "declarative_memory": declarative_memory_formatted_content,
-            # "chat_history": conversation_history_formatted_content,
             "tools_output": "",
+            "input": stray.working_memory.user_message_json.text,  # TODOV2: take away
+            "chat_history": conversation_history_formatted_content, # TODOV2: take away
         })
 
     def agent_prompt_episodic_memories(

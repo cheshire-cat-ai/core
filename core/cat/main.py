@@ -14,6 +14,7 @@ from cat.env import get_env, fix_legacy_env_variables
 from cat.routes import (
     base,
     auth,
+    users,
     settings,
     llm,
     embedder,
@@ -23,8 +24,7 @@ from cat.routes import (
     upload,
     websocket,
 )
-from cat.routes.users import users, users_manager
-from cat.routes.static import public, admin, static
+from cat.routes.static import admin, static
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 
@@ -82,7 +82,6 @@ cheshire_cat_api.add_middleware(
 cheshire_cat_api.include_router(base.router, tags=["Status"])
 cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth")
 cheshire_cat_api.include_router(users.router, tags=["Users"], prefix="/users")
-cheshire_cat_api.include_router(users_manager.router, tags=["Users Manager"], prefix="/users-manager")
 cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings")
 cheshire_cat_api.include_router(
     llm.router, tags=["Large Language Model"], prefix="/llm"
@@ -106,8 +105,6 @@ cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
 admin.mount(cheshire_cat_api)
 # static files (for plugins and other purposes)
 static.mount(cheshire_cat_api)
-# static files for hackable chat in cat/public
-public.mount(cheshire_cat_api)
 
 
 # error handling
@@ -140,6 +137,13 @@ if __name__ == "__main__":
             "reload_includes": ["plugin.json"],
             "reload_excludes": ["*test_*.*", "*mock_*.*"],
         }
+    # uvicorn running behind an https proxy
+    proxy_pass_config = {}
+    if get_env("CCAT_HTTPS_PROXY_MODE") in ("1", "true"):
+        proxy_pass_config = {
+            "proxy_headers": True,
+            "forwarded_allow_ips": get_env("CCAT_CORS_FORWARDED_ALLOW_IPS"),
+        }
 
     uvicorn.run(
         "cat.main:cheshire_cat_api",
@@ -148,4 +152,5 @@ if __name__ == "__main__":
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
         **debug_config,
+        **proxy_pass_config,
     )

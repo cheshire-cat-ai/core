@@ -3,7 +3,7 @@ import pytest
 
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.agents.main_agent import MainAgent
-from cat.agents.base_agent import AgentOutput
+from cat.agents import AgentOutput
 
 
 def test_main_agent_instantiation(main_agent):

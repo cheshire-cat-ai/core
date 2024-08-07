@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.7.1 ( 2024-08-01 )
+
+New in version 1.7
+
+- User system
+- permission system
+- JWT support
+- Custom Auth support
+- White Rabbit
+- StrayCat.classify
+
 ## 1.5.0 ( 2024-03-07 )
 
 New in version 1.5.0: **Sir Punctilious Cat, the IV**! 

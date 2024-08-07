@@ -21,9 +21,10 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/{page}/", include_in_schema=False)
     def get_admin_single_page_app(
         stray: StrayCat = Depends(
-            CoreFrontendAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)
+            CoreFrontendAuth(AuthResource.STATIC, AuthPermission.READ)
         )
     ):
+
         # the admin static build is created during docker build from this repo:
         # https://github.com/cheshire-cat-ai/admin-vue
         # the files live inside the /admin folder (not visible in volume / cat code)

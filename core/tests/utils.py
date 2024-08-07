@@ -81,3 +81,10 @@ def get_collections_names_and_point_count(client):
     assert response.status_code == 200
     collections_n_points = {c["name"]: c["vectors_count"] for c in json["collections"]}
     return collections_n_points
+
+
+def create_new_user(client):
+    new_user = {"username": "Alice", "password": "wandering_in_wonderland"}
+    response = client.post("/users", json=new_user)
+    assert response.status_code == 200
+    return response.json()

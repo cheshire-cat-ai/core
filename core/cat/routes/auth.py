@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Request, HTTPException, Response, status, Query
 from fastapi.responses import RedirectResponse
 
-
+from cat.db import crud
 from cat.auth.permissions import AuthPermission, AuthResource, get_full_permissions
 from cat.routes.static.templates import get_jinja_templates
 
@@ -67,10 +67,17 @@ async def auth_index(
         referer = "/admin/"
 
     templates = get_jinja_templates()
-    template_context = {"referer": referer, "error_message": error_message}
-    return templates.TemplateResponse(
+    template_context = {
+        "referer": referer,
+        "error_message": error_message,
+        "show_default_passwords": len(crud.get_users().keys()) == 2,
+    }
+
+    response = templates.TemplateResponse(
         request=request, name="auth/login.html", context=template_context
     )
+    response.delete_cookie(key="ccat_user_token")
+    return response
 
 
 # TODOAUTH /logout endpoint

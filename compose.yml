@@ -6,8 +6,8 @@ services:
       context: ./core
     container_name: cheshire_cat_core
     # Uncomment the two lines below to use your .env (see .env.example)
-    # env_file:
-    #   - .env
+    #env_file:
+    #  - .env
     ports:
       - ${CCAT_CORE_PORT:-1865}:80
       - 5678:5678 # only for development purposes (take away in production)

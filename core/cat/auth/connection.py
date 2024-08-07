@@ -40,7 +40,6 @@ class ConnectionAuth(ABC):
 
         # extract credentials (user_id, token_or_key) from connection
         user_id, credential = await self.extract_credentials(connection)
-
         auth_handlers = [
             # try to get user from local idp
             connection.app.state.ccat.core_auth_handler,
@@ -172,9 +171,9 @@ class CoreFrontendAuth(HTTPAuth):
         """
 
         token = connection.cookies.get("ccat_user_token", None)
-        
-        # core webapps should not be accessed without a token
-        if not token:
+
+        # core webapps cannot be accessed without a cookie
+        if token is None or token == "":
             self.not_allowed(connection)
 
         return "user", token

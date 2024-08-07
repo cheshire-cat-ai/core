@@ -19,6 +19,8 @@ def get_supported_env_variables():
         "CCAT_JWT_SECRET": "secret",
         "CCAT_JWT_ALGORITHM": "HS256",
         "CCAT_JWT_EXPIRE_MINUTES": str(60 * 24),  # JWT expires after 1 day
+        "CCAT_HTTPS_PROXY_MODE": False,
+        "CCAT_CORS_FORWARDED_ALLOW_IPS": "*",
     }
 
 

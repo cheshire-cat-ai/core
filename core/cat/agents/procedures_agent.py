@@ -1,45 +1,36 @@
-import json
 import traceback
 import random
-from typing import List, Dict, Union
-from copy import deepcopy
+from typing import Dict
 
-from langchain.agents import AgentExecutor
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.prompts.chat import SystemMessagePromptTemplate
-from langchain_core.runnables import RunnableConfig, RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnableConfig, RunnableLambda
 
-from cat.agents.base_agent import BaseAgent, AgentOutput
+from cat.agents import BaseAgent, AgentOutput
+from cat.agents.form_agent import FormAgent
 from cat.looking_glass import prompts
-from cat.looking_glass.output_parser import ChooseProcedureOutputParser
-from cat.experimental.form import CatForm, CatFormState
+from cat.looking_glass.output_parser import ChooseProcedureOutputParser, LLMAction
+from cat.experimental.form import CatForm
 from cat.mad_hatter.decorators.tool import CatTool
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.plugin import Plugin
 from cat.log import log
 from cat.looking_glass.callbacks import ModelInteractionHandler
+from cat import utils
 
-
-"""
-Agent API:
-
-.execute(stray) -> {
-    "return_direct": bool,  # if True, the agent maanger will return the output directly and block chains
-    "intermediate_steps": List[Tuple[Tuple[Tool, ToolInput], str]]  # list of intermediate steps executed
-}
-
-
-"""
 
 class ProceduresAgent(BaseAgent):
+
+    form_agent = FormAgent()
+    allowed_procedures: Dict[str, CatTool | CatForm] = {}
 
     async def execute(self, stray) -> AgentOutput:
         
         # Run active form if present
-        form_result = await self.execute_form_agent(stray)
-        if form_result:
-            return AgentOutput(**form_result)  # exit agent with form output
-
+        form_output: AgentOutput = await self.form_agent.execute(stray)
+        if form_output.return_direct:
+            return form_output
+        
         # Select and run useful procedures
         intermediate_steps = []
         procedural_memories = stray.working_memory.procedural_memories
@@ -47,15 +38,16 @@ class ProceduresAgent(BaseAgent):
             log.debug(f"Procedural memories retrived: {len(procedural_memories)}.")
 
             try:
-                procedures_result = await self.execute_procedures_agent(stray)
-                if procedures_result.get("return_direct"):
+                procedures_result: AgentOutput = await self.execute_procedures(stray)
+                if procedures_result.return_direct:
                     # exit agent if a return_direct procedure was executed
-                    return AgentOutput(**procedures_result)
+                    return procedures_result
 
                 # store intermediate steps to enrich memory chain
-                intermediate_steps = procedures_result["intermediate_steps"]
+                intermediate_steps = procedures_result.intermediate_steps
 
                 # Adding the tools_output key in agent input, needed by the memory chain
+                # TODO: find a more elegant way to pass this information
                 if len(intermediate_steps) > 0:
                     stray.working_memory.agent_input.tools_output = "## Context of executed system tools: \n"
                     for proc_res in intermediate_steps:
@@ -63,108 +55,120 @@ class ProceduresAgent(BaseAgent):
                         stray.working_memory.agent_input.tools_output += (
                             f" - {proc_res[0][0]}: {proc_res[1]}\n"
                         )
+                return procedures_result
 
             except Exception as e:
                 log.error(e)
                 traceback.print_exc()
 
-        return AgentOutput(
-            output="",
-            intermediate_steps=intermediate_steps,
-            return_direct=False
-        )
+        return AgentOutput()
 
-    async def execute_form_agent(self, stray):
-        active_form = stray.working_memory.active_form
-        if active_form:
-            # closing form if state is closed
-            if active_form._state == CatFormState.CLOSED:
-                stray.working_memory.active_form = None
-            else:
-                # continue form
-                form_out = active_form.next()
-                # we assume for has always `return_direct` == True
-                # TODO: this should be inserted in CatForm so devs can decide if the form jumps over memory
-                form_out["return_direct"] = True
-                return form_out
-
-        return None  # no active form
     
-    async def execute_procedures_agent(self, stray):
+    async def execute_procedures(self, stray):
 
         # using some hooks
         mad_hatter = MadHatter()
 
+        # get procedures prompt from plugins
+        procedures_prompt_template = mad_hatter.execute_hook(
+            "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
+        )
+
         # Gather recalled procedures
-        recalled_procedures_names = self.get_recalled_procedures_names(stray)
+        recalled_procedures_names: set = self.get_recalled_procedures_names(stray)
         recalled_procedures_names = mad_hatter.execute_hook(
             "agent_allowed_tools", recalled_procedures_names, cat=stray
         )
 
-        # Prepare allowed procedures
-        allowed_procedures, allowed_tools, return_direct_tools = (
-            self.prepare_allowed_procedures(stray, recalled_procedures_names)
-        )
+        # Prepare allowed procedures (tools instances and form classes)
+        allowed_procedures: Dict[str, CatTool | CatForm] = \
+            self.prepare_allowed_procedures(
+                stray, recalled_procedures_names
+            )
 
-        # Generate the prompt
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                SystemMessagePromptTemplate.from_template(
-                    template=mad_hatter.execute_hook(
-                        "agent_prompt_instructions", prompts.TOOL_PROMPT, cat=stray
-                    )
-                ),
-                # *(stray.langchainfy_chat_history())
-            ]
-        )
+        # Execute chain and obtain a choice of procedure from the LLM
+        llm_action: LLMAction = await self.execute_chain(stray, procedures_prompt_template, allowed_procedures)
 
-        # Partial the prompt with relevant data
-        prompt = prompt.partial(
-            tools="\n".join(
+        # route execution to subagents
+        return await self.execute_subagents(stray, llm_action, allowed_procedures)
+
+
+    async def execute_chain(self, stray, procedures_prompt_template, allowed_procedures) -> LLMAction:
+        
+        # Prepare info to fill up the prompt
+        prompt_variables = {
+            "tools": "\n".join(
                 f'- "{tool.name}": {tool.description}'
                 for tool in allowed_procedures.values()
             ),
-            tool_names='"' + '", "'.join(allowed_procedures.keys()) + '"',
-            agent_scratchpad="",
-            chat_history=stray.stringify_chat_history(),
-            examples=self.generate_examples(allowed_procedures),
+            "tool_names": '"' + '", "'.join(allowed_procedures.keys()) + '"',
+            #"chat_history": stray.stringify_chat_history(),
+            "examples": self.generate_examples(allowed_procedures),
+        }
+
+        # Ensure prompt inputs and prompt placeholders map
+        prompt_variables, procedures_prompt_template = \
+            utils.match_prompt_variables(prompt_variables, procedures_prompt_template)
+
+        # Generate prompt
+        prompt = ChatPromptTemplate(
+            messages=[
+                SystemMessagePromptTemplate.from_template(
+                    template=procedures_prompt_template
+                ),
+                *(stray.langchainfy_chat_history()),
+            ]
         )
 
-        # Create the agent
-        agent = (
-            RunnablePassthrough.assign(
-                agent_scratchpad=lambda x: self.generate_scratchpad(x["intermediate_steps"])
-            )
-            | prompt
-            | RunnableLambda(lambda x: self._log_prompt(x, "TOOL PROMPT"))
+        chain = (
+            prompt
+            | RunnableLambda(lambda x: utils.langchain_log_prompt(x, "TOOL PROMPT"))
             | stray._llm
-            | RunnableLambda(lambda x: self._log_output(x, "TOOL PROMPT OUTPUT"))
-            | ChooseProcedureOutputParser()
+            | RunnableLambda(lambda x: utils.langchain_log_output(x, "TOOL PROMPT OUTPUT"))
+            | ChooseProcedureOutputParser() # ensures output is a LLMAction
         )
 
-        # Agent executor
-        agent_executor = AgentExecutor(
-            agent=agent,
-            tools=allowed_tools,
-            return_intermediate_steps=True,
-            verbose=False,
-            max_iterations=5,
-        )
-
-        # Agent run
-        out = agent_executor.invoke(
-            # convert to dict before passing to langchain
-            # TODO: ensure dict keys and prompt placeholders map, so there are no issues on mismatches
-            stray.working_memory.agent_input.model_dump(),
+        llm_action: LLMAction = chain.invoke(
+            prompt_variables,
             config=RunnableConfig(callbacks=[ModelInteractionHandler(stray, self.__class__.__name__)])
         )
 
-        # Process intermediate steps and handle forms
-        out = self.process_intermediate_steps(stray, out, return_direct_tools, allowed_procedures)
-
-        return out
+        return llm_action
     
-    def get_recalled_procedures_names(self, stray):
+    
+    async def execute_subagents(self, stray, llm_action, allowed_procedures):
+        # execute chosen tool / form
+        # loop over allowed tools and forms
+        if llm_action.action:
+            chosen_procedure = allowed_procedures.get(llm_action.action, None)
+            try:
+                if Plugin._is_cat_tool(chosen_procedure):
+                    # execute tool
+                    tool_output = await chosen_procedure._arun(llm_action.action_input, stray=stray)
+                    return AgentOutput(
+                        output=tool_output,
+                        return_direct=chosen_procedure.return_direct,
+                        intermediate_steps=[
+                            ((llm_action.action, llm_action.action_input), tool_output)
+                        ]
+                    )
+                if Plugin._is_cat_form(chosen_procedure):
+                    # create form
+                    form_instance = chosen_procedure(stray)
+                    # store active form in working memory
+                    stray.working_memory.active_form = form_instance
+                    # execute form
+                    return await self.form_agent.execute(stray)
+                
+            except Exception as e:
+                log.error(f"Error executing {chosen_procedure.procedure_type} `{chosen_procedure.name}`")
+                log.error(e)
+                traceback.print_exc()
+
+        return AgentOutput(output="")
+
+    
+    def get_recalled_procedures_names(self, stray) -> set:
         recalled_procedures_names = set()
         for p in stray.working_memory.procedural_memories:
             p_type = p[0].metadata["type"]
@@ -175,25 +179,20 @@ class ProceduresAgent(BaseAgent):
                 recalled_procedures_names.add(p_source)
         return recalled_procedures_names
     
-    def prepare_allowed_procedures(self, stray, recalled_procedures_names):
-        allowed_procedures: Dict[str, Union[CatTool, CatForm]] = {}
-        allowed_tools: List[CatTool] = []
-        return_direct_tools: List[str] = []
+    def prepare_allowed_procedures(
+            self,
+            stray,
+            recalled_procedures_names
+        ) -> Dict[str, CatTool | CatForm]:
+        
+        allowed_procedures: Dict[str, CatTool | CatForm] = {}
 
         mad_hatter = MadHatter()
         for p in mad_hatter.procedures:
             if p.name in recalled_procedures_names:
-                if Plugin._is_cat_tool(p):
-                    tool = deepcopy(p)
-                    tool.assign_cat(stray)
-                    allowed_tools.append(tool)
-                    allowed_procedures[tool.name] = tool
-                    if p.return_direct:
-                        return_direct_tools.append(tool.name)
-                else:
-                    allowed_procedures[p.name] = p
+                allowed_procedures[p.name] = p
 
-        return allowed_procedures, allowed_tools, return_direct_tools
+        return allowed_procedures
     
     def generate_examples(self, allowed_procedures):
         list_examples = ""
@@ -204,58 +203,18 @@ class ProceduresAgent(BaseAgent):
                 example_json = f"""
 {{
     "action": "{proc.name}",
-    "action_input": // Input of the action according to its description
+    "action_input": "...input here..."
 }}"""
                 list_examples += f"\nQuestion: {random.choice(proc.start_examples)}"
                 list_examples += f"\n```json\n{example_json}\n```"
-                list_examples += """```json
-{{
-    "action": "final_answer",
+                list_examples += """
+Question: I have no questions
+```json
+{
+    "action": "no_answer",
     "action_input": null
-}}
+}
 ```"""
         return list_examples
+
     
-    def generate_scratchpad(self, intermediate_steps):
-        thoughts = ""
-        for action, observation in intermediate_steps:
-            thoughts += f"```json\n{action.log}\n```\n"
-            thoughts += f"""```json
-            {json.dumps({"action_output": observation}, indent=4)}
-            ```
-            """
-        return thoughts
-    
-    def process_intermediate_steps(
-        self,
-        stray,
-        out,
-        return_direct_tools: List[str],
-        allowed_procedures: Dict[str, Union[CatTool, CatForm]],
-    ):
-        """
-        Process intermediate steps and check if any tool is decorated with return_direct=True.
-        Also, include forms in the intermediate steps and handle their selection.
-        """
-        out["return_direct"] = False
-        intermediate_steps = []
-
-        for step in out.get("intermediate_steps", []):
-            intermediate_steps.append(((step[0].tool, step[0].tool_input), step[1]))
-            if step[0].tool in return_direct_tools:
-                out["return_direct"] = True
-
-        out["intermediate_steps"] = intermediate_steps
-
-        if "form" in out:
-            form_name = out["form"]
-            if form_name in allowed_procedures:
-                FormClass = allowed_procedures[form_name]
-                form_instance = FormClass(stray)
-                stray.working_memory.active_form = form_instance
-                out = form_instance.next()
-                out["return_direct"] = True
-                intermediate_steps.append(((form_name, None), out["output"]))
-
-        out["intermediate_steps"] = intermediate_steps
-        return out

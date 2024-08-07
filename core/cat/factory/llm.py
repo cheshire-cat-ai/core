@@ -1,11 +1,10 @@
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAI
 from langchain_community.llms import (
-    OpenAI,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
 )
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAI
 from langchain_cohere import ChatCohere
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -88,7 +87,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI-compatible API",
-            "description": "Configuration for self-hosted OpenAI-compatible API server, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM",
+            "description": "Configuration for OpenAI-compatible APIs, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM, TogetherAI and many others.",
             "link": "",
         }
     )
@@ -287,14 +286,14 @@ def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
+        LLMOpenAICompatibleConfig,
+        LLMOllamaConfig,
         LLMGeminiChatConfig,
         LLMCohereConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
-        LLMOllamaConfig,
-        LLMOpenAICompatibleConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
     ]

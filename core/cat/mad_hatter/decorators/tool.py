@@ -1,6 +1,4 @@
-import asyncio
 import inspect
-import concurrent
 
 from typing import Union, Callable, List
 from inspect import signature
@@ -26,9 +24,6 @@ class CatTool(BaseTool):
             name=name, func=func, description=description, return_direct=return_direct
         )
 
-        # StrayCat instance will be set by the agent
-        self.cat = None
-
         self.func = func
         self.procedure_type = "tool"
         self.name = name
@@ -49,37 +44,20 @@ class CatTool(BaseTool):
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
-    # used by the agent to let a Tool access the cat instance
-    def assign_cat(self, cat):
-        self.cat = cat
+    # we run tools always async, even if they are not defined so in a plugin
+    def _run(self, input_by_llm: str) -> str:
+        pass # do nothing
+    
+    # we run tools always async, even if they are not defined so in a plugin
+    async def _arun(self, input_by_llm, stray):
 
-    def _run(self, input_by_llm):
-        # Check if the tool is a corutine
+        # await if the tool is async
         if inspect.iscoroutinefunction(self.func):
-            # Wrap the corutine in a function
-            def start(coro, *args, **kwargs):
-                # Create a new event loop
-                loop = asyncio.new_event_loop()
-                # Set the event loop
-                asyncio.set_event_loop(loop)
-                # Run the tool
-                return loop.run_until_complete(coro(input_by_llm, cat=self.cat))
+            return await self.func(input_by_llm, cat=stray)
 
-            with concurrent.futures.ThreadPoolExecutor() as exe:
-                # Run tool in a separete tread
-                future = exe.submit(start, self.func, input_by_llm, self.cat)
-                # Wait for the result
-                return future.result()
-
-        # If the tool is a function call it and return the result
-        return self.func(input_by_llm, cat=self.cat)
-
-    async def _arun(self, input_by_llm):
-        if inspect.iscoroutinefunction(self.func):
-            return await self.func(input_by_llm, cat=self.cat)
-
-        return await self.cat.loop.run_in_executor(
-            None, self.func, input_by_llm, self.cat
+        # run in executor if the tool is not async
+        return await stray.loop.run_in_executor(
+            None, self.func, input_by_llm, stray
         )
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain

@@ -2,13 +2,16 @@
 
 import os
 import traceback
+import inspect
 from datetime import timedelta
 from urllib.parse import urlparse
-
+from typing import Dict, Tuple
 from pydantic import BaseModel, ConfigDict
 
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.utils import get_colored_text
 
 from cat.log import log
 from cat.env import get_env
@@ -82,9 +85,7 @@ def verbal_timedelta(td: timedelta) -> str:
 
 def get_base_url():
     """Allows exposing the base url."""
-    secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
-    if secure not in ["", "false", "0"]:
-        secure = "s"
+    secure = "s" if get_env("CCAT_CORE_USE_SECURE_PROTOCOLS") in ("true", "1") else ""
     cat_host = get_env("CCAT_CORE_HOST")
     cat_port = get_env("CCAT_CORE_PORT")
     return f"http{secure}://{cat_host}:{cat_port}/"
@@ -157,14 +158,89 @@ def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
     # instantiate parser
     parser = JsonOutputParser(pydantic_object=pydantic_model)
 
-    # clean escapes (small LLM error)
-    json_string_clean = json_string.replace("\_", "_").replace("\-", "-")
+    # clean to help small LLMs
+    replaces = {
+        "\_": "_",
+        "\-": "-",
+        "None": "null",
+        "{{": "{",
+        "}}": "}",
+    }
+    for k, v in replaces.items():
+        json_string = json_string.replace(k, v)
 
     # first "{" occurrence (required by parser)
-    start_index = json_string_clean.index("{")
+    start_index = json_string.index("{")
 
     # parse
-    return parser.parse(json_string_clean[start_index:])
+    parsed = parser.parse(json_string[start_index:])
+    
+    if pydantic_model:
+        return pydantic_model(**parsed)
+    return parsed
+
+
+def match_prompt_variables(
+        prompt_variables: Dict,
+        prompt_template: str
+    ) -> Tuple[Dict, str]:
+    """Ensure prompt variables and prompt placeholders map, so there are no issues on mismatches"""
+
+    tmp_prompt = PromptTemplate.from_template(
+        template=prompt_template
+    )
+
+    # outer set difference
+    prompt_mismatches = set(prompt_variables.keys()) ^ set(tmp_prompt.input_variables)
+
+    # clean up
+    for m in prompt_mismatches:
+        if m in prompt_variables.keys():
+            log.warning(f"Prompt variable '{m}' not found in prompt template, removed")
+            del prompt_variables[m]
+        if m in tmp_prompt.input_variables:
+            prompt_template = \
+                prompt_template.replace("{" + m + "}", "")
+            log.warning(f"Placeholder '{m}' not found in prompt variables, removed")
+            
+    return prompt_variables, prompt_template
+
+
+def get_caller_info():
+    # go 2 steps up the stack
+    try:
+        calling_frame = inspect.currentframe()
+        grand_father_frame = calling_frame.f_back.f_back
+        grand_father_name = grand_father_frame.f_code.co_name
+        
+        # check if the grand_father_frame is in a class method
+        if 'self' in grand_father_frame.f_locals:
+            return grand_father_frame.f_locals['self'].__class__.__name__ + "." + grand_father_name
+        return grand_father_name
+    except Exception as e:
+        log.error(e)
+        return None
+
+
+def langchain_log_prompt(langchain_prompt, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "green"))
+    for m in langchain_prompt.messages:
+        print(get_colored_text(type(m).__name__, "green"))
+        print(m.content)
+    print(get_colored_text("========================================", "green"))
+    return langchain_prompt
+
+
+def langchain_log_output(langchain_output, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "blue"))
+    if hasattr(langchain_output, 'content'):
+        print(langchain_output.content)
+    else:
+        print(langchain_output)
+    print(get_colored_text("========================================", "blue"))
+    return langchain_output
 
 
 # This is our masterwork during tea time
@@ -186,6 +262,7 @@ class BaseModelDict(BaseModel):
         extra="allow",
         validate_assignment=True,
         arbitrary_types_allowed=True,
+        protected_namespaces=() # avoid warning for `model_xxx` attributes
     )
 
     def __getitem__(self, key):

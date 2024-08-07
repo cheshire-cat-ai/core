@@ -214,9 +214,7 @@ class CatLogEngine:
 
     def welcome(self):
         """Welcome message in the terminal."""
-        secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
-        if secure != "":
-            secure = "s"
+        secure = "s" if get_env("CCAT_CORE_USE_SECURE_PROTOCOLS") in ("true", "1") else ""
 
         cat_host = get_env("CCAT_CORE_HOST")
         cat_port = get_env("CCAT_CORE_PORT")
@@ -227,7 +225,6 @@ class CatLogEngine:
 
         print("\n=============== ^._.^ ===============\n")
         print(f"Cat REST API:   {cat_address}/docs")
-        print(f"Cat PUBLIC:     {cat_address}/public")
         print(f"Cat ADMIN:      {cat_address}/admin\n")
         print("======================================")
 

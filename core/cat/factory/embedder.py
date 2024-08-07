@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from langchain_community.embeddings import FakeEmbeddings, FastEmbedEmbeddings
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from fastembed.embedding import TextEmbedding
+from fastembed import TextEmbedding
 from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain_cohere import CohereEmbeddings
@@ -62,7 +62,7 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI-compatible API embedder",
-            "description": "Configuration for self-hosted OpenAI-compatible API embeddings",
+            "description": "Configuration for OpenAI-compatible API embeddings",
             "link": "",
         }
     )

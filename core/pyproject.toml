@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.7.0"
+version = "1.7.1"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
@@ -25,7 +25,7 @@ dependencies = [
     "langchain==0.2.1",
     "langchain-community==0.2.1",
     "langchain-openai==0.1.7",
-    "langchain-google-genai==1.0.5",
+    "langchain-google-genai==1.0.8",
     "langchain-cohere==0.1.5",
     "huggingface-hub==0.20.3",
     "beautifulsoup4==4.12.3",
@@ -45,7 +45,7 @@ dependencies = [
     "pytest",
     "pytest-asyncio",
     "httpx",
-    "fastembed==0.2.2",
+    "fastembed==0.3.4",
     "rapidfuzz==3.6.1",
     "APScheduler==3.10.4",
     "ruff==0.4.7",

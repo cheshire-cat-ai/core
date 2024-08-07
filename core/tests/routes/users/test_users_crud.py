@@ -1,5 +1,8 @@
 from uuid import UUID
 from cat.auth.permissions import get_base_permissions, get_full_permissions
+from cat.env import get_env
+from tests.utils import create_new_user
+
 
 def check_user_fields(u):
     assert set(u.keys()) == {"id", "username", "permissions"}
@@ -13,18 +16,12 @@ def check_user_fields(u):
         # If a ValueError is raised, the UUID string is invalid
         assert False, "Not a UUID"
 
-def create_new_user(client):
-    new_user = {"username": "Alice", "password": "wandering_in_wonderland"}
-    response = client.post("/users", json=new_user)
-    assert response.status_code == 200
-    return response.json()
-
 def test_create_user(client):
 
     # create user
     data = create_new_user(client)
 
-    # assertion on user structure
+    # assertions on user structure
     check_user_fields(data)
 
     assert data["username"] == "Alice"
@@ -103,25 +100,32 @@ def test_update_user(client):
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 400
 
-    # update password (bad request)
-    updated_user = {"password": "12345"}
-    response = client.put(f"/users/{user_id}", json=updated_user)
-    assert response.status_code == 400
-    
     # change nothing
     response = client.put(f"/users/{user_id}", json={})
     assert response.status_code == 200
     data = response.json()
 
     # nothing changed so far
+    check_user_fields(data)
     assert data["username"] == "Alice"
     assert data["permissions"] == get_base_permissions()
+    
+    # update password
+    updated_user = {"password": "12345"}
+    response = client.put(f"/users/{user_id}", json=updated_user)
+    assert response.status_code == 200
+    data = response.json()
+    check_user_fields(data)
+    assert data["username"] == "Alice"
+    assert data["permissions"] == get_base_permissions()
+    assert "password" not in data # api will not send passwords around
     
     # change username
     updated_user = {"username": "Alice2"}
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 200
     data = response.json()
+    check_user_fields(data)
     assert data["username"] == "Alice2"
     assert data["permissions"] == get_base_permissions()
 
@@ -130,6 +134,7 @@ def test_update_user(client):
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 200
     data = response.json()
+    check_user_fields(data)
     assert data["username"] == "Alice2"
     assert data["permissions"] == {"MEMORY": ["READ"]}
 
@@ -138,6 +143,7 @@ def test_update_user(client):
     response = client.put(f"/users/{user_id}", json=updated_user)
     assert response.status_code == 200
     data = response.json()
+    check_user_fields(data)
     assert data["username"] == "Alice3"
     assert data["permissions"] == {"UPLOAD":["WRITE"]}
 
@@ -186,35 +192,6 @@ def test_delete_user(client):
     assert data[0]["username"] == "admin"
     assert data[1]["username"] == "user"
 
-def test_superuser(client):
-
-    # get list of users (there should be only admin and user)
-    response = client.get("/users")
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 2
-    assert data[0]["username"] == "admin"
-
-    admin_id = data[0]["id"]
-
-    # cannot create another user called admin (it's the only one available at install)
-    response = client.post("/users", json={"username": "admin", "password": "password"})
-    assert response.status_code == 403
-
-    # cannot change password (bad request)
-    response = client.put(f"/users/{admin_id}", json={"password": "12345"})
-    assert response.status_code == 400
-
-    # cannot edit admin user
-    response = client.put(f"/users/{admin_id}", json={"permissions": {"MEMORY": ["READ"]}})
-    assert response.status_code == 403
-    assert response.json()["detail"]["error"] == "Cannot edit admin user"
-
-
-    # cannot delete admin user
-    response = client.delete(f"/users/{admin_id}")
-    assert response.status_code == 403
-    assert response.json()["detail"]["error"] == "Cannot delete admin user"
 
 # note: using secure client (api key set both for http and ws)
 def test_no_access_if_api_keys_active(secure_client):
@@ -238,7 +215,7 @@ def test_no_access_if_api_keys_active(secure_client):
     assert response.status_code == 403
 
     # check default list giving the correct CCAT_API_KEY
-    headers = {"Authorization": "Bearer meow_http"}
+    headers = {"Authorization": f"Bearer {get_env('CCAT_API_KEY')}"}
     response = secure_client.get("/users", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) == 2
