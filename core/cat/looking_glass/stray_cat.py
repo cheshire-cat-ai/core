@@ -429,7 +429,9 @@ class StrayCat:
 
         # why this response?
         why = self.__build_why()
+        # TODO: should these assignations be included in self.__build_why ?
         why.intermediate_steps = agent_output.intermediate_steps
+        why.agent_output = agent_output.model_dump()
 
         # prepare final cat message
         final_output = CatMessage(
