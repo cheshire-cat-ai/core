@@ -3,6 +3,7 @@ import asyncio
 import traceback
 import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
+from collections.abc import Iterable
 
 from langchain.docstore.document import Document
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
@@ -21,7 +22,7 @@ from cat.agents import AgentOutput
 from cat import utils
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
+MEMORY_COLLECTION = Literal["episodic", "declarative", "procedural"]
 
 # The Stray cat goes around tools and hook, making troubles
 class StrayCat:
@@ -153,6 +154,37 @@ class StrayCat:
             }
 
         self.__send_ws_json(error_message)
+
+    def recall(
+            self,
+            query: str | List[float],
+            k: int | None = 5,
+            threshold: int | None = None,
+            metadata: dict | None = None,
+            collections: Iterable[MEMORY_COLLECTION] | None = None,
+            override_working_memory: bool = False
+            ):
+
+        if isinstance(query, str):
+            query = self.embedder.embed_query(query)
+
+        if collections:
+            collections = [f"{c}_memories" for c in collections]
+        else:
+            collections = self.memory.vectors.collections.keys()
+
+        for collection in collections:
+            if collection not in self.memory.vectors.collections.keys():
+                log.warning(f"{collection} is not a valid collection")
+                continue
+            vector_memory = getattr(self.memory.vectors, collection)
+
+            memories = vector_memory.recall_memories_from_embedding(
+                query, metadata, k, threshold
+            ) if k else vector_memory.get_all_points()
+
+            if override_working_memory:
+                setattr(self.working_memory, collection, memories)
 
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
