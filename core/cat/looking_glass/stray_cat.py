@@ -3,7 +3,6 @@ import asyncio
 import traceback
 import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any, Tuple
-from collections.abc import Iterable
 
 from langchain.docstore.document import Document
 from langchain_core.language_models.chat_models import BaseChatModel

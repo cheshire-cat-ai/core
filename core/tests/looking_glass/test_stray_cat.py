@@ -123,7 +123,7 @@ def test_stray_recall_all_memories(stray, client):
     with open(file_path, "rb") as f:
         files = {"file": (file_name, f, content_type)}
 
-        response = client.post("/rabbithole/", files=files)
+        _ = client.post("/rabbithole/", files=files)
 
     memories = stray.recall("", "declarative", k=None)
 
