@@ -134,7 +134,7 @@ class StrayCat:
     def recall(
             self,
             query: str | List[float],
-            collection: str,
+            collection: MEMORY_COLLECTION,
             k: int | None = 5,
             threshold: int | None = None,
             metadata: Dict | None = None,
