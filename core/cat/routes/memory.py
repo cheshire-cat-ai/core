@@ -5,6 +5,7 @@ from fastapi import Query, Request, APIRouter, HTTPException, Depends
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 
+import time
 
 class MemoryPointBase(BaseModel):
     content: str
@@ -179,6 +180,10 @@ async def create_memory_point(
     # ensure source is set
     if not point.metadata.get("source"):
         point.metadata["source"] = stray.user_id # this will do also for declarative memory
+
+    # ensure when is set
+    if not point.metadata.get("when"):
+        point.metadata["when"] = time.time() #if when is not in the metadata set the current time
 
     # create point
     qdrant_point = stray.memory.vectors.collections[collection_id].add_point(
