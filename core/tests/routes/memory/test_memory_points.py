@@ -1,6 +1,6 @@
 import pytest
 from tests.utils import send_websocket_message, get_declarative_memory_contents
-
+from tests.conftest import FAKE_TIMESTAMP
 
 def test_point_deleted(client):
     # send websocket message
@@ -129,7 +129,7 @@ def create_point_wrong_collection(client):
 
 
 @pytest.mark.parametrize("collection", ["episodic", "declarative"])
-def test_create_memory_point(client, collection):
+def test_create_memory_point(client, patch_time_now, collection):
 
     # create a point
     content = "Hello dear"
@@ -144,7 +144,7 @@ def test_create_memory_point(client, collection):
     assert res.status_code == 200
     json = res.json()
     assert json["content"] == content
-    expected_metadata = {"source": "user", **metadata}
+    expected_metadata = {"when":FAKE_TIMESTAMP,"source": "user", **metadata}
     assert json["metadata"] == expected_metadata
     assert "id" in json
     assert "vector" in json
