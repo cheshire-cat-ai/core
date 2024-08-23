@@ -21,8 +21,9 @@ from cat.mad_hatter.plugin import Plugin
 from cat.main import cheshire_cat_api
 from tests.utils import create_mock_plugin_zip
 
+import time
 
-
+FAKE_TIMESTAMP = 1705855981
 
 # substitute classes' methods where necessary for testing purposes
 def mock_classes(monkeypatch):
@@ -149,3 +150,12 @@ def stray(client):
 def apply_warning_filters():
     # ignore deprecation warnings due to langchain not updating to pydantic v2
     warnings.filterwarnings("ignore", category=PydanticDeprecatedSince20)
+
+#fixture for mock time.time function
+@pytest.fixture
+def patch_time_now(monkeypatch):
+
+    def mytime():
+        return FAKE_TIMESTAMP
+
+    monkeypatch.setattr(time, 'time', mytime)
