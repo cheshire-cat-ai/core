@@ -277,3 +277,136 @@ async def get_conversation_history(
     """Get the specified user's conversation history from working memory"""
 
     return {"history": stray.working_memory.history}
+
+# GET all the points from a single collection
+@router.get("/collections/{collection_id}/points")
+async def get_collections_points(
+    request: Request,
+    collection_id: str,
+    limit:int=Query(
+        default=100,
+        description="How many points to return"
+    ),
+    offset:str = Query(
+        default=None,
+        description="If provided (or not empty string) - skip points with ids less than given `offset`"
+    ),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+) -> Dict:
+    """Retrieve all the points from a single collection
+
+    
+    Example
+    ----------
+    ```
+    collection = "declarative"
+    res = requests.get(
+        f"http://localhost:1865/memory/collections/{collection}/points",
+    )
+    json = res.json()
+    points = json["points"]
+
+    for point in points:
+        payload = point["payload"]
+        vector = point["vector"]
+        print(payload)
+        print(vector)
+    ```
+
+    Example using offset
+    ----------
+    ```
+    # get all the points with limit 10
+    limit = 10
+    next_offset = ""
+    collection = "declarative"
+
+    while True:
+        res = requests.get(
+            f"http://localhost:1865/memory/collections/{collection}/points?limit={limit}&offset={next_offset}",
+        )
+        json = res.json()
+        points = json["points"]
+        next_offset = json["next_offset"]
+
+        for point in points:
+            payload = point["payload"]
+            vector = point["vector"]
+            print(payload)
+            print(vector)
+        
+        if next_offset is None:
+            break
+    ```
+    """
+
+    # check if collection exists
+    collections = list(stray.memory.vectors.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400, detail={"error": f"Collection does not exist. Avaliable collections: {collections}"}
+        )
+    
+    # if offset is empty string set to null
+    if offset == "":
+        offset = None
+    
+    memory_collection = stray.memory.vectors.collections[collection_id]
+    points, next_offset = memory_collection.get_all_points_with_offset(limit=limit,offset=offset)
+    
+    return {
+        "points":points,
+        "next_offset":next_offset
+    }
+
+
+# GET all the points from all the collections
+@router.get("/collections/points")
+async def get_all_points(
+    request: Request,
+    limit:int=Query(
+        default=100,
+        description="How many points to return"
+    ),
+    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
+) -> Dict:
+    """Retrieve all the points from all the collections
+
+
+    Example
+    ----------
+    ```
+    # get all the points no limit, by default is 100
+    res = requests.get(
+        f"http://localhost:1865/memory/collections/points",
+    )
+    json = res.json()
+
+    for collection in json:
+        points = json[collection]["points"]
+        print(f"Collection {collection}")
+
+        for point in points:
+            payload = point["payload"]
+            vector = point["vector"]
+            print(payload)
+            print(vector)         
+    ```
+
+    """
+
+    # check if collection exists
+    result = {}
+
+    collections = list(stray.memory.vectors.collections.keys())
+    for collection in collections:
+        #for each collection fetch all the points and next offset
+
+        memory_collection = stray.memory.vectors.collections[collection]
+        
+        points, _ = memory_collection.get_all_points_with_offset(limit=limit)
+        result[collection] = {
+            "points":points
+        }
+
+    return result

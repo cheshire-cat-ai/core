@@ -1,6 +1,7 @@
 import pytest
 from tests.utils import send_websocket_message, get_declarative_memory_contents
 from tests.conftest import FAKE_TIMESTAMP
+import time
 
 def test_point_deleted(client):
     # send websocket message
@@ -160,5 +161,150 @@ def test_create_memory_point(client, patch_time_now, collection):
     memory = json["vectors"]["collections"][collection][0]
     assert memory["page_content"] == content
     assert memory["metadata"] == expected_metadata
+
+
+# utility function that validates a list of points against an expected points payload
+def _check_points(points, expected_points_payload):
+    # check length
+    assert len(points) == len(expected_points_payload)
+    # check all the points contains id and vector
+    for point in points:
+        assert "id" in point
+        assert "vector" in point 
+    
+    # check points payload
+    points_payloads = [p["payload"] for p in points]
+    # sort the list and compare payload
+    points_payloads.sort(key=lambda p:p["page_content"])
+    expected_points_payload.sort(key=lambda p:p["page_content"])
+    assert points_payloads == expected_points_payload
+
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_get_collection_points(client, patch_time_now, collection):
+    # create 100 points
+    n_points = 100
+    new_points = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}"}} for i in range(n_points) ]
+
+    # Add points
+    for req_json in new_points:
+        res = client.post(
+            f"/memory/collections/{collection}/points", json=req_json
+        )
+        assert res.status_code == 200
+
+    # get all the points no limit, by default is 100
+    res = client.get(
+        f"/memory/collections/{collection}/points",
+    )
+    assert res.status_code == 200
+    json = res.json()
+
+    points = json["points"]
+    offset = json["next_offset"]
+
+    assert offset is None # the result should contains all the points so no offset
+
+    expected_payloads = [
+        {"page_content":p["content"],
+         "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        } for p in new_points
+    ]
+    _check_points(points, expected_payloads)
+
+
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_get_collection_points_offset(client, patch_time_now, collection):
+    # create 200 points
+    n_points = 200
+    new_points = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}"}} for i in range(n_points) ]
+
+    # Add points
+    for req_json in new_points:
+        res = client.post(
+            f"/memory/collections/{collection}/points", json=req_json
+        )
+        assert res.status_code == 200
+
+    # get all the points with limit 10
+    limit = 10
+    next_offset = ""
+    all_points = []
+
+    while True:
+        res = client.get(
+            f"/memory/collections/{collection}/points?limit={limit}&offset={next_offset}",
+        )
+        assert res.status_code == 200
+        json = res.json()
+        points = json["points"]
+        next_offset = json["next_offset"]
+        assert len(points) == limit
+
+        for point in points:
+            all_points.append(point)
+
+        if next_offset is None: # break if no new data
+            break
+    
+    # create the expected payloads for all the points
+    expected_payloads = [
+        {"page_content":p["content"],
+         "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        } for p in new_points
+    ]
+    _check_points(all_points, expected_payloads)
+
+
+def test_get_all_points(client,patch_time_now):
+
+    # create 50 points for episodic
+    new_points_episodic = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}_episodic"}} for i in range(50) ]
+
+    # create 100 points for declarative
+    new_points_declarative = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}_declarative"}} for i in range(100) ]
+
+    for point in new_points_episodic:
+        res = client.post(
+            f"/memory/collections/episodic/points", json=point
+        )
+        assert res.status_code == 200
+
+    for point in new_points_declarative:
+        res = client.post(
+            f"/memory/collections/declarative/points", json=point
+        )
+        assert res.status_code == 200
+
+    # get the points from all the collection with default limit (100 points)
+    res = client.get(
+        f"/memory/collections/points",
+    )
+    assert res.status_code == 200
+    json = res.json()
+
+    assert "episodic" in json
+    assert "declarative" in json
+
+    #check episodic points
+    episodic_points = json["episodic"]["points"]
+    # create the expected payloads for all the points
+    expected_episodic_payloads = [
+        {"page_content":p["content"],
+            "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        } for p in new_points_episodic
+    ]
+    _check_points(episodic_points, expected_episodic_payloads)
+
+    # check declarative points
+    declarative_points = json["declarative"]["points"]
+    # create the expected payloads for all the points
+    expected_declarative_payloads = [
+        {"page_content":p["content"],
+            "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        } for p in new_points_declarative
+    ]
+    _check_points(declarative_points, expected_declarative_payloads)
 
 
