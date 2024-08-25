@@ -267,19 +267,19 @@ def test_get_all_points(client,patch_time_now):
 
     for point in new_points_episodic:
         res = client.post(
-            f"/memory/collections/episodic/points", json=point
+            "/memory/collections/episodic/points", json=point
         )
         assert res.status_code == 200
 
     for point in new_points_declarative:
         res = client.post(
-            f"/memory/collections/declarative/points", json=point
+            "/memory/collections/declarative/points", json=point
         )
         assert res.status_code == 200
 
     # get the points from all the collection with default limit (100 points)
     res = client.get(
-        f"/memory/collections/points",
+        "/memory/collections/points",
     )
     assert res.status_code == 200
     json = res.json()
