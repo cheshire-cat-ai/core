@@ -1,7 +1,6 @@
 import pytest
 from tests.utils import send_websocket_message, get_declarative_memory_contents
 from tests.conftest import FAKE_TIMESTAMP
-import time
 
 def test_point_deleted(client):
     # send websocket message
