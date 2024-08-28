@@ -1,19 +1,27 @@
 from typing import Dict, List
 from pydantic import BaseModel
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
-
+from qdrant_client import QdrantClient
+from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
+
+
+from cat.log import log
+from cat.memory.vector_memory import VectorMemory
+from cat.looking_glass.stray_cat import StrayCat
 
 
 class MemoryPointBase(BaseModel):
     content: str
     metadata: Dict = {}
 
+
 # TODOV2: annotate all endpoints and align internal usage (no qdrant PointStruct, no langchain Document)
 class MemoryPoint(MemoryPointBase):
     id: str
     vector: List[float]
+
 
 router = APIRouter()
 
@@ -76,19 +84,19 @@ async def recall_memories_from_text(
 # GET collection list with some metadata
 @router.get("/collections")
 async def get_collections(
-    request: Request, stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
+    request: Request, stray: StrayCat=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
 ) -> Dict:
     """Get list of available collections"""
-
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
+    
+    vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
-
+    qdrant_client: QdrantClient = vector_memory.vector_db
+    
     collections_metadata = []
 
     for c in collections:
-        coll_meta = vector_memory.vector_db.get_collection(c)
-        collections_metadata += [{"name": c, "vectors_count": coll_meta.vectors_count}]
+        coll_meta = qdrant_client.get_collection(c)
+        collections_metadata += [{"name": c, "vectors_count": coll_meta.points_count}]
 
     return {"collections": collections_metadata}
 
@@ -101,15 +109,16 @@ async def wipe_collections(
 ) -> Dict:
     """Delete and create all collections"""
 
-    ccat = request.app.state.ccat
-    collections = list(ccat.memory.vectors.collections.keys())
-    vector_memory = ccat.memory.vectors
+    vector_memory: VectorMemory = stray.memory.vectors
+    collections = list(vector_memory.collections.keys())
+    qdrant_client: QdrantClient = vector_memory.vector_db
 
     to_return = {}
     for c in collections:
-        ret = vector_memory.vector_db.delete_collection(collection_name=c)
+        ret = qdrant_client.delete_collection(collection_name=c)
         to_return[c] = ret
-
+    
+    ccat: CheshireCat = request.app.state.ccat
     ccat.load_memory()  # recreate the long term memories
     ccat.mad_hatter.find_plugins()
 
@@ -127,11 +136,10 @@ async def wipe_single_collection(
 ) -> Dict:
     """Delete and recreate a collection"""
 
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
-
-    # check if collection exists
+    vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
+    qdrant_client: QdrantClient = vector_memory.vector_db
+    
     if collection_id not in collections:
         raise HTTPException(
             status_code=400, detail={"error": "Collection does not exist."}
@@ -139,9 +147,10 @@ async def wipe_single_collection(
 
     to_return = {}
 
-    ret = vector_memory.vector_db.delete_collection(collection_name=collection_id)
+    ret = qdrant_client.delete_collection(collection_name=collection_id)
     to_return[collection_id] = ret
 
+    ccat: CheshireCat = request.app.state.ccat
     ccat.load_memory()  # recreate the long term memories
     ccat.mad_hatter.find_plugins()
 
@@ -166,33 +175,34 @@ async def create_memory_point(
             status_code=400, detail={"error": "Procedural memory is read-only."}
         )
 
-    # check if collection exists
-    collections = list(stray.memory.vectors.collections.keys())
+    vector_memory: VectorMemory = stray.memory.vectors
+    collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
             status_code=400, detail={"error": "Collection does not exist."}
         )
-    
+
     # embed content
     embedding = stray.embedder.embed_query(point.content)
-    
+
     # ensure source is set
     if not point.metadata.get("source"):
-        point.metadata["source"] = stray.user_id # this will do also for declarative memory
+        point.metadata["source"] = (
+            stray.user_id
+        )  # this will do also for declarative memory
 
     # create point
-    qdrant_point = stray.memory.vectors.collections[collection_id].add_point(
-        content=point.content,
-        vector=embedding,
-        metadata=point.metadata
+    qdrant_point = vector_memory.collections[collection_id].add_point(
+        content=point.content, vector=embedding, metadata=point.metadata
     )
 
     return MemoryPoint(
         metadata=qdrant_point.payload["metadata"],
         content=qdrant_point.payload["page_content"],
         vector=qdrant_point.vector,
-        id=qdrant_point.id
+        id=qdrant_point.id,
     )
+
 
 # DELETE memories
 @router.delete("/collections/{collection_id}/points/{point_id}")
@@ -204,8 +214,9 @@ async def delete_memory_point(
 ) -> Dict:
     """Delete a specific point in memory"""
 
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
+    vector_memory: VectorMemory = stray.memory.vectors
+    collections = list(vector_memory.collections.keys())
+    qdrant_client: QdrantClient = vector_memory.vector_db
 
     # check if collection exists
     collections = list(vector_memory.collections.keys())
@@ -237,9 +248,8 @@ async def delete_memory_points_by_metadata(
 ) -> Dict:
     """Delete points in memory by filter"""
 
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
-
+    vector_memory: VectorMemory = stray.memory.vectors
+    
     # delete points
     vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
 
