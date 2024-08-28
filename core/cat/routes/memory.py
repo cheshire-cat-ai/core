@@ -2,10 +2,12 @@ from typing import Dict, List
 from pydantic import BaseModel
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 from qdrant_client import QdrantClient
+import time
+
+
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
-
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
 
