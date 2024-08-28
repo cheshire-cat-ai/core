@@ -6,8 +6,6 @@ from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 
-
-from cat.log import log
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
 
@@ -216,7 +214,6 @@ async def delete_memory_point(
 
     vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
-    qdrant_client: QdrantClient = vector_memory.vector_db
 
     # check if collection exists
     collections = list(vector_memory.collections.keys())
