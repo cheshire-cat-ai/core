@@ -102,6 +102,14 @@ class CoreAuthHandler(BaseAuthHandler):
         http_api_key = get_env("CCAT_API_KEY")
         ws_api_key = get_env("CCAT_API_KEY_WS")
 
+        # no api keys -> everyone has access
+        if not http_api_key and not ws_api_key:
+            return AuthUserInfo(
+                id=user_id,
+                name=user_id,
+                permissions=get_base_permissions()
+            )
+
         # TODOAUTH: should we consider the user_id or just give
         #    admin permissions to all users with the right api keys?
 
@@ -114,7 +122,7 @@ class CoreAuthHandler(BaseAuthHandler):
             )
 
         # any http endpoint
-        if api_key == http_api_key:
+        if http_api_key and api_key == http_api_key:
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,

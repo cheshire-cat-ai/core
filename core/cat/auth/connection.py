@@ -71,7 +71,7 @@ class ConnectionAuth(ABC):
 
 class HTTPAuth(ConnectionAuth):
 
-    async def extract_credentials(self, connection: Request) -> Tuple[str] | None:
+    async def extract_credentials(self, connection: Request) -> Tuple[str, str] | None:
         """
         Extract user_id and token/key from headers
         """
@@ -119,7 +119,7 @@ class HTTPAuth(ConnectionAuth):
 
 class WebSocketAuth(ConnectionAuth):
 
-    async def extract_credentials(self, connection: WebSocket) -> Tuple[str] | None:
+    async def extract_credentials(self, connection: WebSocket) -> Tuple[str, str] | None:
         """
         Extract user_id from WebSocket path params
         Extract token from WebSocket query string
@@ -165,7 +165,7 @@ class WebSocketAuth(ConnectionAuth):
 
 class CoreFrontendAuth(HTTPAuth):
 
-    async def extract_credentials(self, connection: Request) -> Tuple[str] | None:
+    async def extract_credentials(self, connection: Request) -> Tuple[str, str] | None:
         """
         Extract user_id from cookie
         """
