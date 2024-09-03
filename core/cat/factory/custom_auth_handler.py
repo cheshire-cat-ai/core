@@ -93,45 +93,53 @@ class CoreAuthHandler(BaseAuthHandler):
         return None
 
     async def authorize_user_from_key(
-        self,
-        user_id: str,
-        api_key: str,
-        auth_resource: AuthResource,
-        auth_permission: AuthPermission,
+            self,
+            user_id: str,
+            api_key: str,
+            auth_resource: AuthResource,
+            auth_permission: AuthPermission,
     ) -> AuthUserInfo | None:
-        http_api_key = get_env("CCAT_API_KEY")
-        ws_api_key = get_env("CCAT_API_KEY_WS")
+        http_key = get_env("CCAT_API_KEY")
+        ws_key = get_env("CCAT_API_KEY_WS")
 
-        # no api keys -> everyone has access
-        if not http_api_key and not ws_api_key:
+        if not http_key and not ws_key:
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,
                 permissions=get_base_permissions()
             )
 
-        # TODOAUTH: should we consider the user_id or just give
-        #    admin permissions to all users with the right api keys?
+        if auth_resource == AuthResource.CONVERSATION:
+            return self._authorize_websocket_key(user_id, api_key, ws_key)
+        else:
+            return self._authorize_http_key(user_id, api_key, http_key)
 
-        # chatting over websocket
-        if auth_resource == AuthResource.CONVERSATION and api_key == ws_api_key:
-            return AuthUserInfo(
-                id=user_id,
-                name=user_id,
-                permissions=get_base_permissions()
-            )
+    def _authorize_http_key(self, user_id: str, api_key: str, http_key: str) -> AuthUserInfo | None:
 
-        # any http endpoint
-        if http_api_key and api_key == http_api_key:
+        # HTTP API key match -> allow access with full permissions
+        if api_key == http_key:
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,
                 permissions=get_full_permissions()
             )
 
-        # do not pass
+        # No match -> deny access
         return None
-    
+
+    def _authorize_websocket_key(self, user_id: str, api_key: str, ws_key: str) -> AuthUserInfo | None:
+
+        # WebSocket API key match -> allow access with base permissions
+        if api_key == ws_key:
+            return AuthUserInfo(
+                id=user_id,
+                name=user_id,
+                permissions=get_base_permissions()
+            )
+
+        # No match -> deny access
+        return None
+
     async def issue_jwt(self, username: str, password: str) -> str | None:
         # authenticate local user credentials and return a JWT token
 
