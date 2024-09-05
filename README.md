@@ -126,13 +126,13 @@ class PizzaForm(CatForm):
 - 🐋 Production ready - 100% [dockerized](https://docs.docker.com/get-docker/)
 - 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
  
-We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./readme/CODE-OF-ETHICS.md). 
+We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./CODE-OF-ETHICS.md). 
 
 
 ## Roadmap & Contributing
 
-Detailed roadmap is [here](./readme/ROADMAP.md).  
-Send your pull request to the `develop` branch. Here is a [full guide to contributing](./readme/CONTRIBUTING.md).
+Detailed roadmap is [here](./ROADMAP.md).  
+Send your pull request to the `develop` branch. Here is a [full guide to contributing](./CONTRIBUTING.md).
 
 Join our [community on Discord](https://discord.gg/bHX5sNFCYU) and give the project a star ⭐!
 Thanks again!🙏
