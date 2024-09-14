@@ -88,6 +88,7 @@ class StrayCat:
         """Send a message via websocket.
 
         This method is useful for sending a message via websocket directly without passing through the LLM
+        In case there is no connection the message is skipped and a warning is logged
 
         Parameters
         ----------
@@ -116,6 +117,14 @@ class StrayCat:
             self.__send_ws_json({"type": msg_type, "content": content})
 
     def send_chat_message(self, message: Union[str, CatMessage], save=False):
+        """Sends a chat message to the user using the active WebSocket connection.
+
+        In case there is no connection the message is skipped and a warning is logged
+
+        Args:
+            message (Union[str, CatMessage]): message to send
+            save (bool, optional): Save the message in the conversation history. Defaults to False.
+        """
         if self.__ws is None:
             log.warning(f"No websocket connection is open for user {self.user_id}")
             return
@@ -132,9 +141,23 @@ class StrayCat:
         self.__send_ws_json(message.model_dump())
 
     def send_notification(self, content: str):
+        """Sends a notification message to the user using the active WebSocket connection.
+
+        In case there is no connection the message is skipped and a warning is logged
+
+        Args:
+            content (str): message to send
+        """
         self.send_ws_message(content=content, msg_type="notification")
 
     def send_error(self, error: Union[str, Exception]):
+        """Sends an error message to the user using the active WebSocket connection.
+
+        In case there is no connection the message is skipped and a warning is logged
+
+        Args:
+            error (Union[str, Exception]): message to send
+        """        
         if self.__ws is None:
             log.warning(f"No websocket connection is open for user {self.user_id}")
             return
@@ -317,7 +340,6 @@ class StrayCat:
         )
 
         return output
-
 
     async def __call__(self, message_dict):
         """Call the Cat instance.
