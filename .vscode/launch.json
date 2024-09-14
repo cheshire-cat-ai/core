@@ -7,7 +7,7 @@
     "configurations": [
         {
             "name": "Python: Remote Attach to Cat",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
