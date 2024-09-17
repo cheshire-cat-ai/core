@@ -29,7 +29,7 @@ class ConnectionAuth(ABC):
             self,
             resource: AuthResource,
             permission: AuthPermission):
-        
+
         self.resource = resource
         self.permission = permission
 
@@ -67,7 +67,7 @@ class ConnectionAuth(ABC):
     @abstractmethod
     def not_allowed(self, connection: Request | WebSocket):
         pass
-        
+
 
 class HTTPAuth(ConnectionAuth):
 
@@ -92,7 +92,7 @@ class HTTPAuth(ConnectionAuth):
                     "Deprecation Warning: `access_token` header will not be supported in v2."
                     "Pass your token/key using the `Authorization: Bearer <token>` format."
                 )
-        
+
         # some clients may send an empty string instead of just not setting the header
         if token == "":
             token = None
@@ -110,12 +110,12 @@ class HTTPAuth(ConnectionAuth):
                 user_id=user.name, user_data=user, main_loop=event_loop
             )
         return strays[user.id]
-    
+
     def not_allowed(self, connection: Request):
         raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})
-    
 
-    
+
+
 
 class WebSocketAuth(ConnectionAuth):
 
@@ -129,20 +129,19 @@ class WebSocketAuth(ConnectionAuth):
         # TODOAUTH: is there a more secure way to pass the token over websocket?
         #   Headers do not work from the browser
         token = connection.query_params.get("token", None)
-        
+
         return user_id, token
-    
+
 
     async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
         strays = connection.app.state.strays
 
         if user.id in strays.keys():
             stray = strays[user.id]
-            # Close previus ws connection
-            if stray._StrayCat__ws:
-                await stray._StrayCat__ws.close()
+            await stray.close_connection()
+
             # Set new ws connection
-            stray._StrayCat__ws = connection
+            stray.reset_connection(connection)
             log.info(
                 f"New websocket connection for user '{user.id}', the old one has been closed."
             )
@@ -157,7 +156,7 @@ class WebSocketAuth(ConnectionAuth):
             )
             strays[user.id] = stray
             return stray
-        
+
     def not_allowed(self, connection: WebSocket):
         raise WebSocketException(code=1004, reason="Invalid Credentials")
 
@@ -177,7 +176,7 @@ class CoreFrontendAuth(HTTPAuth):
             self.not_allowed(connection)
 
         return "user", token
-    
+
     def not_allowed(self, connection: Request):
         referer_query = urlencode({"referer": connection.url.path})
         raise HTTPException(

@@ -19,6 +19,7 @@ from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents import AgentOutput
 from cat import utils
+from websockets.exceptions import ConnectionClosedOK
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
@@ -48,11 +49,19 @@ class StrayCat:
         return f"StrayCat(user_id={self.user_id})"
 
     def __send_ws_json(self, data: Any):
-        # Run the corutine in the main event loop in the main thread
-        # and wait for the result
-        asyncio.run_coroutine_threadsafe(
-            self.__ws.send_json(data), loop=self.__main_loop
-        ).result()
+        try:
+            # Run the corutine in the main event loop in the main thread
+            # and wait for the result
+            asyncio.run_coroutine_threadsafe(
+                self.__ws.send_json(data), loop=self.__main_loop
+            ).result()
+
+        except ConnectionClosedOK as ex:
+            if ex.code == 1000:
+                log.warning(ex)
+                if self.__ws:
+                    del self.__ws
+                    self.__ws = None
 
     def __build_why(self) -> MessageWhy:
         # build data structure for output (response and why with memories)
@@ -195,7 +204,7 @@ class StrayCat:
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
         self.working_memory.recall_query = recall_query
-        
+
         # keep track of embedder model usage
         self.working_memory.model_interactions.append(
             EmbedderModelInteraction(
@@ -292,13 +301,13 @@ class StrayCat:
         caller = utils.get_caller_info()
         callbacks.append(ModelInteractionHandler(self, caller or "StrayCat"))
 
-        
+
 
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
                 SystemMessage(content=prompt)
-                # TODO: add here optional convo history passed to the method, 
+                # TODO: add here optional convo history passed to the method,
                 #  or taken from working memory
             ]
         )
@@ -574,6 +583,20 @@ Allowed classes are:
                 )
 
         return langchain_chat_history
+
+    async def close_connection(self):
+        if self.__ws:
+            try:
+                await self.__ws.close()
+            except RuntimeError as ex:
+                log.warning(ex)
+                if self.__ws:
+                    del self.__ws
+                    self.__ws = None
+
+    def reset_connection(self, connection):
+        """Reset the connection to the API service."""
+        self.__ws = connection
 
     @property
     def user_id(self):
