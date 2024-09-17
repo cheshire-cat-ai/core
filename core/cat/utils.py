@@ -310,3 +310,17 @@ class BaseModelDict(BaseModel):
 
     def __contains__(self, key):
         return key in self.keys()
+
+
+def delete_collections(ccat: CheshireCat) -> Dict[str, bool]:
+    """Delete all collections"""
+
+    collections = list(ccat.memory.vectors.collections.keys())
+    vector_memory = ccat.memory.vectors
+
+    deleted = {}
+    for c in collections:
+        ret = vector_memory.vector_db.delete_collection(collection_name=c)
+        deleted[c] = ret
+
+    return deleted

@@ -4,6 +4,7 @@ from fastapi import Query, Request, APIRouter, HTTPException, Depends
 
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
+from cat import utils
 
 import time
 
@@ -103,19 +104,14 @@ async def wipe_collections(
     """Delete and create all collections"""
 
     ccat = request.app.state.ccat
-    collections = list(ccat.memory.vectors.collections.keys())
-    vector_memory = ccat.memory.vectors
 
-    to_return = {}
-    for c in collections:
-        ret = vector_memory.vector_db.delete_collection(collection_name=c)
-        to_return[c] = ret
+    deleted_memories = utils.delete_collections(ccat)
 
     ccat.load_memory()  # recreate the long term memories
     ccat.mad_hatter.find_plugins()
 
     return {
-        "deleted": to_return,
+        "deleted": deleted_memories,
     }
 
 
