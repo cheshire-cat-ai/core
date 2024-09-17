@@ -1,9 +1,14 @@
+import os
+import json
+
+from cat import utils
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.auth.connection import HTTPAuth
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, Request
 from cat.db import models
 from cat.db import crud
-
+from cat.env import get_env
+from cat.looking_glass.cheshire_cat import CheshireCat
 
 router = APIRouter()
 
@@ -102,3 +107,40 @@ def delete_setting(
     crud.delete_setting_by_id(settingId)
 
     return {"deleted": settingId}
+
+
+@router.post("/factory-reset")
+def factory_reset(
+    request: Request,
+    stray=Depends(HTTPAuth(AuthResource.SETTINGS, AuthPermission.WRITE)),
+):
+    """Delete Cat's memory and metadata.json file (settings db).
+    A 'soft restart' is performed recreating the Cat instance and the metadata.json file.
+    Plugins are not affected but need to be switched on.
+    """
+
+    metadata_file = get_env("CCAT_METADATA_FILE")
+    metadata_content = {}
+
+    try:
+        if os.path.exists(metadata_file):
+            with open(metadata_file, 'r') as file:
+                metadata_content = json.load(file)
+
+            os.remove(metadata_file)
+
+        deleted_memories = utils.delete_collections(request.app.state.ccat)
+
+        utils.singleton.instances.clear()
+        request.app.state.strays.clear()
+
+        request.app.state.ccat = CheshireCat()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": f"An unexpected error occurred during factory reset: {str(e)}",
+            },
+        )
+
+    return {"deleted_metadata": metadata_content, "deleted_memories": deleted_memories}
