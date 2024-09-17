@@ -1,5 +1,11 @@
 """Various utiles used from the projects."""
 
+# Avoids circular import issues for type hints
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from cat.looking_glass.cheshire_cat import CheshireCat
+
 import os
 import traceback
 import inspect
