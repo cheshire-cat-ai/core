@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from typing import Literal
 from pytz import utc
 import jwt
 
@@ -21,6 +22,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
 
     async def authorize_user_from_credential(
         self,
+        protocol: Literal["http", "websocket"],
         credential: str,
         auth_resource: AuthResource,
         auth_permission: AuthPermission,
@@ -36,7 +38,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
         else:
             # API_KEY auth
             return await self.authorize_user_from_key(
-                user_id, credential, auth_resource, auth_permission
+                protocol, user_id, credential, auth_resource, auth_permission
             )
 
     @abstractmethod
@@ -49,6 +51,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
     @abstractmethod
     async def authorize_user_from_key(
         self,
+        protocol: Literal["http", "websocket"],
         user_id: str,
         api_key: str,
         auth_resource: AuthResource,
@@ -94,6 +97,7 @@ class CoreAuthHandler(BaseAuthHandler):
 
     async def authorize_user_from_key(
             self,
+            protocol: Literal["http", "websocket"],
             user_id: str,
             api_key: str,
             auth_resource: AuthResource,
@@ -106,10 +110,10 @@ class CoreAuthHandler(BaseAuthHandler):
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,
-                permissions=get_base_permissions()
+                permissions=get_full_permissions()
             )
 
-        if auth_resource == AuthResource.CONVERSATION:
+        if protocol == "websocket":
             return self._authorize_websocket_key(user_id, api_key, ws_key)
         else:
             return self._authorize_http_key(user_id, api_key, http_key)

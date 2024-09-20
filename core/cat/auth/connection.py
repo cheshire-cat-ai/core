@@ -38,6 +38,8 @@ class ConnectionAuth(ABC):
         connection: HTTPConnection # Request | WebSocket,
     ) -> StrayCat:
 
+        # get protocol from Starlette request
+        protocol = connection.scope.get('type')
         # extract credentials (user_id, token_or_key) from connection
         user_id, credential = await self.extract_credentials(connection)
         auth_handlers = [
@@ -48,7 +50,7 @@ class ConnectionAuth(ABC):
         ]
         for ah in auth_handlers:
             user: AuthUserInfo = await ah.authorize_user_from_credential(
-                credential, self.resource, self.permission, user_id=user_id
+                protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
                 return await self.get_user_stray(user, connection)
