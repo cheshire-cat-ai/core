@@ -1,7 +1,6 @@
 from typing import Dict, List
 from pydantic import BaseModel
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
-from qdrant_client import QdrantClient
 import time
 
 
@@ -32,22 +31,21 @@ async def recall_memories_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Search k memories similar to given text."""
 
-    ccat = request.app.state.ccat
-    vector_memory = ccat.memory.vectors
-
     # Embed the query to plot it in the Memory page
-    query_embedding = ccat.embedder.embed_query(text)
+    query_embedding = stray.embedder.embed_query(text)
     query = {
         "text": text,
         "vector": query_embedding,
     }
 
     # Loop over collections and retrieve nearby memories
-    collections = list(vector_memory.collections.keys())
+    collections = list(
+        stray.memory.vectors.collections.keys()
+    )
     recalled = {}
     for c in collections:
         # only episodic collection has users
@@ -57,7 +55,7 @@ async def recall_memories_from_text(
         else:
             user_filter = None
 
-        memories = vector_memory.collections[c].recall_memories_from_embedding(
+        memories = stray.memory.vectors.collections[c].recall_memories_from_embedding(
             query_embedding, k=k, metadata=user_filter
         )
 
@@ -74,7 +72,7 @@ async def recall_memories_from_text(
         "query": query,
         "vectors": {
             "embedder": str(
-                ccat.embedder.__class__.__name__
+                stray.embedder.__class__.__name__
             ),  # TODO: should be the config class name
             "collections": recalled,
         },
@@ -84,19 +82,21 @@ async def recall_memories_from_text(
 # GET collection list with some metadata
 @router.get("/collections")
 async def get_collections(
-    request: Request, stray: StrayCat=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
+    request: Request,
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
 ) -> Dict:
     """Get list of available collections"""
     
     vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
-    qdrant_client: QdrantClient = vector_memory.vector_db
     
     collections_metadata = []
-
     for c in collections:
-        coll_meta = qdrant_client.get_collection(c)
-        collections_metadata += [{"name": c, "vectors_count": coll_meta.points_count}]
+        coll_meta = vector_memory.get_collection(c)
+        collections_metadata.append({
+            "name": c,
+            "vectors_count": coll_meta.points_count
+        })
 
     return {"collections": collections_metadata}
 
@@ -105,17 +105,16 @@ async def get_collections(
 @router.delete("/collections")
 async def wipe_collections(
     request: Request,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and create all collections"""
 
     vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
-    qdrant_client: QdrantClient = vector_memory.vector_db
 
     to_return = {}
     for c in collections:
-        ret = qdrant_client.delete_collection(collection_name=c)
+        ret = vector_memory.delete_collection(c)
         to_return[c] = ret
     
     ccat: CheshireCat = request.app.state.ccat
@@ -132,13 +131,12 @@ async def wipe_collections(
 async def wipe_single_collection(
     request: Request,
     collection_id: str,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete and recreate a collection"""
 
     vector_memory: VectorMemory = stray.memory.vectors
     collections = list(vector_memory.collections.keys())
-    qdrant_client: QdrantClient = vector_memory.vector_db
     
     if collection_id not in collections:
         raise HTTPException(
@@ -146,8 +144,7 @@ async def wipe_single_collection(
         )
 
     to_return = {}
-
-    ret = qdrant_client.delete_collection(collection_name=collection_id)
+    ret = vector_memory.delete_collection(collection_id)
     to_return[collection_id] = ret
 
     ccat: CheshireCat = request.app.state.ccat
@@ -165,7 +162,7 @@ async def create_memory_point(
     request: Request,
     collection_id: str,
     point: MemoryPointBase,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
 ) -> MemoryPoint:
     """Create a point in memory"""
 
@@ -208,13 +205,12 @@ async def create_memory_point(
     )
 
 
-# DELETE memories
 @router.delete("/collections/{collection_id}/points/{point_id}")
 async def delete_memory_point(
     request: Request,
     collection_id: str,
     point_id: str,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete a specific point in memory"""
 
@@ -229,8 +225,7 @@ async def delete_memory_point(
         )
 
     # check if point exists
-    points = vector_memory.vector_db.retrieve(
-        collection_name=collection_id,
+    points = vector_memory.collections[collection_id].get_points(
         ids=[point_id],
     )
     if points == []:
@@ -247,7 +242,7 @@ async def delete_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete points in memory by filter"""
 
@@ -265,7 +260,7 @@ async def delete_memory_points_by_metadata(
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
@@ -280,7 +275,7 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
@@ -291,15 +286,15 @@ async def get_conversation_history(
 async def get_collections_points(
     request: Request,
     collection_id: str,
-    limit:int=Query(
+    limit: int=Query(
         default=100,
         description="How many points to return"
     ),
-    offset:str = Query(
+    offset: str = Query(
         default=None,
         description="If provided (or not empty string) - skip points with ids less than given `offset`"
     ),
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Retrieve all the points from a single collection
 
