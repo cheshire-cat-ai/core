@@ -340,11 +340,23 @@ async def get_collections_points(
     ```
     """
 
+    # do not allow procedural memory reads via network
+    if collection_id == "procedural":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Procedural memory is not readable via API"
+            }
+        )
+
     # check if collection exists
     collections = list(stray.memory.vectors.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
-            status_code=400, detail={"error": f"Collection does not exist. Avaliable collections: {collections}"}
+            status_code=400,
+            detail={
+                "error": "Collection does not exist."
+            }
         )
     
     # if offset is empty string set to null
@@ -352,10 +364,10 @@ async def get_collections_points(
         offset = None
     
     memory_collection = stray.memory.vectors.collections[collection_id]
-    points, next_offset = memory_collection.get_all_points_with_offset(limit=limit,offset=offset)
+    points, next_offset = memory_collection.get_all_points(limit=limit, offset=offset)
     
     return {
-        "points":points,
-        "next_offset":next_offset
+        "points": points,
+        "next_offset": next_offset
     }
 

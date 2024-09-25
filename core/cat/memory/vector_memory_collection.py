@@ -258,22 +258,14 @@ class VectorMemoryCollection:
 
         return langchain_documents_from_points
 
-    # retrieve all the points in the collection
-    def get_all_points(self):
+    # retrieve all the points in the collection with an optional offset and limit.
+    def get_all_points(
+            self,
+            limit: int = 10000,
+            offset: str | None = None
+        ):
+        
         # retrieving the points
-        all_points, _ = self.client.scroll(
-            collection_name=self.collection_name,
-            with_vectors=True,
-            limit=10000,  # yeah, good for now dear :*
-        )
-
-        return all_points
-    
-    # Retrieve a set of points with an optional offset and limit.
-    def get_all_points_with_offset(self, limit:int=10000, offset:str=None):
-        # Retrieve the points and the next offset.
-        # To retrieve the first page set offset equal to None
-
         all_points, next_page_offset = self.client.scroll(
             collection_name=self.collection_name,
             with_vectors=True,
@@ -281,7 +273,7 @@ class VectorMemoryCollection:
             limit=limit # Limit the number of points retrieved to the specified limit.
         )
 
-        return (all_points, next_page_offset)
+        return all_points, next_page_offset
 
     def db_is_remote(self):
         return isinstance(self.client._client, QdrantRemote)

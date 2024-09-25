@@ -161,7 +161,21 @@ def test_create_memory_point(client, patch_time_now, collection):
     assert memory["page_content"] == content
     assert memory["metadata"] == expected_metadata
 
+def test_get_collection_points_wrong_collection(client):
+    
+    # unexisting collection
+    res = client.get(
+        f"/memory/collections/unexistent/points",
+    )
+    assert res.status_code == 400
+    assert "Collection does not exist" in res.json()["detail"]["error"]
 
+    # reserved procedural collection
+    res = client.get(
+        "/memory/collections/procedural/points",
+    )
+    assert res.status_code == 400
+    assert "Procedural memory is not readable via API" in res.json()["detail"]["error"]
 
 @pytest.mark.parametrize("collection", ["episodic", "declarative"])
 def test_get_collection_points(client, patch_time_now, collection):
@@ -189,8 +203,13 @@ def test_get_collection_points(client, patch_time_now, collection):
     assert offset is None # the result should contains all the points so no offset
 
     expected_payloads = [
-        {"page_content":p["content"],
-         "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        {
+            "page_content": p["content"],
+            "metadata": {
+                "when":FAKE_TIMESTAMP,
+                "source": "user",
+                **p["metadata"]
+            }  
         } for p in new_points
     ]
 
@@ -203,8 +222,8 @@ def test_get_collection_points(client, patch_time_now, collection):
     # check points payload
     points_payloads = [p["payload"] for p in points]
     # sort the list and compare payload
-    points_payloads.sort(key=lambda p:p["page_content"])
-    expected_payloads.sort(key=lambda p:p["page_content"])
+    points_payloads.sort(key=lambda p: p["page_content"])
+    expected_payloads.sort(key=lambda p: p["page_content"])
     assert points_payloads == expected_payloads
 
 
@@ -245,8 +264,13 @@ def test_get_collection_points_offset(client, patch_time_now, collection):
     
     # create the expected payloads for all the points
     expected_payloads = [
-        {"page_content":p["content"],
-         "metadata":{"when":FAKE_TIMESTAMP,"source": "user", **p["metadata"]}  
+        {
+            "page_content": p["content"],
+            "metadata": {
+                "when":FAKE_TIMESTAMP,
+                "source": "user",
+                **p["metadata"]
+            }  
         } for p in new_points
     ]
 
@@ -259,8 +283,8 @@ def test_get_collection_points_offset(client, patch_time_now, collection):
     # check points payload
     points_payloads = [p["payload"] for p in all_points]
     # sort the list and compare payload
-    points_payloads.sort(key=lambda p:p["page_content"])
-    expected_payloads.sort(key=lambda p:p["page_content"])
+    points_payloads.sort(key=lambda p: p["page_content"])
+    expected_payloads.sort(key=lambda p: p["page_content"])
     assert points_payloads == expected_payloads
 
 

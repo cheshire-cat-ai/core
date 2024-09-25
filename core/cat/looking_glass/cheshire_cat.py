@@ -334,7 +334,7 @@ class CheshireCat:
 
     def embed_procedures(self):
         # Retrieve from vectorDB all procedural embeddings
-        embedded_procedures = self.memory.vectors.procedural.get_all_points()
+        embedded_procedures, _ = self.memory.vectors.procedural.get_all_points()
         embedded_procedures_hashes = self.build_embedded_procedures_hashes(
             embedded_procedures
         )
