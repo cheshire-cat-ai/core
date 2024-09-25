@@ -207,19 +207,19 @@ class VectorMemoryCollection:
         )
         return res
 
-    # delete point in collection
     def delete_points(self, points_ids):
+        """Delete point in collection"""
         res = self.client.delete(
             collection_name=self.collection_name,
             points_selector=points_ids,
         )
         return res
 
-    # retrieve similar memories from embedding
     def recall_memories_from_embedding(
         self, embedding, metadata=None, k=5, threshold=None
     ):
-        # retrieve memories
+        """Retrieve similar memories from embedding"""
+
         memories = self.client.search(
             collection_name=self.collection_name,
             query_vector=embedding,
@@ -257,13 +257,21 @@ class VectorMemoryCollection:
         #    doc.lc_kwargs = None
 
         return langchain_documents_from_points
+    
+    def get_points(self, ids: List[str]):
+        """Get points by their ids."""
+        return self.client.retrieve(
+            collection_name=self.collection_name,
+            ids=ids,
+            with_vectors=True,
+        )
 
-    # retrieve all the points in the collection with an optional offset and limit.
     def get_all_points(
             self,
             limit: int = 10000,
             offset: str | None = None
         ):
+        """Retrieve all the points in the collection with an optional offset and limit."""
         
         # retrieving the points
         all_points, next_page_offset = self.client.scroll(

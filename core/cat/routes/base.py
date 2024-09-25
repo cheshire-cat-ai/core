@@ -11,7 +11,7 @@ router = APIRouter()
 
 # server status
 @router.get("/")
-async def home(
+async def status(
     stray=Depends(HTTPAuth(AuthResource.STATUS, AuthPermission.READ)),
 ) -> Dict:
     """Server status"""
