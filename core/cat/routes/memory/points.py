@@ -138,7 +138,6 @@ async def delete_memory_point(
     collections = list(vector_memory.collections.keys())
 
     # check if collection exists
-    collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
             status_code=400, detail={"error": "Collection does not exist."}
