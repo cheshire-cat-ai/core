@@ -268,6 +268,20 @@ class VectorMemoryCollection:
         )
 
         return all_points
+    
+    # Retrieve a set of points with an optional offset and limit.
+    def get_all_points_with_offset(self, limit:int=10000, offset:str=None):
+        # Retrieve the points and the next offset.
+        # To retrieve the first page set offset equal to None
+
+        all_points, next_page_offset = self.client.scroll(
+            collection_name=self.collection_name,
+            with_vectors=True,
+            offset=offset,  # Start from the given offset, or the beginning if None.
+            limit=limit # Limit the number of points retrieved to the specified limit.
+        )
+
+        return (all_points, next_page_offset)
 
     def db_is_remote(self):
         return isinstance(self.client._client, QdrantRemote)
