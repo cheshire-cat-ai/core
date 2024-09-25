@@ -3,8 +3,6 @@ from pydantic import BaseModel
 from fastapi import Query, Request, APIRouter, HTTPException, Depends
 import time
 
-
-from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.memory.vector_memory import VectorMemory
@@ -27,7 +25,7 @@ router = APIRouter()
 
 # GET memories from recall
 @router.get("/recall")
-async def recall_memories_from_text(
+async def recall_memory_points_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
@@ -77,84 +75,6 @@ async def recall_memories_from_text(
             "collections": recalled,
         },
     }
-
-
-# GET collection list with some metadata
-@router.get("/collections")
-async def get_collections(
-    request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
-) -> Dict:
-    """Get list of available collections"""
-    
-    vector_memory: VectorMemory = stray.memory.vectors
-    collections = list(vector_memory.collections.keys())
-    
-    collections_metadata = []
-    for c in collections:
-        coll_meta = vector_memory.get_collection(c)
-        collections_metadata.append({
-            "name": c,
-            "vectors_count": coll_meta.points_count
-        })
-
-    return {"collections": collections_metadata}
-
-
-# DELETE all collections
-@router.delete("/collections")
-async def wipe_collections(
-    request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
-) -> Dict:
-    """Delete and create all collections"""
-
-    vector_memory: VectorMemory = stray.memory.vectors
-    collections = list(vector_memory.collections.keys())
-
-    to_return = {}
-    for c in collections:
-        ret = vector_memory.delete_collection(c)
-        to_return[c] = ret
-    
-    ccat: CheshireCat = request.app.state.ccat
-    ccat.load_memory()  # recreate the long term memories
-    ccat.mad_hatter.find_plugins()
-
-    return {
-        "deleted": to_return,
-    }
-
-
-# DELETE one collection
-@router.delete("/collections/{collection_id}")
-async def wipe_single_collection(
-    request: Request,
-    collection_id: str,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
-) -> Dict:
-    """Delete and recreate a collection"""
-
-    vector_memory: VectorMemory = stray.memory.vectors
-    collections = list(vector_memory.collections.keys())
-    
-    if collection_id not in collections:
-        raise HTTPException(
-            status_code=400, detail={"error": "Collection does not exist."}
-        )
-
-    to_return = {}
-    ret = vector_memory.delete_collection(collection_id)
-    to_return[collection_id] = ret
-
-    ccat: CheshireCat = request.app.state.ccat
-    ccat.load_memory()  # recreate the long term memories
-    ccat.mad_hatter.find_plugins()
-
-    return {
-        "deleted": to_return,
-    }
-
 
 # CREATE a point in memory
 @router.post("/collections/{collection_id}/points", response_model=MemoryPoint)
@@ -256,34 +176,9 @@ async def delete_memory_points_by_metadata(
     }
 
 
-# DELETE conversation history from working memory
-@router.delete("/conversation_history")
-async def wipe_conversation_history(
-    request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
-) -> Dict:
-    """Delete the specified user's conversation history from working memory"""
-
-    stray.working_memory.history = []
-
-    return {
-        "deleted": True,
-    }
-
-
-# GET conversation history from working memory
-@router.get("/conversation_history")
-async def get_conversation_history(
-    request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
-) -> Dict:
-    """Get the specified user's conversation history from working memory"""
-
-    return {"history": stray.working_memory.history}
-
 # GET all the points from a single collection
 @router.get("/collections/{collection_id}/points")
-async def get_collections_points(
+async def get_points_in_collection(
     request: Request,
     collection_id: str,
     limit: int=Query(
@@ -373,4 +268,3 @@ async def get_collections_points(
         "points": points,
         "next_offset": next_offset
     }
-
