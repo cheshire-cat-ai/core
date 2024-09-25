@@ -165,7 +165,7 @@ def test_get_collection_points_wrong_collection(client):
     
     # unexisting collection
     res = client.get(
-        f"/memory/collections/unexistent/points",
+        "/memory/collections/unexistent/points",
     )
     assert res.status_code == 400
     assert "Collection does not exist" in res.json()["detail"]["error"]
