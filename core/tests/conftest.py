@@ -100,9 +100,11 @@ def secure_client(client):
     # set ENV variables
     os.environ["CCAT_API_KEY"] = "meow_http"
     os.environ["CCAT_API_KEY_WS"] = "meow_ws"
+    os.environ["CCAT_JWT_SECRET"] = "meow_jwt"
     yield client
     del os.environ["CCAT_API_KEY"]
     del os.environ["CCAT_API_KEY_WS"]
+    del os.environ["CCAT_JWT_SECRET"]
 
 
 # This fixture is useful to write tests in which

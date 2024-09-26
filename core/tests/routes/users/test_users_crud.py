@@ -215,7 +215,7 @@ def test_no_access_if_api_keys_active(secure_client):
     assert response.status_code == 403
 
     # check default list giving the correct CCAT_API_KEY
-    headers = {"Authorization": f"Bearer {get_env('CCAT_API_KEY')}"}
+    headers = {"Authorization": "Bearer meow_http"}
     response = secure_client.get("/users", headers=headers)
     assert response.status_code == 200
     assert len(response.json()) == 2
