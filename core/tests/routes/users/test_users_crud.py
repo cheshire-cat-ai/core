@@ -1,6 +1,5 @@
 from uuid import UUID
 from cat.auth.permissions import get_base_permissions, get_full_permissions
-from cat.env import get_env
 from tests.utils import create_new_user
 
 

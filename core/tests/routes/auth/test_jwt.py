@@ -246,7 +246,7 @@ def test_jwt_self_signature_fails_on_secure_client(secure_client):
         # not allowed because CCAT_JWT_SECRET for secure_client is `meow_jwt`
         params = {"token": token}
         with pytest.raises(Exception) as e_info:
-            res = send_websocket_message(message, secure_client, query_params=params)
+            send_websocket_message(message, secure_client, query_params=params)
             assert str(e_info.type.__name__) == "WebSocketDisconnect"
 
 
