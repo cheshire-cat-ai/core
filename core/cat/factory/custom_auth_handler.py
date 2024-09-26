@@ -43,7 +43,10 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
 
     @abstractmethod
     async def authorize_user_from_jwt(
-        self, token: str, auth_resource: AuthResource, auth_permission: AuthPermission
+        self,
+        token: str,
+        auth_resource: AuthResource,
+        auth_permission: AuthPermission
     ) -> AuthUserInfo | None:
         # will raise: NotImplementedError
         pass
@@ -55,7 +58,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
         user_id: str,
         api_key: str,
         auth_resource: AuthResource,
-        auth_permission: AuthPermission,
+        auth_permission: AuthPermission
     ) -> AuthUserInfo | None:
         # will raise: NotImplementedError
         pass
