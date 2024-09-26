@@ -19,7 +19,12 @@ def test_get_env(client):
 
     # default env variables
     for k, v in get_supported_env_variables().items():
-        assert get_env(k) == v
-        # TODO: take away in v2
-        # missing prefix (legacy)
-        assert get_env(k.replace("CCAT_", "")) == v
+
+        if k == "CCAT_DEBUG":
+            assert get_env(k) == "false" # we test installation with autoreload off
+        else:            
+            assert get_env(k) == v
+
+            # TODO: take away in v2
+            # missing prefix (legacy)
+            assert get_env(k.replace("CCAT_", "")) == v
