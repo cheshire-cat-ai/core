@@ -17,7 +17,7 @@ def test_is_jwt(client):
 
     actual_jwt = jwt.encode(
         {"username": "Alice"},
-        get_env("CCAT_JWT_SECRET"),
+        "some_secret",
         algorithm=get_env("CCAT_JWT_ALGORITHM"),
     )
     assert is_jwt(actual_jwt)
@@ -69,6 +69,7 @@ async def test_issue_jwt(client):
     except jwt.exceptions.DecodeError:
         assert False
 
+
 @pytest.mark.asyncio
 async def test_issue_jwt_for_new_user(client):
 
@@ -96,6 +97,7 @@ async def test_issue_jwt_for_new_user(client):
     res.json()["token_type"] == "bearer"
     received_token = res.json()["access_token"]
     assert is_jwt(received_token)
+
 
 # test token expiration after successfull login
 # NOTE: here we are using the secure_client fixture (see conftest.py)
@@ -180,4 +182,74 @@ def test_jwt_imposes_user_id(secure_client):
     for em in episodic_memories:
         assert em["metadata"]["source"] == "admin"
         assert em["page_content"] == "hey"
+
+
+# test that a JWT signed knowing the secret, passes
+def test_jwt_self_signature_passes_on_unsecure_client(client):
+
+    # get list of users (we need the ids)
+    response = client.get("/users")
+    users = response.json()
+
+    for user in users:
+
+        # create a self signed JWT using the default secret              
+        token = jwt.encode(
+            {"sub": user["id"], "username": user["username"]},
+            "secret",
+            algorithm=get_env("CCAT_JWT_ALGORITHM"),
+        )
+
+        message = { "text": "hey" }
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        response = client.post("/message", headers=headers, json=message)
+        assert response.status_code == 200
+        assert "You did not configure" in response.json()["content"]
+
+        params = {"token": token}
+        response = send_websocket_message(message, client, query_params=params)
+        assert "You did not configure" in response["content"]
+
+
+# test that a JWT signed with the wrong secret is not accepted
+def test_jwt_self_signature_fails_on_secure_client(secure_client):
+
+    # get list of users (we need the ids)
+    response = secure_client.get(
+        "/users",
+        headers={
+            "Authorization": "Bearer meow_http"
+        })
+    users = response.json()
+
+    for user in users:
+
+        # create a self signed JWT using the default secret              
+        token = jwt.encode(
+            {"sub": user["id"], "username": user["username"]},
+            "secret",
+            algorithm=get_env("CCAT_JWT_ALGORITHM"),
+        )
+
+        message = { "text": "hey" }
+
+        # not allowed because CCAT_JWT_SECRET for secure_client is `meow_jwt`
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+        response = secure_client.post("/message", headers=headers, json=message)
+        assert response.status_code == 403
+
+        # not allowed because CCAT_JWT_SECRET for secure_client is `meow_jwt`
+        params = {"token": token}
+        with pytest.raises(Exception) as e_info:
+            send_websocket_message(message, secure_client, query_params=params)
+            assert str(e_info.type.__name__) == "WebSocketDisconnect"
+
+
+
+    
     

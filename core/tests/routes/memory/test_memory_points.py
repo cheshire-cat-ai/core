@@ -161,4 +161,130 @@ def test_create_memory_point(client, patch_time_now, collection):
     assert memory["page_content"] == content
     assert memory["metadata"] == expected_metadata
 
+def test_get_collection_points_wrong_collection(client):
+    
+    # unexisting collection
+    res = client.get(
+        "/memory/collections/unexistent/points",
+    )
+    assert res.status_code == 400
+    assert "Collection does not exist" in res.json()["detail"]["error"]
+
+    # reserved procedural collection
+    res = client.get(
+        "/memory/collections/procedural/points",
+    )
+    assert res.status_code == 400
+    assert "Procedural memory is not readable via API" in res.json()["detail"]["error"]
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_get_collection_points(client, patch_time_now, collection):
+    # create 100 points
+    n_points = 100
+    new_points = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}"}} for i in range(n_points) ]
+
+    # Add points
+    for req_json in new_points:
+        res = client.post(
+            f"/memory/collections/{collection}/points", json=req_json
+        )
+        assert res.status_code == 200
+
+    # get all the points no limit, by default is 100
+    res = client.get(
+        f"/memory/collections/{collection}/points",
+    )
+    assert res.status_code == 200
+    json = res.json()
+
+    points = json["points"]
+    offset = json["next_offset"]
+
+    assert offset is None # the result should contains all the points so no offset
+
+    expected_payloads = [
+        {
+            "page_content": p["content"],
+            "metadata": {
+                "when":FAKE_TIMESTAMP,
+                "source": "user",
+                **p["metadata"]
+            }  
+        } for p in new_points
+    ]
+
+    assert len(points) == len(new_points)
+    # check all the points contains id and vector
+    for point in points:
+        assert "id" in point
+        assert "vector" in point 
+    
+    # check points payload
+    points_payloads = [p["payload"] for p in points]
+    # sort the list and compare payload
+    points_payloads.sort(key=lambda p: p["page_content"])
+    expected_payloads.sort(key=lambda p: p["page_content"])
+    assert points_payloads == expected_payloads
+
+
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_get_collection_points_offset(client, patch_time_now, collection):
+    # create 200 points
+    n_points = 200
+    new_points = [{"content": f"MIAO {i}!","metadata": {"custom_key": f"custom_key_{i}"}} for i in range(n_points) ]
+
+    # Add points
+    for req_json in new_points:
+        res = client.post(
+            f"/memory/collections/{collection}/points", json=req_json
+        )
+        assert res.status_code == 200
+
+    # get all the points with limit 10
+    limit = 10
+    next_offset = ""
+    all_points = []
+
+    while True:
+        res = client.get(
+            f"/memory/collections/{collection}/points?limit={limit}&offset={next_offset}",
+        )
+        assert res.status_code == 200
+        json = res.json()
+        points = json["points"]
+        next_offset = json["next_offset"]
+        assert len(points) == limit
+
+        for point in points:
+            all_points.append(point)
+
+        if next_offset is None: # break if no new data
+            break
+    
+    # create the expected payloads for all the points
+    expected_payloads = [
+        {
+            "page_content": p["content"],
+            "metadata": {
+                "when":FAKE_TIMESTAMP,
+                "source": "user",
+                **p["metadata"]
+            }  
+        } for p in new_points
+    ]
+
+    assert len(all_points) == len(new_points)
+    # check all the points contains id and vector
+    for point in all_points:
+        assert "id" in point
+        assert "vector" in point 
+    
+    # check points payload
+    points_payloads = [p["payload"] for p in all_points]
+    # sort the list and compare payload
+    points_payloads.sort(key=lambda p: p["page_content"])
+    expected_payloads.sort(key=lambda p: p["page_content"])
+    assert points_payloads == expected_payloads
+
 

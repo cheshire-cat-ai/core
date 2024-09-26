@@ -4,7 +4,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from cat.looking_glass.cheshire_cat import CheshireCat
+    from cat.memory.vector_memory import VectorMemory
 
 import os
 import traceback
@@ -318,15 +318,14 @@ class BaseModelDict(BaseModel):
         return key in self.keys()
 
 
-def delete_collections(ccat: CheshireCat) -> Dict[str, bool]:
+def delete_collections(vector_memory: VectorMemory) -> Dict[str, bool]:
     """Delete all collections"""
 
-    collections = list(ccat.memory.vectors.collections.keys())
-    vector_memory = ccat.memory.vectors
+    collections = list(vector_memory.collections.keys())
 
     deleted = {}
     for c in collections:
-        ret = vector_memory.vector_db.delete_collection(collection_name=c)
+        ret = vector_memory.delete_collection(c)
         deleted[c] = ret
 
     return deleted
