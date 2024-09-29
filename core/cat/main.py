@@ -22,6 +22,7 @@ from cat.routes import (
     plugins,
     upload,
     websocket,
+    chat
 )
 from cat.routes.memory.memory_router import memory_router
 from cat.routes.static import admin, static
@@ -96,6 +97,7 @@ cheshire_cat_api.include_router(
     auth_handler.router, tags=["AuthHandler"], prefix="/auth_handler"
 )
 cheshire_cat_api.include_router(websocket.router, tags=["Websocket"])
+cheshire_cat_api.include_router(chat.router, tags=["Chat"], prefix="/chat")
 
 # mount static files
 # this cannot be done via fastapi.APIrouter:
