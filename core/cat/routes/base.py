@@ -27,5 +27,5 @@ async def message_with_cat(
     stray=Depends(HTTPAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ) -> Dict:
     """Get a response from the Cat"""
-    answer = await stray({"user_id": stray.user_id, **payload})
-    return answer
+    payload["user_id"] = stray.user_id
+    return await stray.__call__(payload)

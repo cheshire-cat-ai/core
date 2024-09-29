@@ -99,7 +99,6 @@ class StrayCat:
         """
 
         if self.__ws is None:
-            log.warning(f"No websocket connection is open for user {self.user_id}")
             return
 
         options = get_args(MSG_TYPES)
@@ -126,7 +125,6 @@ class StrayCat:
             save (bool, optional): Save the message in the conversation history. Defaults to False.
         """
         if self.__ws is None:
-            log.warning(f"No websocket connection is open for user {self.user_id}")
             return
 
         if isinstance(message, str):
@@ -159,7 +157,6 @@ class StrayCat:
             error (Union[str, Exception]): message to send
         """        
         if self.__ws is None:
-            log.warning(f"No websocket connection is open for user {self.user_id}")
             return
 
         if isinstance(error, str):
