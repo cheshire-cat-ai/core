@@ -20,7 +20,7 @@
             <input type="hidden" name="referer" value="[[ referer ]]">
         </div>
         <div>
-            <button type="submit">Login</button>
+            <button type="submit" id="loginButton">Login</button>
         </div>
         {% if show_default_passwords %}
             Default users included out of the box:
@@ -30,12 +30,32 @@
             </ul>
             Change their passwords after initial login as admin.    
         {% endif %}
-        <div>
-        </div>
         <div class="error-message">
             [[ error_message ]]
         </div>
     </form>
+
+    <!-- JavaScript to handle button color change -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('loginButton');
+
+            // Function to check if both fields are filled
+            function checkInputs() {
+                if (usernameInput.value.trim() !== '' && passwordInput.value.trim() !== '') {
+                    loginButton.classList.add('active');  // Add the 'active' class
+                } else {
+                    loginButton.classList.remove('active'); // Remove the 'active' class
+                }
+            }
+
+            // Listen for input events on both fields
+            usernameInput.addEventListener('input', checkInputs);
+            passwordInput.addEventListener('input', checkInputs);
+        });
+    </script>
 
 </body>
 </html>
