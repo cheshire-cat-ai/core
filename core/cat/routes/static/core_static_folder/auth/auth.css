@@ -1,5 +1,3 @@
-
-
 #logo {
     width: 200px;
     height: 200px;
@@ -37,5 +35,12 @@ button:hover {
 }
 
 .error-message {
-    color: red;
+    margin: 5px;
+    text-align: center;
+    padding: 10px;
+    width: 300px;
+    border-radius: 5px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
 }

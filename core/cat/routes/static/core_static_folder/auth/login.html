@@ -11,6 +11,11 @@
     <form action="/auth/redirect" method="POST">
         <img id="logo" src="[[ url_for('core-static', path='/img/logo.svg') ]]">
         <div>
+        </div>
+        <div class="error-message">
+            [[ error_message ]]
+        </div>
+        <div>
             <input type="text" id="username" name="username" required autofocus placeholder="Username">
         </div>
         <div>
@@ -30,12 +35,6 @@
             </ul>
             Change their passwords after initial login as admin.    
         {% endif %}
-        <div>
-        </div>
-        <div class="error-message">
-            [[ error_message ]]
-        </div>
     </form>
-
 </body>
 </html>
