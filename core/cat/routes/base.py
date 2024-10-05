@@ -28,11 +28,6 @@ async def message_with_cat(
     stray=Depends(HTTPAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ) -> Dict:
     """Get a response from the Cat"""
-    answer = await run_in_threadpool(stray_run, stray, {"user_id": stray.user_id, **payload})
+    user_message_json = {"user_id": stray.user_id, **payload}
+    answer = await run_in_threadpool(stray.run, user_message_json, True)
     return answer
-
-
-def stray_run(stray, user_message_json):
-    cat_message = stray.loop.run_until_complete(stray(user_message_json))
-    return cat_message
-

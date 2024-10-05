@@ -450,17 +450,22 @@ class StrayCat:
 
         return final_output
 
-    def run(self, user_message_json):
+    def run(self, user_message_json, return_message=False):
         try:
             cat_message = self.loop.run_until_complete(self.__call__(user_message_json))
-            # send message back to client
-            self.send_chat_message(cat_message)
+            if return_message:
+                # return the message for HTTP usage
+                return cat_message
+            else:
+                # send message back to client via WS
+                self.send_chat_message(cat_message)
         except Exception as e:
-            # Log any unexpected errors
             log.error(e)
             traceback.print_exc()
-            # Send error as websocket message
-            self.send_error(e)
+            if return_message:
+                return {"error": str(e)}
+            else:
+                self.send_error(e)
 
     def classify(
         self, sentence: str, labels: List[str] | Dict[str, List[str]]
