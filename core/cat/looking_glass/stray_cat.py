@@ -397,10 +397,7 @@ class StrayCat:
             log.error(e)
             traceback.print_exc(e)
 
-            err_message = (
-                "You probably changed Embedder and old vector memory is not compatible. "
-                "Please delete `core/long_term_memory` folder."
-            )
+            err_message = "An error occurred while recalling relevant memories."
 
             return {
                 "type": "error",
