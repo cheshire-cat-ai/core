@@ -140,11 +140,10 @@ class WebSocketAuth(ConnectionAuth):
 
         if user.id in strays.keys():
             stray = strays[user.id]
-            # Close previus ws connection
-            if stray._StrayCat__ws:
-                await stray._StrayCat__ws.close()
+            await stray.close_connection()
+
             # Set new ws connection
-            stray._StrayCat__ws = connection
+            stray.reset_connection(connection)
             log.info(
                 f"New websocket connection for user '{user.id}', the old one has been closed."
             )
