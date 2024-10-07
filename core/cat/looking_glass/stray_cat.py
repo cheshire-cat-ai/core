@@ -19,6 +19,7 @@ from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents import AgentOutput
 from cat import utils
+from websockets.exceptions import ConnectionClosedOK
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
@@ -484,7 +485,13 @@ class StrayCat:
             if return_message:
                 return {"error": str(e)}
             else:
-                self.send_error(e)
+                try:
+                    self.send_error(e)
+                except ConnectionClosedOK as ex:
+                    log.warning(ex)
+                    if self.__ws:
+                        del self.__ws
+                        self.__ws = None
 
     def classify(
         self, sentence: str, labels: List[str] | Dict[str, List[str]]
@@ -598,6 +605,20 @@ Allowed classes are:
                 )
 
         return langchain_chat_history
+
+    async def close_connection(self):
+        if self.__ws:
+            try:
+                await self.__ws.close()
+            except RuntimeError as ex:
+                log.warning(ex)
+                if self.__ws:
+                    del self.__ws
+                    self.__ws = None
+
+    def reset_connection(self, connection):
+        """Reset the connection to the API service."""
+        self.__ws = connection
 
     @property
     def user_id(self):
