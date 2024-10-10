@@ -489,9 +489,6 @@ class StrayCat:
                     self.send_error(e)
                 except ConnectionClosedOK as ex:
                     log.warning(ex)
-                    if self.__ws:
-                        del self.__ws
-                        self.__ws = None
 
     def classify(
         self, sentence: str, labels: List[str] | Dict[str, List[str]]
