@@ -27,7 +27,7 @@ dependencies = [
     "langchain-openai==0.1.7",
     "langchain-google-genai==1.0.8",
     "langchain-cohere==0.1.5",
-    "huggingface-hub==0.20.3",
+    "huggingface-hub>=0.25.1",
     "beautifulsoup4==4.12.3",
     "pdfminer.six==20221105",
     "unstructured==0.12.6",
