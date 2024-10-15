@@ -8,6 +8,7 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from cat.auth.session_manager import SessionManager
 
 from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
@@ -46,6 +47,8 @@ async def lifespan(app: FastAPI):
 
     # Dict of pseudo-sessions (key is the user_id)
     app.state.strays = {}
+
+    app.state.session_manager = SessionManager(app.state.strays)
 
     # set a reference to asyncio event loop
     app.state.event_loop = asyncio.get_running_loop()

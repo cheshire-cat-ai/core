@@ -69,7 +69,40 @@ class ConnectionAuth(ABC):
     @abstractmethod
     def not_allowed(self, connection: Request | WebSocket):
         pass
-        
+
+    def refresh_user_expiration(self, connection: Request, user: AuthUserInfo) -> None:
+        """
+        this method uses session manager to refresh user expiration time
+        """
+
+        session_manager = connection.app.state.session_manager
+        #
+        # TODO: remove this once we have properly tested this
+        #
+        # this should be changed into a meaningful amount of minutes it's just for testing
+        # if user.name contains "test" get the last character to extract minutes
+        #
+        # user: test1 will expire after 1 minutes
+        # user: test2 will expire after 2 minutes
+        # user: test3 will expire after 3 minutes
+        # user: test4 will expire after 4 minutes
+        # and so on
+        #
+        if "test" in user.name:
+            minutes = int(user.name[-1])
+        else:
+            minutes = 60 * 24
+        session_manager.add_or_refresh(user, minutes)
+        pass
+
+    def evict_expired_users(self, connection: Request) -> None:
+        """
+        this method uses session manager to evict expired users
+        """
+
+        session_manager = connection.app.state.session_manager
+        session_manager.evict_expired_sessions()
+        pass
 
 class HTTPAuth(ConnectionAuth):
 
@@ -111,6 +144,10 @@ class HTTPAuth(ConnectionAuth):
                     # TODOV2: user_id should be the user.id
                 user_id=user.name, user_data=user, main_loop=event_loop
             )
+        
+        self.refresh_user_expiration(connection, user)
+        self.evict_expired_users(connection)
+
         return strays[user.id]
     
     def not_allowed(self, connection: Request):
@@ -144,6 +181,10 @@ class WebSocketAuth(ConnectionAuth):
 
             # Set new ws connection
             stray.reset_connection(connection)
+
+            self.refresh_user_expiration(connection, user)
+            self.evict_expired_users(connection)
+
             log.info(
                 f"New websocket connection for user '{user.id}', the old one has been closed."
             )
@@ -157,6 +198,10 @@ class WebSocketAuth(ConnectionAuth):
                 main_loop=asyncio.get_running_loop(),
             )
             strays[user.id] = stray
+
+            self.refresh_user_expiration(connection, user)
+            self.evict_expired_users(connection)
+
             return stray
         
     def not_allowed(self, connection: WebSocket):
