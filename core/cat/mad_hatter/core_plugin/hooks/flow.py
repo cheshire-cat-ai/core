@@ -350,7 +350,7 @@ def fast_reply(fast_reply: dict, cat) -> None | dict | CatMessage:
 
     Returns
     --------
-    response : None | Dict | CatMessage
+    response : None | dict | CatMessage
         If you want to short-circuit the normal flow, return a CatMessage or a dict with an "output" key.
         Return None or an empty dict to continue with normal execution.
         See below for examples of Cat response

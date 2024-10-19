@@ -44,7 +44,7 @@ def agent_fast_reply(agent_fast_reply: dict, cat) -> None | dict | AgentOutput:
 
     Returns
     --------
-    response : Union[None, Dict]
+    response : None | dict | AgentOutput
         If you want to bypass the main agent, return an AgentOutput or a dict with an "output" key.
         Return None or an empty dict to continue with normal execution.
         See below for examples of Cat response
