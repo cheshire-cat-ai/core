@@ -87,6 +87,18 @@ class VectorMemory:
         """Delete specific vector collection"""
         
         return self.vector_db.delete_collection(collection_name)
+
+    def delete_collections(self) -> dict[str, bool]:
+        """Delete all collections"""
+
+        collections = list(self.collections.keys())
+
+        deleted = {}
+        for c in collections:
+            ret = self.delete_collection(c)
+            deleted[c] = ret
+
+        return deleted
     
     def get_collection(self, collection_name: str):
         """Get collection info"""

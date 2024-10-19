@@ -9,7 +9,6 @@ from cat.db import models
 from cat.db import crud
 from cat.env import get_env
 from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.memory.vector_memory import VectorMemory
 
 router = APIRouter()
 
@@ -130,8 +129,7 @@ def factory_reset(
 
             os.remove(metadata_file)
 
-        vector_memory: VectorMemory = stray.memory.vectors
-        deleted_memories = utils.delete_collections(vector_memory)
+        deleted_memories = stray.memory.vectors.delete_collections()
 
         utils.singleton.instances.clear()
         request.app.state.strays.clear()

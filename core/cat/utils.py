@@ -1,11 +1,5 @@
 """Various utiles used from the projects."""
 
-# Avoids circular import issues for type hints
-from __future__ import annotations
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from cat.memory.vector_memory import VectorMemory
-
 import os
 import traceback
 import inspect
@@ -316,16 +310,3 @@ class BaseModelDict(BaseModel):
 
     def __contains__(self, key):
         return key in self.keys()
-
-
-def delete_collections(vector_memory: VectorMemory) -> Dict[str, bool]:
-    """Delete all collections"""
-
-    collections = list(vector_memory.collections.keys())
-
-    deleted = {}
-    for c in collections:
-        ret = vector_memory.delete_collection(c)
-        deleted[c] = ret
-
-    return deleted

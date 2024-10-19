@@ -6,7 +6,6 @@ from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
-from cat import utils
 
 router = APIRouter()
 
@@ -40,8 +39,7 @@ async def wipe_collections(
 ) -> Dict:
     """Delete and create all collections"""
 
-    vector_memory: VectorMemory = stray.memory.vectors
-    deleted_memories = utils.delete_collections(vector_memory)
+    deleted_memories = stray.memory.vectors.delete_collections()
 
     ccat: CheshireCat = request.app.state.ccat
     ccat.load_memory()  # recreate the long term memories
