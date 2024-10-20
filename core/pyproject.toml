@@ -49,6 +49,7 @@ dependencies = [
     "rapidfuzz==3.6.1",
     "APScheduler==3.10.4",
     "ruff==0.4.7",
+    "aiofiles==24.1.0",
 ]
 
 [tool.coverage.run]
