@@ -62,7 +62,7 @@ async def registry_search_plugins(
         return []
 
 
-async def registry_download_plugin(url: str) -> str:
+async def registry_download_plugin(url: str):
     log.info(f"Downloading {url}")
 
     registry_url = get_registry_url()
