@@ -18,7 +18,7 @@ from cat.db.database import Database
 import cat.utils as utils
 from cat.memory.vector_memory import VectorMemory
 from cat.mad_hatter.plugin import Plugin
-from cat.main import cheshire_cat_api
+from cat.startup import cheshire_cat_api
 from tests.utils import create_mock_plugin_zip
 
 import time
