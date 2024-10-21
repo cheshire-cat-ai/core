@@ -1,5 +1,6 @@
 
 * **Version 2.0 (temp)**
+
  - multimodality
  - graph (can be a plugin)
  - multiagent apis
@@ -7,6 +8,7 @@
  - all endpoints typed
 
 * **Version 1.8 (temp)**
+
  - custom endpoints
  - stress tests:
    - load testing
