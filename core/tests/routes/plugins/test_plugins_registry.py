@@ -1,4 +1,3 @@
-import asyncio
 import os
 import shutil
 from tests.utils import create_mock_plugin_zip
