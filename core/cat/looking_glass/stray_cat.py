@@ -374,6 +374,16 @@ class StrayCat:
         # set a few easy access variables
         self.working_memory.user_message_json = user_message
 
+        # text of latest Human message
+        user_message_text = self.working_memory.user_message_json.text
+
+        # Skips all the side effects of the framework
+        fast_reply = self.mad_hatter.execute_hook(
+            "fast_reply", {}, cat=self
+        )
+        if fast_reply:
+            return self._handle_fast_reply_message(fast_reply, user_message_text)
+
         # keeping track of model interactions
         self.working_memory.model_interactions = []
 
@@ -382,19 +392,10 @@ class StrayCat:
             "before_cat_reads_message", self.working_memory.user_message_json, cat=self
         )
 
-        # text of latest Human message
-        user_message_text = self.working_memory.user_message_json.text
-
         # update conversation history (Human turn)
         self.working_memory.update_conversation_history(
             who="Human", message=user_message_text
         )
-
-        fast_reply = self.mad_hatter.execute_hook(
-            "fast_reply", {}, cat=self
-        )
-        if fast_reply:
-            return self._handle_fast_reply_message(fast_reply, user_message_text)
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
@@ -627,7 +628,12 @@ Allowed classes are:
         )
 
     def _handle_fast_reply_message(self, fast_reply: dict | CatMessage, user_message_text: str) -> CatMessage:
-        """Store user message in episodic memory, update conversation history and return fast reply."""
+        """Store user message in episodic memory, update conversation history and return CatMessage."""
+
+        self.working_memory.update_conversation_history(
+            who="Human", message=user_message_text
+        )
+
         self._store_user_message_in_episodic_memory(user_message_text)
 
         if isinstance(fast_reply, dict):
