@@ -1,3 +1,4 @@
+import aiofiles
 import mimetypes
 from copy import deepcopy
 from typing import Dict
@@ -98,8 +99,9 @@ async def install_plugin(
 
     log.info(f"Uploading {content_type} plugin {file.filename}")
     plugin_archive_path = f"/tmp/{file.filename}"
-    with open(plugin_archive_path, "wb+") as f:
-        f.write(file.file.read())
+    async with aiofiles.open(plugin_archive_path, "wb+") as f:
+        content = await file.read()
+        await f.write(content)
     ccat.mad_hatter.install_plugin(plugin_archive_path)
 
     return {
@@ -122,7 +124,7 @@ async def install_plugin_from_registry(
 
     # download zip from registry
     try:
-        tmp_plugin_path = registry_download_plugin(payload["url"])
+        tmp_plugin_path = await registry_download_plugin(payload["url"])
         ccat.mad_hatter.install_plugin(tmp_plugin_path)
     except Exception as e:
         log.error("Could not download plugin form registry")

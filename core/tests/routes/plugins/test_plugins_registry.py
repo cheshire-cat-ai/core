@@ -35,11 +35,13 @@ def test_list_registry_plugins_by_query(client):
         plugin_text = plugin["name"] + plugin["description"]
         assert params["query"] in plugin_text  # verify searched text
 
+async def mock_registry_download_plugin(url: str):
+    return create_mock_plugin_zip(True)
 
 def test_plugin_install_from_registry(client, monkeypatch):
     # Mock the download from the registry creating a zip on-the-fly
     monkeypatch.setattr(
-        "cat.routes.plugins.registry_download_plugin", create_mock_plugin_zip
+        "cat.routes.plugins.registry_download_plugin", mock_registry_download_plugin
     )
 
     # during tests, the cat uses a different folder for plugins

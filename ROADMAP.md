@@ -1,4 +1,28 @@
 
+**Version 2.0 (temp)**
+
+ - multimodality
+ - graph (can be a plugin)
+ - multiagent apis
+ - review clients
+ - all endpoints typed
+
+**Version 1.8 (temp)**
+
+ - custom endpoints
+ - stress tests:
+   - load testing
+   - benchmark threads vs async/await
+- form & tools
+   - model getter
+   - json schema + Pydantic support at choice
+- telemetry
+  - anonymous (just unique instance id, country, (n.utenti, info plugin))
+- open issues (see repo, we just clean them out)
+- community:
+  - real pizza challenge
+  - meow talk
+
 * **Version 1.5**
 	* Technical 
 		* Plugins
@@ -23,20 +47,20 @@
 			* compose with local LLM + embedder - ready to use (OK)
 			* (nginx?)
 		* LLM improvements
-			* explicit support for chat vs completion
-			* each LLM has its own default template
-		* User support (not management)
+			* explicit support for chat vs completion (OK)
+			* each LLM has its own default template (not relevant anymore)
+		* User support (OK)
 			* fix bugs (OK)
 			* sessions (OK)
 	* Outreach
 		* Community
 			* 1 live event (OK)
 			* 4 meow talk (OK)
-			* 1 challenge (OK)
+			* 1 challenge (KO)
 		* Dissemination
-			* use cases examples
-			* tutorials on hooks
-			* hook discovery tool
+			* use cases examples (OK)
+			* tutorials on hooks (OK)
+			* hook discovery tool (OK)
 			* website analytics (OK)
 		* Branding
 			* logo (OK)
