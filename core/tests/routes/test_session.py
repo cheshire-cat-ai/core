@@ -17,6 +17,8 @@ def test_session_creation_from_websocket(client):
     assert "Alice" in strays
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"
+    assert hasattr(strays["Alice"], "user_data")
+    assert strays["Alice"].user_data.id == "Alice"
     convo = strays["Alice"].working_memory.history
     assert len(convo) == 2
     assert convo[0]["who"] == "Human"
