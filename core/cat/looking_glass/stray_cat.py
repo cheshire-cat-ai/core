@@ -36,6 +36,8 @@ class StrayCat:
         ws: WebSocket = None,
     ):
         self.__user_id = user_id
+        self.__user_data = user_data
+
         self.working_memory = WorkingMemory()
 
         # attribute to store ws connection
@@ -620,7 +622,11 @@ Allowed classes are:
     @property
     def user_id(self):
         return self.__user_id
-
+    
+    @property
+    def user_data(self):
+        return self.__user_data
+    
     @property
     def _llm(self):
         return CheshireCat()._llm
