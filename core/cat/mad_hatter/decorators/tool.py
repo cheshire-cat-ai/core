@@ -45,20 +45,12 @@ class CatTool(BaseTool):
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
     # we run tools always async, even if they are not defined so in a plugin
-    def _run(self, input_by_llm: str) -> str:
-        pass # do nothing
-    
+    def _run(self, input_by_llm: str, stray) -> str:
+        return self.func(input_by_llm, cat=stray)
+
     # we run tools always async, even if they are not defined so in a plugin
     async def _arun(self, input_by_llm, stray):
-
-        # await if the tool is async
-        if inspect.iscoroutinefunction(self.func):
-            return await self.func(input_by_llm, cat=stray)
-
-        # run in executor if the tool is not async
-        return await stray.loop.run_in_executor(
-            None, self.func, input_by_llm, stray
-        )
+        pass
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:

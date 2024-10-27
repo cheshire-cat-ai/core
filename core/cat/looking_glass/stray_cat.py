@@ -43,8 +43,6 @@ class StrayCat:
 
         self.__main_loop = main_loop
 
-        self.__loop = asyncio.new_event_loop()
-
     def __repr__(self):
         return f"StrayCat(user_id={self.user_id})"
 
@@ -342,7 +340,7 @@ class StrayCat:
 
         return output
 
-    async def __call__(self, message_dict):
+    def __call__(self, message_dict):
         """Call the Cat instance.
 
         This method is called on the user's message received from the client.
@@ -408,7 +406,7 @@ class StrayCat:
 
         # reply with agent
         try:
-            agent_output: AgentOutput = await self.main_agent.execute(self)
+            agent_output: AgentOutput = self.main_agent.execute(self)
         except Exception as e:
             # This error happens when the LLM
             #   does not respect prompt instructions.
@@ -472,7 +470,7 @@ class StrayCat:
 
     def run(self, user_message_json, return_message=False):
         try:
-            cat_message = self.loop.run_until_complete(self.__call__(user_message_json))
+            cat_message = self.__call__(user_message_json)
             if return_message:
                 # return the message for HTTP usage
                 return cat_message
@@ -648,7 +646,3 @@ Allowed classes are:
     @property
     def white_rabbit(self):
         return CheshireCat().white_rabbit
-
-    @property
-    def loop(self):
-        return self.__loop
