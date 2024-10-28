@@ -9,7 +9,7 @@ from langchain_core.tools import BaseTool
 
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
-class CatTool(BaseTool):
+class CatTool:
     def __init__(
         self,
         name: str,
@@ -18,12 +18,7 @@ class CatTool(BaseTool):
         examples: List[str] = [],
     ):
         description = func.__doc__.strip()
-
-        # call parent contructor
-        super().__init__(
-            name=name, func=func, description=description, return_direct=return_direct
-        )
-
+        
         self.func = func
         self.procedure_type = "tool"
         self.name = name
@@ -44,13 +39,8 @@ class CatTool(BaseTool):
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
-    # we run tools always async, even if they are not defined so in a plugin
-    def _run(self, input_by_llm: str, stray) -> str:
+    def run(self, input_by_llm: str, stray) -> str:
         return self.func(input_by_llm, cat=stray)
-
-    # we run tools always async, even if they are not defined so in a plugin
-    async def _arun(self, input_by_llm, stray):
-        pass
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:
