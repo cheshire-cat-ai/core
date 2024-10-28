@@ -26,7 +26,7 @@ class MainAgent(BaseAgent):
         else:
             self.verbose = False
 
-    async def execute(self, stray) -> AgentOutput:
+    def execute(self, stray) -> AgentOutput:
         """Execute the agents.
 
         Returns
@@ -66,7 +66,7 @@ class MainAgent(BaseAgent):
 
         # run tools and forms
         procedures_agent = ProceduresAgent()
-        procedures_agent_out : AgentOutput = await procedures_agent.execute(stray)
+        procedures_agent_out : AgentOutput = procedures_agent.execute(stray)
         if procedures_agent_out.return_direct:
             return procedures_agent_out
 
@@ -74,7 +74,7 @@ class MainAgent(BaseAgent):
         # - no procedures were recalled or selected or
         # - procedures have all return_direct=False
         memory_agent = MemoryAgent()
-        memory_agent_out : AgentOutput = await memory_agent.execute(
+        memory_agent_out : AgentOutput = memory_agent.execute(
             # TODO: should all agents only receive stray?
             stray, prompt_prefix, prompt_suffix
         )

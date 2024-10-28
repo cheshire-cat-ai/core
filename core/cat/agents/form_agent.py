@@ -5,7 +5,7 @@ from cat.log import log
 
 class FormAgent(BaseAgent):
 
-    async def execute(self, stray) -> AgentOutput:
+    def execute(self, stray) -> AgentOutput:
 
         # get active form from working memory
         active_form = stray.working_memory.active_form

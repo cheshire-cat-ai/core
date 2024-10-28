@@ -29,7 +29,7 @@ def test_stray_nlp(stray):
 def test_stray_call(stray):
     msg = {"text": "Where do I go?", "user_id": "Alice"}
 
-    reply = stray.loop.run_until_complete(stray.__call__(msg))
+    reply = stray.__call__(msg)
 
     assert isinstance(reply, CatMessage)
     assert "You did not configure" in reply.content
@@ -57,7 +57,7 @@ def test_recall_to_working_memory(stray):
     msg = {"text": msg_text, "user_id": "Alice"}
 
     # send message
-    stray.loop.run_until_complete(stray.__call__(msg))
+    stray.__call__(msg)
 
     # recall after episodic memory was stored
     stray.recall_relevant_memories_to_working_memory(msg_text)
