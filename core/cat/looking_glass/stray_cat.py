@@ -377,13 +377,12 @@ class StrayCat:
         # keeping track of model interactions
         self.working_memory.model_interactions = []
 
-        # hook to modify/enrich user input
-        self.working_memory.user_message_json = self.mad_hatter.execute_hook(
-            "before_cat_reads_message", self.working_memory.user_message_json, cat=self
-        )
-
         # text of latest Human message
         user_message_text = self.working_memory.user_message_json.text
+        user_message_image = self.working_memory.user_message_json.image
+
+        # update conversation history (Human turn)
+        self.working_memory.update_conversation_history(who="Human", message=user_message_text, image=user_message_image)
 
         # update conversation history (Human turn)
         self.working_memory.update_conversation_history(
@@ -593,8 +592,25 @@ Allowed classes are:
         langchain_chat_history = []
         for message in chat_history:
             if message["role"] == Role.Human:
+                content = [{
+                    "type": "text",
+                    "text": message["message"]
+                }]
+
+                if message["image"]:
+                    image = {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": message["image"]
+                        }
+                    }
+                    content.append(image)
+
                 langchain_chat_history.append(
-                    HumanMessage(name=message["who"], content=message["message"])
+                    HumanMessage(
+                        name=message["who"], 
+                        content=content
+                    )
                 )
             else:
                 langchain_chat_history.append(

@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Optional, Literal
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum
@@ -76,6 +76,7 @@ class UserMessage(BaseModelDict):
 
     text: str
     user_id: str
+    image: Optional[str] = None
 
 
 def convert_to_Langchain_message(
