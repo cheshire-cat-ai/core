@@ -377,17 +377,17 @@ class StrayCat:
         # keeping track of model interactions
         self.working_memory.model_interactions = []
 
+        # hook to modify/enrich user input
+        self.working_memory.user_message_json = self.mad_hatter.execute_hook(
+            "before_cat_reads_message", self.working_memory.user_message_json, cat=self
+        )
+
         # text of latest Human message
         user_message_text = self.working_memory.user_message_json.text
         user_message_image = self.working_memory.user_message_json.image
 
         # update conversation history (Human turn)
         self.working_memory.update_conversation_history(who="Human", message=user_message_text, image=user_message_image)
-
-        # update conversation history (Human turn)
-        self.working_memory.update_conversation_history(
-            who="Human", message=user_message_text
-        )
 
         # recall episodic and declarative memories from vector collections
         #   and store them in working_memory
