@@ -317,8 +317,6 @@ class StrayCat:
         caller = utils.get_caller_info()
         callbacks.append(ModelInteractionHandler(self, caller or "StrayCat"))
 
-        
-
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
@@ -351,18 +349,18 @@ class StrayCat:
         Parameters
         ----------
         message_dict : dict
-            Dictionary received from the Websocket client.
+            Dictionary received from the client.
         save : bool, optional
             If True, the user's message is stored in the chat history. Default is True.
 
         Returns
         -------
-        final_output : dict
-            Dictionary with the Cat's answer to be sent to the client.
+        final_output : CatMessage
+            CatMessage object, the Cat's answer to be sent to the client.
 
         Notes
         -----
-        Here happens the main pipeline of the Cat. Namely, the Cat receives the user's input and recall the memories.
+        Here happens the main pipeline of the Cat. Namely, the Cat receives the user's input and recalls the memories.
         The retrieved context is formatted properly and given in input to the Agent that uses the LLM to produce the
         answer. This is formatted in a dictionary to be sent as a JSON via Websocket to the client.
 
@@ -372,21 +370,23 @@ class StrayCat:
         user_message = UserMessage.model_validate(message_dict)
         log.info(user_message)
 
-        # set a few easy access variables
+        ### setup working memory
+        # keeping track of model interactions
+        self.working_memory.model_interactions = []
+        # latest user message
         self.working_memory.user_message_json = user_message
-
-        # text of latest Human message
         user_message_text = self.working_memory.user_message_json.text
 
-        # Skips all the side effects of the framework
+        # Run a totally custom reply (skips all the side effects of the framework)
         fast_reply = self.mad_hatter.execute_hook(
             "fast_reply", {}, cat=self
         )
-        if fast_reply:
-            return self._handle_fast_reply_message(fast_reply, user_message_text)
-
-        # keeping track of model interactions
-        self.working_memory.model_interactions = []
+        if isinstance(fast_reply, CatMessage):
+            return fast_reply
+        if isinstance(fast_reply, dict) and "output" in fast_reply:
+            return CatMessage(
+                user_id=self.user_id, content=str(fast_reply["output"])
+            )
 
         # hook to modify/enrich user input
         self.working_memory.user_message_json = self.mad_hatter.execute_hook(
@@ -627,26 +627,6 @@ Allowed classes are:
             user_message_embedding[0],
             doc.metadata,
         )
-
-    def _handle_fast_reply_message(self, fast_reply: dict | CatMessage, user_message_text: str) -> CatMessage:
-        """Store user message in episodic memory, update conversation history and return CatMessage."""
-
-        self.working_memory.update_conversation_history(
-            who="Human", message=user_message_text
-        )
-
-        self._store_user_message_in_episodic_memory(user_message_text)
-
-        if isinstance(fast_reply, dict):
-            fast_reply = CatMessage(
-                user_id=self.user_id, content=str(fast_reply["output"]), why=None
-            )
-
-        self.working_memory.update_conversation_history(
-            who="AI", message=fast_reply.content, why=None
-        )
-
-        return fast_reply
 
     @property
     def user_id(self):
