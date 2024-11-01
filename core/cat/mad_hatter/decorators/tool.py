@@ -1,11 +1,5 @@
-import inspect
-
 from typing import Union, Callable, List
 from inspect import signature
-
-from langchain_core.tools import BaseTool
-
-
 
 # All @tool decorated functions in plugins become a CatTool.
 # The difference between base langchain Tool and CatTool is that CatTool has an instance of the cat as attribute (set by the MadHatter)
