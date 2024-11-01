@@ -375,6 +375,16 @@ class StrayCat:
         # set a few easy access variables
         self.working_memory.user_message_json = user_message
 
+        # text of latest Human message
+        user_message_text = self.working_memory.user_message_json.text
+
+        # Skips all the side effects of the framework
+        fast_reply = self.mad_hatter.execute_hook(
+            "fast_reply", {}, cat=self
+        )
+        if fast_reply:
+            return self._handle_fast_reply_message(fast_reply, user_message_text)
+
         # keeping track of model interactions
         self.working_memory.model_interactions = []
 
@@ -382,9 +392,6 @@ class StrayCat:
         self.working_memory.user_message_json = self.mad_hatter.execute_hook(
             "before_cat_reads_message", self.working_memory.user_message_json, cat=self
         )
-
-        # text of latest Human message
-        user_message_text = self.working_memory.user_message_json.text
 
         # update conversation history (Human turn)
         self.working_memory.update_conversation_history(
@@ -431,22 +438,7 @@ class StrayCat:
         log.info("Agent output returned to stray:")
         log.info(agent_output)
 
-        doc = Document(
-            page_content=user_message_text,
-            metadata={"source": self.user_id, "when": time.time()},
-        )
-        doc = self.mad_hatter.execute_hook(
-            "before_cat_stores_episodic_memory", doc, cat=self
-        )
-        # store user message in episodic memory
-        # TODO: vectorize and store also conversation chunks
-        #   (not raw dialog, but summarization)
-        user_message_embedding = self.embedder.embed_documents([user_message_text])
-        _ = self.memory.vectors.episodic.add_point(
-            doc.page_content,
-            user_message_embedding[0],
-            doc.metadata,
-        )
+        self._store_user_message_in_episodic_memory(user_message_text)
 
         # why this response?
         why = self.__build_why()
@@ -617,6 +609,44 @@ Allowed classes are:
     def reset_connection(self, connection):
         """Reset the connection to the API service."""
         self.__ws = connection
+
+    def _store_user_message_in_episodic_memory(self, user_message_text: str):
+        doc = Document(
+            page_content=user_message_text,
+            metadata={"source": self.user_id, "when": time.time()},
+        )
+        doc = self.mad_hatter.execute_hook(
+            "before_cat_stores_episodic_memory", doc, cat=self
+        )
+        # store user message in episodic memory
+        # TODO: vectorize and store also conversation chunks
+        #   (not raw dialog, but summarization)
+        user_message_embedding = self.embedder.embed_documents([user_message_text])
+        _ = self.memory.vectors.episodic.add_point(
+            doc.page_content,
+            user_message_embedding[0],
+            doc.metadata,
+        )
+
+    def _handle_fast_reply_message(self, fast_reply: dict | CatMessage, user_message_text: str) -> CatMessage:
+        """Store user message in episodic memory, update conversation history and return CatMessage."""
+
+        self.working_memory.update_conversation_history(
+            who="Human", message=user_message_text
+        )
+
+        self._store_user_message_in_episodic_memory(user_message_text)
+
+        if isinstance(fast_reply, dict):
+            fast_reply = CatMessage(
+                user_id=self.user_id, content=str(fast_reply["output"]), why=None
+            )
+
+        self.working_memory.update_conversation_history(
+            who="AI", message=fast_reply.content, why=None
+        )
+
+        return fast_reply
 
     @property
     def user_id(self):

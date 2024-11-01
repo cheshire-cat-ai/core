@@ -47,14 +47,13 @@ class MainAgent(BaseAgent):
         stray.working_memory.agent_input = agent_input
 
         # should we run the default agents?
-        fast_reply = {}
-        fast_reply = self.mad_hatter.execute_hook(
-            "agent_fast_reply", fast_reply, cat=stray
+        agent_fast_reply = self.mad_hatter.execute_hook(
+            "agent_fast_reply", {}, cat=stray
         )
-        if isinstance(fast_reply, AgentOutput):
-            return fast_reply
-        if isinstance(fast_reply, dict) and "output" in fast_reply:
-            return AgentOutput(**fast_reply)
+        if isinstance(agent_fast_reply, AgentOutput):
+            return agent_fast_reply
+        if isinstance(agent_fast_reply, dict) and "output" in agent_fast_reply:
+            return AgentOutput(**agent_fast_reply)
 
         # obtain prompt parts from plugins
         prompt_prefix = self.mad_hatter.execute_hook(

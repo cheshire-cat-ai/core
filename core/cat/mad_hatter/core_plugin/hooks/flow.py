@@ -3,6 +3,7 @@
 Here is a collection of methods to hook into the Cat execution pipeline.
 
 """
+from cat.convo.messages import CatMessage
 
 from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
@@ -334,3 +335,37 @@ def before_cat_stores_episodic_memory(doc: Document, cat) -> Document:
 
     """
     return doc
+
+@hook(priority=0)
+def fast_reply(fast_reply: dict, cat) -> None | dict | CatMessage:
+    """This hook allows for an immediate response, bypassing memory recall and agent execution.
+    It's useful for canned replies, custom LLM chains / agents, topic evaluation, direct LLM interaction and so on.
+
+    Parameters
+    --------
+    fast_reply: dict
+        An initially empty dict that can be populated with a response.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
+    response : None | dict | CatMessage
+        If you want to short-circuit the normal flow, return a CatMessage or a dict with an "output" key.
+        Return None or an empty dict to continue with normal execution.
+        See below for examples of Cat response
+
+    Examples
+    --------
+
+    Example 1: can't talk about this topic
+    ```python
+    # here you could use cat._llm to do topic evaluation
+    if "dog" in cat.working_memory.user_message_json.text:
+        return {
+            "output": "You went out of topic. Can't talk about dog."
+        }
+    ```
+    """
+
+    return fast_reply
