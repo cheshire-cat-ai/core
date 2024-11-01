@@ -2,7 +2,7 @@ import time
 import asyncio
 import traceback
 import tiktoken
-from typing import Literal, get_args, List, Dict, Union, Any
+from typing import Literal, get_args, List, Dict, Union, Any, Tuple
 
 from langchain.docstore.document import Document
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
@@ -23,7 +23,7 @@ from cat import utils
 from websockets.exceptions import ConnectionClosedOK
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
+MEMORY_COLLECTION = Literal["episodic", "declarative", "procedural"]
 
 # The Stray cat goes around tools and hook, making troubles
 class StrayCat:
@@ -179,6 +179,69 @@ class StrayCat:
 
         self.__send_ws_json(error_message)
 
+    def recall(
+            self,
+            query: str | List[float],
+            collection: MEMORY_COLLECTION,
+            k: int | None = 5,
+            threshold: int | None = None,
+            metadata: Dict | None = None,
+            override_working_memory: bool = False
+            ) -> List[Tuple[Document, float, List[float]]]:
+        """Perform search in a vector memory collection.
+
+        The method allows retrieving information from one specific vector memory collection with custom parameters.
+        The Cat uses this method internally
+        to recall the relevant memories to Working Memory every user's chat interaction.
+        This method is useful also to perform a manual search in hook and tools.
+
+        Parameters
+        ----------
+        query: str | List[float]
+            The search query.
+            If it is of type `str`, the Cat automatically computes the embedding vector.
+        collection: str
+            The name of the collection to perform the search.
+            Available collections are: *episodic*, *declarative*, *procedural*.
+        k: int | None
+            The number of memories to retrieve.
+            If `None` retrieves all the available memories.
+        threshold: float | None
+            The minimum similarity to retrieve a memory.
+            Memories with lower similarity are ignored.
+        metadata: Dict
+            Additional filter to retrieve memories with specific metadata.
+        override_working_memory: bool
+            Store the retrieved memories in the Working Memory and override the previous ones, if any.
+
+        Returns
+        -------
+        memories: List[Tuple[Document, float, List[float]]]
+            List of retrieved memories.
+            Memories are tuples of LangChain `Document`, similarity score and embedding vector.
+        """
+
+        collection_names = self.memory.vectors.collections.keys()
+        if collection not in collection_names:
+            memory_collections = ', '.join(list(collection_names))
+            error_message = f"{collection} is not a valid collection. Available collections: {memory_collections}"
+            log.error(error_message)
+            raise ValueError(error_message)
+
+        if isinstance(query, str):
+            query = self.embedder.embed_query(query)
+
+        vector_memory = getattr(self.memory.vectors, collection)
+
+        memories = vector_memory.recall_memories_from_embedding(
+            query, metadata, k, threshold
+        ) if k else vector_memory.get_all_points()
+
+        if override_working_memory:
+            setattr(self.working_memory, f"{collection}_memories", memories)
+            # self.working_memory.procedural_memories = ...
+        return memories
+
     def recall_relevant_memories_to_working_memory(self, query=None):
         """Retrieve context from memory.
 
@@ -220,7 +283,7 @@ class StrayCat:
         # Embed recall query
         recall_query_embedding = self.embedder.embed_query(recall_query)
         self.working_memory.recall_query = recall_query
-        
+
         # keep track of embedder model usage
         self.working_memory.model_interactions.append(
             EmbedderModelInteraction(
@@ -278,15 +341,14 @@ class StrayCat:
         memory_types = self.memory.vectors.collections.keys()
 
         for config, memory_type in zip(recall_configs, memory_types):
-            memory_key = f"{memory_type}_memories"
-
-            # recall relevant memories for collection
-            vector_memory = getattr(self.memory.vectors, memory_type)
-            memories = vector_memory.recall_memories_from_embedding(**config)
-
-            setattr(
-                self.working_memory, memory_key, memories
-            )  # self.working_memory.procedural_memories = ...
+            _ = self.recall(
+                query=config["embedding"],
+                collection=memory_type,
+                k=config["k"],
+                threshold=config["threshold"],
+                metadata=config["metadata"],
+                override_working_memory=True
+            )
 
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)

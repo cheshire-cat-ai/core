@@ -65,3 +65,107 @@ def test_recall_to_working_memory(stray):
     assert stray.working_memory.recall_query == msg_text
     assert len(stray.working_memory.episodic_memories) == 1
     assert stray.working_memory.episodic_memories[0][0].page_content == msg_text
+
+
+def test_stray_recall_invalid_collection_name(stray):
+    with pytest.raises(ValueError) as exc_info:
+        stray.recall("Hello, I'm Alice", "invalid_collection")
+    assert "invalid_collection is not a valid collection" in str(exc_info.value)
+
+
+def test_stray_recall_query_as_string(stray):
+    msg_text = "Hello! I'm Alice"
+    msg = {"text": msg_text, "user_id": "Alice"}
+
+    # send message
+    stray.loop.run_until_complete(stray.__call__(msg))
+
+    memories = stray.recall("Alice", "episodic")
+
+    assert len(memories) == 1
+    assert memories[0][0].page_content == msg_text
+    assert isinstance(memories[0][1], float)
+    assert isinstance(memories[0][2], list)
+
+
+def test_stray_recall_query_as_list_of_floats(stray):
+    msg_text = "Hello! I'm Alice"
+    msg = {"text": msg_text, "user_id": "Alice"}
+
+    # send message
+    stray.loop.run_until_complete(stray.__call__(msg))
+
+    embedding = stray.embedder.embed_query(msg_text)
+    memories = stray.recall(embedding, "episodic")
+
+    assert len(memories) == 1
+    assert memories[0][0].page_content == msg_text
+    assert isinstance(memories[0][1], float)
+    assert isinstance(memories[0][2], list)
+
+
+def test_stray_recall_with_threshold(stray):
+    msg_text = "Hello! I'm Alice"
+    msg = {"text": msg_text, "user_id": "Alice"}
+
+    # send message
+    stray.loop.run_until_complete(stray.__call__(msg))
+
+    memories = stray.recall("Alice", "episodic", threshold=1)
+    assert len(memories) == 0
+
+
+def test_stray_recall_all_memories(stray, client):
+    expected_chunks = 4
+    content_type = "application/pdf"
+    file_name = "sample.pdf"
+    file_path = f"tests/mocks/{file_name}"
+    with open(file_path, "rb") as f:
+        files = {"file": (file_name, f, content_type)}
+
+        _ = client.post("/rabbithole/", files=files)
+
+    memories = stray.recall("", "declarative", k=None)
+
+    assert len(memories) == expected_chunks
+
+
+def test_stray_recall_override_working_memory(stray):
+    # empty working memory / episodic
+    assert stray.working_memory.episodic_memories == []
+
+    msg_text = "Hello! I'm Alice"
+    msg = {"text": msg_text, "user_id": "Alice"}
+
+    # send message
+    stray.loop.run_until_complete(stray.__call__(msg))
+
+    memories = stray.recall("Alice", "episodic", override_working_memory=True)
+    assert stray.working_memory.episodic_memories == memories
+    assert len(stray.working_memory.episodic_memories) == 1
+    assert stray.working_memory.episodic_memories[0][0].page_content == msg_text
+
+
+def test_stray_recall_by_metadata(stray, client):
+    expected_chunks = 4
+    content_type = "application/pdf"
+    file_name = "sample.pdf"
+    file_path = f"tests/mocks/{file_name}"
+    with open(file_path, "rb") as f:
+        files = {"file": (file_name, f, content_type)}
+
+        _ = client.post("/rabbithole/", files=files)
+
+    with open(file_path, "rb") as f:
+        files = {"file": ("sample2.pdf", f, content_type)}
+
+        _ = client.post("/rabbithole/", files=files)
+
+    memories = stray.recall("late", "declarative", metadata={"source": "sample.pdf"})
+    all_memories = stray.recall("", "declarative", k=None)
+
+    assert len(all_memories) == expected_chunks * 2
+    assert len(memories) == expected_chunks
+
+    for memory in memories:
+        assert memory[0].metadata["source"] == "sample.pdf"
