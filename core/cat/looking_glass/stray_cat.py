@@ -18,6 +18,7 @@ from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents import AgentOutput
+from cat.auth.permissions import AuthUserInfo
 from cat import utils
 from websockets.exceptions import ConnectionClosedOK
 
@@ -32,7 +33,7 @@ class StrayCat:
         self,
         user_id: str,
         main_loop,
-        user_data: dict = {},
+        user_data: AuthUserInfo = None,
         ws: WebSocket = None,
     ):
         self.__user_id = user_id

@@ -1,5 +1,6 @@
 
 from cat.looking_glass.stray_cat import StrayCat
+from cat.auth.permissions import AuthUserInfo
 
 from tests.utils import send_websocket_message
 
@@ -18,6 +19,7 @@ def test_session_creation_from_websocket(client):
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"
     assert hasattr(strays["Alice"], "user_data")
+    assert isinstance(strays["Alice"].user_data, AuthUserInfo)
     assert strays["Alice"].user_data.id == "Alice"
     convo = strays["Alice"].working_memory.history
     assert len(convo) == 2
