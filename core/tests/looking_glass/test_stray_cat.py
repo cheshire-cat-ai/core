@@ -67,6 +67,7 @@ def test_recall_to_working_memory(stray):
     assert stray.working_memory.episodic_memories[0][0].page_content == msg_text
 
 
+# TODO: should we gather all tests regarding hooks in a folder?
 def test_stray_fast_reply_hook(stray):
     user_msg = "hello"
     fast_reply_msg = "This is a fast reply"
@@ -83,11 +84,13 @@ def test_stray_fast_reply_hook(stray):
     msg = {"text": user_msg, "user_id": "Alice"}
 
     # send message
-    stray.loop.run_until_complete(stray.__call__(msg))
-    # used to check if the user message was stored in episodic memory
-    stray.recall_relevant_memories_to_working_memory(user_msg)
+    res = stray.__call__(msg)
 
+    assert isinstance(res, CatMessage)
+    assert res.content == fast_reply_msg
+
+    # there should be NO side effects
     assert stray.working_memory.user_message_json.text == user_msg
-    assert stray.working_memory.history[-2]["message"] == user_msg
-    assert stray.working_memory.history[-1]["message"] == fast_reply_msg
-    assert len(stray.working_memory.episodic_memories) == 1
+    assert len(stray.working_memory.history) == 0
+    stray.recall_relevant_memories_to_working_memory(user_msg)
+    assert len(stray.working_memory.episodic_memories) == 0
