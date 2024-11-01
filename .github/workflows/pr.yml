@@ -23,4 +23,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test
-        run: docker compose run cheshire-cat-core python -m pytest --color=yes .
+        run: docker compose run --rm cheshire-cat-core python -m pytest --color=yes .
