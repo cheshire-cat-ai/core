@@ -32,7 +32,7 @@ def before_agent_starts(agent_input: Dict, cat) -> Dict:
 
 @hook(priority=0)
 def agent_fast_reply(agent_fast_reply: dict, cat) -> None | dict | AgentOutput:
-    """This hook allows for a fast response after memory recall but before full agent execution.
+    """This hook allows for a custom response after memory recall, skipping default agent execution.
     It's useful for custom agent logic or when you want to use recalled memories but avoid the main agent.
 
     Parameters
@@ -46,7 +46,7 @@ def agent_fast_reply(agent_fast_reply: dict, cat) -> None | dict | AgentOutput:
     --------
     response : None | dict | AgentOutput
         If you want to bypass the main agent, return an AgentOutput or a dict with an "output" key.
-        Return None or an empty dict to continue with normal execution.
+        Return None to continue with normal execution.
         See below for examples of Cat response
 
     Examples
