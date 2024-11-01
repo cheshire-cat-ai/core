@@ -54,7 +54,7 @@ class CheshireCat:
 
     """
 
-    def __init__(self):
+    def __init__(self, fastapi_app):
         """Cat initialization.
 
         At init time the Cat executes the bootstrap.
@@ -62,14 +62,14 @@ class CheshireCat:
 
         # bootstrap the Cat! ^._.^
 
-        # load AuthHandler
-        self.load_auth()
-
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
 
         # instantiate MadHatter (loads all plugins' hooks and tools)
-        self.mad_hatter = MadHatter()
+        self.mad_hatter = MadHatter(fastapi_app)
+
+        # load AuthHandler
+        self.load_auth()
 
         # allows plugins to do something before cat components are loaded
         self.mad_hatter.execute_hook("before_cat_bootstrap", cat=self)
