@@ -72,3 +72,13 @@ def test_post_endpoint(client):
 
     assert response.json()["name"] == "the cat"
     assert response.json()["description"] == "it's magic"
+
+def test_plugin_deactivation(client, mad_hatter):
+
+    response = client.get("/custom-endpoints/endpoint")
+    assert response.status_code == 200
+
+    mad_hatter.toggle_plugin("mock_plugin")
+
+    response = client.get("/custom-endpoints/endpoint")
+    assert response.status_code == 404
