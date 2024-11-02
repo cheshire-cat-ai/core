@@ -35,7 +35,7 @@ class MadHatter:
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
 
-    def __init__(self, fastapi_app):
+    def __init__(self):
         self.plugins: Dict[str, Plugin] = {}  # plugins dictionary
 
         self.hooks: Dict[
@@ -44,8 +44,6 @@ class MadHatter:
         self.tools: List[CatTool] = []  # list of active plugins tools
         self.forms: List[CatForm] = []  # list of active plugins forms
         self.endpoints: List[CustomEndpoint] = []  # list of active plugins endpoints
-
-        endpoint._init_decorators(fastapi_app) # the endpoint decorators need the fastapi instance
 
         self.active_plugins: List[str] = []
 

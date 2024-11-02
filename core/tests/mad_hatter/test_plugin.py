@@ -54,6 +54,7 @@ def test_create_plugin(plugin):
     # hooks and tools
     assert plugin.hooks == []
     assert plugin.tools == []
+    assert plugin.endpoints == []
 
 
 def test_activate_plugin(plugin):

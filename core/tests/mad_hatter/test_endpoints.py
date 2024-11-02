@@ -18,6 +18,8 @@ def mad_hatter(client):  # client here injects the monkeypatched version of the 
 
     yield mad_hatter
 
+    mad_hatter.uninstall_plugin("mock_plugin")
+
 
 def test_endpoints_discovery(mad_hatter):
     mock_plugin_endpoints = mad_hatter.plugins["mock_plugin"].endpoints
@@ -35,7 +37,7 @@ def test_endpoints_discovery(mad_hatter):
             assert h.tags == ["Tests"]
 
 
-def test_endpoint_decorator(client):
+def test_endpoint_decorator(client, mad_hatter):
 
     response = client.get("/custom-endpoints/endpoint")
 
@@ -44,7 +46,7 @@ def test_endpoint_decorator(client):
     assert response.json()["result"] == "endpoint default prefix"
 
 
-def test_endpoint_decorator_prefix(client):
+def test_endpoint_decorator_prefix(client, mad_hatter):
 
     response = client.get("/tests/endpoint")
 
@@ -53,7 +55,7 @@ def test_endpoint_decorator_prefix(client):
     assert response.json()["result"] == "endpoint prefix tests"
 
 
-def test_get_endpoint(client):
+def test_get_endpoint(client, mad_hatter):
 
     response = client.get("/tests/get")
 
@@ -63,7 +65,7 @@ def test_get_endpoint(client):
     assert response.json()["stray_user_id"] == "user"
 
 
-def test_post_endpoint(client):
+def test_post_endpoint(client, mad_hatter):
 
     payload = {"name": "the cat", "description" : "it's magic"}
     response = client.post("/tests/post", json=payload)

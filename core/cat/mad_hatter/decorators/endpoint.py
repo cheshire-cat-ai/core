@@ -1,6 +1,7 @@
 from typing import Callable
 from fastapi import APIRouter
 
+from cat.log import log
 
 # class to represent a @endpoint
 class CustomEndpoint:
@@ -9,20 +10,17 @@ class CustomEndpoint:
         prefix: str,
         path: str,
         function: Callable,
+        methods,
         tags,
-        cheshire_cat_api,
         **kwargs,
     ):
         self.prefix = prefix
         self.path = path
         self.function = function
         self.tags = tags
-        self.cheshire_cat_api = cheshire_cat_api
-
+        self.methods = methods
+        self.kwargs = kwargs
         self.name = self.prefix + self.path
-
-        for k in kwargs:
-            setattr(self, k, kwargs[k])
 
     def __repr__(self) -> str:
         return f"CustomEndpoint(path={self.name})"
@@ -30,14 +28,42 @@ class CustomEndpoint:
     def set_api_route(self, api_route):
         self.api_route = api_route
 
-    def remove(self):
+    def activate(self, cheshire_cat_api):
+
+        self.cheshire_cat_api = cheshire_cat_api
+
+        # Set the fastapi api_route into the Custom Endpoint
+        for api_route in self.cheshire_cat_api.routes:
+            if api_route.path == self.name:
+                log.error(f"There is already an endpoint with path {self.name}")
+                return
+
+        plugins_router = APIRouter()
+        plugins_router.add_api_route(
+            path=self.path,
+            endpoint=self.function,
+            methods=self.methods,
+            tags=self.tags,
+            **self.kwargs,
+        )
+
+        self.cheshire_cat_api.include_router(plugins_router, prefix=self.prefix)
+        self.cheshire_cat_api.openapi_schema = None  # Flush the cache of openapi schema
+
+        # Set the fastapi api_route into the Custom Endpoint
+        for api_route in self.cheshire_cat_api.routes:
+            if api_route.path == self.name:
+                self.api_route = api_route
+                break
+        
+        assert api_route.path == self.name
+
+    def deactivate(self):
+
         # Seems there is no official way to remove a route:
         # https://github.com/fastapi/fastapi/discussions/8088
-        self.cheshire_cat_api.routes.remove(
-            self.api_route
-        )
+        self.cheshire_cat_api.routes.remove(self.api_route)
         self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
-
 
 class Endpoint:
 
@@ -75,28 +101,10 @@ class Endpoint:
                 prefix=prefix,
                 path=path,
                 function=endpoint,
+                methods=methods,
                 tags=tags,
-                cheshire_cat_api=cls.cheshire_cat_api,
                 **kwargs,
             )
-
-            plugins_router = APIRouter()
-            plugins_router.add_api_route(
-                path=path, endpoint=endpoint, methods=methods, tags=tags, **kwargs
-            )
-
-            cls.cheshire_cat_api.include_router(plugins_router, prefix=prefix)
-            cls.cheshire_cat_api.openapi_schema = (
-                None  # Flush the cache of openapi schema
-            )
-
-            # Set the fastapi api_route into the Custom Endpoint
-            # (The method add_api_route of FastAPI do append, so our new route is
-            # the last route)
-            for api_route in cls.cheshire_cat_api.routes:
-                if api_route.path == custom_endpoint.name:
-                    custom_endpoint.set_api_route(api_route)
-                    break
 
             return custom_endpoint
 

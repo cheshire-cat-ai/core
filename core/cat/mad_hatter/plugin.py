@@ -74,7 +74,7 @@ class Plugin:
         except Exception as e:
             raise e
 
-        # Load of hooks and tools
+        # Load of hook, tools, forms and endpoints
         self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -341,7 +341,7 @@ class Plugin:
     def _deactivate_endpoints(self):
 
         for endpoint in self._endpoints:
-            endpoint.remove()
+            endpoint.deactivate()
 
     def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple
