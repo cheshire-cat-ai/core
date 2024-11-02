@@ -28,10 +28,16 @@ def test_endpoints_discovery(mad_hatter):
         assert isinstance(h, CustomEndpoint)
         assert h.plugin_id == "mock_plugin"
 
+        if h.name == "/custom-endpoints/endpoint":
+            assert h.tags == ["Custom Endpoints"]
+
+        if h.name == "/custom-endpoints/tests":
+            assert h.tags == ["Tests"]
+
 
 def test_endpoint_decorator(client):
 
-    response = client.get("/custom_endpoints/endpoint")
+    response = client.get("/custom-endpoints/endpoint")
 
     assert response.status_code == 200
     

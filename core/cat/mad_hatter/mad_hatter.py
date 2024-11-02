@@ -18,7 +18,7 @@ from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.decorators.hook import CatHook
 from cat.mad_hatter.decorators.tool import CatTool
-from cat.mad_hatter.decorators.endpoint import CustomEndpoint, _init_endpoint_decorator
+from cat.mad_hatter.decorators.endpoint import CustomEndpoint, endpoint
 
 from cat.experimental.form import CatForm
 
@@ -45,7 +45,7 @@ class MadHatter:
         self.forms: List[CatForm] = []  # list of active plugins forms
         self.endpoints: List[CustomEndpoint] = []  # list of active plugins endpoints
 
-        _init_endpoint_decorator(fastapi_app) # the endpoint decorator need the fastapi instance
+        endpoint._init_decorators(fastapi_app) # the endpoint decorators need the fastapi instance
 
         self.active_plugins: List[str] = []
 
