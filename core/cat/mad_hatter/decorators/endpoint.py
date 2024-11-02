@@ -60,6 +60,7 @@ class Endpoint:
             )
 
             cls.cheshire_cat_api.include_router(plugins_router, prefix=prefix)
+            cls.cheshire_cat_api.openapi_schema = None # Flush the cache of openapi schema
 
             return custom_endpoint
 
