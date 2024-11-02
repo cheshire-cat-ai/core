@@ -42,7 +42,7 @@ class Endpoint:
         Define a custom API endpoint, parameters are the same as FastAPI path operation.
         Examples:
             .. code-block:: python
-                from cat.mad_hatter.decorators.endpoint import endpoint
+                from cat.mad_hatter.decorators import endpoint
 
                 @endpoint.endpoint(path="/hello", methods=["GET"])
                 def my_endpoint():
@@ -78,7 +78,7 @@ class Endpoint:
         Define a custom API endpoint for GET operation, parameters are the same as FastAPI path operation.
         Examples:
             .. code-block:: python
-                from cat.mad_hatter.decorators.endpoint import endpoint
+                from cat.mad_hatter.decorators import endpoint
 
                 @endpoint.get(path="/hello")
                 def my_get_endpoint():
@@ -108,7 +108,7 @@ class Endpoint:
         Examples:
             .. code-block:: python
 
-                from cat.mad_hatter.decorators.endpoint import endpoint
+                from cat.mad_hatter.decorators import endpoint
                 from pydantic import BaseModel
 
                 class Item(BaseModel):
