@@ -100,7 +100,7 @@ class Plugin:
         self._hooks = []
         self._tools = []
         #TODO : clear of forms is missing here?
-        self._endpoints = []
+        self._deactivate_endpoints()
         self._plugin_overrides = []
         self._active = False
 
@@ -337,6 +337,11 @@ class Plugin:
         name = self.manifest.get("name")
         url = self.manifest.get("plugin_url")
         return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
+
+    def _deactivate_endpoints(self):
+
+        for endpoint in self._endpoints:
+            endpoint.remove()
 
     def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple

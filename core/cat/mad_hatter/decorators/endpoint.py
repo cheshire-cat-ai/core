@@ -1,13 +1,23 @@
 from typing import Callable
 from fastapi import APIRouter
 
+
 # class to represent a @endpoint
 class CustomEndpoint:
-    def __init__(self, prefix: str, path: str, function: Callable, tags, **kwargs):
+    def __init__(
+        self,
+        prefix: str,
+        path: str,
+        function: Callable,
+        tags,
+        cheshire_cat_api,
+        **kwargs,
+    ):
         self.prefix = prefix
         self.path = path
         self.function = function
         self.tags = tags
+        self.cheshire_cat_api = cheshire_cat_api
 
         self.name = self.prefix + self.path
 
@@ -16,6 +26,17 @@ class CustomEndpoint:
 
     def __repr__(self) -> str:
         return f"CustomEndpoint(path={self.name})"
+
+    def set_api_route(self, api_route):
+        self.api_route = api_route
+
+    def remove(self):
+        # Seems there is no official way to remove a route:
+        # https://github.com/fastapi/fastapi/discussions/8088
+        self.cheshire_cat_api.routes.remove(
+            self.api_route
+        )
+        self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
 
 
 class Endpoint:
@@ -51,7 +72,12 @@ class Endpoint:
 
         def _make_endpoint(endpoint):
             custom_endpoint = CustomEndpoint(
-                prefix=prefix, path=path, function=endpoint, tags=tags, **kwargs
+                prefix=prefix,
+                path=path,
+                function=endpoint,
+                tags=tags,
+                cheshire_cat_api=cls.cheshire_cat_api,
+                **kwargs,
             )
 
             plugins_router = APIRouter()
@@ -60,7 +86,17 @@ class Endpoint:
             )
 
             cls.cheshire_cat_api.include_router(plugins_router, prefix=prefix)
-            cls.cheshire_cat_api.openapi_schema = None # Flush the cache of openapi schema
+            cls.cheshire_cat_api.openapi_schema = (
+                None  # Flush the cache of openapi schema
+            )
+
+            # Set the fastapi api_route into the Custom Endpoint
+            # (The method add_api_route of FastAPI do append, so our new route is
+            # the last route)
+            for api_route in cls.cheshire_cat_api.routes:
+                if api_route.path == custom_endpoint.name:
+                    custom_endpoint.set_api_route(api_route)
+                    break
 
             return custom_endpoint
 
@@ -128,6 +164,7 @@ class Endpoint:
             tags=tags,
             **kwargs,
         )
+
 
 endpoint = None
 
