@@ -30,12 +30,14 @@ class CustomEndpoint:
 
     def activate(self, cheshire_cat_api):
 
+        log.info(f"Activating custom endpoint {self.name}...")
+
         self.cheshire_cat_api = cheshire_cat_api
 
         # Set the fastapi api_route into the Custom Endpoint
         for api_route in self.cheshire_cat_api.routes:
             if api_route.path == self.name:
-                log.error(f"There is already an endpoint with path {self.name}")
+                log.info(f"There is already an active endpoint with path {self.name}")
                 return
 
         plugins_router = APIRouter()
@@ -59,6 +61,8 @@ class CustomEndpoint:
         assert api_route.path == self.name
 
     def deactivate(self):
+
+        log.info(f"Deactivating custom endpoint {self.name}...")
 
         # Seems there is no official way to remove a route:
         # https://github.com/fastapi/fastapi/discussions/8088
