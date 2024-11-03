@@ -1,31 +1,30 @@
 """Module for retrieving default configurations for episodic, declarative and procedural memories"""
 
+from typing import Any
+from cat.utils import BaseModelDict
 
-class RecallSettings:
-    """Class for retrieving default configurations for episodic, declarative and procedural memories"""
 
-    DEFAULT_K = 3
-    DEFAULT_TRESHOLD = 0.5
+class RecallSettingsMetadata(BaseModelDict):
+    """Settigs's metadata for default configurations
 
-    def _build_settings(
-        self,
-        recall_query_embedding,
-        user_id=None,
-        k=DEFAULT_K,
-        treshold=DEFAULT_TRESHOLD,
-    ):
-        return {
-            "embedding": recall_query_embedding,
-            "k": k,
-            "threshold": treshold,
-            "metadata": {"source": user_id} if user_id else None,
-        }
+    Variables:
+        source (str): the source of the recall query
+    """
 
-    def default_episodic_config(self, recall_query_embedding, user_id):
-        return self._build_settings(recall_query_embedding, user_id)
+    source: str
 
-    def default_declarative_config(self, recall_query_embedding):
-        return self._build_settings(recall_query_embedding)
 
-    def default_procedural_config(self, recall_query_embedding):
-        return self._build_settings(recall_query_embedding)
+class RecallSettings(BaseModelDict):
+    """Class for retrieving default configurations for episodic, declarative and procedural memories
+
+    Variables:
+        embedding (Any): the embedding of the recall query - default None
+        k (int): the number of memories to return - default 3
+        threshold (float): the threshold - default 0.5
+        metadata (RecallSettingsMetadata): metadata - default None
+    """
+
+    embedding: Any
+    k: int = 3
+    threshold: float = 0.5
+    metadata: RecallSettingsMetadata = None

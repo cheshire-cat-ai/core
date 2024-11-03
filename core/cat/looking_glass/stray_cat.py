@@ -15,7 +15,7 @@ from fastapi import WebSocket
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
-from cat.looking_glass.recall_settings import RecallSettings
+from cat.looking_glass.recall_settings import RecallSettingsMetadata, RecallSettings
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
 from cat.agents import AgentOutput
@@ -233,13 +233,18 @@ class StrayCat:
         self.mad_hatter.execute_hook("before_cat_recalls_memories", cat=self)
 
         # Setting default recall configs for each memory
-        recall_settings = RecallSettings()
+        default_episodic_recall_config = RecallSettings(
+            embedding=recall_query_embedding,
+            metadata=RecallSettingsMetadata(source=self.user_id),
+        )
 
-        default_episodic_recall_config = recall_settings.default_episodic_config(recall_query_embedding=recall_query_embedding, user_id=self.user_id)
+        default_declarative_recall_config = RecallSettings(
+            embedding=recall_query_embedding
+        )
 
-        default_declarative_recall_config = recall_settings.default_declarative_config(recall_query_embedding=recall_query_embedding)
-
-        default_procedural_recall_config = recall_settings.default_procedural_config(recall_query_embedding=recall_query_embedding)
+        default_procedural_recall_config = RecallSettings(
+            embedding=recall_query_embedding
+        )
 
         # hooks to change recall configs for each memory
         recall_configs = [
