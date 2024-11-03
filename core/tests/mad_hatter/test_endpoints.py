@@ -1,28 +1,8 @@
-import pytest
-
-from cat.mad_hatter.mad_hatter import MadHatter
 from cat.mad_hatter.decorators import CustomEndpoint
 
-from tests.utils import create_mock_plugin_zip
+def test_endpoints_discovery(mad_hatter_with_mock_plugin):
 
-# this function will be run before each test function
-@pytest.fixture
-def mad_hatter(client):  # client here injects the monkeypatched version of the cat
-
-    # each test is given the mad_hatter instance (it's a singleton)
-    mad_hatter = MadHatter()
-
-    # install plugin
-    new_plugin_zip_path = create_mock_plugin_zip(flat=True)
-    mad_hatter.install_plugin(new_plugin_zip_path)
-
-    yield mad_hatter
-
-    mad_hatter.uninstall_plugin("mock_plugin")
-
-
-def test_endpoints_discovery(mad_hatter):
-    mock_plugin_endpoints = mad_hatter.plugins["mock_plugin"].endpoints
+    mock_plugin_endpoints = mad_hatter_with_mock_plugin.plugins["mock_plugin"].endpoints
 
     assert len(mock_plugin_endpoints) == 4
 
@@ -37,7 +17,7 @@ def test_endpoints_discovery(mad_hatter):
             assert h.tags == ["Tests"]
 
 
-def test_endpoint_decorator(client, mad_hatter):
+def test_endpoint_decorator(client, mad_hatter_with_mock_plugin):
 
     response = client.get("/custom-endpoints/endpoint")
 
@@ -46,7 +26,7 @@ def test_endpoint_decorator(client, mad_hatter):
     assert response.json()["result"] == "endpoint default prefix"
 
 
-def test_endpoint_decorator_prefix(client, mad_hatter):
+def test_endpoint_decorator_prefix(client, mad_hatter_with_mock_plugin):
 
     response = client.get("/tests/endpoint")
 
@@ -55,7 +35,7 @@ def test_endpoint_decorator_prefix(client, mad_hatter):
     assert response.json()["result"] == "endpoint prefix tests"
 
 
-def test_get_endpoint(client, mad_hatter):
+def test_get_endpoint(client, mad_hatter_with_mock_plugin):
 
     response = client.get("/tests/get")
 
@@ -65,7 +45,7 @@ def test_get_endpoint(client, mad_hatter):
     assert response.json()["stray_user_id"] == "user"
 
 
-def test_post_endpoint(client, mad_hatter):
+def test_post_endpoint(client, mad_hatter_with_mock_plugin):
 
     payload = {"name": "the cat", "description" : "it's magic"}
     response = client.post("/tests/post", json=payload)
@@ -75,12 +55,12 @@ def test_post_endpoint(client, mad_hatter):
     assert response.json()["name"] == "the cat"
     assert response.json()["description"] == "it's magic"
 
-def test_plugin_deactivation(client, mad_hatter):
+def test_plugin_deactivation(client, mad_hatter_with_mock_plugin):
 
     response = client.get("/custom-endpoints/endpoint")
     assert response.status_code == 200
 
-    mad_hatter.toggle_plugin("mock_plugin")
+    mad_hatter_with_mock_plugin.toggle_plugin("mock_plugin")
 
     response = client.get("/custom-endpoints/endpoint")
     assert response.status_code == 404

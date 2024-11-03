@@ -94,12 +94,19 @@ def test_activate_plugin(plugin):
     assert "mock tool example 2" in tool.start_examples
 
 
-def test_deactivate_plugin(plugin):
-    # The plugin is non active by default
-    plugin.activate()
+def test_deactivate_plugin(mad_hatter_with_mock_plugin):
+    
+    # The plugin is installed and activated by the mad_hatter_with_mock_plugin fixture
+    
+    # Get the reference to the mock plugin
+    plugin = mad_hatter_with_mock_plugin.plugins["mock_plugin"]
 
-    # deactivate it
-    plugin.deactivate()
+    # Deactivate the mock plugin
+    # Why not using plugin.deactivate()? 
+    # the "endpoint" decorator needs the reference to the FastAPI app instance for endpoint removing.
+    # Calling plugin.deactivate() the method CustomEndpoint.deactivate() raises the exception:
+    # "self.cheshire_cat_api is None"
+    mad_hatter_with_mock_plugin.toggle_plugin("mock_plugin")
 
     assert plugin.active is False
 
