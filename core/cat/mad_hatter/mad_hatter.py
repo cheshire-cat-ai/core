@@ -18,7 +18,7 @@ from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.decorators.hook import CatHook
 from cat.mad_hatter.decorators.tool import CatTool
-from cat.mad_hatter.decorators.endpoint import CustomEndpoint, endpoint
+from cat.mad_hatter.decorators.endpoint import CustomEndpoint
 
 from cat.experimental.form import CatForm
 
