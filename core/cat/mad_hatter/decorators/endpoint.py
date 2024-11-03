@@ -49,7 +49,12 @@ class CustomEndpoint:
             **self.kwargs,
         )
 
-        self.cheshire_cat_api.include_router(plugins_router, prefix=self.prefix)
+        try:
+            self.cheshire_cat_api.include_router(plugins_router, prefix=self.prefix)
+        except BaseException as e:
+            log.error(f"Error activating custom endpoint [{self.name}]: {e}")
+            return
+
         self.cheshire_cat_api.openapi_schema = None  # Flush the cache of openapi schema
 
         # Set the fastapi api_route into the Custom Endpoint
