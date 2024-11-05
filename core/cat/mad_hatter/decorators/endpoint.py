@@ -78,7 +78,7 @@ class Endpoint:
 
     cheshire_cat_api = None
 
-    default_prefix = "/custom-endpoints"
+    default_prefix = "/custom"
     default_tags = ["Custom Endpoints"]
 
     # Called from madhatter to inject the fastapi app instance

@@ -10,16 +10,16 @@ def test_endpoints_discovery(mad_hatter_with_mock_plugin):
         assert isinstance(h, CustomEndpoint)
         assert h.plugin_id == "mock_plugin"
 
-        if h.name == "/custom-endpoints/endpoint":
+        if h.name == "/custom/endpoint":
             assert h.tags == ["Custom Endpoints"]
 
-        if h.name == "/custom-endpoints/tests":
+        if h.name == "/custom/tests":
             assert h.tags == ["Tests"]
 
 
 def test_endpoint_decorator(client, mad_hatter_with_mock_plugin):
 
-    response = client.get("/custom-endpoints/endpoint")
+    response = client.get("/custom/endpoint")
 
     assert response.status_code == 200
     
@@ -57,10 +57,10 @@ def test_post_endpoint(client, mad_hatter_with_mock_plugin):
 
 def test_plugin_deactivation(client, mad_hatter_with_mock_plugin):
 
-    response = client.get("/custom-endpoints/endpoint")
+    response = client.get("/custom/endpoint")
     assert response.status_code == 200
 
     mad_hatter_with_mock_plugin.toggle_plugin("mock_plugin")
 
-    response = client.get("/custom-endpoints/endpoint")
+    response = client.get("/custom/endpoint")
     assert response.status_code == 404
