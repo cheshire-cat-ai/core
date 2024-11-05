@@ -8,6 +8,7 @@ from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models
 from cat.log import log
 from cat import utils
+from cat.looking_glass.telemetry import TelemetryHandler
 
 router = APIRouter()
 
@@ -127,6 +128,9 @@ def upsert_llm_setting(
     ccat = request.app.state.ccat
     # reload llm and embedder of the cat
     ccat.load_natural_language()
+    
+    TelemetryHandler().set_llm_model(languageModelName)
+    
     # crete new collections
     # (in case embedder is not configured, it will be changed automatically and aligned to vendor)
     # TODO: should we take this feature away?

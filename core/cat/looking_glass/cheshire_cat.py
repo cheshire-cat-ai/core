@@ -28,6 +28,7 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
+from cat.env import get_env
 
 class Procedure(Protocol):
     name: str
@@ -93,6 +94,12 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
+        
+        # Telemetry
+        if get_env("CCAT_TELEMETRY") == "true":
+            from cat.looking_glass.telemetry import TelemetryHandler
+            log.info("Load Telemetry")
+            TelemetryHandler()
 
     def load_natural_language(self):
         """Load Natural Language related objects.

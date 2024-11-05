@@ -2,6 +2,7 @@ from typing import Dict
 
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
+from cat.looking_glass.telemetry import TelemetryHandler
 from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.embedder import get_allowed_embedder_models, get_embedders_schemas
@@ -143,6 +144,8 @@ def upsert_embedder_setting(
     ccat = request.app.state.ccat
     # reload llm and embedder of the cat
     ccat.load_natural_language()
+    
+    TelemetryHandler().set_embedder_model(languageEmbedderName)
     # crete new collections (different embedder!)
     try:
         ccat.load_memory()
