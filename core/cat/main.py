@@ -29,7 +29,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=80,
         use_colors=True,
-        log_level="debug",
+        log_level=get_env("CCAT_LOG_LEVEL").lower(),
         **debug_config,
         **proxy_pass_config,
     )
