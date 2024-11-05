@@ -144,8 +144,6 @@ def upsert_embedder_setting(
     ccat = request.app.state.ccat
     # reload llm and embedder of the cat
     ccat.load_natural_language()
-    
-    TelemetryHandler().set_embedder_model(languageEmbedderName)
     # crete new collections (different embedder!)
     try:
         ccat.load_memory()

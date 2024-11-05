@@ -3,6 +3,7 @@ from typing import List, Dict
 from typing_extensions import Protocol
 
 
+from cat.looking_glass.telemetry import TelemetryHandler
 from langchain.base_language import BaseLanguageModel
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableLambda
@@ -68,6 +69,13 @@ class CheshireCat:
 
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
+        
+        # Telemetry
+        if get_env("CCAT_TELEMETRY") == "true":
+            from cat.looking_glass.telemetry import TelemetryHandler
+            log.info("Load Telemetry")
+            self.telemetry = TelemetryHandler()
+            self.white_rabbit.schedule_interval_job(self.telemetry.send_telemetry,seconds=6)
 
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
@@ -94,12 +102,6 @@ class CheshireCat:
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
-        
-        # Telemetry
-        if get_env("CCAT_TELEMETRY") == "true":
-            from cat.looking_glass.telemetry import TelemetryHandler
-            log.info("Load Telemetry")
-            TelemetryHandler()
 
     def load_natural_language(self):
         """Load Natural Language related objects.
@@ -150,6 +152,8 @@ class CheshireCat:
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             try:
                 llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+                if self.telemetry:
+                    self.telemetry.set_llm_model(selected_llm_class)
             except Exception:
                 import traceback
 
@@ -193,6 +197,8 @@ class CheshireCat:
                 embedder = FactoryClass.get_embedder_from_config(
                     selected_embedder_config["value"]
                 )
+                if self.telemetry:
+                    self.telemetry.set_embedder_model(selected_embedder_class)
             except AttributeError:
                 import traceback
 
@@ -433,3 +439,8 @@ class CheshireCat:
         )
 
         return output
+    
+    @property
+    def telemetryHandler(self):
+        if self.telemtry is None:
+            None
