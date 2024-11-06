@@ -223,7 +223,7 @@ JSON:
         # JSON structure
         # BaseModel.__fields__['my_field'].type_
         JSON_structure = "{"
-        for field_name, field in self.model_class.model_fields.items():
+        for field_name, field in self.model_getter().model_fields.items():
             if field.description:
                 description = field.description
             else:
@@ -272,7 +272,7 @@ Updated JSON:
             # INFO TODO: In this case the optional fields are always ignored
 
             # Attempts to create the model object to update the default values and validate it
-            model = self.model_class(**model).model_dump(mode="json")
+            model = self.model_getter()(**model).model_dump(mode="json")
 
             # If model is valid change state to COMPLETE
             self._state = CatFormState.COMPLETE
