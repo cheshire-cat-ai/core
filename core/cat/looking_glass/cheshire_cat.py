@@ -128,25 +128,7 @@ class CheshireCat:
         """
         
         selected_llm = crud.get_setting_by_name(name="llm_selected")
-
-        def _initialize_llm(selected_llm):
-            """Initialize the LLM based on the selected settings."""
-            if selected_llm is None:
-                # Return default LLM
-                return LLMDefaultConfig.get_llm_from_config({})
-            else:
-                # Get LLM factory class
-                selected_llm_class = selected_llm["value"]["name"]
-                FactoryClass = get_llm_from_name(selected_llm_class)
-
-                # Obtain configuration and instantiate LLM
-                selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
-                try:
-                    return FactoryClass.get_llm_from_config(selected_llm_config["value"])
-                except Exception:
-                    import traceback
-                    traceback.print_exc()
-                    return LLMDefaultConfig.get_llm_from_config({})
+        self._llm_modalities = {"image": False, "audio": False}
 
         def _get_black_pixel_data() -> str:
             """Return the base64 data for a black pixel image."""
@@ -155,12 +137,10 @@ class CheshireCat:
             AfFcSJAAAADUlEQVQIW2NgYGD4DwABBAEAwS2OU
             AAAAABJRU5ErkJggg=="""
 
-        def _test_llm_mulimodality(llm) -> Dict:
+        def _check_image_suppot(llm) -> Dict:
             """Test the LLM to check if it supports image input."""
 
             black_pixel = _get_black_pixel_data()
-
-            modalities = {"image": False, "audio": False}
 
             message = HumanMessage(
                 content=[
@@ -181,17 +161,35 @@ class CheshireCat:
 
             try:
                 llm.invoke([message])
-                modalities["image"] = True
+                self._llm_modalities["image"] = True
             except Exception as e:
                 log.warning(f"The LLM '{model_name}' does not support input images")
             finally:
                 log.info(f"LLM {model_name} Supported modalities:")
-                log.info(modalities)
+                log.info(self._llm_modalities)
 
-            return modalities
+        def _initialize_llm(selected_llm):
+            """Initialize the LLM based on the selected settings."""
+            if selected_llm is None:
+                # Return default LLM
+                return LLMDefaultConfig.get_llm_from_config({})
+            else:
+                # Get LLM factory class
+                selected_llm_class = selected_llm["value"]["name"]
+                FactoryClass = get_llm_from_name(selected_llm_class)
+
+                # Obtain configuration and instantiate LLM
+                selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+                try:
+                    llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+                    _check_image_suppot(llm)
+                    return llm
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
+                    return LLMDefaultConfig.get_llm_from_config({})
 
         llm = _initialize_llm(selected_llm)
-        self._llm_modalities = _test_llm_mulimodality(llm)
 
         return llm
 
