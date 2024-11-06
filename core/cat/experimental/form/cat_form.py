@@ -34,10 +34,14 @@ class CatForm:  # base model of forms
 
         self._errors: List[str] = []
         self._missing_fields: List[str] = []
+        self.model_class = self.model_getter()
 
     @property
     def cat(self):
         return self._cat
+
+    def model_getter(self):
+        return self.model_class
 
     def submit(self, form_data) -> str:
         raise NotImplementedError
