@@ -136,8 +136,8 @@ class StrayCat:
             message = CatMessage(content=message, user_id=self.user_id, why=why)
 
         if save:
-            self.working_memory.update_conversation_history(
-                who="AI", message=message["content"], why=message["why"]
+            self.working_memory.update_history(
+                message
             )
 
         self.__send_ws_json(message.model_dump())
@@ -394,8 +394,8 @@ class StrayCat:
         )
 
         # update conversation history (Human turn)
-        self.working_memory.update_conversation_history(
-            who="Human", message=user_message_text
+        self.working_memory.update_history(
+            self.working_memory.user_message_json
         )
 
         # recall episodic and declarative memories from vector collections
@@ -448,7 +448,7 @@ class StrayCat:
 
         # prepare final cat message
         final_output = CatMessage(
-            user_id=self.user_id, content=str(agent_output.output), why=why
+            user_id=self.user_id, text=str(agent_output.output), why=why
         )
 
         # run message through plugins
@@ -457,8 +457,8 @@ class StrayCat:
         )
 
         # update conversation history (AI turn)
-        self.working_memory.update_conversation_history(
-            who="AI", message=final_output.content, why=final_output.why
+        self.working_memory.update_history(
+            final_output
         )
 
         return final_output
@@ -576,7 +576,7 @@ Allowed classes are:
 
         history_string = ""
         for turn in history:
-            history_string += f"\n - {turn['who']}: {turn['message']}"
+            history_string += f"\n - {turn.content.who}: {turn.content.text}"
 
         return history_string
 
