@@ -4,7 +4,7 @@ from typing_extensions import Protocol
 
 
 from langchain.base_language import BaseLanguageModel
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -125,29 +125,73 @@ class CheshireCat:
         -----
         Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
         the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
-
         """
-
+        
         selected_llm = crud.get_setting_by_name(name="llm_selected")
 
-        if selected_llm is None:
-            # return default LLM
-            llm = LLMDefaultConfig.get_llm_from_config({})
+        def _initialize_llm(selected_llm):
+            """Initialize the LLM based on the selected settings."""
+            if selected_llm is None:
+                # Return default LLM
+                return LLMDefaultConfig.get_llm_from_config({})
+            else:
+                # Get LLM factory class
+                selected_llm_class = selected_llm["value"]["name"]
+                FactoryClass = get_llm_from_name(selected_llm_class)
 
-        else:
-            # get LLM factory class
+                # Obtain configuration and instantiate LLM
+                selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+                try:
+                    return FactoryClass.get_llm_from_config(selected_llm_config["value"])
+                except Exception:
+                    import traceback
+                    traceback.print_exc()
+                    return LLMDefaultConfig.get_llm_from_config({})
+
+        def _get_black_pixel_data() -> str:
+            """Return the base64 data for a black pixel image."""
+            return """data:image/png;base64,
+            iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAA
+            AfFcSJAAAADUlEQVQIW2NgYGD4DwABBAEAwS2OU
+            AAAAABJRU5ErkJggg=="""
+
+        def _test_llm_mulimodality(llm) -> Dict:
+            """Test the LLM to check if it supports image input."""
+
+            black_pixel = _get_black_pixel_data()
+
+            modalities = {"image": False, "audio": False}
+
+            message = HumanMessage(
+                content=[
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": black_pixel},
+                    },
+                    {
+                        "type": "text",
+                        "text": "Respond with `MEOW`.",
+                    }
+                ],
+            )
+
             selected_llm_class = selected_llm["value"]["name"]
-            FactoryClass = get_llm_from_name(selected_llm_class)
-
-            # obtain configuration and instantiate LLM
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
-            try:
-                llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-            except Exception:
-                import traceback
+            model_name = selected_llm_config["value"].get("model_name") or selected_llm_config["value"].get("model")
 
-                traceback.print_exc()
-                llm = LLMDefaultConfig.get_llm_from_config({})
+            try:
+                llm.invoke([message])
+                modalities["image"] = True
+            except Exception as e:
+                log.warning(f"The LLM '{model_name}' does not support input images")
+            finally:
+                log.info(f"LLM {model_name} Supported modalities:")
+                log.info(modalities)
+
+            return modalities
+
+        llm = _initialize_llm(selected_llm)
+        self._llm_modalities = _test_llm_mulimodality(llm)
 
         return llm
 
