@@ -1,7 +1,11 @@
+import base64
+from io import BytesIO
 import time
 import asyncio
+import requests
 import traceback
 import tiktoken
+from PIL import Image
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
@@ -586,7 +590,7 @@ Allowed classes are:
             """Format a human message, including any text and images."""
             content = [{"type": "text", "text": message.content.text}]
             
-            if has_image_modality() and message.content.images:
+            if message.content.images:
                 content.extend(format_images(message.content.images))
             
             return HumanMessage(
@@ -602,13 +606,41 @@ Allowed classes are:
             )
 
         def format_images(images: List[str]) -> List[dict]:
-            """Format a list of images into the required structurefor langchain messages."""
-            return [{"type": "image_url", "image_url": {"url": image}} for image in images]
-
-        def has_image_modality() -> bool:
-            """Check if the instantiated LLM supports image modality."""
-            return CheshireCat()._llm_modalities.get("image", False)
-
+            """Format a list of images into the required structure for langchain messages, 
+            downloading the image if the model only supports data URIs but not image URLs."""
+            
+            # Retrieve the supported modalities from the LLM
+            llm_modalities = CheshireCat()._llm_modalities
+            
+            formatted_images = []
+            
+            for image in images:
+                if image.startswith("http"):
+                    if llm_modalities["image_url"]:
+                        formatted_images.append({"type": "image_url", "image_url": {"url": image}})
+                        continue
+                    
+                    try:
+                        response = requests.get(image)
+                        if response.status_code == 200:
+                            # Open the image using Pillow to determine its MIME type
+                            img = Image.open(BytesIO(response.content))
+                            mime_type = img.format.lower()  # Get MIME type (e.g., jpeg, png)
+                            
+                            # Encode the image to base64
+                            encoded_image = base64.b64encode(response.content).decode('utf-8')
+                            image_uri = f"data:image/{mime_type};base64,{encoded_image}"
+                            
+                            # Add the image as a data URI with the correct MIME type
+                            formatted_images.append({"type": "image_url", "image_url": {"url": image_uri}})
+                    except Exception as e:
+                        log.error(f"Failed to process image {image}: {e}")
+                else: 
+                    if llm_modalities["data_uri"]:
+                        formatted_images.append({"type": "image_url", "image_url": {"url": image}})
+            
+            return formatted_images
+        
         chat_history = self.working_memory.history[-latest_n:]
         recent_history = chat_history[-latest_n:]
         langchain_chat_history = []
