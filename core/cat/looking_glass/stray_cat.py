@@ -581,18 +581,45 @@ Allowed classes are:
         return history_string
 
     def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
-        chat_history = self.working_memory.history[-latest_n:]
 
+        def format_human_message(message: HumanMessage) -> HumanMessage:
+            """Format a human message, including any text and images."""
+            content = [{"type": "text", "text": message.content.text}]
+            
+            if has_image_modality() and message.content.images:
+                content.extend(format_images(message.content.images))
+            
+            return HumanMessage(
+                name=message.content.who,
+                content=content
+            )
+
+        def format_ai_message(message) -> AIMessage:
+            """Format an AI message with text content only."""
+            return AIMessage(
+                name=message.content.who,
+                content=message.content.text
+            )
+
+        def format_images(images: List[str]) -> List[dict]:
+            """Format a list of images into the required structurefor langchain messages."""
+            return [{"type": "image_url", "image_url": {"url": image}} for image in images]
+
+        def has_image_modality() -> bool:
+            """Check if the instantiated LLM supports image modality."""
+            return CheshireCat()._llm_modalities.get("image", False)
+
+        chat_history = self.working_memory.history[-latest_n:]
+        recent_history = chat_history[-latest_n:]
         langchain_chat_history = []
-        for message in chat_history:
-            if message["role"] == Role.Human:
-                langchain_chat_history.append(
-                    HumanMessage(name=message["who"], content=message["message"])
-                )
+
+        for message in recent_history:
+            if message.role == Role.Human:
+                formatted_message = format_human_message(message)
             else:
-                langchain_chat_history.append(
-                    AIMessage(name=message["who"], content=message["message"])
-                )
+                formatted_message = format_ai_message(message)
+            
+            langchain_chat_history.append(formatted_message)
 
         return langchain_chat_history
 
