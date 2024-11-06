@@ -61,10 +61,32 @@ class CatMessage(BaseModelDict):
         user_id (str): user id
     """
 
-    content: str
-    user_id: str
     type: str = "chat"
-    why: MessageWhy | None = None
+    user_id: str
+    who: str = "AI"
+    text: Optional[str] = None
+    images: Optional[List[str]] = None
+    audio: Optional[List[str]] = None
+    why: Optional[MessageWhy] = None
+
+    def __init__(
+        self,
+        user_id: str,
+        content: Optional[str] = None,
+        text: Optional[str] = None,
+        images: Optional[Union[List[str], str]] = None,
+        audio: Optional[Union[List[str], str]] = None,
+        why: Optional[MessageWhy] = None,
+        who: str = "AI",
+        **kwargs,
+    ):
+        if isinstance(images, str):
+            images = [images]
+
+        if isinstance(audio, str):
+            audio = [audio]
+
+        super().__init__(user_id=user_id, who=who, content=content, text=text, images=images, audio=audio, why=why, **kwargs)
 
 
 class UserMessage(BaseModelDict):
@@ -75,7 +97,26 @@ class UserMessage(BaseModelDict):
         user_id (str): user id
     """
 
-    text: str
     user_id: str
+    who: str = "Human"
+    text: Optional[str] = None
+    images: Optional[List[str]] = None
+    audio: Optional[List[str]] = None
 
+    def __init__(
+        self,
+        user_id: str,
+        text: Optional[str] = None,
+        images: Optional[Union[List[str], str]] = None,
+        audio: Optional[Union[List[str], str]] = None,
+        who: str = "Human",
+        **kwargs,
+    ):
+        if isinstance(images, str):
+            images = [images]
+
+        if isinstance(audio, str):
+            audio = [audio]
+
+        super().__init__(user_id=user_id, who=who, text=text, images=images, audio=audio, **kwargs)
 
