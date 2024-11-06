@@ -86,7 +86,32 @@ class CatMessage(BaseModelDict):
         if isinstance(audio, str):
             audio = [audio]
 
+        if content:
+            deprecation_warning("The `content` parameter is deprecated. Use `text` instead.")    
+            text = content  # Map 'content' to 'text'
+
         super().__init__(user_id=user_id, who=who, content=content, text=text, images=images, audio=audio, why=why, **kwargs)
+    
+    @computed_field
+    @property
+    def content(self) -> str:
+        """
+        This attribute is deprecated. Use `text` instead.
+
+        The text content of the message. Use `text` instead.
+
+        Returns
+        -------
+        str
+            The text content of the message.
+        """
+        deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
+        return self.text
+    
+    @content.setter
+    def content(self, value):
+        deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
+        self.text = value
 
 
 class UserMessage(BaseModelDict):
