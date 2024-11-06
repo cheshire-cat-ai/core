@@ -1,4 +1,5 @@
 import time
+import base64
 from typing import List, Dict
 from typing_extensions import Protocol
 
@@ -128,45 +129,64 @@ class CheshireCat:
         """
         
         selected_llm = crud.get_setting_by_name(name="llm_selected")
-        self._llm_modalities = {"image": False, "audio": False}
+        self._llm_modalities = {"image_uri": False, "image_url": False, "audio": False}
 
-        def _get_black_pixel_data() -> str:
-            """Return the base64 data for a black pixel image."""
-            return """data:image/png;base64,
-            iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAA
-            AfFcSJAAAADUlEQVQIW2NgYGD4DwABBAEAwS2OU
-            AAAAABJRU5ErkJggg=="""
+        def _load_test_image():
+            """Return the base64 data for the test image."""
+            with open("cat/loading_cat.jpg", "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
 
-        def _check_image_suppot(llm) -> Dict:
-            """Test the LLM to check if it supports image input."""
+        def _check_image_support(llm, image_type: str, image_value: str) -> Dict:
+            """Test the LLM to check if it supports image input of a specified type."""
 
-            black_pixel = _get_black_pixel_data()
-
-            message = HumanMessage(
-                content=[
+            # Prepare message content based on the image type
+            if image_type == "image_uri":
+                content = [
                     {
                         "type": "image_url",
-                        "image_url": {"url": black_pixel},
-                    },
-                    {
-                        "type": "text",
-                        "text": "Respond with `MEOW`.",
+                        "image_url": {"url": f"data:image/jpeg;base64,{image_value}"},
                     }
-                ],
+                ]
+            elif image_type == "image_url":
+                content = [
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": image_value},
+                    }
+                ]
+           
+
+            content.append(
+                {
+                    "type": "text",
+                    "text": "Respond with `MEOW`.",
+                }
             )
 
+            message = HumanMessage(content=content)
+            
+            # Retrieve model information
             selected_llm_class = selected_llm["value"]["name"]
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             model_name = selected_llm_config["value"].get("model_name") or selected_llm_config["value"].get("model")
 
+            # Perform the image support check
             try:
                 llm.invoke([message])
-                self._llm_modalities["image"] = True
+                self._llm_modalities[image_type] = True
             except Exception as e:
-                log.warning(f"The LLM '{model_name}' does not support input images")
-            finally:
-                log.info(f"LLM {model_name} Supported modalities:")
-                log.info(self._llm_modalities)
+                log.warning(f"The LLM '{model_name}' does not support {image_type} as input images.")
+                log.debug(e)
+
+        # Wrapper functions for checking each type of image support
+        def _check_image_uri_support(llm) -> Dict:
+            """Test LLM support for base64-encoded image input."""
+            return _check_image_support(llm, "image_uri", _load_test_image())
+
+        def _check_image_url_support(llm) -> Dict:
+            """Test LLM support for URL-based image input."""
+            return _check_image_support(llm, "image_url", "https://raw.githubusercontent.com/cheshire-cat-ai/core/refs/heads/main/readme/cheshire-cat.jpeg")
+
 
         def _initialize_llm(selected_llm):
             """Initialize the LLM based on the selected settings."""
@@ -180,9 +200,13 @@ class CheshireCat:
 
                 # Obtain configuration and instantiate LLM
                 selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+                model_name = selected_llm_config["value"].get("model_name") or selected_llm_config["value"].get("model") or None
                 try:
                     llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-                    _check_image_suppot(llm)
+                    _check_image_uri_support(llm)
+                    _check_image_url_support(llm)
+                    log.info(f"LLM {model_name} Supported modalities:")
+                    log.info(self._llm_modalities)
                     return llm
                 except Exception:
                     import traceback
