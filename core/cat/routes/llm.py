@@ -8,7 +8,6 @@ from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models
 from cat.log import log
 from cat import utils
-from cat.looking_glass.telemetry import TelemetryHandler
 
 router = APIRouter()
 

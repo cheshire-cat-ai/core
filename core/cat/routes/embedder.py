@@ -2,7 +2,6 @@ from typing import Dict
 
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
-from cat.looking_glass.telemetry import TelemetryHandler
 from fastapi import Request, APIRouter, Body, HTTPException, Depends
 
 from cat.factory.embedder import get_allowed_embedder_models, get_embedders_schemas
