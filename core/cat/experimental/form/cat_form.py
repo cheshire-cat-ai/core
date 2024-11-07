@@ -128,7 +128,7 @@ JSON:
         # If the state is INCOMPLETE, execute model update
         # (and change state based on validation result)
         if self._state == CatFormState.INCOMPLETE:
-            self._model = self.update()
+            self.update()
 
         # If state is COMPLETE, ask confirm (or execute action directly)
         if self._state == CatFormState.COMPLETE:
@@ -149,12 +149,11 @@ JSON:
         json_details = self.sanitize(json_details)
 
         # model merge old and new
-        new_model = self._model | json_details
+        self._model = self._model | json_details
 
         # Validate new_details
-        new_model = self.validate(new_model)
+        self.validate()
 
-        return new_model
 
     def message(self):
         state_methods = {
@@ -264,7 +263,7 @@ Updated JSON:
         return model
 
     # Validate model
-    def validate(self, model):
+    def validate(self):
         self._missing_fields = []
         self._errors = []
 
@@ -272,7 +271,7 @@ Updated JSON:
             # INFO TODO: In this case the optional fields are always ignored
 
             # Attempts to create the model object to update the default values and validate it
-            model = self.model_getter()(**model).model_dump(mode="json")
+            self.model_getter()(**self._model).model_dump(mode="json")
 
             # If model is valid change state to COMPLETE
             self._state = CatFormState.COMPLETE
@@ -285,9 +284,7 @@ Updated JSON:
                     self._missing_fields.append(field_name)
                 else:
                     self._errors.append(f'{field_name}: {error_message["msg"]}')
-                    del model[field_name]
+                    del self._model[field_name]
 
             # Set state to INCOMPLETE
             self._state = CatFormState.INCOMPLETE
-
-        return model
