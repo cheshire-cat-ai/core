@@ -3,6 +3,7 @@ import base64
 from typing import List, Dict
 from typing_extensions import Protocol
 
+from pydantic import BaseModel
 
 from langchain.base_language import BaseLanguageModel
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -39,6 +40,10 @@ class Procedure(Protocol):
     #   "start_examples": [],
     # }
     triggers_map: Dict[str, List[str]]
+
+class LLMSupportedModalities(BaseModel):
+    image_url: bool = False
+    image_uri: bool = False
 
 
 # main class
@@ -155,6 +160,7 @@ class CheshireCat:
                     }
                 ]
            
+        self._llm_modalities: LLMSupportedModalities = LLMSupportedModalities()
 
             content.append(
                 {
@@ -173,7 +179,7 @@ class CheshireCat:
             # Perform the image support check
             try:
                 llm.invoke([message])
-                self._llm_modalities[image_type] = True
+                setattr(self._llm_modalities, image_type, True)
             except Exception as e:
                 log.warning(f"The LLM '{model_name}' does not support {image_type} as input images.")
                 log.debug(e)
@@ -206,7 +212,7 @@ class CheshireCat:
                     _check_image_uri_support(llm)
                     _check_image_url_support(llm)
                     log.info(f"LLM {model_name} Supported modalities:")
-                    log.info(self._llm_modalities)
+                    log.info(self._llm_modalities.__dict__)
                     return llm
                 except Exception:
                     import traceback

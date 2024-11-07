@@ -17,7 +17,7 @@ from langchain_core.output_parsers.string import StrOutputParser
 from fastapi import WebSocket
 
 from cat.log import log
-from cat.looking_glass.cheshire_cat import CheshireCat
+from cat.looking_glass.cheshire_cat import CheshireCat, LLMSupportedModalities
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
@@ -610,33 +610,36 @@ Allowed classes are:
             downloading the image if the model only supports data URIs but not image URLs."""
             
             # Retrieve the supported modalities from the LLM
-            llm_modalities = CheshireCat()._llm_modalities
+            llm_modalities: LLMSupportedModalities = CheshireCat()._llm_modalities
             
             formatted_images = []
             
             for image in images:
                 if image.startswith("http"):
-                    if llm_modalities["image_url"]:
+                    if llm_modalities.image_url:
                         formatted_images.append({"type": "image_url", "image_url": {"url": image}})
                         continue
                     
-                    try:
-                        response = requests.get(image)
-                        if response.status_code == 200:
-                            # Open the image using Pillow to determine its MIME type
-                            img = Image.open(BytesIO(response.content))
-                            mime_type = img.format.lower()  # Get MIME type (e.g., jpeg, png)
-                            
-                            # Encode the image to base64
-                            encoded_image = base64.b64encode(response.content).decode('utf-8')
-                            image_uri = f"data:image/{mime_type};base64,{encoded_image}"
-                            
-                            # Add the image as a data URI with the correct MIME type
-                            formatted_images.append({"type": "image_url", "image_url": {"url": image_uri}})
-                    except Exception as e:
-                        log.error(f"Failed to process image {image}: {e}")
+                    response = requests.get(image)
+                    if response.status_code == 200:
+                        # Open the image using Pillow to determine its MIME type
+                        img = Image.open(BytesIO(response.content))
+                        mime_type = img.format.lower()  # Get MIME type (e.g., jpeg, png)
+                        
+                        # Encode the image to base64
+                        encoded_image = base64.b64encode(response.content).decode('utf-8')
+                        image_uri = f"data:image/{mime_type};base64,{encoded_image}"
+                        
+                        # Add the image as a data URI with the correct MIME type
+                        formatted_images.append({"type": "image_url", "image_url": {"url": image_uri}})
+                    else:
+                        error_message = f"Unexpected error with status code {response.status_code}"
+                        if response.text:
+                            error_message = response.text
+
+                        log.error(f"Failed to process image {image}: {error_message}")
                 else: 
-                    if llm_modalities["data_uri"]:
+                    if llm_modalities.imge_uri:
                         formatted_images.append({"type": "image_url", "image_url": {"url": image}})
             
             return formatted_images
