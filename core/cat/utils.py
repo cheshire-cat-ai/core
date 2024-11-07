@@ -12,6 +12,7 @@ from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.utils import get_colored_text
+import tomli
 
 from cat.log import log
 from cat.env import get_env
@@ -242,6 +243,11 @@ def langchain_log_output(langchain_output, title):
     print(get_colored_text("========================================", "blue"))
     return langchain_output
 
+
+def get_cat_version() -> str:
+    with open("pyproject.toml", "rb") as f:
+        project_toml = tomli.load(f)["project"]
+        return project_toml["version"]
 
 # This is our masterwork during tea time
 class singleton:

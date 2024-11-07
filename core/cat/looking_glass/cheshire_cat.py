@@ -29,7 +29,7 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
-from cat.env import get_env
+
 
 class Procedure(Protocol):
     name: str
@@ -71,12 +71,8 @@ class CheshireCat:
         self.white_rabbit = WhiteRabbit()
         
         # Telemetry
-        if get_env("CCAT_TELEMETRY") == "true":
-            from cat.looking_glass.telemetry import TelemetryHandler
-            log.info("Load Telemetry")
-            self.telemetry = TelemetryHandler()
-            self.white_rabbit.schedule_interval_job(self.telemetry.send_telemetry,seconds=6)
-
+        self.telemetry = TelemetryHandler()
+            
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
 
@@ -152,8 +148,7 @@ class CheshireCat:
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             try:
                 llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-                if self.telemetry:
-                    self.telemetry.set_llm_model(selected_llm_class)
+                self.telemetry.set_llm_model(selected_llm_class)
             except Exception:
                 import traceback
 
@@ -197,8 +192,7 @@ class CheshireCat:
                 embedder = FactoryClass.get_embedder_from_config(
                     selected_embedder_config["value"]
                 )
-                if self.telemetry:
-                    self.telemetry.set_embedder_model(selected_embedder_class)
+                self.telemetry.set_embedder_model(selected_embedder_class)
             except AttributeError:
                 import traceback
 
