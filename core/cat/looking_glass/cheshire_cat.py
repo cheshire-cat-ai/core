@@ -2,7 +2,6 @@ import time
 import base64
 from typing import List, Dict
 import requests
-from requests.exceptions import HTTPError
 from typing_extensions import Protocol
 
 from pydantic import BaseModel
