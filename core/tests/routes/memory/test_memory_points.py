@@ -316,7 +316,7 @@ def test_edit_point_wrong_collection_and_not_exist(client):
         "/memory/collections/declarative/points/{point_id}", json=req_json
     )
     assert res.status_code == 400
-    assert f"Point does not exist." in res.json()["detail"]["error"]
+    assert "Point does not exist." in res.json()["detail"]["error"]
 
 
 

@@ -334,7 +334,7 @@ async def edit_memory_point(
     points = vector_memory.collections[collection_id].get_points([point_id])
     if points is None or len(points) == 0:
         raise HTTPException(
-            status_code=400, detail={"error": f"Point does not exist."}
+            status_code=400, detail={"error": "Point does not exist."}
         )
 
     # embed content
