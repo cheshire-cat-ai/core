@@ -267,3 +267,97 @@ async def get_points_in_collection(
         "points": points,
         "next_offset": next_offset
     }
+
+
+
+# EDIT a point in memory
+@router.put("/collections/{collection_id}/points/{point_id}", response_model=MemoryPoint)
+async def edit_memory_point(
+    request: Request,
+    collection_id: str,
+    point_id: str,
+    point: MemoryPointBase,
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
+) -> MemoryPoint:
+    """Edit a point in memory
+
+    
+    Example
+    ----------
+    ```
+    
+    collection = "declarative"
+    content = "MIAO!"
+    metadata = {"custom_key": "custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+    # create a point
+    res = requests.post(
+        f"http://localhost:1865/memory/collections/{collection}/points", json=req_json
+    )
+    json = res.json()
+    #get the id
+    point_id = json["id"]
+    # new point values
+    content = "NEW MIAO!"
+    metadata = {"custom_key": "new_custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+
+    # edit the point
+    res = requests.put(
+        f"http://localhost:1865/memory/collections/{collection}/points/{point_id}", json=req_json
+    )
+    json = res.json()
+    print(json)
+    ```
+    """
+
+    # do not touch procedural memory
+    if collection_id == "procedural":
+        raise HTTPException(
+            status_code=400, detail={"error": "Procedural memory is read-only."}
+        )
+
+    vector_memory: VectorMemory = stray.memory.vectors
+    collections = list(vector_memory.collections.keys())
+    if collection_id not in collections:
+        raise HTTPException(
+            status_code=400, detail={"error": "Collection does not exist."}
+        )
+
+    #ensure point exist
+    points = vector_memory.collections[collection_id].get_points([point_id])
+    if points is None or len(points) == 0:
+        raise HTTPException(
+            status_code=400, detail={"error": f"Point with id {point_id} does not exist."}
+        )
+
+    # embed content
+    embedding = stray.embedder.embed_query(point.content)
+
+    # ensure source is set
+    if not point.metadata.get("source"):
+        point.metadata["source"] = (
+            stray.user_id
+        )  # this will do also for declarative memory
+
+    # ensure when is set
+    if not point.metadata.get("when"):
+        point.metadata["when"] = time.time() #if when is not in the metadata set the current time
+
+    # edit point
+    qdrant_point = vector_memory.collections[collection_id].add_point(
+        content=point.content, vector=embedding, metadata=point.metadata, id=point_id
+    )
+
+    return MemoryPoint(
+        metadata=qdrant_point.payload["metadata"],
+        content=qdrant_point.payload["page_content"],
+        vector=qdrant_point.vector,
+        id=qdrant_point.id,
+    )

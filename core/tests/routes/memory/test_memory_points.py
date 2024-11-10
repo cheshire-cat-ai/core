@@ -288,3 +288,85 @@ def test_get_collection_points_offset(client, patch_time_now, collection):
     assert points_payloads == expected_payloads
 
 
+
+def test_edit_point_wrong_collection_and_not_exist(client):
+
+    req_json = {
+        "content": "MIAO!"
+    }
+
+    point_id = 100
+
+    # wrong collection
+    res = client.put(
+        f"/memory/collections/wrongcollection/points/{point_id}", json=req_json
+    )
+    assert res.status_code == 400
+    assert "Collection does not exist" in res.json()["detail"]["error"]
+
+    # cannot write procedural point
+    res = client.put(
+        "/memory/collections/procedural/points/{point_id}", json=req_json
+    )
+    assert res.status_code == 400
+    assert "Procedural memory is read-only" in res.json()["detail"]["error"]
+
+    # point do not exist
+    res = client.put(
+        "/memory/collections/declarative/points/{point_id}", json=req_json
+    )
+    assert res.status_code == 400
+    assert "Point with id {point_id} does not exist." in res.json()["detail"]["error"]
+
+
+
+@pytest.mark.parametrize("collection", ["episodic", "declarative"])
+def test_edit_memory_point(client, patch_time_now, collection):
+
+    # create a point
+    content = "MIAO!"
+    metadata = {"custom_key": "custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+    # create a point
+    res = client.post(
+        f"/memory/collections/{collection}/points", json=req_json
+    )
+    #get the id
+    assert res.status_code == 200
+    json = res.json()
+    assert json["id"]
+    point_id = json["id"]
+    # new point values
+    content = "NEW MIAO!"
+    metadata = {"custom_key": "new_custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+    
+    res = client.put(
+        f"/memory/collections/{collection}/points/{point_id}", json=req_json
+    )
+    # check response
+    assert res.status_code == 200
+    json = res.json()
+    assert json["content"] == content
+    expected_metadata = {"when":FAKE_TIMESTAMP,"source": "user", **metadata}
+    assert json["metadata"] == expected_metadata
+    assert "id" in json
+    assert "vector" in json
+    assert isinstance(json["vector"], list)
+    assert isinstance(json["vector"][0], float)
+
+    # check memory contents
+    params = {"text": "miao"}
+    response = client.get("/memory/recall/", params=params)
+    json = response.json()
+    assert response.status_code == 200
+    assert len(json["vectors"]["collections"][collection]) == 1
+    memory = json["vectors"]["collections"][collection][0]
+    assert memory["page_content"] == content
+    assert memory["metadata"] == expected_metadata
