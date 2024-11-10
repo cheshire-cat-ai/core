@@ -277,7 +277,7 @@ async def edit_memory_point(
     collection_id: str,
     point_id: str,
     point: MemoryPointBase,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.EDIT)),
 ) -> MemoryPoint:
     """Edit a point in memory
 
@@ -334,7 +334,7 @@ async def edit_memory_point(
     points = vector_memory.collections[collection_id].get_points([point_id])
     if points is None or len(points) == 0:
         raise HTTPException(
-            status_code=400, detail={"error": f"Point with id {point_id} does not exist."}
+            status_code=400, detail={"error": f"Point does not exist."}
         )
 
     # embed content
