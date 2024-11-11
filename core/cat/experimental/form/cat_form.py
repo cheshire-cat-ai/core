@@ -34,7 +34,6 @@ class CatForm:  # base model of forms
 
         self._errors: List[str] = []
         self._missing_fields: List[str] = []
-        self.model_class = self.model_getter()
 
     @property
     def cat(self):
