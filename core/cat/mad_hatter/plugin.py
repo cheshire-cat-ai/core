@@ -243,6 +243,8 @@ class Plugin:
         meta["tags"] = json_file_data.get("tags", "unknown")
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
+        meta["min_cat_version"] = json_file_data.get("min_cat_version", "")
+        meta["max_cat_version"] = json_file_data.get("max_cat_version", "")
 
         return meta
 
