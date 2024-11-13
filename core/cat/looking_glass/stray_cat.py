@@ -25,7 +25,7 @@ from websockets.exceptions import ConnectionClosedOK
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 
-# The Stray cat goes around tools and hook, making troubles
+# The Stray cat goes around tools, hooks and endpoints... making troubles
 class StrayCat:
     """User/session based object containing working memory and a few utility pointers"""
 
