@@ -99,7 +99,7 @@ class Plugin:
 
         self._hooks = []
         self._tools = []
-        #TODO : clear of forms is missing here?
+        self._forms = []
         self._deactivate_endpoints()
         self._plugin_overrides = []
         self._active = False
