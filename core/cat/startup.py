@@ -27,7 +27,6 @@ from cat.routes.static import admin, static
 from cat.routes.openapi import get_openapi_configuration_function
 from cat.looking_glass.cheshire_cat import CheshireCat
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
@@ -35,10 +34,10 @@ async def lifespan(app: FastAPI):
     #
     # loads Cat and plugins
     # Every endpoint can access the cat instance via request.app.state.ccat
-    # - Not using midlleware because I can't make it work with both http and websocket;
+    # - Not using middleware because I can't make it work with both http and websocket;
     # - Not using Depends because it only supports callables (not instances)
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
-    app.state.ccat = CheshireCat()
+    app.state.ccat = CheshireCat(cheshire_cat_api)
 
     # Dict of pseudo-sessions (key is the user_id)
     app.state.strays = {}

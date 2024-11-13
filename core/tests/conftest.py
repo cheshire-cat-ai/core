@@ -21,6 +21,8 @@ from cat.mad_hatter.plugin import Plugin
 from cat.startup import cheshire_cat_api
 from tests.utils import create_mock_plugin_zip
 
+from cat.mad_hatter.mad_hatter import MadHatter
+
 import time
 
 FAKE_TIMESTAMP = 1705855981
@@ -163,3 +165,18 @@ def patch_time_now(monkeypatch):
         return FAKE_TIMESTAMP
 
     monkeypatch.setattr(time, 'time', mytime)
+
+#fixture for mad hatter with mock plugin installed
+@pytest.fixture
+def mad_hatter_with_mock_plugin(client):  # client here injects the monkeypatched version of the cat
+
+    # each test is given the mad_hatter instance (it's a singleton)
+    mad_hatter = MadHatter()
+
+    # install plugin
+    new_plugin_zip_path = create_mock_plugin_zip(flat=True)
+    mad_hatter.install_plugin(new_plugin_zip_path)
+
+    yield mad_hatter
+
+    mad_hatter.uninstall_plugin("mock_plugin")
