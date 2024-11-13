@@ -51,6 +51,8 @@ async def get_available_plugins(
             {"name": hook.name, "priority": hook.priority} for hook in p.hooks
         ]
         manifest["tools"] = [{"name": tool.name} for tool in p.tools]
+        manifest["endpoints"] = [{"name": endpoint.name, "tags": endpoint.tags} for endpoint in p.endpoints]
+        manifest["forms"] = [{"name": form.name} for form in p.forms]
 
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
@@ -274,6 +276,8 @@ async def get_plugin_details(
         {"name": hook.name, "priority": hook.priority} for hook in plugin.hooks
     ]
     plugin_info["tools"] = [{"name": tool.name} for tool in plugin.tools]
+    plugin_info["forms"] = [{"name": form.name} for form in plugin.forms]
+    plugin_info["endpoints"] = [{"name": endpoint.name, "tags": endpoint.tags} for endpoint in plugin.endpoints]
 
     return {"data": plugin_info}
 

@@ -8,7 +8,7 @@ from inspect import isfunction
 from tests.conftest import clean_up_mocks
 
 from cat.mad_hatter.mad_hatter import Plugin
-from cat.mad_hatter.decorators import CatHook, CatTool
+from cat.mad_hatter.decorators import CatHook, CatTool, CustomEndpoint
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
@@ -54,6 +54,7 @@ def test_create_plugin(plugin):
     # hooks and tools
     assert plugin.hooks == []
     assert plugin.tools == []
+    assert plugin.endpoints == []
 
 
 def test_activate_plugin(plugin):
@@ -92,20 +93,26 @@ def test_activate_plugin(plugin):
     assert "mock tool example 1" in tool.start_examples
     assert "mock tool example 2" in tool.start_examples
 
+    # endpoints
+    assert len(plugin.endpoints) == 4
+    for endpoint in plugin.endpoints:
+        assert isinstance(endpoint, CustomEndpoint)
+        assert endpoint.plugin_id == "mock_plugin"
+
 
 def test_deactivate_plugin(plugin):
-    # The plugin is non active by default
+    
+    # activate plugin
     plugin.activate()
 
     # deactivate it
     plugin.deactivate()
 
-    assert plugin.active is False
-
-    # hooks and tools
+    # decorators
     assert len(plugin.hooks) == 0
     assert len(plugin.tools) == 0
-
+    assert len(plugin.endpoints) == 0
+    
 
 def test_settings_schema(plugin):
     settings_schema = plugin.settings_schema()

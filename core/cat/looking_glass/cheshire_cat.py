@@ -54,13 +54,16 @@ class CheshireCat:
 
     """
 
-    def __init__(self):
+    def __init__(self, fastapi_app):
         """Cat initialization.
 
         At init time the Cat executes the bootstrap.
         """
 
         # bootstrap the Cat! ^._.^
+
+        # get reference to the FastAPI app
+        self.fastapi_app = fastapi_app
 
         # load AuthHandler
         self.load_auth()
@@ -80,10 +83,11 @@ class CheshireCat:
         # Load memories (vector collections and working_memory)
         self.load_memory()
 
-        # After memory is loaded, we can get/create tools embeddings
-        # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
-        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
-        self.embed_procedures()  # first time launched manually
+        # After memory is loaded, we can get/create tools embeddings      
+        self.mad_hatter.on_finish_plugins_sync_callback = self.on_finish_plugins_sync_callback
+ 
+        # First time launched manually       
+        self.on_finish_plugins_sync_callback()
 
         # Main agent instance (for reasoning)
         self.main_agent = MainAgent()
@@ -331,6 +335,15 @@ class CheshireCat:
                         "content": trigger_content,
                     }
         return hashes
+
+    def on_finish_plugins_sync_callback(self):
+        self.activate_endpoints()
+        self.embed_procedures()
+
+    def activate_endpoints(self):
+        for endpoint in self.mad_hatter.endpoints:
+            if endpoint.plugin_id in self.mad_hatter.active_plugins:
+                endpoint.activate(self.fastapi_app)
 
     def embed_procedures(self):
         # Retrieve from vectorDB all procedural embeddings
