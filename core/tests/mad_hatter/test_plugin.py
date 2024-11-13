@@ -8,7 +8,7 @@ from inspect import isfunction
 from tests.conftest import clean_up_mocks
 
 from cat.mad_hatter.mad_hatter import Plugin
-from cat.mad_hatter.decorators import CatHook, CatTool
+from cat.mad_hatter.decorators import CatHook, CatTool, CustomEndpoint
 
 mock_plugin_path = "tests/mocks/mock_plugin/"
 
@@ -93,27 +93,26 @@ def test_activate_plugin(plugin):
     assert "mock tool example 1" in tool.start_examples
     assert "mock tool example 2" in tool.start_examples
 
+    # endpoints
+    assert len(plugin.endpoints) == 4
+    for endpoint in plugin.endpoints:
+        assert isinstance(endpoint, CustomEndpoint)
+        assert endpoint.plugin_id == "mock_plugin"
 
-def test_deactivate_plugin(mad_hatter_with_mock_plugin):
+
+def test_deactivate_plugin(plugin):
     
-    # The plugin is installed and activated by the mad_hatter_with_mock_plugin fixture
-    
-    # Get the reference to the mock plugin
-    plugin = mad_hatter_with_mock_plugin.plugins["mock_plugin"]
+    # activate plugin
+    plugin.activate()
 
-    # Deactivate the mock plugin
-    # Why not using plugin.deactivate()? 
-    # the "endpoint" decorator needs the reference to the FastAPI app instance for endpoint removing.
-    # Calling plugin.deactivate() the method CustomEndpoint.deactivate() raises the exception:
-    # "self.cheshire_cat_api is None"
-    mad_hatter_with_mock_plugin.toggle_plugin("mock_plugin")
+    # deactivate it
+    plugin.deactivate()
 
-    assert plugin.active is False
-
-    # hooks and tools
+    # decorators
     assert len(plugin.hooks) == 0
     assert len(plugin.tools) == 0
-
+    assert len(plugin.endpoints) == 0
+    
 
 def test_settings_schema(plugin):
     settings_schema = plugin.settings_schema()

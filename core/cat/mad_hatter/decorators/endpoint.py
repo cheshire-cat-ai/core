@@ -22,6 +22,9 @@ class CustomEndpoint:
         self.kwargs = kwargs
         self.name = self.prefix + self.path
 
+        # fastAPI instance, will be set by the activate method
+        self.cheshire_cat_api = None
+
     def __repr__(self) -> str:
         return f"CustomEndpoint(path={self.name})"
 
@@ -71,8 +74,9 @@ class CustomEndpoint:
 
         # Seems there is no official way to remove a route:
         # https://github.com/fastapi/fastapi/discussions/8088
-        self.cheshire_cat_api.routes.remove(self.api_route)
-        self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
+        if self.cheshire_cat_api:
+            self.cheshire_cat_api.routes.remove(self.api_route)
+            self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
 
 class Endpoint:
 

@@ -342,6 +342,7 @@ class Plugin:
 
         for endpoint in self._endpoints:
             endpoint.deactivate()
+        self._endpoints = []
 
     def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple
