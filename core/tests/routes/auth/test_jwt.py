@@ -33,8 +33,7 @@ def test_refuse_issue_jwt(client):
     assert json["detail"]["error"] == "Invalid Credentials"
 
 
-@pytest.mark.asyncio  # to test async functions
-async def test_issue_jwt(client):
+def test_issue_jwt(client):
     creds = {
         "username": "admin",
         "password": "admin"
@@ -49,7 +48,7 @@ async def test_issue_jwt(client):
 
     # is the JWT correct for core auth handler?
     auth_handler = client.app.state.ccat.core_auth_handler
-    user_info = await auth_handler.authorize_user_from_jwt(
+    user_info = auth_handler.authorize_user_from_jwt(
         received_token, AuthResource.LLM, AuthPermission.WRITE
     )
     assert len(user_info.id) == 36 and len(user_info.id.split("-")) == 5 # uuid4
