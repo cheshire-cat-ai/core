@@ -69,8 +69,7 @@ def test_issue_jwt(client):
         assert False
 
 
-@pytest.mark.asyncio
-async def test_issue_jwt_for_new_user(client):
+def test_issue_jwt_for_new_user(client):
 
     # create new user
     creds = {
