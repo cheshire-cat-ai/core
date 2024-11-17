@@ -1,13 +1,13 @@
 from typing import Dict, List
 from pydantic import BaseModel
-from fastapi import Query, Request, APIRouter, HTTPException, Depends
+from fastapi import Query, Body, Request, APIRouter, HTTPException, Depends
 import time
 
 from cat.auth.connection import HTTPAuth
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
-
+from cat.log import log
 
 class MemoryPointBase(BaseModel):
     content: str
@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 # GET memories from recall
-@router.get("/recall")
+@router.get("/recall", deprecated=True)
 async def recall_memory_points_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
@@ -32,6 +32,7 @@ async def recall_memory_points_from_text(
     stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
 ) -> Dict:
     """Search k memories similar to given text."""
+    log.warning("Deprecated: This endpoint will be removed in the next major version.")
 
     # Embed the query to plot it in the Memory page
     query_embedding = stray.embedder.embed_query(text)
@@ -60,6 +61,92 @@ async def recall_memory_points_from_text(
         recalled[c] = []
         for metadata, score, vector, id in memories:
             memory_dict = dict(metadata)
+            memory_dict.pop("lc_kwargs", None)  # langchain stuff, not needed
+            memory_dict["id"] = id
+            memory_dict["score"] = float(score)
+            memory_dict["vector"] = vector
+            recalled[c].append(memory_dict)
+
+    return {
+        "query": query,
+        "vectors": {
+            "embedder": str(
+                stray.embedder.__class__.__name__
+            ),  # TODO: should be the config class name
+            "collections": recalled,
+        },
+    }
+
+# POST memories from recall
+@router.post("/recall")
+async def recall_memory_points(
+    request: Request,
+    text: str = Body(description="Find memories similar to this text."),
+    k: int = Body(default=100, description="How many memories to return."),
+    metadata: Dict = Body(default={}, 
+                          description="Flat dictionary where each key-value pair represents a filter." 
+                                      "The memory points returned will match the specified metadata criteria."
+                          ),
+    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+) -> Dict:
+    """Search k memories similar to given text with specified metadata criteria.
+        
+    Example
+    ----------
+    ```
+    collection = "episodic"
+    content = "MIAO!"
+    metadata = {"custom_key": "custom_value"}
+    req_json = {
+        "content": content,
+        "metadata": metadata,
+    }
+    # create a point
+    res = requests.post(
+        f"http://localhost:1865/memory/collections/{collection}/points", json=req_json
+    )
+
+    # recall with metadata
+    req_json = {
+        "text": "CAT", 
+        "metadata":{"custom_key":"custom_value"}
+    }
+    res = requests.post(
+        f"http://localhost:1865/memory/recall", json=req_json
+    )
+    json = res.json()
+    print(json)
+    ```
+
+    """
+
+    # Embed the query to plot it in the Memory page
+    query_embedding = stray.embedder.embed_query(text)
+    query = {
+        "text": text,
+        "vector": query_embedding,
+    }
+
+    # Loop over collections and retrieve nearby memories
+    collections = list(
+        stray.memory.vectors.collections.keys()
+    )
+    recalled = {}
+    for c in collections:
+        # only episodic collection has users
+        user_id = stray.user_id
+        if c == "episodic":
+            metadata["source"] = user_id
+        else:
+            metadata.pop("source", None)
+
+        memories = stray.memory.vectors.collections[c].recall_memories_from_embedding(
+            query_embedding, k=k, metadata=metadata
+        )
+
+        recalled[c] = []
+        for metadata_memories, score, vector, id in memories:
+            memory_dict = dict(metadata_memories)
             memory_dict.pop("lc_kwargs", None)  # langchain stuff, not needed
             memory_dict["id"] = id
             memory_dict["score"] = float(score)
