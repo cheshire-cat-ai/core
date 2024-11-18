@@ -20,7 +20,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
     MUST be implemented by subclasses.
     """
 
-    async def authorize_user_from_credential(
+    def authorize_user_from_credential(
         self,
         protocol: Literal["http", "websocket"],
         credential: str,
@@ -32,17 +32,17 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
     ) -> AuthUserInfo | None:
         if is_jwt(credential):
             # JSON Web Token auth
-            return await self.authorize_user_from_jwt(
+            return self.authorize_user_from_jwt(
                 credential, auth_resource, auth_permission
             )
         else:
             # API_KEY auth
-            return await self.authorize_user_from_key(
+            return self.authorize_user_from_key(
                 protocol, user_id, credential, auth_resource, auth_permission
             )
 
     @abstractmethod
-    async def authorize_user_from_jwt(
+    def authorize_user_from_jwt(
         self,
         token: str,
         auth_resource: AuthResource,
@@ -52,7 +52,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
         pass
 
     @abstractmethod
-    async def authorize_user_from_key(
+    def authorize_user_from_key(
         self,
         protocol: Literal["http", "websocket"],
         user_id: str,
@@ -67,7 +67,7 @@ class BaseAuthHandler(ABC):  # TODOAUTH: pydantic model?
 # Core auth handler, verify token on local idp
 class CoreAuthHandler(BaseAuthHandler):
 
-    async def authorize_user_from_jwt(
+    def authorize_user_from_jwt(
         self, token: str, auth_resource: AuthResource, auth_permission: AuthPermission
     ) -> AuthUserInfo | None:
         try:
@@ -98,7 +98,7 @@ class CoreAuthHandler(BaseAuthHandler):
         # do not pass
         return None
 
-    async def authorize_user_from_key(
+    def authorize_user_from_key(
             self,
             protocol: Literal["http", "websocket"],
             user_id: str,
@@ -147,7 +147,7 @@ class CoreAuthHandler(BaseAuthHandler):
         # No match -> deny access
         return None
 
-    async def issue_jwt(self, username: str, password: str) -> str | None:
+    def issue_jwt(self, username: str, password: str) -> str | None:
         # authenticate local user credentials and return a JWT token
 
         # brutal search over users, which are stored in a simple dictionary.
@@ -178,10 +178,10 @@ class CoreAuthHandler(BaseAuthHandler):
 
 # Default Auth, always deny auth by default (only core auth decides).
 class CoreOnlyAuthHandler(BaseAuthHandler):
-    async def authorize_user_from_jwt(*args, **kwargs) -> AuthUserInfo | None:
+    def authorize_user_from_jwt(*args, **kwargs) -> AuthUserInfo | None:
         return None
 
-    async def authorize_user_from_key(*args, **kwargs) -> AuthUserInfo | None:
+    def authorize_user_from_key(*args, **kwargs) -> AuthUserInfo | None:
         return None
 
 
