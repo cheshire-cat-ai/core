@@ -546,55 +546,7 @@ Allowed classes are:
         )
 
         # set 0.5 as threshold - let's see if it works properly
-        return best_label if score < 0.5 else None
-
-    def stringify_chat_history(self, latest_n: int = 5) -> str:
-        """Serialize chat history.
-        Converts to text the recent conversation turns.
-
-        Parameters
-        ----------
-        latest_n : int
-            Hoe many latest turns to stringify.
-
-        Returns
-        -------
-        history : str
-            String with recent conversation turns.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
-        """
-
-        history = self.working_memory.history[-latest_n:]
-
-        history_string = ""
-        for turn in history:
-            history_string += f"\n - {turn['who']}: {turn['message']}"
-
-        return history_string
-
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
-        chat_history = self.working_memory.history[-latest_n:]
-
-        langchain_chat_history = []
-        for message in chat_history:
-            if message["role"] == Role.Human:
-                langchain_chat_history.append(
-                    HumanMessage(name=message["who"], content=message["message"])
-                )
-            else:
-                langchain_chat_history.append(
-                    AIMessage(name=message["who"], content=message["message"])
-                )
-
-        return langchain_chat_history
+        return best_label if score < 0.5 else None    
 
     async def close_connection(self):
         if self.__ws:
