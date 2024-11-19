@@ -83,8 +83,8 @@ def test_memory_recall_with_metadata(client):
 
     # insert a new points with metadata
     for req_json in messages:
-        res = client.post(
-            f"/memory/collections/episodic/points", json=req_json
+        client.post(
+            "/memory/collections/episodic/points", json=req_json
         )
 
     # recall with metadata
