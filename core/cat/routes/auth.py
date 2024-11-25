@@ -29,7 +29,7 @@ async def core_login_token(request: Request, response: Response):
 
     # use username and password to authenticate user from local identity provider and get token
     auth_handler = request.app.state.ccat.core_auth_handler
-    access_token = await auth_handler.issue_jwt(
+    access_token = auth_handler.issue_jwt(
         form_data["username"], form_data["password"]
     )
 
@@ -95,7 +95,7 @@ async def auth_token(request: Request, credentials: UserCredentials):
 
     # use username and password to authenticate user from local identity provider and get token
     auth_handler = request.app.state.ccat.core_auth_handler
-    access_token = await auth_handler.issue_jwt(
+    access_token = auth_handler.issue_jwt(
         credentials.username, credentials.password
     )
 
