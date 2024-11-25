@@ -26,21 +26,18 @@ class CustomEndpoint:
         self.cheshire_cat_api = None
 
     def __repr__(self) -> str:
-        return f"CustomEndpoint(path={self.name})"
-
-    def set_api_route(self, api_route):
-        self.api_route = api_route
+        return f"CustomEndpoint(path={self.name} methods={self.methods})"
 
     def activate(self, cheshire_cat_api):
 
-        log.info(f"Activating custom endpoint {self.name}...")
+        log.info(f"Activating custom endpoint {self.methods} {self.name}")
 
         self.cheshire_cat_api = cheshire_cat_api
 
         # Set the fastapi api_route into the Custom Endpoint
         for api_route in self.cheshire_cat_api.routes:
-            if api_route.path == self.name:
-                log.info(f"There is already an active endpoint with path {self.name}")
+            if api_route.path == self.name and api_route.methods == self.methods:
+                log.info(f"There is already an active {self.methods} endpoint with path {self.name}")
                 return
 
         plugins_router = APIRouter()
@@ -55,14 +52,14 @@ class CustomEndpoint:
         try:
             self.cheshire_cat_api.include_router(plugins_router, prefix=self.prefix)
         except BaseException as e:
-            log.error(f"Error activating custom endpoint [{self.name}]: {e}")
+            log.error(f"Error activating custom endpoint [{self.methods} {self.name}]: {e}")
             return
 
         self.cheshire_cat_api.openapi_schema = None  # Flush the cache of openapi schema
 
         # Set the fastapi api_route into the Custom Endpoint
         for api_route in self.cheshire_cat_api.routes:
-            if api_route.path == self.name:
+            if api_route.path == self.name and api_route.methods == self.methods:
                 self.api_route = api_route
                 break
         
@@ -70,13 +67,21 @@ class CustomEndpoint:
 
     def deactivate(self):
 
-        log.info(f"Deactivating custom endpoint {self.name}...")
+        log.info(f"Deactivating custom endpoint {self.methods} {self.name}")
 
         # Seems there is no official way to remove a route:
         # https://github.com/fastapi/fastapi/discussions/8088
+        # https://github.com/fastapi/fastapi/discussions/9855
         if self.cheshire_cat_api:
-            self.cheshire_cat_api.routes.remove(self.api_route)
-            self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
+            to_remove = None
+            for api_route in self.cheshire_cat_api.routes:
+                if api_route.path == self.name and api_route.methods == self.methods:
+                    to_remove = api_route
+                    break
+
+            if to_remove:
+                self.cheshire_cat_api.routes.remove(api_route)
+                self.cheshire_cat_api.openapi_schema = None  # Flush the cached openapi schema
 
 class Endpoint:
 
@@ -114,7 +119,7 @@ class Endpoint:
                 prefix=prefix,
                 path=path,
                 function=endpoint,
-                methods=methods,
+                methods=set(methods),
                 tags=tags,
                 **kwargs,
             )
@@ -123,7 +128,7 @@ class Endpoint:
 
         return _make_endpoint
 
-    # @get_endpoint decorator. Any function in a plugin decorated by @endpoint.get will be exposed as FastAPI GET operation
+    # Any function in a plugin decorated by @endpoint.get will be exposed as FastAPI GET operation
     def get(
         cls,
         path,
@@ -145,14 +150,14 @@ class Endpoint:
 
         return cls.endpoint(
             path=path,
-            methods=["GET"],
+            methods={"GET"},
             prefix=prefix,
             response_model=response_model,
             tags=tags,
             **kwargs,
         )
 
-    # @post_endpoint decorator. Any function in a plugin decorated by @endpoint.post will be exposed as FastAPI POST operation
+    # Any function in a plugin decorated by @endpoint.post will be exposed as FastAPI POST operation
     def post(
         cls,
         path,
@@ -179,7 +184,7 @@ class Endpoint:
         """
         return cls.endpoint(
             path=path,
-            methods=["POST"],
+            methods={"POST"},
             prefix=prefix,
             response_model=response_model,
             tags=tags,

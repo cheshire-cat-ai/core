@@ -24,7 +24,7 @@ def test_endpoint_decorator(client, mad_hatter_with_mock_plugin):
     assert endpoint.name == "/custom/endpoint"
     assert endpoint.prefix == "/custom"
     assert endpoint.path == "/endpoint"
-    assert endpoint.methods == ["GET"]
+    assert endpoint.methods == {"GET"} # fastapi stores http verbs as a set
     assert endpoint.tags == ["Custom Endpoints"]
     assert endpoint.function() == {"result":"endpoint default prefix"}
 
@@ -36,7 +36,7 @@ def test_endpoint_decorator_prefix(client, mad_hatter_with_mock_plugin):
     assert endpoint.name == "/tests/endpoint"
     assert endpoint.prefix == "/tests"
     assert endpoint.path == "/endpoint"
-    assert endpoint.methods == ["GET"]
+    assert endpoint.methods == {"GET"}
     assert endpoint.tags == ["Tests"]
     assert endpoint.function() == {"result":"endpoint prefix tests"}
 
@@ -48,7 +48,7 @@ def test_get_endpoint(client, mad_hatter_with_mock_plugin):
     assert endpoint.name == "/tests/crud"
     assert endpoint.prefix == "/tests"
     assert endpoint.path == "/crud"
-    assert endpoint.methods == ["GET"]
+    assert endpoint.methods == {"GET"}
     assert endpoint.tags == ["Tests"]
     # too complicated to simulate the request arguments here,
     #  see tests/routes/test_custom_endpoints.py
@@ -60,7 +60,7 @@ def test_post_endpoint(client, mad_hatter_with_mock_plugin):
     assert endpoint.name == "/tests/crud"
     assert endpoint.prefix == "/tests"
     assert endpoint.path == "/crud"
-    assert endpoint.methods == ["POST"]
+    assert endpoint.methods == {"POST"}
     assert endpoint.tags == ["Tests"]
 
     payload = Item(name="the cat", description="it's magic")

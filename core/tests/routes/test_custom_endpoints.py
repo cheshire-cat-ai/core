@@ -16,7 +16,7 @@ def test_custom_endpoint_prefix(client, just_installed_plugin):
 
 def test_custom_endpoint_get(client, just_installed_plugin):
 
-    response = client.get("/tests/get")
+    response = client.get("/tests/crud")
     assert response.status_code == 200
     assert response.json()["result"] == "ok"
     assert response.json()["stray_user_id"] == "user"
@@ -25,7 +25,7 @@ def test_custom_endpoint_get(client, just_installed_plugin):
 def test_custom_endpoint_post(client, just_installed_plugin):
 
     payload = {"name": "the cat", "description" : "it's magic"}
-    response = client.post("/tests/post", json=payload)
+    response = client.post("/tests/crud", json=payload)
 
     assert response.status_code == 200
     assert response.json()["name"] == "the cat"
@@ -41,8 +41,8 @@ def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
     custom_endpoints = [
         ("GET", "/custom/endpoint", None),
         ("GET", "/tests/endpoint", None),
-        ("GET", "/tests/get", None),
-        ("POST", "/tests/post", {"name": "the cat", "description": "it's magic"}),
+        ("GET", "/tests/crud", None),
+        ("POST", "/tests/crud", {"name": "the cat", "description": "it's magic"}),
     ]
 
     # custom endpoints are active
