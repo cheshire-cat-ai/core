@@ -17,10 +17,10 @@ def test_endpoint():
 def test_endpoint_prefix():
     return {"result":"endpoint prefix tests"}
 
-@endpoint.get(path="/get", prefix="/tests", tags=["Tests"])
+@endpoint.get(path="/crud", prefix="/tests", tags=["Tests"])
 def test_get(request: Request, stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.LIST))):
     return {"result":"ok", "stray_user_id":stray.user_id}
 
-@endpoint.post(path="/post", prefix="/tests", tags=["Tests"])
+@endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])
 def test_post(item: Item) -> str:
     return {"name": item.name, "description": item.description}

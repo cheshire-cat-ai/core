@@ -45,9 +45,9 @@ def test_get_endpoint(client, mad_hatter_with_mock_plugin):
 
     endpoint = mad_hatter_with_mock_plugin.endpoints[2]
     
-    assert endpoint.name == "/tests/get"
+    assert endpoint.name == "/tests/crud"
     assert endpoint.prefix == "/tests"
-    assert endpoint.path == "/get"
+    assert endpoint.path == "/crud"
     assert endpoint.methods == ["GET"]
     assert endpoint.tags == ["Tests"]
     # too complicated to simulate the request arguments here,
@@ -57,9 +57,9 @@ def test_post_endpoint(client, mad_hatter_with_mock_plugin):
 
     endpoint = mad_hatter_with_mock_plugin.endpoints[3]
     
-    assert endpoint.name == "/tests/post"
+    assert endpoint.name == "/tests/crud"
     assert endpoint.prefix == "/tests"
-    assert endpoint.path == "/post"
+    assert endpoint.path == "/crud"
     assert endpoint.methods == ["POST"]
     assert endpoint.tags == ["Tests"]
 
