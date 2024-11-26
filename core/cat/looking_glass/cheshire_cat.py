@@ -3,6 +3,7 @@ from typing import List, Dict
 from typing_extensions import Protocol
 
 
+from cat.looking_glass.telemetry import TelemetryHandler
 from langchain.base_language import BaseLanguageModel
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableLambda
@@ -28,6 +29,7 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
+
 
 class Procedure(Protocol):
     name: str
@@ -70,7 +72,10 @@ class CheshireCat:
 
         # Start scheduling system
         self.white_rabbit = WhiteRabbit()
-
+        
+        # Telemetry
+        self.telemetry = TelemetryHandler()
+            
         # instantiate MadHatter (loads all plugins' hooks and tools)
         self.mad_hatter = MadHatter()
 
@@ -147,6 +152,7 @@ class CheshireCat:
             selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
             try:
                 llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+                self.telemetry.set_llm_model(selected_llm_class)
             except Exception:
                 import traceback
 
@@ -190,6 +196,7 @@ class CheshireCat:
                 embedder = FactoryClass.get_embedder_from_config(
                     selected_embedder_config["value"]
                 )
+                self.telemetry.set_embedder_model(selected_embedder_class)
             except AttributeError:
                 import traceback
 
@@ -439,3 +446,8 @@ class CheshireCat:
         )
 
         return output
+    
+    @property
+    def telemetryHandler(self):
+        if self.telemtry is None:
+            None

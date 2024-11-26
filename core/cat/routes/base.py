@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Body
 from fastapi.concurrency import run_in_threadpool
 from typing import Dict
-import tomli
+
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.auth.connection import HTTPAuth
 
 from cat.convo.messages import CatMessage
+from cat.utils import get_cat_version
 
 router = APIRouter()
 
@@ -16,10 +17,7 @@ async def status(
     stray=Depends(HTTPAuth(AuthResource.STATUS, AuthPermission.READ)),
 ) -> Dict:
     """Server status"""
-    with open("pyproject.toml", "rb") as f:
-        project_toml = tomli.load(f)["project"]
-
-    return {"status": "We're all mad here, dear!", "version": project_toml["version"]}
+    return {"status": "We're all mad here, dear!", "version": get_cat_version()}
 
 
 @router.post("/message", response_model=CatMessage)
