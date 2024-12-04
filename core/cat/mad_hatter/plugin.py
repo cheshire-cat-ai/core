@@ -108,12 +108,12 @@ class Plugin:
     def settings_schema(self):
         # is "settings_schema" hook defined in the plugin?
         if "settings_schema" in self._plugin_overrides:
-            return self._plugin_overrides["settings_schema"]()
+            return self._plugin_overrides["settings_schema"].function()
         else:
             # if the "settings_schema" is not defined but
             # "settings_model" is it get the schema from the model
             if "settings_model" in self._plugin_overrides:
-                return self._plugin_overrides["settings_model"]().model_json_schema()
+                return self._plugin_overrides["settings_model"].function().model_json_schema()
 
         # default schema (empty)
         return PluginSettingsModel.model_json_schema()
@@ -122,7 +122,7 @@ class Plugin:
     def settings_model(self):
         # is "settings_model" hook defined in the plugin?
         if "settings_model" in self._plugin_overrides:
-            return self._plugin_overrides["settings_model"]()
+            return self._plugin_overrides["settings_model"].function()
 
         # default schema (empty)
         return PluginSettingsModel
@@ -131,7 +131,7 @@ class Plugin:
     def load_settings(self):
         # is "settings_load" hook defined in the plugin?
         if "load_settings" in self._plugin_overrides:
-            return self._plugin_overrides["load_settings"]()
+            return self._plugin_overrides["load_settings"].function()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -157,7 +157,7 @@ class Plugin:
     def save_settings(self, settings: Dict):
         # is "settings_save" hook defined in the plugin?
         if "save_settings" in self._plugin_overrides:
-            return self._plugin_overrides["save_settings"](settings)
+            return self._plugin_overrides["save_settings"].function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -327,7 +327,7 @@ class Plugin:
         self._tools = list(map(self._clean_tool, tools))
         self._forms = list(map(self._clean_form, forms))
         self._endpoints = list(map(self._clean_endpoint, endpoints))
-        self._plugin_overrides = {override.name: override for _, override in plugin_overrides}
+        self._plugin_overrides = {override.name: override for override in list(map(self._clean_plugin_override, plugin_overrides))}
 
 
     def plugin_specific_error_message(self):
