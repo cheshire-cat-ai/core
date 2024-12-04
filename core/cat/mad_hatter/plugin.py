@@ -327,7 +327,7 @@ class Plugin:
         self._tools = list(map(self._clean_tool, tools))
         self._forms = list(map(self._clean_form, forms))
         self._endpoints = list(map(self._clean_endpoint, endpoints))
-        self._plugin_overrides = {override.__name__: override for _, override in plugin_overrides}
+        self._plugin_overrides = {override.name: override for _, override in plugin_overrides}
 
 
     def plugin_specific_error_message(self):
