@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Any
 from cat.utils import BaseModelDict
 from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
 from enum import Enum
@@ -60,7 +60,7 @@ class CatMessage(BaseModelDict):
         user_id (str): user id
     """
 
-    content: str
+    content: Any
     user_id: str
     type: str = "chat"
     why: MessageWhy | None = None

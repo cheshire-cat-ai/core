@@ -86,3 +86,9 @@ def agent_allowed_tools(allowed_tools: List[str], cat) -> List[str]:
     """
 
     return allowed_tools
+
+
+@hook(priority=0)
+def agent_output_parser(output_parser, cat):
+    """TODO Docstring"""
+    return output_parser

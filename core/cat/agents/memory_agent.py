@@ -28,12 +28,17 @@ class MemoryAgent(BaseAgent):
             ]
         )
 
+        output_parser = StrOutputParser()
+        output_parser = stray.mad_hatter.execute_hook(
+            "agent_output_parser", output_parser, cat=stray
+        )
+
         chain = (
             prompt
             | RunnableLambda(lambda x: utils.langchain_log_prompt(x, "MAIN PROMPT"))
             | stray._llm
             | RunnableLambda(lambda x: utils.langchain_log_output(x, "MAIN PROMPT OUTPUT"))
-            | StrOutputParser()
+            | output_parser
         )
 
         output = chain.invoke(

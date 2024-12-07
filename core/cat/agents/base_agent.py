@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Any
 from abc import ABC, abstractmethod
-
 
 from cat.utils import BaseModelDict
 
+
 class AgentOutput(BaseModelDict):
-    output: str | None = None
+    output: Any | None = None
     intermediate_steps: List = []
     return_direct: bool = False
 
