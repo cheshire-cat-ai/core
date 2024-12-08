@@ -90,5 +90,38 @@ def agent_allowed_tools(allowed_tools: List[str], cat) -> List[str]:
 
 @hook(priority=0)
 def agent_output_parser(output_parser, cat):
-    """TODO Docstring"""
+    """Hook the output parser.
+
+    Allows to edit the output parser of the *Agent*.
+
+    Parameters
+    ---------
+    output_parser : LangchainOutputParser
+        Output parser of the *Agent*.
+    cat : StrayCat
+        StrayCat instance.
+
+    Returns
+    -------
+    output_parser : LangchainOutputParser
+        Output parser of the *Agent*.
+
+    Examples
+    --------
+
+    Example 1: use Langchain's PydanticOutputParser to return a structured response
+
+    ```python
+
+    from pydantic import BaseModel
+    from langchain_core.output_parsers.pydantic import PydanticOutputParser
+
+    class CheshireCatAnswer(BaseModel):
+        output: str
+        level_of_madness: int
+
+    output_parser = PydanticOutputParser(pydantic_object=CheshireCatAnswer)
+
+    ```
+    """
     return output_parser
