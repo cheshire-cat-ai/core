@@ -116,7 +116,7 @@ class MainAgent(BaseAgent):
 
         # format conversation history to be inserted in the prompt
         # TODOV2: take away
-        conversation_history_formatted_content = stray.stringify_chat_history()
+        conversation_history_formatted_content = stray.working_memory.stringify_chat_history()
 
         return BaseModelDict(**{
             "episodic_memory": episodic_memory_formatted_content,

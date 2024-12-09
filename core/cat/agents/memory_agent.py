@@ -24,7 +24,7 @@ class MemoryAgent(BaseAgent):
                 SystemMessagePromptTemplate.from_template(
                     template=sys_prompt
                 ),
-                *(stray.langchainfy_chat_history()),
+                *(stray.working_memory.langchainfy_chat_history()),
             ]
         )
 
