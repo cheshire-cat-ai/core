@@ -448,7 +448,7 @@ class StrayCat:
 
         # prepare final cat message
         final_output = CatMessage(
-            user_id=self.user_id, content=str(agent_output.output), why=why
+            user_id=self.user_id, content=agent_output.output, why=why
         )
 
         # run message through plugins
