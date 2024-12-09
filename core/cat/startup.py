@@ -69,15 +69,17 @@ cheshire_cat_api = FastAPI(
 )
 
 # Configures the CORS middleware for the FastAPI app
-cors_allowed_origins_str = get_env("CCAT_CORS_ALLOWED_ORIGINS")
-origins = cors_allowed_origins_str.split(",") if cors_allowed_origins_str else ["*"]
-cheshire_cat_api.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_enabled = get_env("CCAT_CORS_ENABLED")
+if cors_enabled == "true":
+    cors_allowed_origins_str = get_env("CCAT_CORS_ALLOWED_ORIGINS")
+    origins = cors_allowed_origins_str.split(",") if cors_allowed_origins_str else ["*"]
+    cheshire_cat_api.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Home"])
