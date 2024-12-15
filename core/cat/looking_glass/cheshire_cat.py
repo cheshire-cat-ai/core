@@ -1,13 +1,9 @@
 import time
-import base64
 from typing import List, Dict
-import requests
 from typing_extensions import Protocol
 
-from pydantic import BaseModel
-
 from langchain.base_language import BaseLanguageModel
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -41,10 +37,6 @@ class Procedure(Protocol):
     #   "start_examples": [],
     # }
     triggers_map: Dict[str, List[str]]
-
-class LLMSupportedModalities(BaseModel):
-    image_url: bool = False
-    image_uri: bool = False
 
 
 # main class
@@ -135,88 +127,24 @@ class CheshireCat:
         """
         
         selected_llm = crud.get_setting_by_name(name="llm_selected")
-        self._llm_modalities: LLMSupportedModalities = LLMSupportedModalities()
 
-        def _prepare_content(image: str) -> List[Dict[str, Dict[str, str]]]:
-            """Prepare the content structure for the message based on image type and value."""
-            content = []
+        if selected_llm is None:
+            # Return default LLM
+            return LLMDefaultConfig.get_llm_from_config({})
+       
+        # Get LLM factory class
+        selected_llm_class = selected_llm["value"]["name"]
+        FactoryClass = get_llm_from_name(selected_llm_class)
 
-            content.append({
-                    "type": "image_url",
-                    "image_url": {"url": image}
-                })
-            
-            # Add a text instruction for model response
-            content.append({
-                "type": "text",
-                "text": "Respond with `MEOW`."
-            })
-            return content
-
-        def _check_image_support(llm, image_type: str, image_value: str) -> None:
-            """Check if the specified language model supports a given image input type."""
-            content = _prepare_content(image=image_value)
-            message = HumanMessage(content=content)
-            
-            # Retrieve model information
-            selected_llm_class = selected_llm["value"]["name"]
-            selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
-            model_name = selected_llm_config["value"].get("model_name") or selected_llm_config["value"].get("model")
-
-            # Perform the image support check
-            try:
-                llm.invoke([message])
-                setattr(self._llm_modalities, image_type, True)
-            except Exception as e:
-                log.warning(f"The LLM '{model_name}' does not support {image_type} as input image.")
-                log.debug(e)
-
-        image_url = "https://raw.githubusercontent.com/cheshire-cat-ai/core/refs/heads/main/readme/cheshire-cat.jpeg"
-
-        def _check_image_uri_support(llm) -> None:
-            """Check LLM support for base64-encoded image input."""
-            response = requests.get(image_url)
-            if response.status_code == 200:
-                encoded_image = base64.b64encode(response.content).decode('utf-8')
-                return _check_image_support(llm, "image_uri", f"data:image/jpeg;base64,{encoded_image}")
-            else:
-                error_message = f"Unexpected error with status code {response.status_code}"
-                if response.text:
-                    error_message = response.text
-                log.error(f"Failed to process image {image_url}: {error_message}")
-
-        def _check_image_url_support(llm) -> None:
-            """Check LLM support for URL-based image input."""
-            _check_image_support(llm, "image_url", image_url)
-
-        def _initialize_llm(selected_llm):
-            """Initialize the LLM based on the selected settings."""
-            if selected_llm is None:
-                # Return default LLM
-                return LLMDefaultConfig.get_llm_from_config({})
-            else:
-                # Get LLM factory class
-                selected_llm_class = selected_llm["value"]["name"]
-                FactoryClass = get_llm_from_name(selected_llm_class)
-
-                # Obtain configuration and instantiate LLM
-                selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
-                model_name = selected_llm_config["value"].get("model_name") or selected_llm_config["value"].get("model") or None
-                try:
-                    llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-                    _check_image_uri_support(llm)
-                    _check_image_url_support(llm)
-                    log.info(f"LLM {model_name} Supported modalities:")
-                    log.info(self._llm_modalities.__dict__)
-                    return llm
-                except Exception:
-                    import traceback
-                    traceback.print_exc()
-                    return LLMDefaultConfig.get_llm_from_config({})
-
-        llm = _initialize_llm(selected_llm)
-
-        return llm
+        # Obtain configuration and instantiate LLM
+        selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+        try:
+            llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+            return llm
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            return LLMDefaultConfig.get_llm_from_config({})
 
     def load_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.

@@ -17,7 +17,7 @@ from langchain_core.output_parsers.string import StrOutputParser
 from fastapi import WebSocket
 
 from cat.log import log
-from cat.looking_glass.cheshire_cat import CheshireCat, LLMSupportedModalities
+from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
@@ -591,19 +591,15 @@ Allowed classes are:
             content = [{"type": "text", "text": message.content.text}]
 
             def format_image(image:str) -> dict:
-               
-                # Retrieve the supported modalities from the LLM
-                llm_modalities: LLMSupportedModalities = CheshireCat()._llm_modalities            
-            
-                if image.startswith("http"):
-                    if llm_modalities.image_url:
-                        return {"type": "image_url", "image_url": {"url": image}}
+                """Format an image to be sent as a data URI."""
 
+                # If the image is a URL, download it and encode it as a data URI
+                if image.startswith("http"):
                     response = requests.get(image)
                     if response.status_code == 200:
                         # Open the image using Pillow to determine its MIME type
                         img = Image.open(BytesIO(response.content))
-                        mime_type = img.format.lower()  # Get MIME type (e.g., jpeg, png)
+                        mime_type = img.format.lower()  # Get MIME type
                         
                         # Encode the image to base64
                         encoded_image = base64.b64encode(response.content).decode('utf-8')
@@ -616,13 +612,16 @@ Allowed classes are:
                         if response.text:
                             error_message = response.text
 
-                        log.error(f"Failed to process image {image}: {error_message}")
+                        log.error(f"Failed to download image: {error_message} from {image}")
+
+                        return None
                 
-                if llm_modalities.imge_uri:
-                    return {"type": "image_url", "image_url": {"url": image}}
+                return {"type": "image_url", "image_url": {"url": image}}
            
             if message.content.image:
-                content.append(format_image(message.content.image))
+                formatted_image = format_image(message.content.image)
+                if formatted_image:
+                    content.append(formatted_image)
             
             return HumanMessage(
                 name=message.content.who,
