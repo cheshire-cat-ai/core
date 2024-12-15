@@ -40,9 +40,6 @@ class HistoryEntry(BaseModelDict):
     when: float
     content: Union[UserMessage, CatMessage]
 
-    def __init__(self, role: Role, when: float, content: Union[UserMessage, CatMessage]):
-        super().__init__(role=role, when=when, content=content)
-        
     @computed_field
     @property
     def message(self) -> str:

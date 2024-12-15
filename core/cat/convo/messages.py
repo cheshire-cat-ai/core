@@ -132,10 +132,10 @@ class CatMessage(BaseModelDict):
         Deprecated. The text content of the message. Use `text` instead.
     text : Optional[str], default=None
         The text content of the message.
-    images : Optional[Union[List[str], str]], default=None
-        List of image file URLs or base64 data URIs that represent images associated with the message. A single string can also be provided and will be converted to a list.
-    audio : Optional[Union[List[str], str]], default=None
-        List of audio file URLs or base64 data URIs that represent audio associated with the message. A single string can also be provided and will be converted to a list.
+    image : Optional[str], default=None
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str], default=None
+        Audio file URLs or base64 data URIs that represent audio associated with the message.
     why : Optional[MessageWhy], default=None
         Additional contextual information related to the message.
     who : str, default="AI"
@@ -151,10 +151,10 @@ class CatMessage(BaseModelDict):
         The name of the message author, by default AI.
     text : Optional[str]
         The text content of the message.
-    images : Optional[List[str]]
-        List of image URLs or paths associated with the message, if any.
-    audio : Optional[List[str]]
-        List of audio file URLs or paths associated with the message, if any.
+    image : Optional[str]
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str]
+        Audio file URLs or base64 data URIs that represent audio associated with the message.
     why : Optional[MessageWhy]
         Additional contextual information related to the message.
     
@@ -167,8 +167,8 @@ class CatMessage(BaseModelDict):
     user_id: str
     who: str = "AI"
     text: Optional[str] = None
-    images: Optional[List[str]] = None
-    audio: Optional[List[str]] = None
+    image: Optional[str] = None
+    audio: Optional[str] = None
     why: Optional[MessageWhy] = None
 
     def __init__(
@@ -176,23 +176,17 @@ class CatMessage(BaseModelDict):
         user_id: str,
         content: Optional[str] = None,
         text: Optional[str] = None,
-        images: Optional[Union[List[str], str]] = None,
-        audio: Optional[Union[List[str], str]] = None,
+        image: Optional[str] = None,
+        audio: Optional[str] = None,
         why: Optional[MessageWhy] = None,
         who: str = "AI",
         **kwargs,
     ):
-        if isinstance(images, str):
-            images = [images]
-
-        if isinstance(audio, str):
-            audio = [audio]
-
         if content:
             deprecation_warning("The `content` parameter is deprecated. Use `text` instead.")    
             text = content  # Map 'content' to 'text'
 
-        super().__init__(user_id=user_id, who=who, content=content, text=text, images=images, audio=audio, why=why, **kwargs)
+        super().__init__(user_id=user_id, who=who, text=text, image=image, audio=audio, why=why, **kwargs)
     
     @computed_field
     @property
@@ -218,7 +212,10 @@ class CatMessage(BaseModelDict):
 
 class UserMessage(BaseModelDict):
     """
-    Represents a message from a user, containing text and optional multimedia content such as images and audio.
+    Represents a message from a user, containing text and optional multimedia content such as image and audio.
+
+    This class is used to encapsulate the details of a message sent by a user, including the user's identifier, 
+    the text content of the message, and any associated multimedia content such as image or audio files.
 
     Parameters
     ----------
@@ -226,10 +223,10 @@ class UserMessage(BaseModelDict):
         Unique identifier for the user sending the message.
     text : Optional[str], default=None
         The text content of the message. Can be `None` if no text is provided.
-    images : Optional[Union[List[str], str]], default=None
-        List of image file URLs or base64 data URIs that represent images associated with the message. A single string can also be provided and will be converted to a list.
-    audio : Optional[Union[List[str], str]], default=None
-       List of audio file URLs or base64 data URIs that represent audio associated with the message. A single string can also be provided and will be converted to a list.
+    image : Optional[str], default=None
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str], default=None
+       Audio file URLs or base64 data URIs that represent audio associated with the message.
     who : str, default="Human"
         The name of the message author, by default “Human”.
 
@@ -241,32 +238,14 @@ class UserMessage(BaseModelDict):
         The name of the message author, by default “Human”.
     text : Optional[str]
         The text content of the message.
-    images : Optional[List[str]]
-        List of images associated with the message, if any.
-    audio : Optional[List[str]]
-        List of audio files associated with the message, if any.
+    image : Optional[str]
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str]
+       Audio file URLs or base64 data URIs that represent audio associated with the message.
     """
 
     user_id: str
     who: str = "Human"
     text: Optional[str] = None
-    images: Optional[List[str]] = None
-    audio: Optional[List[str]] = None
-
-    def __init__(
-        self,
-        user_id: str,
-        text: Optional[str] = None,
-        images: Optional[Union[List[str], str]] = None,
-        audio: Optional[Union[List[str], str]] = None,
-        who: str = "Human",
-        **kwargs,
-    ):
-        if isinstance(images, str):
-            images = [images]
-
-        if isinstance(audio, str):
-            audio = [audio]
-
-        super().__init__(user_id=user_id, who=who, text=text, images=images, audio=audio, **kwargs)
-
+    image: Optional[str] = None
+    audio: Optional[str] = None

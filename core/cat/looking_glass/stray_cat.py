@@ -587,39 +587,18 @@ Allowed classes are:
     def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
 
         def format_human_message(message: HumanMessage) -> HumanMessage:
-            """Format a human message, including any text and images."""
+            """Format a human message, including any text and image."""
             content = [{"type": "text", "text": message.content.text}]
-            
-            if message.content.images:
-                content.extend(format_images(message.content.images))
-            
-            return HumanMessage(
-                name=message.content.who,
-                content=content
-            )
 
-        def format_ai_message(message) -> AIMessage:
-            """Format an AI message with text content only."""
-            return AIMessage(
-                name=message.content.who,
-                content=message.content.text
-            )
-
-        def format_images(images: List[str]) -> List[dict]:
-            """Format a list of images into the required structure for langchain messages, 
-            downloading the image if the model only supports data URIs but not image URLs."""
+            def format_image(image:str) -> dict:
+               
+                # Retrieve the supported modalities from the LLM
+                llm_modalities: LLMSupportedModalities = CheshireCat()._llm_modalities            
             
-            # Retrieve the supported modalities from the LLM
-            llm_modalities: LLMSupportedModalities = CheshireCat()._llm_modalities
-            
-            formatted_images = []
-            
-            for image in images:
                 if image.startswith("http"):
                     if llm_modalities.image_url:
-                        formatted_images.append({"type": "image_url", "image_url": {"url": image}})
-                        continue
-                    
+                        return {"type": "image_url", "image_url": {"url": image}}
+
                     response = requests.get(image)
                     if response.status_code == 200:
                         # Open the image using Pillow to determine its MIME type
@@ -631,18 +610,31 @@ Allowed classes are:
                         image_uri = f"data:image/{mime_type};base64,{encoded_image}"
                         
                         # Add the image as a data URI with the correct MIME type
-                        formatted_images.append({"type": "image_url", "image_url": {"url": image_uri}})
+                        return {"type": "image_url", "image_url": {"url": image_uri}}
                     else:
                         error_message = f"Unexpected error with status code {response.status_code}"
                         if response.text:
                             error_message = response.text
 
                         log.error(f"Failed to process image {image}: {error_message}")
-                else: 
-                    if llm_modalities.imge_uri:
-                        formatted_images.append({"type": "image_url", "image_url": {"url": image}})
+                
+                if llm_modalities.imge_uri:
+                    return {"type": "image_url", "image_url": {"url": image}}
+           
+            if message.content.image:
+                content.append(format_image(message.content.image))
             
-            return formatted_images
+            return HumanMessage(
+                name=message.content.who,
+                content=content
+            )
+
+        def format_ai_message(message) -> AIMessage:
+            """Format an AI message with text content only."""
+            return AIMessage(
+                name=message.content.who,
+                content=message.content.text
+            ) 
         
         chat_history = self.working_memory.history[-latest_n:]
         recent_history = chat_history[-latest_n:]

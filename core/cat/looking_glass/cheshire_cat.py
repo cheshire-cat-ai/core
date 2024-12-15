@@ -168,7 +168,7 @@ class CheshireCat:
                 llm.invoke([message])
                 setattr(self._llm_modalities, image_type, True)
             except Exception as e:
-                log.warning(f"The LLM '{model_name}' does not support {image_type} as input images.")
+                log.warning(f"The LLM '{model_name}' does not support {image_type} as input image.")
                 log.debug(e)
 
         image_url = "https://raw.githubusercontent.com/cheshire-cat-ai/core/refs/heads/main/readme/cheshire-cat.jpeg"
