@@ -7,7 +7,7 @@ import requests
 from PIL import Image
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from cat.utils import BaseModelDict, deprecation_warning
 from cat.log import log

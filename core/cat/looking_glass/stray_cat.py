@@ -1,15 +1,12 @@
-import base64
-from io import BytesIO
 import time
 import asyncio
-import requests
 import traceback
 import tiktoken
-from PIL import Image
+
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
+from langchain_core.messages import SystemMessage, BaseMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -20,7 +17,7 @@ from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
-from cat.convo.messages import CatMessage, UserMessage, MessageWhy, Role, EmbedderModelInteraction
+from cat.convo.messages import CatMessage, UserMessage, MessageWhy, EmbedderModelInteraction
 from cat.agents import AgentOutput
 from cat.auth.permissions import AuthUserInfo
 from cat import utils
