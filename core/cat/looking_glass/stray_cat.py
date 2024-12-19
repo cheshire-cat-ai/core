@@ -1,7 +1,11 @@
+import base64
+from io import BytesIO
 import time
 import asyncio
+import requests
 import traceback
 import tiktoken
+from PIL import Image
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
@@ -136,8 +140,8 @@ class StrayCat:
             message = CatMessage(content=message, user_id=self.user_id, why=why)
 
         if save:
-            self.working_memory.update_conversation_history(
-                who="AI", message=message["content"], why=message["why"]
+            self.working_memory.update_history(
+                message
             )
 
         self.__send_ws_json(message.model_dump())
@@ -394,8 +398,8 @@ class StrayCat:
         )
 
         # update conversation history (Human turn)
-        self.working_memory.update_conversation_history(
-            who="Human", message=user_message_text
+        self.working_memory.update_history(
+            self.working_memory.user_message_json
         )
 
         # recall episodic and declarative memories from vector collections
@@ -448,7 +452,7 @@ class StrayCat:
 
         # prepare final cat message
         final_output = CatMessage(
-            user_id=self.user_id, content=str(agent_output.output), why=why
+            user_id=self.user_id, text=str(agent_output.output), why=why
         )
 
         # run message through plugins
@@ -457,8 +461,8 @@ class StrayCat:
         )
 
         # update conversation history (AI turn)
-        self.working_memory.update_conversation_history(
-            who="AI", message=final_output.content, why=final_output.why
+        self.working_memory.update_history(
+            final_output
         )
 
         return final_output
@@ -576,23 +580,72 @@ Allowed classes are:
 
         history_string = ""
         for turn in history:
-            history_string += f"\n - {turn['who']}: {turn['message']}"
+            history_string += f"\n - {turn.content.who}: {turn.content.text}"
 
         return history_string
 
     def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
-        chat_history = self.working_memory.history[-latest_n:]
 
+        def format_human_message(message: HumanMessage) -> HumanMessage:
+            """Format a human message, including any text and image."""
+            content = [{"type": "text", "text": message.content.text}]
+
+            def format_image(image:str) -> dict:
+                """Format an image to be sent as a data URI."""
+
+                # If the image is a URL, download it and encode it as a data URI
+                if image.startswith("http"):
+                    response = requests.get(image)
+                    if response.status_code == 200:
+                        # Open the image using Pillow to determine its MIME type
+                        img = Image.open(BytesIO(response.content))
+                        mime_type = img.format.lower()  # Get MIME type
+                        
+                        # Encode the image to base64
+                        encoded_image = base64.b64encode(response.content).decode('utf-8')
+                        image_uri = f"data:image/{mime_type};base64,{encoded_image}"
+                        
+                        # Add the image as a data URI with the correct MIME type
+                        return {"type": "image_url", "image_url": {"url": image_uri}}
+                    else:
+                        error_message = f"Unexpected error with status code {response.status_code}"
+                        if response.text:
+                            error_message = response.text
+
+                        log.error(f"Failed to download image: {error_message} from {image}")
+
+                        return None
+                
+                return {"type": "image_url", "image_url": {"url": image}}
+           
+            if message.content.image:
+                formatted_image = format_image(message.content.image)
+                if formatted_image:
+                    content.append(formatted_image)
+            
+            return HumanMessage(
+                name=message.content.who,
+                content=content
+            )
+
+        def format_ai_message(message) -> AIMessage:
+            """Format an AI message with text content only."""
+            return AIMessage(
+                name=message.content.who,
+                content=message.content.text
+            ) 
+        
+        chat_history = self.working_memory.history[-latest_n:]
+        recent_history = chat_history[-latest_n:]
         langchain_chat_history = []
-        for message in chat_history:
-            if message["role"] == Role.Human:
-                langchain_chat_history.append(
-                    HumanMessage(name=message["who"], content=message["message"])
-                )
+
+        for message in recent_history:
+            if message.role == Role.Human:
+                formatted_message = format_human_message(message)
             else:
-                langchain_chat_history.append(
-                    AIMessage(name=message["who"], content=message["message"])
-                )
+                formatted_message = format_ai_message(message)
+            
+            langchain_chat_history.append(formatted_message)
 
         return langchain_chat_history
 

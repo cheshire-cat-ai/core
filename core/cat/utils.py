@@ -1,7 +1,6 @@
 """Various utiles used from the projects."""
 
 import os
-import traceback
 import inspect
 from datetime import timedelta
 from urllib.parse import urlparse
@@ -267,24 +266,18 @@ class BaseModelDict(BaseModel):
 
     def __getitem__(self, key):
         # deprecate dictionary usage
-        stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split("\n")[1].strip()
-        log.warning(
-            f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`"
+        deprecation_warning(
+            f"To get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`"
         )
-        log.warning(line_code)
 
         # return attribute
         return getattr(self, key)
 
     def __setitem__(self, key, value):
         # deprecate dictionary usage
-        stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split("\n")[1].strip()
-        log.warning(
-            f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`'
+        deprecation_warning(
+            f'To set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`'
         )
-        log.warning(line_code)
 
         # set attribute
         setattr(self, key, value)
@@ -310,3 +303,15 @@ class BaseModelDict(BaseModel):
 
     def __contains__(self, key):
         return key in self.keys()
+
+
+def deprecation_warning(message: str):
+    """Log a deprecation warning with caller's information."""
+    frame = inspect.currentframe().f_back.f_back  # Go back to the caller's frame
+    caller_line = frame.f_lineno            # Get the line number of the call
+    caller_filename = frame.f_code.co_filename  # Get the filename where the call was made
+
+    # Format and log the warning message
+    log.warning(
+        f"Deprecation Warning: {message} [{caller_filename}, line {caller_line}])"
+    )
