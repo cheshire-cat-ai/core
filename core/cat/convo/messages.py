@@ -1,6 +1,6 @@
 import time
 from enum import Enum
-from typing import List, Optional, Literal, Union
+from typing import List, Optional, Literal
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
 
@@ -120,7 +120,34 @@ class MessageWhy(BaseModelDict):
     model_interactions: List[LLMModelInteraction | EmbedderModelInteraction]
 
 
-class CatMessage(BaseModelDict):
+class BaseMessage(BaseModelDict):
+    """
+    Base class for messages, containing common attributes shared by all message types.
+
+    Attributes
+    ----------
+    user_id : str
+        Unique identifier for the user associated with the message.
+    who : str
+        The name of the message author.
+    text : Optional[str]
+        The text content of the message.
+    image : Optional[str]
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str]
+        Audio file URLs or base64 data URIs that represent audio associated with the message.
+    why : Optional[MessageWhy]
+        Additional contextual information related to the message.
+    """
+
+    user_id: str   
+    who: str
+    text: Optional[str] = None
+    image: Optional[str] = None
+    audio: Optional[str] = None
+
+
+class CatMessage(BaseMessage):
     """
     Represents a Cat message.
 
@@ -128,8 +155,6 @@ class CatMessage(BaseModelDict):
     ----------
     user_id : str
         Unique identifier for the user associated with the message.
-    content : Optional[str], default=None
-        Deprecated. The text content of the message. Use `text` instead.
     text : Optional[str], default=None
         The text content of the message.
     image : Optional[str], default=None
@@ -140,6 +165,8 @@ class CatMessage(BaseModelDict):
         Additional contextual information related to the message.
     who : str, default="AI"
         The name of the message author, by default "AI".
+    content : Optional[str], default=None
+        Deprecated. The text content of the message. Use `text` instead.
 
     Attributes
     ----------
@@ -157,29 +184,25 @@ class CatMessage(BaseModelDict):
         Audio file URLs or base64 data URIs that represent audio associated with the message.
     why : Optional[MessageWhy]
         Additional contextual information related to the message.
-    
+
     Notes
     -----
     - The `content` parameter and attribute are deprecated. Use `text` instead.
     """
 
-    type: str = "chat"
-    user_id: str
+    type: str = "chat" # For now is always "chat" and is not used
     who: str = "AI"
-    text: Optional[str] = None
-    image: Optional[str] = None
-    audio: Optional[str] = None
-    why: Optional[MessageWhy] = None
+    why: Optional[MessageWhy]
 
     def __init__(
         self,
         user_id: str,
-        content: Optional[str] = None,
         text: Optional[str] = None,
         image: Optional[str] = None,
         audio: Optional[str] = None,
         why: Optional[MessageWhy] = None,
         who: str = "AI",
+        content: Optional[str] = None,
         **kwargs,
     ):
         if content:
@@ -210,7 +233,7 @@ class CatMessage(BaseModelDict):
         self.text = value
 
 
-class UserMessage(BaseModelDict):
+class UserMessage(BaseMessage):
     """
     Represents a message from a user, containing text and optional multimedia content such as image and audio.
 
@@ -222,7 +245,7 @@ class UserMessage(BaseModelDict):
     user_id : str
         Unique identifier for the user sending the message.
     text : Optional[str], default=None
-        The text content of the message. Can be `None` if no text is provided.
+        The text content of the message.
     image : Optional[str], default=None
         Image file URLs or base64 data URIs that represent image associated with the message.
     audio : Optional[str], default=None
@@ -243,9 +266,4 @@ class UserMessage(BaseModelDict):
     audio : Optional[str]
        Audio file URLs or base64 data URIs that represent audio associated with the message.
     """
-
-    user_id: str
     who: str = "Human"
-    text: Optional[str] = None
-    image: Optional[str] = None
-    audio: Optional[str] = None
