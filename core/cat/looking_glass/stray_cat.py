@@ -132,7 +132,7 @@ class StrayCat:
             save (bool, optional): Save the message in the conversation history. Defaults to False.
         """
         if self.__ws is None:
-            log.warning(f"No websocket connection is open for user {self.user_id}")
+            log.info(f"No websocket connection is open for user {self.user_id}")
             return
 
         if isinstance(message, str):
@@ -346,7 +346,7 @@ class StrayCat:
         return output
 
     def __call__(self, message_dict):
-        """Call the Cat instance.
+        """Call the StrayCat instance.
 
         This method is called on the user's message received from the client.
 
@@ -584,68 +584,16 @@ Allowed classes are:
 
         return history_string
 
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
-
-        def format_human_message(message: HumanMessage) -> HumanMessage:
-            """Format a human message, including any text and image."""
-            content = [{"type": "text", "text": message.content.text}]
-
-            def format_image(image:str) -> dict:
-                """Format an image to be sent as a data URI."""
-
-                # If the image is a URL, download it and encode it as a data URI
-                if image.startswith("http"):
-                    response = requests.get(image)
-                    if response.status_code == 200:
-                        # Open the image using Pillow to determine its MIME type
-                        img = Image.open(BytesIO(response.content))
-                        mime_type = img.format.lower()  # Get MIME type
-                        
-                        # Encode the image to base64
-                        encoded_image = base64.b64encode(response.content).decode('utf-8')
-                        image_uri = f"data:image/{mime_type};base64,{encoded_image}"
-                        
-                        # Add the image as a data URI with the correct MIME type
-                        return {"type": "image_url", "image_url": {"url": image_uri}}
-                    else:
-                        error_message = f"Unexpected error with status code {response.status_code}"
-                        if response.text:
-                            error_message = response.text
-
-                        log.error(f"Failed to download image: {error_message} from {image}")
-
-                        return None
-                
-                return {"type": "image_url", "image_url": {"url": image}}
-           
-            if message.content.image:
-                formatted_image = format_image(message.content.image)
-                if formatted_image:
-                    content.append(formatted_image)
-            
-            return HumanMessage(
-                name=message.content.who,
-                content=content
-            )
-
-        def format_ai_message(message) -> AIMessage:
-            """Format an AI message with text content only."""
-            return AIMessage(
-                name=message.content.who,
-                content=message.content.text
-            ) 
+    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]: 
         
         chat_history = self.working_memory.history[-latest_n:]
         recent_history = chat_history[-latest_n:]
         langchain_chat_history = []
 
         for message in recent_history:
-            if message.role == Role.Human:
-                formatted_message = format_human_message(message)
-            else:
-                formatted_message = format_ai_message(message)
-            
-            langchain_chat_history.append(formatted_message)
+            langchain_chat_history.append(
+                message.content.langchainfy()    
+            )
 
         return langchain_chat_history
 

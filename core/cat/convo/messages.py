@@ -1,10 +1,16 @@
 import time
+import base64
+from io import BytesIO
 from enum import Enum
 from typing import List, Optional, Literal
+import requests
+from PIL import Image
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 
 from cat.utils import BaseModelDict, deprecation_warning
+from cat.log import log
 
 
 class Role(Enum):
@@ -232,6 +238,22 @@ class CatMessage(BaseMessage):
         deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
         self.text = value
 
+    def langchainfy(self) -> AIMessage:
+        """
+        Convert the internal CatMessage to a LangChain AIMessage.
+
+        Returns
+        -------
+        AIMessage
+            The LangChain AIMessage converted from the internal CatMessage.
+        """
+
+        return AIMessage(
+            name=self.who,
+            content=self.text
+        )
+
+
 
 class UserMessage(BaseMessage):
     """
@@ -267,3 +289,55 @@ class UserMessage(BaseMessage):
        Audio file URLs or base64 data URIs that represent audio associated with the message.
     """
     who: str = "Human"
+
+    def langchainfy(self) -> HumanMessage:
+        """
+        Convert the internal UserMessage to a LangChain HumanMessage.
+
+        Returns
+        -------
+        HumanMessage
+            The LangChain HumanMessage converted from the internal UserMessage.
+        """
+
+        content = []
+
+        if self.text:
+            content.append({"type": "text", "text": self.text})
+
+        if self.image:
+            formatted_image = self.langchainfy_image()
+            if formatted_image:
+                content.append(formatted_image)
+        
+        return HumanMessage(
+            name=self.who,
+            content=content
+        )
+    
+    def langchainfy_image(self) -> dict:
+        """Format an image to be sent as a data URI."""
+
+        # If the image is a URL, download it and encode it as a data URI
+        if self.image.startswith("http"):
+            response = requests.get(self.image)
+            if response.status_code == 200:
+                # Open the image using Pillow to determine its MIME type
+                img = Image.open(BytesIO(response.content))
+                mime_type = img.format.lower()  # Get MIME type
+                
+                # Encode the image to base64
+                encoded_image = base64.b64encode(response.content).decode('utf-8')
+                image_uri = f"data:image/{mime_type};base64,{encoded_image}"
+                
+                # Add the image as a data URI with the correct MIME type
+                return {"type": "image_url", "image_url": {"url": image_uri}}
+            else:
+                error_message = f"Unexpected error with status code {response.status_code}"
+                if response.text:
+                    error_message = response.text
+                log.error(f"Failed to download image: {error_message} from {self.image}")
+
+                return None
+        
+        return {"type": "image_url", "image_url": {"url": self.image}}
