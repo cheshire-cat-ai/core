@@ -14,8 +14,7 @@ def test_main_agent_instantiation(main_agent):
     assert main_agent.verbose in [True, False]
 
 
-@pytest.mark.asyncio  # to test async functions
-async def test_execute_main_agent(main_agent, stray):
+def test_execute_main_agent(main_agent, stray):
     # empty agent execution
     out = main_agent.execute(stray)
     assert isinstance(out, AgentOutput)
