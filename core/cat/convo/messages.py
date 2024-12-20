@@ -63,11 +63,8 @@ class Message(BaseModelDict):
     ----------
     user_id : str
         Unique identifier for the user associated with the message.
-    who : str
-        The name of the message author.
-    when : Optional[float]
-        The timestamp when the message was sent.        
-    
+    when : float
+        The timestamp when the message was sent.
     """
 
     user_id: str   
@@ -81,6 +78,12 @@ class ConversationMessage(Message):
 
     Attributes
     ----------
+    user_id : str
+        Unique identifier for the user associated with the message.
+    when : float
+        The timestamp when the message was sent. Defaults to the current time.
+    who : str
+        The name of the message author.
     text : Optional[str], default=None
         The text content of the message.
     image : Optional[str], default=None
@@ -139,6 +142,18 @@ class CatMessage(ConversationMessage):
     ----------
     type : str
         The type of message. Defaults to "chat".
+    user_id : str
+        Unique identifier for the user associated with the message.
+    when : float
+        The timestamp when the message was sent. Defaults to the current time.
+    who : str
+        The name of the message author.
+    text : Optional[str], default=None
+        The text content of the message.
+    image : Optional[str], default=None
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str], default=None
+        Audio file URLs or base64 data URIs that represent audio associated with the message.
     why : Optional[MessageWhy]
         Additional contextual information related to the message.
 
@@ -215,6 +230,21 @@ class UserMessage(ConversationMessage):
 
     This class is used to encapsulate the details of a message sent by a user, including the user's identifier, 
     the text content of the message, and any associated multimedia content such as image or audio files.
+
+    Attributes
+    ----------
+    user_id : str
+        Unique identifier for the user associated with the message.
+    when : float
+        The timestamp when the message was sent. Defaults to the current time.
+    who : str
+        The name of the message author.
+    text : Optional[str], default=None
+        The text content of the message.
+    image : Optional[str], default=None
+        Image file URLs or base64 data URIs that represent image associated with the message.
+    audio : Optional[str], default=None
+        Audio file URLs or base64 data URIs that represent audio associated with the message.
     """
 
     who: str = "Human"
@@ -250,7 +280,14 @@ class UserMessage(ConversationMessage):
         )
     
     def langchainfy_image(self) -> dict:
-        """Format an image to be sent as a data URI."""
+        """
+        Format an image to be sent as a data URI.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the image data URI.
+        """
 
         # If the image is a URL, download it and encode it as a data URI
         if self.image.startswith("http"):
