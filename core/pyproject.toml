@@ -46,7 +46,7 @@ dependencies = [
     "pylint-actions",
     "pytest",
     "pytest-asyncio",
-    "httpx",
+    "httpx==0.27.2",
     "fastembed==0.3.6",
     "rapidfuzz==3.6.1",
     "APScheduler==3.10.4",
