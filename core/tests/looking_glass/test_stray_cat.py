@@ -26,7 +26,7 @@ def test_stray_nlp(stray):
     assert isinstance(embedding[0][0], float)
 
 
-def test_stray_call(stray):
+def test_stray_call_with_text(stray):
     msg = {"text": "Where do I go?", "user_id": "Alice"}
 
     reply = stray.__call__(msg)
@@ -37,6 +37,21 @@ def test_stray_call(stray):
     assert reply.type == "chat"
     assert isinstance(reply.why, MessageWhy)
 
+
+def test_stray_call_with_text_and_image(stray):
+    msg = {
+        "text": "Where do I go?",
+        "user_id": "Alice",
+        "image": "https://raw.githubusercontent.com/cheshire-cat-ai/core/refs/heads/main/readme/cheshire-cat.jpeg",
+    }
+
+    reply = stray.__call__(msg)
+
+    assert isinstance(reply, CatMessage)
+    assert "You did not configure" in reply.text
+    assert reply.user_id == "Alice"
+    assert reply.type == "chat"
+    assert isinstance(reply.why, MessageWhy)
 
 # TODO: update these tests once we have a real LLM in tests
 def test_stray_classify(stray):
