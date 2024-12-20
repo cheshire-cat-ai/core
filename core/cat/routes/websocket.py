@@ -19,7 +19,7 @@ async def receive_message(websocket: WebSocket, stray: StrayCat):
     while True:
         # Receive the next message from the WebSocket.
         user_message = await websocket.receive_json()
-        user_message["user_id"] = stray.user_id
+        user_message["user_id"] = stray.user_id # impose user_id as the one authenticated
 
         # Run the `stray` object's method in a threadpool since it might be a CPU-bound operation.
         await run_in_threadpool(stray.run, user_message, return_message=False)

@@ -134,7 +134,7 @@ class StrayCat:
 
         if isinstance(message, str):
             why = self.__build_why()
-            message = CatMessage(content=message, user_id=self.user_id, why=why)
+            message = CatMessage(text=message, user_id=self.user_id, why=why)
 
         if save:
             self.working_memory.update_history(
@@ -151,7 +151,7 @@ class StrayCat:
         Args:
             content (str): message to send
         """
-        self.send_ws_message(content=content, msg_type="notification")
+        self.send_ws_message(text=content, msg_type="notification")
 
     def send_error(self, error: Union[str, Exception]):
         """Sends an error message to the user using the active WebSocket connection.
@@ -206,6 +206,7 @@ class StrayCat:
         before_cat_recalls_procedural_memories
         after_cat_recalls_memories
         """
+
         recall_query = query
 
         if query is None:
@@ -376,7 +377,6 @@ class StrayCat:
         self.working_memory.model_interactions = []
         # latest user message
         self.working_memory.user_message_json = user_message
-        user_message_text = self.working_memory.user_message_json.text
 
         # Run a totally custom reply (skips all the side effects of the framework)
         fast_reply = self.mad_hatter.execute_hook(
@@ -386,7 +386,7 @@ class StrayCat:
             return fast_reply
         if isinstance(fast_reply, dict) and "output" in fast_reply:
             return CatMessage(
-                user_id=self.user_id, content=str(fast_reply["output"])
+                user_id=self.user_id, text=str(fast_reply["output"])
             )
 
         # hook to modify/enrich user input
@@ -439,7 +439,9 @@ class StrayCat:
         log.info("Agent output returned to stray:")
         log.info(agent_output)
 
-        self._store_user_message_in_episodic_memory(user_message_text)
+        self._store_user_message_in_episodic_memory(
+            self.working_memory.user_message_json.text
+        )
 
         # why this response?
         why = self.__build_why()
@@ -577,7 +579,7 @@ Allowed classes are:
 
         history_string = ""
         for turn in history:
-            history_string += f"\n - {turn.content.who}: {turn.content.text}"
+            history_string += f"\n - {turn.who}: {turn.text}"
 
         return history_string
 
@@ -589,7 +591,7 @@ Allowed classes are:
 
         for message in recent_history:
             langchain_chat_history.append(
-                message.content.langchainfy()    
+                message.langchainfy()    
             )
 
         return langchain_chat_history

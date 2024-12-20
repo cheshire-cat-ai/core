@@ -3,145 +3,10 @@ from typing import List, Optional, Union
 
 from pydantic import Field, computed_field
 
-from cat.convo.messages import Role, UserMessage, CatMessage, MessageWhy, ModelInteraction
+from cat.convo.messages import Role, ConversationMessage, UserMessage, CatMessage, MessageWhy
+from cat.convo.model_interactions import ModelInteraction
 from cat.experimental.form import CatForm
 from cat.utils import BaseModelDict, deprecation_warning
-
-
-class HistoryEntry(BaseModelDict):
-    """
-    Represents a single entry in a conversation history, capturing the role of the speaker, the time of the message, 
-    and the content of the message itself.
-
-    Parameters
-    ----------
-    content : Union[UserMessage, CatMessage]
-        The content of the message, which can be a UserMessage or a CatMessage.
-     when : float
-        The timestamp indicating when the message was created. Defaults to the current time.
-
-    Attributes
-    ----------
-    role : Role
-        The role of the speaker (AI or Human).
-    when : float
-        The timestamp of the message. Defaults to the current time.
-    content : Union[UserMessage, CatMessage]
-        The message content, either from a user or an AI.
-    
-    Notes
-    -----
-    - The `message`, `why`, and `who` attributes are deprecated and should be accessed through the `content` attribute instead.
-    """
-
-    when: float = Field(default_factory=time.time)
-    content: Union[UserMessage, CatMessage]
-
-    def __init__(self, content: Union[UserMessage, CatMessage], when: Optional[float] = None, **data):
-
-        if "message" in data:
-            deprecation_warning("The `message` attribute is deprecated. Use `content.text` instead.")
-            content.text = data.pop("message")
-
-        # Use the when parameter if provided otherwise the default factory provide the current time
-        if when is not None:
-            data["when"] = when
-
-        super().__init__(content=content, **data)
-
-
-    @computed_field
-    @property
-    def role(self) -> Role:
-        """
-        Get the role of the speaker.
-
-        Returns
-        -------
-        Role
-            The role of the speaker.
-        """
-        return Role.AI if isinstance(self.content, CatMessage) else Role.Human
-
-
-    @computed_field
-    @property
-    def message(self) -> str:
-        """
-        This attribute is deprecated. Use `content.text` instead.
-
-        Get the text content of the message.
-
-        Returns
-        -------
-        str
-            The text content of the message.
-        """
-        deprecation_warning("Accessing the `message` attribute directly is deprecated. Use `content.text` instead.")
-        return self.content.text
-    
-    @message.setter
-    def message(self, value):
-        deprecation_warning("Accessing the `message` attribute directly is deprecated. Use `.text` instead.")
-        self.text = value
-
-
-    @computed_field
-    @property
-    def why(self) -> MessageWhy:
-        """
-        This attribute is deprecated. Use `content.why` instead.
-
-        Deprecated. Get additional context about the message.
-
-        Returns
-        -------
-        MessageWhy
-            An object containing additional information related to the message.
-
-        Notes:
-            - This attribute is available only if the content is a CatMessage.
-        """ 
-        deprecation_warning("Accessing the `why` attribute directly is deprecated. Use `content.why` instead.")
-
-
-        # NOTE: Tests expect a dictionary, not a MessageWhy object
-        # if the content is a UserMessage
-
-        # TODO: Discuss if we should return an empty dictionary or None
-
-        if not hasattr(self.content, "why"):
-            return {}
-       
-        return self.content.why
-    
-    @why.setter
-    def why(self, value):
-        deprecation_warning("Accessing the `why` attribute directly is deprecated. Use `content.why` instead.")        
-        self.content.why = value
-    
-
-    @computed_field
-    @property
-    def who(self) -> str:
-        """
-        This attribute is deprecated. Use `content.who` instead.
-
-        Get the name of the message author.
-
-        Returns
-        -------
-        str
-            The author of the speaker.
-
-        """
-        deprecation_warning("Accessing the `who` attribute directly is deprecated. Use `content.who` instead.")
-        return self.content.who
-      
-    @who.setter
-    def who(self, value):
-        deprecation_warning("Accessing the `who` attribute directly is deprecated. Use `content.who` instead.")
-        self.content.who = value
 
 
 class WorkingMemory(BaseModelDict):
@@ -150,7 +15,7 @@ class WorkingMemory(BaseModelDict):
 
     Attributes
     ----------
-    history : List[HistoryEntry]
+    history : List[HistoryMessage]
         A list that maintains the conversation history between the Human and the AI.
     user_message_json : Optional[UserMessage], default=None
         An optional UserMessage object representing the last user message.
@@ -168,7 +33,7 @@ class WorkingMemory(BaseModelDict):
         A list of interactions with models.
     """
 
-    history: List[HistoryEntry] = []
+    history: List[ConversationMessage] = []
 
     user_message_json: Optional[UserMessage] = None
 
@@ -220,16 +85,16 @@ class WorkingMemory(BaseModelDict):
                 text=message
             )
 
-        self.history.append(HistoryEntry(content=content))
+        self.history.append(content)
 
-    def update_history(self, content: Union[UserMessage, CatMessage], when: Optional[float] = None):
+    def update_history(self, message: ConversationMessage):
         """
         Adds a message to the history.
 
         Parameters
         ----------
-        content : Union[UserMessage, CatMessage]
-            The message content, must be of type `UserMessage` or `CatMessage`.
+        message : ConversationMessage
+            The message, must be of type `ConversationMessage` (typically a subclass like `UserMessage` or `CatMessage`).
         """
-        self.history.append(HistoryEntry(content=content, when=when))
+        self.history.append(message)
       

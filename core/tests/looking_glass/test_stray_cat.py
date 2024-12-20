@@ -32,7 +32,7 @@ def test_stray_call(stray):
     reply = stray.__call__(msg)
 
     assert isinstance(reply, CatMessage)
-    assert "You did not configure" in reply.content
+    assert "You did not configure" in reply.text
     assert reply.user_id == "Alice"
     assert reply.type == "chat"
     assert isinstance(reply.why, MessageWhy)
@@ -87,7 +87,7 @@ def test_stray_fast_reply_hook(stray):
     res = stray.__call__(msg)
 
     assert isinstance(res, CatMessage)
-    assert res.content == fast_reply_msg
+    assert res.text == fast_reply_msg
 
     # there should be NO side effects
     assert stray.working_memory.user_message_json.text == user_msg

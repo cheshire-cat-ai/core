@@ -23,10 +23,18 @@ def test_convo_history_update(client):
     assert response.status_code == 200
     assert "history" in json
     assert len(json["history"]) == 2  # mex and reply
+
+    # Human message
     assert json["history"][0]["who"] == "Human"
-    assert json["history"][0]["message"] == message
-    assert json["history"][0]["why"] == {}
+    assert json["history"][0]["text"] == message
     assert isinstance(json["history"][0]["when"], float)  # timestamp
+    
+    # Cat message
+    assert json["history"][1]["who"] == "AI"
+    assert "You did not configure" in json["history"][1]["text"] 
+    assert "You did not configure" in json["history"][1]["content"] # TODOV2: remove "content"
+    assert "You did not configure" in json["history"][1]["why"]["agent_output"]["output"]
+    assert isinstance(json["history"][1]["when"], float)  # timestamp
 
 
 def test_convo_history_reset(client):
@@ -72,11 +80,11 @@ def test_convo_history_by_user(client):
         assert len(json["history"]) == n_messages * 2  # mex and reply
         for m_idx, m in enumerate(json["history"]):
             assert "who" in m
-            assert "message" in m
+            assert "text" in m
             if m_idx % 2 == 0:  # even message
                 m_number_from_user = int(m_idx / 2)
                 assert m["who"] == "Human"
-                assert m["message"] == f"Mex n.{m_number_from_user} from {user_id}"
+                assert m["text"] == f"Mex n.{m_number_from_user} from {user_id}"
             else:
                 assert m["who"] == "AI"
 

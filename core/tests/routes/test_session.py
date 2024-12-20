@@ -24,7 +24,7 @@ def test_session_creation_from_websocket(client):
     convo = strays["Alice"].working_memory.history
     assert len(convo) == 2
     assert convo[0]["who"] == "Human"
-    assert convo[0]["message"] == mex["text"]
+    assert convo[0]["text"] == mex["text"]
 
 
 def test_session_creation_from_http(client):
