@@ -145,21 +145,22 @@ class CatMessage(ConversationMessage):
     type: str = "chat" # For now is always "chat" and is not used
     why: Optional[MessageWhy] = None
 
-    def langchainfy(self) -> AIMessage:
-        """
-        Convert the internal CatMessage to a LangChain AIMessage.
+    def __init__(
+        self,
+        user_id: str,
+        who: str = "AI",
+        text: Optional[str] = None,
+        image: Optional[str] = None,
+        audio: Optional[str] = None,
+        why: Optional[MessageWhy] = None,
+        **kwargs,
+    ):
+        if "content" in kwargs:
+            deprecation_warning("The `content` parameter is deprecated. Use `text` instead.")    
+            text = kwargs.pop("content")  # Map 'content' to 'text'
 
-        Returns
-        -------
-        AIMessage
-            The LangChain AIMessage converted from the internal CatMessage.
-        """
+        super().__init__(user_id=user_id, text=text, image=image, audio=audio, why=why, who=who, **kwargs)
 
-        return AIMessage(
-            name=self.who,
-            content=self.text
-        )
-    
     @computed_field
     @property
     def content(self) -> str:
