@@ -1,9 +1,6 @@
-import time
-from typing import List, Optional, Union
+from typing import List, Optional
 
-from pydantic import Field, computed_field
-
-from cat.convo.messages import Role, ConversationMessage, UserMessage, CatMessage, MessageWhy
+from cat.convo.messages import Role, ConversationMessage, UserMessage, CatMessage
 from cat.convo.model_interactions import ModelInteraction
 from cat.experimental.form import CatForm
 from cat.utils import BaseModelDict, deprecation_warning

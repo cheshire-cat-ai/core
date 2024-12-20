@@ -2,11 +2,11 @@ import time
 import base64
 from io import BytesIO
 from enum import Enum
-from typing import List, Optional, Literal, Union
+from typing import List, Optional
 import requests
 from PIL import Image
 
-from pydantic import BaseModel, Field, ConfigDict, computed_field
+from pydantic import Field, computed_field
 from langchain_core.messages import AIMessage, HumanMessage
 
 from cat.convo.model_interactions import LLMModelInteraction, EmbedderModelInteraction

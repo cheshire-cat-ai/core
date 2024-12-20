@@ -1,7 +1,5 @@
 import time
-from io import BytesIO
-from enum import Enum
-from typing import List, Optional, Literal
+from typing import List, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
 class ModelInteraction(BaseModel):
