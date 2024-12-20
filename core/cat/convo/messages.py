@@ -71,7 +71,6 @@ class Message(BaseModelDict):
     """
 
     user_id: str   
-    who: str
     when: float = Field(default_factory=time.time)
 
 
@@ -90,10 +89,41 @@ class ConversationMessage(Message):
         Audio file URLs or base64 data URIs that represent audio associated with the message.
     """
 
+    who: str
     text: Optional[str]  = None
     image: Optional[str] = None
     audio: Optional[str] = None
 
+    # massage was used in the old history instead of text
+    # we need to keep it for backward compatibility
+    def __init__(self, **data):
+
+        if "message" in data:
+            deprecation_warning("The `message` parameter is deprecated. Use `text` instead.")
+            data["text"] = data.pop("message")
+
+        super().__init__(**data)
+
+    @computed_field
+    @property
+    def message(self) -> str:
+        """
+        This attribute is deprecated. Use `text` instead.
+
+        The text content of the message. Use `text` instead.
+
+        Returns
+        -------
+        str
+            The text content of the message.
+        """
+        deprecation_warning("The `message` attribute is deprecated. Use `text` instead.")
+        return self.text
+    
+    @message.setter
+    def message(self, value):
+        deprecation_warning("The `message` attribute is deprecated. Use `text` instead.")
+        self.text = value
 
 class CatMessage(ConversationMessage):
     """
