@@ -9,12 +9,12 @@
 
 **Version 1.8 (temp)**
 
- - custom endpoints
+ - custom endpoints (OK - missing DELETE and PUT decorators)
  - stress tests:
-   - load testing
-   - benchmark threads vs async/await
+   - load testing (OK - https://github.com/lucagobbi/stressed-cat)
+   - benchmark threads vs async/await (PANIK)
 - form & tools
-   - model getter
+   - model getter (OK)
    - json schema + Pydantic support at choice
 - telemetry
   - anonymous (just unique instance id, country, (n.utenti, info plugin))
