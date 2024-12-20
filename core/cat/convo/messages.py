@@ -125,6 +125,12 @@ class ConversationMessage(Message):
         deprecation_warning("The `message` attribute is deprecated. Use `text` instead.")
         self.text = value
 
+    @property
+    def role(self) -> None:
+        """The role of the message author."""
+        return None
+
+
 class CatMessage(ConversationMessage):
     """
     Represents a Cat message.
@@ -182,6 +188,26 @@ class CatMessage(ConversationMessage):
         deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
         self.text = value
 
+    @property
+    def role(self) -> Role:
+        """The role of the message author."""
+        return Role.AI
+    
+    def langchainfy(self) -> AIMessage:
+        """
+        Convert the internal CatMessage to a LangChain AIMessage.
+
+        Returns
+        -------
+        AIMessage
+            The LangChain AIMessage converted from the internal CatMessage.
+        """
+
+        return AIMessage(
+            name=self.who,
+            content=self.text
+        )
+
 
 class UserMessage(ConversationMessage):
     """
@@ -192,6 +218,11 @@ class UserMessage(ConversationMessage):
     """
 
     who: str = "Human"
+
+    @property
+    def role(self) -> Role:
+        """The role of the message author."""
+        return Role.Human
 
     def langchainfy(self) -> HumanMessage:
         """
