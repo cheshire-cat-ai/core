@@ -82,3 +82,13 @@ class VectorMemory:
                 https=qdrant_https,
                 api_key=qdrant_api_key,
             )
+
+    def delete_collection(self, collection_name: str):
+        """Delete specific vector collection"""
+        
+        return self.vector_db.delete_collection(collection_name)
+    
+    def get_collection(self, collection_name: str):
+        """Get collection info"""
+        
+        return self.vector_db.get_collection(collection_name)

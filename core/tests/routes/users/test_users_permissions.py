@@ -1,10 +1,9 @@
 
 import pytest
-from cat.env import get_env
 
 # test endpoints with different user permissions
 # NOTE: we are using here the secure_client:
-# - CCAT_API_KEY and CCAT_API_KEY_WS are active
+# - CCAT_API_KEY, CCAT_API_KEY_WS and CCAT_JWT_SECRET are active
 # - we will auth with JWT
 
 
@@ -51,7 +50,7 @@ def test_users_permissions(secure_client, credentials, endpoint):
             "password": "U R U"
         },
         headers={
-            "Authorization": f"Bearer {get_env('CCAT_API_KEY')}",
+            "Authorization": "Bearer meow_http",
             "user_id": "admin"
         }
     )

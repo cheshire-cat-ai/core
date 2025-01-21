@@ -18,6 +18,7 @@ from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.plugin import Plugin
 from cat.mad_hatter.decorators.hook import CatHook
 from cat.mad_hatter.decorators.tool import CatTool
+from cat.mad_hatter.decorators.endpoint import CustomEndpoint
 
 from cat.experimental.form import CatForm
 
@@ -29,7 +30,7 @@ from cat.experimental.form import CatForm
 @singleton
 class MadHatter:
     # loads and execute plugins
-    # - enter into the plugin folder and loads everthing
+    # - enter into the plugin folder and loads everything
     #   that is decorated or named properly
     # - orders plugged in hooks by name and priority
     # - exposes functionality to the cat
@@ -42,6 +43,7 @@ class MadHatter:
         ] = {}  # dict of active plugins hooks ( hook_name -> [CatHook, CatHook, ...])
         self.tools: List[CatTool] = []  # list of active plugins tools
         self.forms: List[CatForm] = []  # list of active plugins forms
+        self.endpoints: List[CustomEndpoint] = []  # list of active plugins endpoints
 
         self.active_plugins: List[str] = []
 
@@ -138,14 +140,17 @@ class MadHatter:
         self.hooks = {}
         self.tools = []
         self.forms = []
+        self.endpoints = []
 
         for _, plugin in self.plugins.items():
-            # load hooks, tools and forms from active plugins
+            # load hooks, tools, forms and endpoints from active plugins
             if plugin.id in self.active_plugins:
                 # cache tools
                 self.tools += plugin.tools
 
                 self.forms += plugin.forms
+
+                self.endpoints += plugin.endpoints
 
                 # cache hooks (indexed by hook name)
                 for h in plugin.hooks:

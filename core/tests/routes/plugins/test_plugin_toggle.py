@@ -1,5 +1,19 @@
 from tests.utils import get_procedural_memory_contents
 
+def check_active_plugin_properties(plugin):
+    assert plugin["id"] == "mock_plugin"
+    assert len(plugin["hooks"]) == 3
+    assert len(plugin["tools"]) == 1
+    assert len(plugin["forms"]) == 1
+    assert len(plugin["endpoints"]) == 4
+
+def check_unactive_plugin_properties(plugin):
+    assert plugin["id"] == "mock_plugin"
+    assert len(plugin["hooks"]) == 0
+    assert len(plugin["tools"]) == 0
+    assert len(plugin["forms"]) == 0
+    assert len(plugin["endpoints"]) == 0
+
 
 def test_toggle_non_existent_plugin(client, just_installed_plugin):
     response = client.put("/plugins/toggle/no_plugin")
@@ -10,21 +24,25 @@ def test_toggle_non_existent_plugin(client, just_installed_plugin):
 
 
 def test_deactivate_plugin(client, just_installed_plugin):
+
     # deactivate
     response = client.put("/plugins/toggle/mock_plugin")
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
     installed_plugins = response.json()["installed"]
-    mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
-    assert len(mock_plugin) == 1  # plugin installed
-    assert isinstance(mock_plugin[0]["active"], bool)
-    assert not mock_plugin[0]["active"]  # plugin NOT active
+    assert len(installed_plugins) == 2  # core_plugin and mock_plugin
+
+    mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"][0]
+    assert isinstance(mock_plugin["active"], bool)
+    assert not mock_plugin["active"]  # plugin NOT active
+    check_unactive_plugin_properties(mock_plugin)
 
     # GET single plugin info, plugin is not active
     response = client.get("/plugins/mock_plugin")
     assert isinstance(response.json()["data"]["active"], bool)
     assert not response.json()["data"]["active"]
+    check_unactive_plugin_properties(response.json()["data"])
 
     # tool has been taken away
     procedures = get_procedural_memory_contents(client)
@@ -53,15 +71,17 @@ def test_reactivate_plugin(client, just_installed_plugin):
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins")
     installed_plugins = response.json()["installed"]
-    mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"]
-    assert len(mock_plugin) == 1  # plugin installed
-    assert isinstance(mock_plugin[0]["active"], bool)
-    assert mock_plugin[0]["active"]  # plugin active
+    assert len(installed_plugins) == 2
+    mock_plugin = [p for p in installed_plugins if p["id"] == "mock_plugin"][0]
+    assert isinstance(mock_plugin["active"], bool)
+    assert mock_plugin["active"]  # plugin active
+    check_active_plugin_properties(mock_plugin)
 
     # GET single plugin info, plugin is active
     response = client.get("/plugins/mock_plugin")
     assert isinstance(response.json()["data"]["active"], bool)
     assert response.json()["data"]["active"]
+    check_active_plugin_properties(response.json()["data"])
 
     # check whether procedures have been re-embedded
     procedures = get_procedural_memory_contents(client)

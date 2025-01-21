@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain_core.outputs.llm_result import LLMResult
 import tiktoken
-from cat.convo.messages import LLMModelInteraction
+from cat.convo.model_interactions import LLMModelInteraction
 import time
 
 

@@ -38,8 +38,10 @@ class ConnectionAuth(ABC):
         connection: HTTPConnection # Request | WebSocket,
     ) -> StrayCat:
 
+        # get protocol from Starlette request
+        protocol = connection.scope.get('type')
         # extract credentials (user_id, token_or_key) from connection
-        user_id, credential = await self.extract_credentials(connection)
+        user_id, credential = self.extract_credentials(connection)
         auth_handlers = [
             # try to get user from local idp
             connection.app.state.ccat.core_auth_handler,
@@ -47,8 +49,8 @@ class ConnectionAuth(ABC):
             connection.app.state.ccat.custom_auth_handler,
         ]
         for ah in auth_handlers:
-            user: AuthUserInfo = await ah.authorize_user_from_credential(
-                credential, self.resource, self.permission, user_id=user_id
+            user: AuthUserInfo = ah.authorize_user_from_credential(
+                protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
                 return await self.get_user_stray(user, connection)
@@ -57,7 +59,7 @@ class ConnectionAuth(ABC):
         self.not_allowed(connection)
 
     @abstractmethod
-    async def extract_credentials(self, connection: Request | WebSocket) -> Tuple[str] | None:
+    def extract_credentials(self, connection: Request | WebSocket) -> Tuple[str] | None:
         pass
 
     @abstractmethod
@@ -71,7 +73,7 @@ class ConnectionAuth(ABC):
 
 class HTTPAuth(ConnectionAuth):
 
-    async def extract_credentials(self, connection: Request) -> Tuple[str] | None:
+    def extract_credentials(self, connection: Request) -> Tuple[str, str] | None:
         """
         Extract user_id and token/key from headers
         """
@@ -119,7 +121,7 @@ class HTTPAuth(ConnectionAuth):
 
 class WebSocketAuth(ConnectionAuth):
 
-    async def extract_credentials(self, connection: WebSocket) -> Tuple[str] | None:
+    def extract_credentials(self, connection: WebSocket) -> Tuple[str, str] | None:
         """
         Extract user_id from WebSocket path params
         Extract token from WebSocket query string
@@ -138,11 +140,10 @@ class WebSocketAuth(ConnectionAuth):
 
         if user.id in strays.keys():
             stray = strays[user.id]
-            # Close previus ws connection
-            if stray._StrayCat__ws:
-                await stray._StrayCat__ws.close()
+            await stray.close_connection()
+
             # Set new ws connection
-            stray._StrayCat__ws = connection
+            stray.reset_connection(connection)
             log.info(
                 f"New websocket connection for user '{user.id}', the old one has been closed."
             )
@@ -165,7 +166,7 @@ class WebSocketAuth(ConnectionAuth):
 
 class CoreFrontendAuth(HTTPAuth):
 
-    async def extract_credentials(self, connection: Request) -> Tuple[str] | None:
+    def extract_credentials(self, connection: Request) -> Tuple[str, str] | None:
         """
         Extract user_id from cookie
         """

@@ -30,7 +30,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## I Have a Question
 
-> If you want to ask a question, we assume that you have read the available [Documentation](https://cheshire-cat-ai.github.io/docs/) and [FAQs](https://cheshire-cat-ai.github.io/docs/faq/).
+> If you want to ask a question, we assume that you have read the available [Documentation](https://cheshire-cat-ai.github.io/docs/) and [FAQs](https://cheshire-cat-ai.github.io/docs/faq/general/).
 
 Before you ask a question, it is best to search for existing [Issues](https://github.com/cheshire-cat-ai/core/issues/) that might help you. In case you have found a suitable issue and still need clarification, you can comment in the issue. If the problem you encountered is not strictly related to the Cat, try to search the internet for answers first.
 

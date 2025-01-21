@@ -11,7 +11,7 @@ from inspect import getmembers, isclass
 from pydantic import BaseModel, ValidationError
 from packaging.requirements import Requirement
 
-from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator
+from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator, CustomEndpoint
 from cat.experimental.form import CatForm
 from cat.utils import to_camel_case
 from cat.log import log
@@ -59,6 +59,7 @@ class Plugin:
         self._hooks: List[CatHook] = []  # list of plugin hooks
         self._tools: List[CatTool] = []  # list of plugin tools
         self._forms: List[CatForm] = []  # list of plugin forms
+        self._endpoints: List[CustomEndpoint] = [] # list of plugin endpoints
 
         # list of @plugin decorated functions overriding default plugin behaviour
         self._plugin_overrides = []  # TODO: make this a dictionary indexed by func name, for faster access
@@ -73,7 +74,7 @@ class Plugin:
         except Exception as e:
             raise e
 
-        # Load of hooks and tools
+        # Load of hook, tools, forms and endpoints
         self._load_decorated_functions()
 
         # by default, plugin settings are saved inside the plugin folder
@@ -98,6 +99,8 @@ class Plugin:
 
         self._hooks = []
         self._tools = []
+        self._forms = []
+        self._deactivate_endpoints()
         self._plugin_overrides = []
         self._active = False
 
@@ -240,6 +243,8 @@ class Plugin:
         meta["tags"] = json_file_data.get("tags", "unknown")
         meta["thumb"] = json_file_data.get("thumb", "")
         meta["version"] = json_file_data.get("version", "0.0.1")
+        meta["min_cat_version"] = json_file_data.get("min_cat_version", "")
+        meta["max_cat_version"] = json_file_data.get("max_cat_version", "")
 
         return meta
 
@@ -295,6 +300,7 @@ class Plugin:
         hooks = []
         tools = []
         forms = []
+        endpoints = []
         plugin_overrides = []
 
         for py_file in self.py_files:
@@ -309,6 +315,7 @@ class Plugin:
                 hooks += getmembers(plugin_module, self._is_cat_hook)
                 tools += getmembers(plugin_module, self._is_cat_tool)
                 forms += getmembers(plugin_module, self._is_cat_form)
+                endpoints += getmembers(plugin_module, self._is_custom_endpoint)
                 plugin_overrides += getmembers(
                     plugin_module, self._is_cat_plugin_override
                 )
@@ -323,6 +330,7 @@ class Plugin:
         self._hooks = list(map(self._clean_hook, hooks))
         self._tools = list(map(self._clean_tool, tools))
         self._forms = list(map(self._clean_form, forms))
+        self._endpoints = list(map(self._clean_endpoint, endpoints))
         self._plugin_overrides = list(
             map(self._clean_plugin_override, plugin_overrides)
         )
@@ -331,6 +339,12 @@ class Plugin:
         name = self.manifest.get("name")
         url = self.manifest.get("plugin_url")
         return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
+
+    def _deactivate_endpoints(self):
+
+        for endpoint in self._endpoints:
+            endpoint.deactivate()
+        self._endpoints = []
 
     def _clean_hook(self, hook: CatHook):
         # getmembers returns a tuple
@@ -347,6 +361,12 @@ class Plugin:
     def _clean_form(self, form: CatForm):
         # getmembers returns a tuple
         f = form[1]
+        f.plugin_id = self._id
+        return f
+    
+    def _clean_endpoint(self, endpoint: CustomEndpoint):
+        # getmembers returns a tuple
+        f = endpoint[1]
         f.plugin_id = self._id
         return f
 
@@ -382,6 +402,12 @@ class Plugin:
     def _is_cat_plugin_override(obj):
         return isinstance(obj, CatPluginDecorator)
 
+    # a plugin custom endpoint has to be decorated with @endpoint
+    # (which returns an instance of CustomEndpoint)
+    @staticmethod
+    def _is_custom_endpoint(obj):
+        return isinstance(obj, CustomEndpoint)
+    
     @property
     def path(self):
         return self._path
@@ -409,3 +435,7 @@ class Plugin:
     @property
     def forms(self):
         return self._forms
+
+    @property
+    def endpoints(self):
+        return self._endpoints

@@ -18,11 +18,14 @@ from cat.db.database import Database
 import cat.utils as utils
 from cat.memory.vector_memory import VectorMemory
 from cat.mad_hatter.plugin import Plugin
-from cat.main import cheshire_cat_api
+from cat.startup import cheshire_cat_api
 from tests.utils import create_mock_plugin_zip
 
+from cat.mad_hatter.mad_hatter import MadHatter
 
+import time
 
+FAKE_TIMESTAMP = 1705855981
 
 # substitute classes' methods where necessary for testing purposes
 def mock_classes(monkeypatch):
@@ -81,6 +84,8 @@ def client(monkeypatch) -> Generator[TestClient, Any, None]:
     
     # clean up tmp files and folders
     clean_up_mocks()
+    # env variables
+    os.environ["CCAT_DEBUG"] = "false" # do not autoreload
     # monkeypatch classes
     mock_classes(monkeypatch)
     # delete all singletons!!!
@@ -99,9 +104,11 @@ def secure_client(client):
     # set ENV variables
     os.environ["CCAT_API_KEY"] = "meow_http"
     os.environ["CCAT_API_KEY_WS"] = "meow_ws"
+    os.environ["CCAT_JWT_SECRET"] = "meow_jwt"
     yield client
     del os.environ["CCAT_API_KEY"]
     del os.environ["CCAT_API_KEY_WS"]
+    del os.environ["CCAT_JWT_SECRET"]
 
 
 # This fixture is useful to write tests in which
@@ -149,3 +156,27 @@ def stray(client):
 def apply_warning_filters():
     # ignore deprecation warnings due to langchain not updating to pydantic v2
     warnings.filterwarnings("ignore", category=PydanticDeprecatedSince20)
+
+#fixture for mock time.time function
+@pytest.fixture
+def patch_time_now(monkeypatch):
+
+    def mytime():
+        return FAKE_TIMESTAMP
+
+    monkeypatch.setattr(time, 'time', mytime)
+
+#fixture for mad hatter with mock plugin installed
+@pytest.fixture
+def mad_hatter_with_mock_plugin(client):  # client here injects the monkeypatched version of the cat
+
+    # each test is given the mad_hatter instance (it's a singleton)
+    mad_hatter = MadHatter()
+
+    # install plugin
+    new_plugin_zip_path = create_mock_plugin_zip(flat=True)
+    mad_hatter.install_plugin(new_plugin_zip_path)
+
+    yield mad_hatter
+
+    mad_hatter.uninstall_plugin("mock_plugin")

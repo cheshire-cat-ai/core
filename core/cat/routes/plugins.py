@@ -1,3 +1,4 @@
+import aiofiles
 import mimetypes
 from copy import deepcopy
 from typing import Dict
@@ -50,6 +51,8 @@ async def get_available_plugins(
             {"name": hook.name, "priority": hook.priority} for hook in p.hooks
         ]
         manifest["tools"] = [{"name": tool.name} for tool in p.tools]
+        manifest["endpoints"] = [{"name": endpoint.name, "tags": endpoint.tags} for endpoint in p.endpoints]
+        manifest["forms"] = [{"name": form.name} for form in p.forms]
 
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
@@ -98,8 +101,9 @@ async def install_plugin(
 
     log.info(f"Uploading {content_type} plugin {file.filename}")
     plugin_archive_path = f"/tmp/{file.filename}"
-    with open(plugin_archive_path, "wb+") as f:
-        f.write(file.file.read())
+    async with aiofiles.open(plugin_archive_path, "wb+") as f:
+        content = await file.read()
+        await f.write(content)
     ccat.mad_hatter.install_plugin(plugin_archive_path)
 
     return {
@@ -122,7 +126,7 @@ async def install_plugin_from_registry(
 
     # download zip from registry
     try:
-        tmp_plugin_path = registry_download_plugin(payload["url"])
+        tmp_plugin_path = await registry_download_plugin(payload["url"])
         ccat.mad_hatter.install_plugin(tmp_plugin_path)
     except Exception as e:
         log.error("Could not download plugin form registry")
@@ -272,6 +276,8 @@ async def get_plugin_details(
         {"name": hook.name, "priority": hook.priority} for hook in plugin.hooks
     ]
     plugin_info["tools"] = [{"name": tool.name} for tool in plugin.tools]
+    plugin_info["forms"] = [{"name": form.name} for form in plugin.forms]
+    plugin_info["endpoints"] = [{"name": endpoint.name, "tags": endpoint.tags} for endpoint in plugin.endpoints]
 
     return {"data": plugin_info}
 

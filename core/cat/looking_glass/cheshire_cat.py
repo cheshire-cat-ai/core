@@ -2,7 +2,6 @@ import time
 from typing import List, Dict
 from typing_extensions import Protocol
 
-
 from langchain.base_language import BaseLanguageModel
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableLambda
@@ -54,13 +53,16 @@ class CheshireCat:
 
     """
 
-    def __init__(self):
+    def __init__(self, fastapi_app):
         """Cat initialization.
 
         At init time the Cat executes the bootstrap.
         """
 
         # bootstrap the Cat! ^._.^
+
+        # get reference to the FastAPI app
+        self.fastapi_app = fastapi_app
 
         # load AuthHandler
         self.load_auth()
@@ -80,10 +82,11 @@ class CheshireCat:
         # Load memories (vector collections and working_memory)
         self.load_memory()
 
-        # After memory is loaded, we can get/create tools embeddings
-        # every time the mad_hatter finishes syncing hooks, tools and forms, it will notify the Cat (so it can embed tools in vector memory)
-        self.mad_hatter.on_finish_plugins_sync_callback = self.embed_procedures
-        self.embed_procedures()  # first time launched manually
+        # After memory is loaded, we can get/create tools embeddings      
+        self.mad_hatter.on_finish_plugins_sync_callback = self.on_finish_plugins_sync_callback
+ 
+        # First time launched manually       
+        self.on_finish_plugins_sync_callback()
 
         # Main agent instance (for reasoning)
         self.main_agent = MainAgent()
@@ -125,31 +128,27 @@ class CheshireCat:
         -----
         Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
         the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
-
         """
-
+        
         selected_llm = crud.get_setting_by_name(name="llm_selected")
 
         if selected_llm is None:
-            # return default LLM
-            llm = LLMDefaultConfig.get_llm_from_config({})
+            # Return default LLM
+            return LLMDefaultConfig.get_llm_from_config({})
+       
+        # Get LLM factory class
+        selected_llm_class = selected_llm["value"]["name"]
+        FactoryClass = get_llm_from_name(selected_llm_class)
 
-        else:
-            # get LLM factory class
-            selected_llm_class = selected_llm["value"]["name"]
-            FactoryClass = get_llm_from_name(selected_llm_class)
-
-            # obtain configuration and instantiate LLM
-            selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
-            try:
-                llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
-            except Exception:
-                import traceback
-
-                traceback.print_exc()
-                llm = LLMDefaultConfig.get_llm_from_config({})
-
-        return llm
+        # Obtain configuration and instantiate LLM
+        selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
+        try:
+            llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
+            return llm
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            return LLMDefaultConfig.get_llm_from_config({})
 
     def load_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
@@ -332,9 +331,18 @@ class CheshireCat:
                     }
         return hashes
 
+    def on_finish_plugins_sync_callback(self):
+        self.activate_endpoints()
+        self.embed_procedures()
+
+    def activate_endpoints(self):
+        for endpoint in self.mad_hatter.endpoints:
+            if endpoint.plugin_id in self.mad_hatter.active_plugins:
+                endpoint.activate(self.fastapi_app)
+
     def embed_procedures(self):
         # Retrieve from vectorDB all procedural embeddings
-        embedded_procedures = self.memory.vectors.procedural.get_all_points()
+        embedded_procedures, _ = self.memory.vectors.procedural.get_all_points()
         embedded_procedures_hashes = self.build_embedded_procedures_hashes(
             embedded_procedures
         )

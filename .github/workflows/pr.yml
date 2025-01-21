@@ -22,9 +22,5 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v2
-      - name: Cat up
-        run: docker compose up -d
       - name: Test
-        run: docker exec cheshire_cat_core python -m pytest --color=yes .
-      - name: Cat down
-        run: docker compose down
+        run: docker compose run --rm cheshire-cat-core python -m pytest --color=yes .

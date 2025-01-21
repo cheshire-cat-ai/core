@@ -59,7 +59,7 @@ def test_default_embedder_loaded(cheshire_cat):
 
 def test_procedures_embedded(cheshire_cat):
     # get embedded tools
-    procedures = cheshire_cat.memory.vectors.procedural.get_all_points()
+    procedures, _ = cheshire_cat.memory.vectors.procedural.get_all_points()
     assert len(procedures) == 3
 
     for p in procedures:

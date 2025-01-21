@@ -11,7 +11,7 @@ from cat import utils
 
 class MemoryAgent(BaseAgent):
 
-    async def execute(self, stray, prompt_prefix, prompt_suffix) -> AgentOutput:
+    def execute(self, stray, prompt_prefix, prompt_suffix) -> AgentOutput:
 
         prompt_variables = stray.working_memory.agent_input.model_dump()
         sys_prompt = prompt_prefix + prompt_suffix

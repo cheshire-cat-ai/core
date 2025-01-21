@@ -4,7 +4,8 @@ Here is a collection of methods to hook into the *Agent* execution pipeline.
 
 """
 
-from typing import List, Union, Dict
+from typing import List, Dict
+from cat.agents import AgentOutput
 
 from cat.mad_hatter.decorators import hook
 
@@ -30,36 +31,28 @@ def before_agent_starts(agent_input: Dict, cat) -> Dict:
 
 
 @hook(priority=0)
-def agent_fast_reply(fast_reply, cat) -> Union[None, Dict]:
-    """This hook is useful to shortcut the Cat response.
-    If you do not want the agent to run, return the final response from here and it will end up in the chat without the agent being executed.
+def agent_fast_reply(agent_fast_reply: dict, cat) -> None | dict | AgentOutput:
+    """This hook allows for a custom response after memory recall, skipping default agent execution.
+    It's useful for custom agent logic or when you want to use recalled memories but avoid the main agent.
 
     Parameters
     --------
-    fast_reply: dict
-        Input is dict (initially empty), which can be enriched whith an "output" key with the shortcut response.
+    agent_fast_reply: dict
+        An initially empty dict that can be populated with a response.
     cat : CheshireCat
         Cheshire Cat instance.
 
     Returns
     --------
-    response : Union[None, Dict]
-        Cat response if you want to avoid using the agent, or None / {} if you want the agent to be executed.
+    response : None | dict | AgentOutput
+        If you want to bypass the main agent, return an AgentOutput or a dict with an "output" key.
+        Return None to continue with normal execution.
         See below for examples of Cat response
 
     Examples
     --------
 
-    Example 1: can't talk about this topic
-    ```python
-    # here you could use cat._llm to do topic evaluation
-    if "dog" in agent_input["input"]:
-        return {
-            "output": "You went out of topic. Can't talk about dog."
-        }
-    ```
-
-    Example 2: don't remember (no uploaded documents about topic)
+    Example 1: don't remember (no uploaded documents about topic)
     ```python
     num_declarative_memories = len( cat.working_memory.declarative_memories )
     if num_declarative_memories == 0:
@@ -69,7 +62,7 @@ def agent_fast_reply(fast_reply, cat) -> Union[None, Dict]:
     ```
     """
 
-    return fast_reply
+    return agent_fast_reply
 
 
 @hook(priority=0)
