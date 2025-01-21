@@ -3,7 +3,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h2>Cheshire Cat AI (Stregatto)</h2>
+  <h2>Cheshire Cat AI</h2>
+  <h3>🇮🇹 Stregatto - 🇨🇳 柴郡貓 - 🇮🇳 चेशायर बिल्ली - 🇷🇺 Чеширский кот</h3>
 <br/>
   <a href="https://github.com/cheshire-cat-ai/core">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/cheshire-cat-ai/core?style=social">
