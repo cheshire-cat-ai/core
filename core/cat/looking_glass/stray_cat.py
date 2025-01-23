@@ -551,6 +551,9 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
+    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
+        return self.working_memory.langchainfy_chat_history(latest_n)
+    
     def stringify_chat_history(self, latest_n: int = 5) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
@@ -574,27 +577,7 @@ Allowed classes are:
             'message': the utterance.
 
         """
-
-        history = self.working_memory.history[-latest_n:]
-
-        history_string = ""
-        for turn in history:
-            history_string += f"\n - {turn.who}: {turn.text}"
-
-        return history_string
-
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]: 
-        
-        chat_history = self.working_memory.history[-latest_n:]
-        recent_history = chat_history[-latest_n:]
-        langchain_chat_history = []
-
-        for message in recent_history:
-            langchain_chat_history.append(
-                message.langchainfy()    
-            )
-
-        return langchain_chat_history
+        return self.working_memory.stringify_chat_history(latest_n)
 
     async def close_connection(self):
         if self.__ws:
