@@ -1,7 +1,7 @@
 
 
 from typing import Dict
-from fastapi import Request, APIRouter, Depends
+from fastapi import Request, APIRouter
 
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.looking_glass.stray_cat import StrayCat

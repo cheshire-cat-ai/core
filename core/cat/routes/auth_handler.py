@@ -1,5 +1,5 @@
 from typing import Dict
-from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from fastapi import Request, APIRouter, Body, HTTPException
 
 from cat.db import crud, models
 from cat.factory.auth_handler import get_auth_handlers_schemas

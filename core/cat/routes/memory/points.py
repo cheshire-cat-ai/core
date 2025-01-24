@@ -1,6 +1,6 @@
 from typing import Dict, List
 from pydantic import BaseModel
-from fastapi import Query, Body, Request, APIRouter, HTTPException, Depends
+from fastapi import Query, Body, Request, APIRouter, HTTPException
 import time
 
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions

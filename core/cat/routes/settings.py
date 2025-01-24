@@ -1,5 +1,5 @@
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException
 from cat.db import models
 from cat.db import crud
 

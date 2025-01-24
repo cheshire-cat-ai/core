@@ -1,7 +1,7 @@
 from typing import Dict
 
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
-from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from fastapi import Request, APIRouter, Body, HTTPException
 
 from cat.factory.llm import get_llms_schemas
 from cat.db import crud, models

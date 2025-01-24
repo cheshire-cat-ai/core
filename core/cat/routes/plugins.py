@@ -2,7 +2,7 @@ import aiofiles
 import mimetypes
 from copy import deepcopy
 from typing import Dict
-from fastapi import Body, Request, APIRouter, HTTPException, UploadFile, Depends
+from fastapi import Body, Request, APIRouter, HTTPException, UploadFile
 from cat.log import log
 from cat.mad_hatter.registry import registry_search_plugins, registry_download_plugin
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions

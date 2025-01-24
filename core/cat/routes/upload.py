@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from fastapi import (
     Form,
-    Depends,
     Request,
     APIRouter,
     UploadFile,

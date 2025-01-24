@@ -1,5 +1,5 @@
 from typing import Dict
-from fastapi import Request, APIRouter, HTTPException, Depends
+from fastapi import Request, APIRouter, HTTPException
 
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions

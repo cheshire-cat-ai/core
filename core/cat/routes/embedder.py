@@ -1,7 +1,7 @@
 from typing import Dict
 
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
-from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from fastapi import Request, APIRouter, Body, HTTPException
 
 from cat.factory.embedder import get_allowed_embedder_models, get_embedders_schemas
 from cat.db import crud, models

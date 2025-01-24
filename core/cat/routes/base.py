@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Body
 from fastapi.concurrency import run_in_threadpool
 from typing import Dict
 import tomli
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
-from cat.auth.connection import HTTPAuth
 
 from cat.convo.messages import CatMessage
 
