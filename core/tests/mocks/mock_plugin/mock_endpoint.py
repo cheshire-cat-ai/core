@@ -2,8 +2,7 @@ from fastapi import Request, Depends
 from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import endpoint
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 
 class Item(BaseModel):
     name: str
@@ -18,7 +17,7 @@ def test_endpoint_prefix():
     return {"result":"endpoint prefix tests"}
 
 @endpoint.get(path="/crud", prefix="/tests", tags=["Tests"])
-def test_get(request: Request, stray=Depends(HTTPAuth(AuthResource.PLUGINS, AuthPermission.LIST))):
+def test_get(stray=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST)):
     return {"result":"ok", "stray_user_id":stray.user_id}
 
 @endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])
