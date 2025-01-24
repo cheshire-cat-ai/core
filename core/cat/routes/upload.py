@@ -159,6 +159,7 @@ async def upload_files(
     ----------
     `chunk_size`, `chunk_overlap` anad `metadata` must be passed as form data.
     This is necessary because the HTTP protocol does not allow file uploads to be sent as JSON.
+    The maximum number of files you can upload is 1000.
 
     Example
     ----------
