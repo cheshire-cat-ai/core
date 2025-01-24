@@ -1,4 +1,3 @@
-from fastapi import Request, Depends
 from pydantic import BaseModel
 
 from cat.mad_hatter.decorators import endpoint

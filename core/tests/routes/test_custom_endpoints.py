@@ -85,7 +85,7 @@ def test_custom_endpoint_permissions(resource, permission, client, just_installe
     assert response.status_code == 200
     token = response.json()["access_token"]
     
-    # use endpoint (requires LIST PLUGINS)
+    # use endpoint (requires PLUGINS LIST)
     response = client.get("/tests/crud", headers={"Authorization": f"Bearer {token}"})
     if resource == "PLUGINS" and permission == "LIST":
         assert response.status_code == 200
