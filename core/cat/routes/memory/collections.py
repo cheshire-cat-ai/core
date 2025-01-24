@@ -2,8 +2,7 @@ from typing import Dict
 from fastapi import Request, APIRouter, HTTPException, Depends
 
 from cat.looking_glass.cheshire_cat import CheshireCat
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
 
@@ -13,7 +12,7 @@ router = APIRouter()
 @router.get("/collections")
 async def get_collections(
     request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ))
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ)
 ) -> Dict:
     """Get list of available collections"""
     
@@ -35,7 +34,7 @@ async def get_collections(
 @router.delete("/collections")
 async def wipe_collections(
     request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete and create all collections"""
 
@@ -61,7 +60,7 @@ async def wipe_collections(
 async def wipe_single_collection(
     request: Request,
     collection_id: str,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete and recreate a collection"""
 

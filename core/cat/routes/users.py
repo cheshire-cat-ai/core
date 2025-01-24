@@ -5,10 +5,8 @@ from uuid import uuid4
 from fastapi import Depends, APIRouter, HTTPException
 
 from cat.db import crud
-from cat.auth.permissions import AuthPermission, AuthResource, get_base_permissions
+from cat.auth.permissions import AuthPermission, AuthResource, get_base_permissions, check_permissions
 from cat.auth.auth_utils import hash_password
-from cat.auth.connection import HTTPAuth
-
 
 router = APIRouter()
 
@@ -34,7 +32,7 @@ class UserResponse(UserBase):
 def create_user(
     new_user: UserCreate,
     users_db = Depends(crud.get_users),
-    stray=Depends(HTTPAuth(AuthResource.USERS, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.USERS, AuthPermission.WRITE),
 ):
     # check for user duplication with shameful loop
     for id, u in users_db.items():
@@ -61,7 +59,7 @@ def read_users(
     skip: int = 0,
     limit: int = 100,
     users_db = Depends(crud.get_users),
-    stray=Depends(HTTPAuth(AuthResource.USERS, AuthPermission.LIST)),
+    stray=check_permissions(AuthResource.USERS, AuthPermission.LIST),
 ):
     users = list(users_db.values())[skip: skip + limit]
     return users
@@ -70,7 +68,7 @@ def read_users(
 def read_user(
     user_id: str,
     users_db = Depends(crud.get_users),
-    stray=Depends(HTTPAuth(AuthResource.USERS, AuthPermission.READ)),
+    stray=check_permissions(AuthResource.USERS, AuthPermission.READ),
 ):
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})
@@ -81,7 +79,7 @@ def update_user(
     user_id: str,
     user: UserUpdate,
     users_db = Depends(crud.get_users),
-    stray=Depends(HTTPAuth(AuthResource.USERS, AuthPermission.EDIT)),
+    stray=check_permissions(AuthResource.USERS, AuthPermission.EDIT),
 ):
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})
@@ -98,7 +96,7 @@ def update_user(
 def delete_user(
     user_id: str,
     users_db = Depends(crud.get_users),
-    stray=Depends(HTTPAuth(AuthResource.USERS, AuthPermission.DELETE)),
+    stray=check_permissions(AuthResource.USERS, AuthPermission.DELETE),
 ):
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail={"error": "User not found"})

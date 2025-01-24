@@ -3,8 +3,7 @@
 from typing import Dict
 from fastapi import Request, APIRouter, Depends
 
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.looking_glass.stray_cat import StrayCat
 
 
@@ -15,7 +14,7 @@ router = APIRouter()
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
@@ -30,7 +29,7 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
