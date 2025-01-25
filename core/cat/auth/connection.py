@@ -23,8 +23,6 @@ from cat.auth.permissions import (
 from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
 
-from cat.cache.cache_item import CacheItem
-
 
 class ConnectionAuth(ABC):
 
