@@ -27,6 +27,9 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
+from cat.cache.cache_manager import CacheManager
+from cat.cache.cache_interface import CacheInterface
+
 
 class Procedure(Protocol):
     name: str
@@ -93,6 +96,8 @@ class CheshireCat:
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)  # :(
+
+        self.cache_manager = CacheManager()
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
@@ -434,3 +439,7 @@ class CheshireCat:
         )
 
         return output
+
+    @property
+    def cache(self) -> CacheInterface:
+        return self.cache_manager.cache

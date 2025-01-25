@@ -23,6 +23,8 @@ from cat.auth.permissions import AuthUserInfo
 from cat import utils
 from websockets.exceptions import ConnectionClosedOK
 
+from cat.cache.cache_item import CacheItem
+
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 
@@ -40,7 +42,7 @@ class StrayCat:
         self.__user_id = user_id
         self.__user_data = user_data
 
-        self.working_memory = WorkingMemory()
+        self.working_memory = self._cache.get_value(f"{user_id}_working_memory") or WorkingMemory()
 
         # attribute to store ws connection
         self.__ws = ws
@@ -464,6 +466,8 @@ class StrayCat:
             final_output
         )
 
+        self._cache.insert(CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1))
+
         return final_output
 
     def run(self, user_message_json, return_message=False):
@@ -663,3 +667,6 @@ Allowed classes are:
     @property
     def white_rabbit(self):
         return CheshireCat().white_rabbit
+    @property
+    def _cache(self):
+        return CheshireCat().cache
