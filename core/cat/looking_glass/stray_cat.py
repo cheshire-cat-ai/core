@@ -52,6 +52,13 @@ class StrayCat:
     def __repr__(self):
         return f"StrayCat(user_id={self.user_id})"
 
+    def __del__(self):
+        self.__main_loop = None
+        self.__ws = None
+        log.warning(f"StrayCat {self.user_id} deleted")
+        self.__user_id = None
+        self.__user_data = None
+
     def __send_ws_json(self, data: Any):
         # Run the corutine in the main event loop in the main thread
         # and wait for the result
