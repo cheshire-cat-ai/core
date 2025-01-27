@@ -1,10 +1,9 @@
 from typing import Dict, List
 from pydantic import BaseModel
-from fastapi import Query, Body, Request, APIRouter, HTTPException, Depends
+from fastapi import Query, Body, Request, APIRouter, HTTPException
 import time
 
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.memory.vector_memory import VectorMemory
 from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
@@ -29,7 +28,7 @@ async def recall_memory_points_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Search k memories similar to given text."""
     log.warning("Deprecated: This endpoint will be removed in the next major version.")
@@ -87,7 +86,7 @@ async def recall_memory_points(
                           description="Flat dictionary where each key-value pair represents a filter." 
                                       "The memory points returned will match the specified metadata criteria."
                           ),
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Search k memories similar to given text with specified metadata criteria.
         
@@ -169,7 +168,7 @@ async def create_memory_point(
     request: Request,
     collection_id: str,
     point: MemoryPointBase,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
 ) -> MemoryPoint:
     """Create a point in memory"""
 
@@ -217,7 +216,7 @@ async def delete_memory_point(
     request: Request,
     collection_id: str,
     point_id: str,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete a specific point in memory"""
 
@@ -248,7 +247,7 @@ async def delete_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.DELETE)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete points in memory by filter"""
 
@@ -275,7 +274,7 @@ async def get_points_in_collection(
         default=None,
         description="If provided (or not empty string) - skip points with ids less than given `offset`"
     ),
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.READ)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Retrieve all the points from a single collection
 
@@ -364,7 +363,7 @@ async def edit_memory_point(
     collection_id: str,
     point_id: str,
     point: MemoryPointBase,
-    stray: StrayCat = Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.EDIT)),
+    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.EDIT),
 ) -> MemoryPoint:
     """Edit a point in memory
 

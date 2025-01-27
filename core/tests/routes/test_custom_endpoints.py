@@ -65,4 +65,33 @@ def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
         assert response.status_code == 404
 
 
+@pytest.mark.parametrize("resource", ["PLUGINS", "LLM"])
+@pytest.mark.parametrize("permission", ["LIST", "DELETE"])
+def test_custom_endpoint_permissions(resource, permission, client, just_installed_plugin):
+
+    # create user with permissions
+    response = client.post(
+        "/users/",
+        json={
+            "username": "Alice",
+            "password": "Alice",
+            "permissions": {resource: [permission]}
+        }
+    )
+    assert response.status_code == 200
+
+    # get jwt for user
+    response = client.post("/auth/token", json={"username": "Alice", "password": "Alice"})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    
+    # use endpoint (requires PLUGINS LIST)
+    response = client.get("/tests/crud", headers={"Authorization": f"Bearer {token}"})
+    if resource == "PLUGINS" and permission == "LIST":
+        assert response.status_code == 200
+    else:
+        assert response.status_code == 403
+
+
+
 

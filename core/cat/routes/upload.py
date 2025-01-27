@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from fastapi import (
     Form,
-    Depends,
     Request,
     APIRouter,
     UploadFile,
@@ -17,8 +16,7 @@ from fastapi import (
     HTTPException,
 )
 
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.log import log
 
 
@@ -56,7 +54,7 @@ async def upload_file(
         description="Metadata to be stored with each chunk (e.g. author, category, etc.). "
                     "Since we are passing this along side form data, must be a JSON string (use `json.dumps(metadata)`)."
     ),
-    stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -150,7 +148,7 @@ async def upload_files(
         description="Metadata to be stored where each key is the name of a file being uploaded, and the corresponding value is another dictionary containing metadata specific to that file. "
                     "Since we are passing this along side form data, metadata must be a JSON string (use `json.dumps(metadata)`)."
     ),
-    stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Batch upload multiple files containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -268,7 +266,7 @@ class UploadURLConfig(BaseModel):
 async def upload_url(
     background_tasks: BackgroundTasks,
     upload_config: UploadURLConfig,
-    stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -309,7 +307,7 @@ async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    stray=Depends(HTTPAuth(AuthResource.MEMORY, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
@@ -342,7 +340,7 @@ async def upload_memory(
 @router.get("/allowed-mimetypes")
 async def get_allowed_mimetypes(
     request: Request,
-    stray=Depends(HTTPAuth(AuthResource.UPLOAD, AuthPermission.WRITE)),
+    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 

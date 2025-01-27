@@ -1,10 +1,9 @@
 from typing import Dict
-from fastapi import Request, APIRouter, Body, HTTPException, Depends
+from fastapi import Request, APIRouter, Body, HTTPException
 
 from cat.db import crud, models
 from cat.factory.auth_handler import get_auth_handlers_schemas
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 
 router = APIRouter()
 
@@ -15,7 +14,7 @@ AUTH_HANDLER_CATEGORY = "auth_handler_factory"
 
 @router.get(
     "/settings",
-    dependencies=[Depends(HTTPAuth(AuthResource.AUTH_HANDLER, AuthPermission.LIST))],
+    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.LIST)],
 )
 def get_auth_handler_settings(request: Request) -> Dict:
     """Get the list of the AuthHandlers"""
@@ -51,7 +50,7 @@ def get_auth_handler_settings(request: Request) -> Dict:
 
 @router.get(
     "/settings/{auth_handler_name}",
-    dependencies=[Depends(HTTPAuth(AuthResource.AUTH_HANDLER, AuthPermission.READ))],
+    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.READ)],
 )
 def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
     """Get the settings of a specific AuthHandler"""
@@ -80,7 +79,7 @@ def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
 
 @router.put(
     "/settings/{auth_handler_name}",
-    dependencies=[Depends(HTTPAuth(AuthResource.AUTH_HANDLER, AuthPermission.EDIT))],
+    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.EDIT)],
 )
 def upsert_authenticator_setting(
     request: Request,

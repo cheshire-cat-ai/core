@@ -6,7 +6,7 @@ import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
-from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -151,7 +151,7 @@ class StrayCat:
         Args:
             content (str): message to send
         """
-        self.send_ws_message(text=content, msg_type="notification")
+        self.send_ws_message(content=content, msg_type="notification")
 
     def send_error(self, error: Union[str, Exception]):
         """Sends an error message to the user using the active WebSocket connection.
@@ -248,14 +248,14 @@ class StrayCat:
             "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
-            "metadata": None,
+            "metadata": {},
         }
 
         default_procedural_recall_config = {
             "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
-            "metadata": None,
+            "metadata": {},
         }
 
         # hooks to change recall configs for each memory
@@ -322,8 +322,8 @@ class StrayCat:
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
-                SystemMessage(content=prompt)
-                # TODO: add here optional convo history passed to the method, 
+                HumanMessage(content=prompt) # We decided to use HumanMessage for wide-range compatibility even if it could bring some problem with tokenizers
+                # TODO: add here optional convo history passed to the method,
                 #  or taken from working memory
             ]
         )
@@ -551,50 +551,13 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
-    def stringify_chat_history(self, latest_n: int = 5) -> str:
-        """Serialize chat history.
-        Converts to text the recent conversation turns.
-
-        Parameters
-        ----------
-        latest_n : int
-            Hoe many latest turns to stringify.
-
-        Returns
-        -------
-        history : str
-            String with recent conversation turns.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
-        """
-
-        history = self.working_memory.history[-latest_n:]
-
-        history_string = ""
-        for turn in history:
-            history_string += f"\n - {turn.who}: {turn.text}"
-
-        return history_string
-
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]: 
-        
-        chat_history = self.working_memory.history[-latest_n:]
-        recent_history = chat_history[-latest_n:]
-        langchain_chat_history = []
-
-        for message in recent_history:
-            langchain_chat_history.append(
-                message.langchainfy()    
-            )
-
-        return langchain_chat_history
+    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]:
+        """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
+        return self.working_memory.langchainfy_chat_history(latest_n)
+    
+    def stringify_chat_history(self, latest_n: int = 10) -> str:
+        """Redirects to WorkingMemory.stringify_chat_history. Will be removed from this class in v2."""
+        return self.working_memory.stringify_chat_history(latest_n)
 
     async def close_connection(self):
         if self.__ws:

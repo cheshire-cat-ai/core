@@ -1,4 +1,5 @@
 from typing import List, Optional
+from langchain_core.messages import BaseMessage
 
 from cat.convo.messages import Role, ConversationMessage, UserMessage, CatMessage
 from cat.convo.model_interactions import ModelInteraction
@@ -95,3 +96,51 @@ class WorkingMemory(BaseModelDict):
         """
         self.history.append(message)
       
+
+    def stringify_chat_history(self, latest_n: int = 10) -> str:
+        """Serialize chat history.
+        Converts to text the recent conversation turns.
+        Useful for retrocompatibility with old non-chat models, and to easily insert convo into a prompt without using dedicated objects and libraries.
+
+        Parameters
+        ----------
+        latest_n : int
+            How many latest turns to stringify.
+
+        Returns
+        -------
+        history : str
+            String with recent conversation turns.
+        """
+
+        history = self.history[-latest_n:]
+
+        history_string = ""
+        for turn in history:
+            history_string += f"\n - {turn.who}: {turn.text}"
+
+        return history_string
+
+    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]: 
+        """Convert chat history in working memory to langchain objects.
+
+        Parameters
+        ----------
+        latest_n : int
+            How many latest turns to convert.
+
+        Returns
+        -------
+        history : List[BaseMessage]
+            List of langchain HumanMessage / AIMessage.
+        """
+        chat_history = self.history[-latest_n:]
+        recent_history = chat_history[-latest_n:]
+        langchain_chat_history = []
+
+        for message in recent_history:
+            langchain_chat_history.append(
+                message.langchainfy()    
+            )
+
+        return langchain_chat_history

@@ -116,7 +116,7 @@ class ProceduresAgent(BaseAgent):
                 SystemMessagePromptTemplate.from_template(
                     template=procedures_prompt_template
                 ),
-                *(stray.langchainfy_chat_history()),
+                *(stray.working_memory.langchainfy_chat_history()),
             ]
         )
 
