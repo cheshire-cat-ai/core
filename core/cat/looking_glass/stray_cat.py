@@ -248,14 +248,14 @@ class StrayCat:
             "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
-            "metadata": None,
+            "metadata": {},
         }
 
         default_procedural_recall_config = {
             "embedding": recall_query_embedding,
             "k": 3,
             "threshold": 0.7,
-            "metadata": None,
+            "metadata": {},
         }
 
         # hooks to change recall configs for each memory
