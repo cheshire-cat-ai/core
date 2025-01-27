@@ -65,4 +65,16 @@ def test_langchainfy_chat_history():
     assert langchain_convo[1].name == "AI"
     assert langchain_convo[1].content == "Meow"
 
+
+def test_working_memory_as_dictionary_object():
+
+    wm = WorkingMemory()
+    wm.a = "a"
+    wm["b"] = "b"
+    assert wm.a == "a"
+    assert wm["a"] == "a"
+    assert wm.b == "b"
+    assert wm["b"] == "b"
+    # assert wm.c is None # too dangerous
+
 # TODOV2: add tests for multimodal messages!
