@@ -1,6 +1,6 @@
 from langchain_core.messages import AIMessage, HumanMessage
 
-from cat.convo.messages import Role, ConversationMessage, UserMessage, CatMessage
+from cat.convo.messages import Role, UserMessage, CatMessage
 from cat.memory.working_memory import WorkingMemory
 
 def create_working_memory_with_convo_history():
@@ -17,8 +17,8 @@ def test_create_working_memory():
 
     wm = WorkingMemory()
     assert wm.history == []
-    assert wm.user_message_json == None
-    assert wm.active_form == None
+    assert wm.user_message_json is None
+    assert wm.active_form is None
     assert wm.recall_query == ""
     assert wm.episodic_memories == []
     assert wm.declarative_memories == []
