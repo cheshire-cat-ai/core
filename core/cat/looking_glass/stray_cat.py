@@ -551,32 +551,12 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]:
+    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]:
+        """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
         return self.working_memory.langchainfy_chat_history(latest_n)
     
-    def stringify_chat_history(self, latest_n: int = 5) -> str:
-        """Serialize chat history.
-        Converts to text the recent conversation turns.
-
-        Parameters
-        ----------
-        latest_n : int
-            Hoe many latest turns to stringify.
-
-        Returns
-        -------
-        history : str
-            String with recent conversation turns.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
-        """
+    def stringify_chat_history(self, latest_n: int = 10) -> str:
+        """Redirects to WorkingMemory.stringify_chat_history. Will be removed from this class in v2."""
         return self.working_memory.stringify_chat_history(latest_n)
 
     async def close_connection(self):

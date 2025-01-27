@@ -97,28 +97,20 @@ class WorkingMemory(BaseModelDict):
         self.history.append(message)
       
 
-    def stringify_chat_history(self, latest_n: int = 5) -> str:
+    def stringify_chat_history(self, latest_n: int = 10) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
+        Useful for retrocompatibility with old non-chat models, and to easily insert convo into a prompt without using dedicated objects and libraries.
 
         Parameters
         ----------
         latest_n : int
-            Hoe many latest turns to stringify.
+            How many latest turns to stringify.
 
         Returns
         -------
         history : str
             String with recent conversation turns.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
         """
 
         history = self.history[-latest_n:]
@@ -129,8 +121,19 @@ class WorkingMemory(BaseModelDict):
 
         return history_string
 
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]: 
-        
+    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]: 
+        """Convert chat history in working memory to langchain objects.
+
+        Parameters
+        ----------
+        latest_n : int
+            How many latest turns to convert.
+
+        Returns
+        -------
+        history : List[BaseMessage]
+            List of langchain HumanMessage / AIMessage.
+        """
         chat_history = self.history[-latest_n:]
         recent_history = chat_history[-latest_n:]
         langchain_chat_history = []
