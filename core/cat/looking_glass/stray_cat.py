@@ -551,50 +551,13 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
-    def stringify_chat_history(self, latest_n: int = 5) -> str:
-        """Serialize chat history.
-        Converts to text the recent conversation turns.
-
-        Parameters
-        ----------
-        latest_n : int
-            Hoe many latest turns to stringify.
-
-        Returns
-        -------
-        history : str
-            String with recent conversation turns.
-
-        Notes
-        -----
-        Such context is placed in the `agent_prompt_suffix` in the place held by {chat_history}.
-
-        The chat history is a dictionary with keys::
-            'who': the name of who said the utterance;
-            'message': the utterance.
-
-        """
-
-        history = self.working_memory.history[-latest_n:]
-
-        history_string = ""
-        for turn in history:
-            history_string += f"\n - {turn.who}: {turn.text}"
-
-        return history_string
-
-    def langchainfy_chat_history(self, latest_n: int = 5) -> List[BaseMessage]: 
-        
-        chat_history = self.working_memory.history[-latest_n:]
-        recent_history = chat_history[-latest_n:]
-        langchain_chat_history = []
-
-        for message in recent_history:
-            langchain_chat_history.append(
-                message.langchainfy()    
-            )
-
-        return langchain_chat_history
+    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]:
+        """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
+        return self.working_memory.langchainfy_chat_history(latest_n)
+    
+    def stringify_chat_history(self, latest_n: int = 10) -> str:
+        """Redirects to WorkingMemory.stringify_chat_history. Will be removed from this class in v2."""
+        return self.working_memory.stringify_chat_history(latest_n)
 
     async def close_connection(self):
         if self.__ws:

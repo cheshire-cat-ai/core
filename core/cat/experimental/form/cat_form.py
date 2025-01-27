@@ -216,7 +216,7 @@ JSON:
         return output_model
 
     def extraction_prompt(self):
-        history = self.cat.stringify_chat_history()
+        history = self.cat.working_memory.stringify_chat_history()
 
         # JSON structure
         # BaseModel.__fields__['my_field'].type_
