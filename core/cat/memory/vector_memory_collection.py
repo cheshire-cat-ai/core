@@ -124,7 +124,7 @@ class VectorMemoryCollection:
 
     # adapted from https://github.com/langchain-ai/langchain/blob/bfc12a4a7644cfc4d832cc4023086a7a5374f46a/libs/langchain/langchain/vectorstores/qdrant.py#L1965
     def _qdrant_filter_from_dict(self, filter: dict) -> Filter:
-        if not filter:
+        if not filter or len(filter)<1:
             return None
 
         return Filter(
