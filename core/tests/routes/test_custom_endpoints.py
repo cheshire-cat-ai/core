@@ -31,6 +31,7 @@ def test_custom_endpoint_post(client, just_installed_plugin):
     assert response.json()["name"] == "the cat"
     assert response.json()["description"] == "it's magic"
 
+
 def test_custom_endpoint_put(client, just_installed_plugin):
     payload = {"name": "the cat", "description": "it's magic"}
     response = client.put("/tests/crud", json=payload)

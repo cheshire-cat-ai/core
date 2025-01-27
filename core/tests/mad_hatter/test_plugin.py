@@ -94,7 +94,7 @@ def test_activate_plugin(plugin):
     assert "mock tool example 2" in tool.start_examples
 
     # endpoints
-    assert len(plugin.endpoints) == 4
+    assert len(plugin.endpoints) == 6
     for endpoint in plugin.endpoints:
         assert isinstance(endpoint, CustomEndpoint)
         assert endpoint.plugin_id == "mock_plugin"
