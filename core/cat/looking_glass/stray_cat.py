@@ -6,7 +6,7 @@ import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
-from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.messages import SystemMessage, BaseMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -322,8 +322,8 @@ class StrayCat:
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
-                SystemMessage(content=prompt)
-                # TODO: add here optional convo history passed to the method, 
+                HumanMessage(content=prompt) # We decided to use HumanMessage for wide-range compatibility even if it could bring some problem with tokenizers
+                # TODO: add here optional convo history passed to the method,
                 #  or taken from working memory
             ]
         )
