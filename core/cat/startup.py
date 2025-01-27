@@ -39,9 +39,6 @@ async def lifespan(app: FastAPI):
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat(cheshire_cat_api)
 
-    # Dict of pseudo-sessions (key is the user_id)
-    app.state.strays = {}
-
     # set a reference to asyncio event loop
     app.state.event_loop = asyncio.get_running_loop()
 
