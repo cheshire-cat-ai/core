@@ -6,7 +6,7 @@ import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from langchain.docstore.document import Document
-from langchain_core.messages import SystemMessage, BaseMessage, HumanMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
