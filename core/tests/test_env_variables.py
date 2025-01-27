@@ -1,16 +1,15 @@
-
 import os
 from cat.env import get_supported_env_variables, get_env
 
-def test_get_env(client):
 
+def test_get_env(client):
     # container envs
     assert get_env("PYTHONUNBUFFERED") == "1"
     assert get_env("WATCHFILES_FORCE_POLLING") == "true"
 
     # unexisting
-    assert get_env("UNEXISTING_ENV") == None
-    assert get_env("CCAT_UNEXISTING_ENV") == None
+    assert get_env("UNEXISTING_ENV") is None
+    assert get_env("CCAT_UNEXISTING_ENV") is None
 
     # set new
     os.environ["FAKE_ENV"] = "meow1"
@@ -20,8 +19,12 @@ def test_get_env(client):
 
     # default env variables
     for k, v in get_supported_env_variables().items():
-        assert get_env(k) == v
-        # TODO: take away in v2
-        # missing prefix (legacy)
-        assert get_env(k.replace("CCAT_", "")) == v
-    
+
+        if k == "CCAT_DEBUG":
+            assert get_env(k) == "false" # we test installation with autoreload off
+        else:            
+            assert get_env(k) == v
+
+            # TODO: take away in v2
+            # missing prefix (legacy)
+            assert get_env(k.replace("CCAT_", "")) == v

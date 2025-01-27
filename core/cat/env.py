@@ -16,12 +16,17 @@ def get_supported_env_variables():
         "CCAT_QDRANT_API_KEY": None,
         "CCAT_SAVE_MEMORY_SNAPSHOTS": "false",
         "CCAT_METADATA_FILE": "cat/data/metadata.json",
+        "CCAT_JWT_SECRET": "secret",
+        "CCAT_JWT_ALGORITHM": "HS256",
+        "CCAT_JWT_EXPIRE_MINUTES": str(60 * 24),  # JWT expires after 1 day
+        "CCAT_HTTPS_PROXY_MODE": False,
+        "CCAT_CORS_FORWARDED_ALLOW_IPS": "*",
+        "CCAT_CORS_ENABLED": "true"
     }
 
 
 # TODO: take away in v2
 def fix_legacy_env_variables():
-    
     cat_default_env_variables = get_supported_env_variables()
 
     for new_name, v in cat_default_env_variables.items():
@@ -32,7 +37,7 @@ def fix_legacy_env_variables():
 
 
 def get_env(name):
-    """Utility to get an environment variable value. To be used only for supported Cat envs. 
+    """Utility to get an environment variable value. To be used only for supported Cat envs.
     - covers default supported variables and their default value
     - automagically handles legacy env variables missing the prefix "CCAT_"
     """
@@ -50,6 +55,6 @@ def get_env(name):
     if name in cat_default_env_variables:
         default = cat_default_env_variables[name]
     else:
-        default=None
+        default = None
 
     return os.getenv(name, default)

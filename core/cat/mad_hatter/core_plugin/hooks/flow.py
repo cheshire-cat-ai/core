@@ -3,6 +3,7 @@
 Here is a collection of methods to hook into the Cat execution pipeline.
 
 """
+from cat.convo.messages import CatMessage
 
 from cat.mad_hatter.decorators import hook
 from langchain.docstore.document import Document
@@ -13,8 +14,8 @@ from langchain.docstore.document import Document
 def before_cat_bootstrap(cat) -> None:
     """Hook into the Cat start up.
 
-    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-    the memories, the *Agent Manager* and the *Rabbit Hole*.
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+    the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
     This hook allows to intercept such process and is executed in the middle of plugins and
     natural language objects loading.
@@ -26,7 +27,7 @@ def before_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Called after cat bootstrap
@@ -34,8 +35,8 @@ def before_cat_bootstrap(cat) -> None:
 def after_cat_bootstrap(cat) -> None:
     """Hook into the end of the Cat start up.
 
-    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM),
-    the memories, the *Agent Manager* and the *Rabbit Hole*.
+    Bootstrapping is the process of loading the plugins, the natural language objects (e.g. the LLM), the memories,
+    the *Main Agent*, the *Rabbit Hole* and the *White Rabbit*.
 
     This hook allows to intercept the end of such process and is executed right after the Cat has finished loading
     its components.
@@ -47,7 +48,7 @@ def after_cat_bootstrap(cat) -> None:
     cat : CheshireCat
         Cheshire Cat instance.
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Called when a user message arrives.
@@ -149,7 +150,7 @@ def before_cat_recalls_memories(cat) -> None:
         Cheshire Cat instance.
 
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 @hook(priority=0)
@@ -182,7 +183,9 @@ def before_cat_recalls_episodic_memories(episodic_recall_config: dict, cat) -> d
 
 
 @hook(priority=0)
-def before_cat_recalls_declarative_memories(declarative_recall_config: dict, cat) -> dict:
+def before_cat_recalls_declarative_memories(
+    declarative_recall_config: dict, cat
+) -> dict:
     """Hook into semantic search in memories.
 
     Allows to intercept when the Cat queries the memories using the embedded user's input.
@@ -253,7 +256,7 @@ def after_cat_recalls_memories(cat) -> None:
         Cheshire Cat instance.
 
     """
-    pass # do nothing
+    pass  # do nothing
 
 
 # Hook called just before sending response to a client.
@@ -332,3 +335,37 @@ def before_cat_stores_episodic_memory(doc: Document, cat) -> Document:
 
     """
     return doc
+
+@hook(priority=0)
+def fast_reply(fast_reply: dict, cat) -> None | dict | CatMessage:
+    """This hook allows for an immediate response, bypassing memory recall and agent execution.
+    It's useful for canned replies, custom LLM chains / agents, topic evaluation, direct LLM interaction and so on.
+
+    Parameters
+    --------
+    fast_reply: dict
+        An initially empty dict that can be populated with a response.
+    cat : CheshireCat
+        Cheshire Cat instance.
+
+    Returns
+    --------
+    response : None | dict | CatMessage
+        If you want to short-circuit the normal flow, return a CatMessage or a dict with an "output" key.
+        Return None or an empty dict to continue with normal execution.
+        See below for examples of Cat response
+
+    Examples
+    --------
+
+    Example 1: can't talk about this topic
+    ```python
+    # here you could use cat._llm to do topic evaluation
+    if "dog" in cat.working_memory.user_message_json.text:
+        return {
+            "output": "You went out of topic. Can't talk about dog."
+        }
+    ```
+    """
+
+    return fast_reply

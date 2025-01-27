@@ -3,7 +3,8 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <h2>Cheshire-Cat (Stregatto)</h2>
+  <h2>Cheshire Cat AI</h2>
+  <h3>🇮🇹 Stregatto - 🇨🇳 柴郡貓 - 🇮🇳 चेशायर बिल्ली - 🇷🇺 Чеширский кот</h3>
 <br/>
   <a href="https://github.com/cheshire-cat-ai/core">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/cheshire-cat-ai/core?style=social">
@@ -23,10 +24,22 @@
   <video src="https://github.com/cheshire-cat-ai/core/assets/6328377/7bc4acff-34bf-4b8a-be61-4d8967fbd60f"></video>
 </div>
 
-## Production ready AI assistant framework
+## AI agent as a microservice
 
-The Cheshire Cat is a framework to build custom AIs on top of any language model. 
-If you have ever used systems like WordPress or Django to build web apps, imagine the Cat as a similar tool, but specific for AI.
+The Cheshire Cat is a framework to build custom AI agents:
+
+- ⚡️ API first, to easily add a conversational layer to your app
+- 💬 Chat via WebSocket and manage your agent with an customizable REST API
+- 🐘 Built-in RAG with Qdrant
+- 🚀 Extensible via plugins
+- 🪛 Event callbacks, function calling (tools), conversational forms
+- 🏛 Easy to use admin panel
+- 🌍 Supports any language model via langchain
+- 👥 Multiuser with granular permissions, compatible with any identity provider
+- 🐋 100% dockerized
+- 🦄 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
+ 
+
 
 ## Quickstart
 
@@ -35,19 +48,21 @@ To make Cheshire Cat run on your machine, you just need [`docker`](https://docs.
 ```bash
 docker run --rm -it -p 1865:80 ghcr.io/cheshire-cat-ai/core:latest
 ```
-- Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin).
-- You can also interact via REST API and try out the endpoints on [localhost:1865/docs](http://localhost:1865/docs)
-
-As a first thing, the Cat will ask you to configure your favourite language model.
-It can be done directly via the interface in the Settings page (top right in the admin).
+- Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin)
+- Try out the REST API on [localhost:1865/docs](http://localhost:1865/docs)
 
 Enjoy the Cat!  
-Follow instructions on how to run it with [docker compose and volumes](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
+Follow instructions on how to run it properly with [docker compose and volumes](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
 
 ## Minimal plugin example
 
+<details>
+    <summary>
+        Hooks (events)
+    </summary>
+
 ```python
-from cat.mad_hatter.decorators import tool, hook
+from cat.mad_hatter.decorators import hook
 
 # hooks are an event system to get finegraned control over your assistant
 @hook
@@ -56,6 +71,16 @@ def agent_prompt_prefix(prefix, cat):
 You are an expert in socks, and you reply with exactly one rhyme.
 """
     return prefix
+```
+</details>
+
+<details>
+    <summary>
+        Tools
+    </summary>
+
+```python
+from cat.mad_hatter.decorators import tool
 
 # langchain inspired tools (function calling)
 @tool(return_direct=True)
@@ -70,6 +95,12 @@ def socks_prices(color, cat):
     price = prices.get(color, 0)
     return f"{price} bucks, meeeow!" 
 ```
+</details>
+
+<details>
+    <summary>
+        Conversational Forms
+    </summary>
 
 ## Conversational form example
 
@@ -106,36 +137,30 @@ class PizzaForm(CatForm):
             "output": f"Pizza order on its way: {form_data}"
         }
 ```
+</details>
 
 ## Docs and Resources
 
 - [Official Documentation](https://cheshire-cat-ai.github.io/docs/)
 - [Discord Server](https://discord.gg/bHX5sNFCYU)
 - [Website](https://cheshirecat.ai/)
-- [YouTube tutorial - How to install](https://youtu.be/Rvx19TZBCrw)
 - [Tutorial - Write your first plugin](https://cheshirecat.ai/write-your-first-plugin/)
-
-## Why use the Cat
-
-- ⚡️ API first, so you get a microservice to easily add a conversational layer to your app
-- 🐘 Remembers conversations and documents and uses them in conversation
-- 🚀 Extensible via plugins (public plugin registry + private plugins allowed)
-- 🎚 Event callbacks, function calling (tools), conversational forms
-- 🏛 Easy to use admin panel (chat, visualize memory and plugins, adjust settings)
-- 🌍 Supports any language model (works with OpenAI, Google, Ollama, HuggingFace, custom services)
-- 🐋 Production ready - 100% [dockerized](https://docs.docker.com/get-docker/)
-- 👩‍👧‍👦 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
- 
-We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./readme/CODE-OF-ETHICS.md). 
 
 
 ## Roadmap & Contributing
 
-Detailed roadmap is [here](./readme/ROADMAP.md).  
-Send your pull request to the `develop` branch. Here is a [full guide to contributing](./readme/CONTRIBUTING.md).
+Detailed roadmap is [here](./ROADMAP.md).  
+Send your pull request to the `develop` branch. Here is a [full guide to contributing](./CONTRIBUTING.md).
+
+We are committed to openness, privacy and creativity, we want to bring AI to the long tail. If you want to know more about our vision and values, read the [Code of Ethics](./CODE-OF-ETHICS.md). 
 
 Join our [community on Discord](https://discord.gg/bHX5sNFCYU) and give the project a star ⭐!
 Thanks again!🙏
+
+## License and trademark
+
+Code is licensed under [GPL3](./LICENSE).  
+The Cheshire Cat AI logo and name are property of Piero Savastano (founder and maintainer).
 
 ## Which way to go?
 

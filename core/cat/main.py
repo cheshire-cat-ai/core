@@ -1,114 +1,12 @@
 import uvicorn
-import asyncio
-from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
-from fastapi.routing import APIRoute
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
-
-from cat.log import log
 from cat.env import get_env, fix_legacy_env_variables
-from cat.routes import (
-    base, settings,
-    llm, embedder, authorizator,
-    memory, plugins, upload,
-    websocket, auth
-)
-from cat.routes.static import public, admin, static
-from cat.auth.headers import http_auth, ws_auth
-from cat.routes.openapi import get_openapi_configuration_function
-from cat.looking_glass.cheshire_cat import CheshireCat 
-
-
-# TODO: take away in v2
-fix_legacy_env_variables()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    #       ^._.^
-    #
-    # loads Cat and plugins
-    # Every endpoint can access the cat instance via request.app.state.ccat
-    # - Not using midlleware because I can't make it work with both http and websocket;
-    # - Not using Depends because it only supports callables (not instances)
-    # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
-    app.state.ccat = CheshireCat()
-
-    # Dict of pseudo-sessions (key is the user_id)
-    app.state.strays = {}
-
-    # set a reference to asyncio event loop
-    app.state.event_loop = asyncio.get_running_loop()
-
-    # startup message with admin, public and swagger addresses
-    log.welcome()
-
-    yield
-
-
-def custom_generate_unique_id(route: APIRoute):
-    return f"{route.name}"
-
-
-# REST API
-cheshire_cat_api = FastAPI(
-    lifespan=lifespan,
-    generate_unique_id_function=custom_generate_unique_id
-)
-
-# Configures the CORS middleware for the FastAPI app
-cors_allowed_origins_str = get_env("CCAT_CORS_ALLOWED_ORIGINS")
-origins = cors_allowed_origins_str.split(",") if cors_allowed_origins_str else ["*"]
-cheshire_cat_api.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Add routers to the middleware stack.
-cheshire_cat_api.include_router(base.router, tags=["Status"], dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth") # endpoint to get JWT, no Depends
-cheshire_cat_api.include_router(settings.router, tags=["Settings"], prefix="/settings", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(llm.router, tags=["Large Language Model"], prefix="/llm", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(embedder.router, tags=["Embedder"], prefix="/embedder", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(plugins.router, tags=["Plugins"], prefix="/plugins", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(memory.router, tags=["Memory"], prefix="/memory", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(upload.router, tags=["Rabbit Hole"], prefix="/rabbithole", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(authorizator.router, tags=["Authorizator"], prefix="/authorizator", dependencies=[Depends(http_auth)])
-cheshire_cat_api.include_router(websocket.router, tags=["Websocket"], dependencies=[Depends(ws_auth)])
-
-# mount static files
-# this cannot be done via fastapi.APIrouter:
-# https://github.com/tiangolo/fastapi/discussions/9070
-# admin single page app
-admin.mount_admin_spa(cheshire_cat_api)
-# admin (static build)
-admin.mount(cheshire_cat_api)
-# static files (for plugins and other purposes)
-static.mount(cheshire_cat_api)
-# static files for hackable chat in cat/public
-public.mount(cheshire_cat_api)
-
-
-# error handling
-@cheshire_cat_api.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    return JSONResponse(
-        status_code=400,
-        content={"error": exc.errors()},
-    )
-
-
-# openapi customization
-cheshire_cat_api.openapi = get_openapi_configuration_function(cheshire_cat_api)
 
 # RUN!
 if __name__ == "__main__":
+
+    # TODO: take away in v2
+    fix_legacy_env_variables()
 
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
@@ -116,14 +14,22 @@ if __name__ == "__main__":
         debug_config = {
             "reload": True,
             "reload_includes": ["plugin.json"],
-            "reload_excludes": ["*test_*.*", "*mock_*.*"]
+            "reload_excludes": ["*test_*.*", "*mock_*.*"],
+        }
+    # uvicorn running behind an https proxy
+    proxy_pass_config = {}
+    if get_env("CCAT_HTTPS_PROXY_MODE") in ("1", "true"):
+        proxy_pass_config = {
+            "proxy_headers": True,
+            "forwarded_allow_ips": get_env("CCAT_CORS_FORWARDED_ALLOW_IPS"),
         }
 
     uvicorn.run(
-        "cat.main:cheshire_cat_api",
+        "cat.startup:cheshire_cat_api",
         host="0.0.0.0",
         port=80,
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
-        **debug_config
+        **debug_config,
+        **proxy_pass_config,
     )

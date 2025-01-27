@@ -1,18 +1,16 @@
-
 from json import dumps
 from fastapi.encoders import jsonable_encoder
 from cat.factory.llm import get_llms_schemas
 
 
 def test_get_all_llm_settings(client):
-
     llms_schemas = get_llms_schemas()
-    
+
     response = client.get("/llm/settings")
     json = response.json()
 
     assert response.status_code == 200
-    assert type(json["settings"]) == list
+    assert isinstance(json["settings"], list)
     assert len(json["settings"]) == len(llms_schemas)
 
     for setting in json["settings"]:
@@ -21,11 +19,10 @@ def test_get_all_llm_settings(client):
         expected_schema = llms_schemas[setting["name"]]
         assert dumps(jsonable_encoder(expected_schema)) == dumps(setting["schema"])
 
-    assert json["selected_configuration"] == None # no llm configured at startup
+    assert json["selected_configuration"] is None  # no llm configured at startup
 
 
 def test_get_llm_settings_non_existent(client):
-
     non_existent_llm_name = "LLMNonExistentConfig"
     response = client.get(f"/llm/settings/{non_existent_llm_name}")
     json = response.json()
@@ -35,7 +32,6 @@ def test_get_llm_settings_non_existent(client):
 
 
 def test_get_llm_settings(client):
-
     llm_name = "LLMDefaultConfig"
     response = client.get(f"/llm/settings/{llm_name}")
     json = response.json()
@@ -48,14 +44,10 @@ def test_get_llm_settings(client):
 
 
 def test_upsert_llm_settings_success(client):
-    
     # set a different LLM
     new_llm = "LLMCustomConfig"
     invented_url = "https://example.com"
-    payload = {
-        "url": invented_url,
-        "options": {}
-    }
+    payload = {"url": invented_url, "options": {}}
     response = client.put(f"/llm/settings/{new_llm}", json=payload)
 
     # check immediate response
@@ -69,7 +61,7 @@ def test_upsert_llm_settings_success(client):
     json = response.json()
     assert response.status_code == 200
     assert json["selected_configuration"] == new_llm
-    saved_config = [ c for c in json["settings"] if c["name"] == new_llm ]
+    saved_config = [c for c in json["settings"] if c["name"] == new_llm]
     assert saved_config[0]["value"]["url"] == invented_url
 
     # check also specific LLM endpoint

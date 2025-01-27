@@ -1,14 +1,16 @@
 """Various utiles used from the projects."""
+
 import os
 import inspect
-import traceback
 from datetime import timedelta
 from urllib.parse import urlparse
-
+from typing import Dict, Tuple
 from pydantic import BaseModel, ConfigDict
 
 from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.utils import get_colored_text
 
 from cat.log import log
 from cat.env import get_env
@@ -82,46 +84,47 @@ def verbal_timedelta(td: timedelta) -> str:
 
 def get_base_url():
     """Allows exposing the base url."""
-    secure = get_env("CCAT_CORE_USE_SECURE_PROTOCOLS")
-    if secure not in ['', 'false', '0']:
-        secure = 's'
+    secure = "s" if get_env("CCAT_CORE_USE_SECURE_PROTOCOLS") in ("true", "1") else ""
     cat_host = get_env("CCAT_CORE_HOST")
     cat_port = get_env("CCAT_CORE_PORT")
-    return f'http{secure}://{cat_host}:{cat_port}/'
+    return f"http{secure}://{cat_host}:{cat_port}/"
 
 
 def get_base_path():
     """Allows exposing the base path."""
-    return 'cat/'
+    return "cat/"
 
 
 def get_plugins_path():
     """Allows exposing the plugins' path."""
-    return os.path.join(get_base_path(), 'plugins/')
+    return os.path.join(get_base_path(), "plugins/")
 
 
 def get_static_url():
     """Allows exposing the static server url."""
-    return get_base_url() + 'static/'
+    return get_base_url() + "static/"
 
 
 def get_static_path():
     """Allows exposing the static files' path."""
-    return os.path.join(get_base_path(), 'static/')
+    return os.path.join(get_base_path(), "static/")
+
 
 def is_https(url):
     try:
         parsed_url = urlparse(url)
-        return parsed_url.scheme == 'https'
-    except Exception as e:
+        return parsed_url.scheme == "https"
+    except Exception:
         return False
-    
+
+
 def extract_domain_from_url(url):
     try:
-        parsed_url = urlparse(url)        
+        parsed_url = urlparse(url)
         return parsed_url.netloc + parsed_url.path
     except Exception:
         return url
+
 
 def explicit_error_message(e):
     # add more explicit info on "RateLimitError" by OpenAI, 'cause people can't get it
@@ -132,38 +135,115 @@ def explicit_error_message(e):
 You need a credit card - and money in it - to use OpenAI api.
 HOW TO FIX: go to your OpenAI accont and add a credit card"""
 
-        log.error(error_description) # just to make sure the message is read both front and backend
+        log.error(
+            error_description
+        )  # just to make sure the message is read both front and backend
 
     return error_description
 
 
 def levenshtein_distance(prediction: str, reference: str) -> int:
-    jaro_evaluator = load_evaluator(EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN)
+    jaro_evaluator = load_evaluator(
+        EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN
+    )
     result = jaro_evaluator.evaluate_strings(
         prediction=prediction,
         reference=reference,
     )
-    return result['score']
+    return result["score"]
 
 
 def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
-
     # instantiate parser
     parser = JsonOutputParser(pydantic_object=pydantic_model)
-    
-    # clean escapes (small LLM error)
-    json_string_clean = json_string.replace("\_", "_").replace("\-", "-")
+
+    # clean to help small LLMs
+    replaces = {
+        "\_": "_",
+        "\-": "-",
+        "None": "null",
+        "{{": "{",
+        "}}": "}",
+    }
+    for k, v in replaces.items():
+        json_string = json_string.replace(k, v)
 
     # first "{" occurrence (required by parser)
-    start_index = json_string_clean.index("{")
-    
+    start_index = json_string.index("{")
+
     # parse
-    return parser.parse(json_string_clean[start_index:])
+    parsed = parser.parse(json_string[start_index:])
+    
+    if pydantic_model:
+        return pydantic_model(**parsed)
+    return parsed
+
+
+def match_prompt_variables(
+        prompt_variables: Dict,
+        prompt_template: str
+    ) -> Tuple[Dict, str]:
+    """Ensure prompt variables and prompt placeholders map, so there are no issues on mismatches"""
+
+    tmp_prompt = PromptTemplate.from_template(
+        template=prompt_template
+    )
+
+    # outer set difference
+    prompt_mismatches = set(prompt_variables.keys()) ^ set(tmp_prompt.input_variables)
+
+    # clean up
+    for m in prompt_mismatches:
+        if m in prompt_variables.keys():
+            log.warning(f"Prompt variable '{m}' not found in prompt template, removed")
+            del prompt_variables[m]
+        if m in tmp_prompt.input_variables:
+            prompt_template = \
+                prompt_template.replace("{" + m + "}", "")
+            log.warning(f"Placeholder '{m}' not found in prompt variables, removed")
+            
+    return prompt_variables, prompt_template
+
+
+def get_caller_info():
+    # go 2 steps up the stack
+    try:
+        calling_frame = inspect.currentframe()
+        grand_father_frame = calling_frame.f_back.f_back
+        grand_father_name = grand_father_frame.f_code.co_name
+        
+        # check if the grand_father_frame is in a class method
+        if 'self' in grand_father_frame.f_locals:
+            return grand_father_frame.f_locals['self'].__class__.__name__ + "." + grand_father_name
+        return grand_father_name
+    except Exception as e:
+        log.error(e)
+        return None
+
+
+def langchain_log_prompt(langchain_prompt, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "green"))
+    for m in langchain_prompt.messages:
+        print(get_colored_text(type(m).__name__, "green"))
+        print(m.content)
+    print(get_colored_text("========================================", "green"))
+    return langchain_prompt
+
+
+def langchain_log_output(langchain_output, title):
+    print("\n")
+    print(get_colored_text(f"==================== {title} ====================", "blue"))
+    if hasattr(langchain_output, 'content'):
+        print(langchain_output.content)
+    else:
+        print(langchain_output)
+    print(get_colored_text("========================================", "blue"))
+    return langchain_output
 
 
 # This is our masterwork during tea time
 class singleton:
-  
     instances = {}
 
     def __new__(cls, class_):
@@ -177,31 +257,27 @@ class singleton:
 
 # Class mixing pydantic BaseModel with dictionaries (added for backward compatibility, to be deprecated in v2)
 class BaseModelDict(BaseModel):
-
     model_config = ConfigDict(
-        extra='allow',
+        extra="allow",
         validate_assignment=True,
         arbitrary_types_allowed=True,
+        protected_namespaces=() # avoid warning for `model_xxx` attributes
     )
 
     def __getitem__(self, key):
-
         # deprecate dictionary usage
-        stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
-        log.warning(f"Deprecation Warning: to get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`")
-        log.warning(line_code)
+        deprecation_warning(
+            f"To get '{key}' use dot notation instead of dictionary keys, example: `obj.{key}` instead of `obj['{key}']`"
+        )
 
         # return attribute
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-        
         # deprecate dictionary usage
-        stack = traceback.extract_stack(limit=2)
-        line_code = traceback.format_list(stack)[0].split('\n')[1].strip()
-        log.warning(f'Deprecation Warning: to set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`')
-        log.warning(line_code)
+        deprecation_warning(
+            f'To set {key} use dot notation instead of dictionary keys, example: `obj.{key} = x` instead of `obj["{key}"] = x`'
+        )
 
         # set attribute
         setattr(self, key, value)
@@ -213,7 +289,7 @@ class BaseModelDict(BaseModel):
         delattr(self, key)
 
     def _get_all_attributes(self):
-        #return {**self.model_fields, **self.__pydantic_extra__}
+        # return {**self.model_fields, **self.__pydantic_extra__}
         return self.model_dump()
 
     def keys(self):
@@ -227,3 +303,15 @@ class BaseModelDict(BaseModel):
 
     def __contains__(self, key):
         return key in self.keys()
+
+
+def deprecation_warning(message: str):
+    """Log a deprecation warning with caller's information."""
+    frame = inspect.currentframe().f_back.f_back  # Go back to the caller's frame
+    caller_line = frame.f_lineno            # Get the line number of the call
+    caller_filename = frame.f_code.co_filename  # Get the filename where the call was made
+
+    # Format and log the warning message
+    log.warning(
+        f"Deprecation Warning: {message} [{caller_filename}, line {caller_line}])"
+    )

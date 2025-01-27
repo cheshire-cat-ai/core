@@ -1,13 +1,13 @@
 from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAI
 from langchain_community.llms import (
-    OpenAI,
     HuggingFaceTextGenInference,
     HuggingFaceEndpoint,
 )
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAI
 from langchain_cohere import ChatCohere
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_anthropic import ChatAnthropic
 
 from typing import Type
 import json
@@ -88,7 +88,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
     model_config = ConfigDict(
         json_schema_extra={
             "humanReadableName": "OpenAI-compatible API",
-            "description": "Configuration for self-hosted OpenAI-compatible API server, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM",
+            "description": "Configuration for OpenAI-compatible APIs, e.g. llama-cpp-python server, text-generation-webui, OpenRouter, TinyLLM, TogetherAI and many others.",
             "link": "",
         }
     )
@@ -96,7 +96,7 @@ class LLMOpenAICompatibleConfig(LLMSettings):
 
 class LLMOpenAIChatConfig(LLMSettings):
     openai_api_key: str
-    model_name: str = "gpt-3.5-turbo"
+    model_name: str = "gpt-4o-mini"
     temperature: float = 0.7
     streaming: bool = True
     _pyclass: Type = ChatOpenAI
@@ -283,20 +283,38 @@ class LLMGeminiChatConfig(LLMSettings):
     )
 
 
+class LLMAnthropicChatConfig(LLMSettings):
+    api_key: str
+    model: str = "claude-3-5-sonnet-20241022"
+    temperature: float = 0.7
+    max_tokens: int = 8192
+    max_retries: int = 2
+
+    _pyclass: Type = ChatAnthropic
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Anthropic",
+            "description": "Configuration for Anthropic",
+            "link": "https://www.anthropic.com/",
+        }
+    )
+
 def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
         LLMOpenAIConfig,
+        LLMOpenAICompatibleConfig,
+        LLMOllamaConfig,
         LLMGeminiChatConfig,
         LLMCohereConfig,
         LLMAzureOpenAIConfig,
         LLMAzureChatOpenAIConfig,
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
-        LLMOllamaConfig,
-        LLMOpenAICompatibleConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
+        LLMAnthropicChatConfig
     ]
 
     mad_hatter_instance = MadHatter()
