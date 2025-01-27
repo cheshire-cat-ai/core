@@ -151,7 +151,7 @@ class StrayCat:
         Args:
             content (str): message to send
         """
-        self.send_ws_message(text=content, msg_type="notification")
+        self.send_ws_message(content=content, msg_type="notification")
 
     def send_error(self, error: Union[str, Exception]):
         """Sends an error message to the user using the active WebSocket connection.
