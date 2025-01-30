@@ -220,13 +220,13 @@ class CatLogEngine:
         cat_port = get_env("CCAT_CORE_PORT")
         cat_address = f"http{secure}://{cat_host}:{cat_port}"
 
+        print("\n\n")
         with open("cat/welcome.txt", "r") as f:
             print(f.read())
 
-        print("\n=============== ^._.^ ===============\n")
-        print(f"Cat REST API:   {cat_address}/docs")
-        print(f"Cat ADMIN:      {cat_address}/admin\n")
-        print("======================================")
+        left_margin = " " * 15
+        print(f"\n\n{left_margin} Cat REST API:   {cat_address}/docs")
+        print(f"{left_margin} Cat ADMIN:      {cat_address}/admin\n\n")
 
 
 # logger instance
