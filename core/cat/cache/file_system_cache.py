@@ -19,6 +19,7 @@ class FileSystemCache(BaseCache):
         self.cache_dir = cache_dir
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
+
     def _get_file_path(self, key):
         return os.path.join(self.cache_dir, f"{key}.cache")
 
@@ -34,7 +35,6 @@ class FileSystemCache(BaseCache):
 
         with open(self._get_file_path(cache_item.key), "wb") as f:
             pickle.dump(cache_item, f)
-
 
     def get_item(self, key):
         """Get the value stored in the cache.
