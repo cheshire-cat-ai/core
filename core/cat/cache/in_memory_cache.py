@@ -1,11 +1,11 @@
-from cat.cache.cache_interface import CacheInterface
+from cat.cache.base_cache import BaseCache
 from cat.cache.cache_item import CacheItem
 
 from cat.utils import singleton
 
 
 @singleton
-class ArrayCache(CacheInterface):
+class InMemoryCache(BaseCache):
     """Cache implementation using a python dictionary.
 
     Attributes

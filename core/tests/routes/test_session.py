@@ -14,7 +14,7 @@ def test_session_creation_from_websocket(client):
     assert "You did not configure" in res["content"]
 
     # verify session
-    strays = client.app.state.strays
+    strays = client.app.state.ccat.cache
     assert "Alice" in strays
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"

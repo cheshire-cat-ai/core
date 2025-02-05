@@ -14,5 +14,5 @@ class CacheManager:
             from cat.cache.file_system_cache import FileSystemCache
             self.cache = FileSystemCache(cache_dir)
         else:
-            from cat.cache.array_cache import ArrayCache
-            self.cache = ArrayCache()
+            from cat.cache.in_memory_cache import InMemoryCache
+            self.cache = InMemoryCache()

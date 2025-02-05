@@ -1,11 +1,11 @@
 import os
 import pickle
-from cat.cache.cache_interface import CacheInterface
+from cat.cache.base_cache import BaseCache
 from cat.utils import singleton
 
 
 @singleton
-class FileSystemCache(CacheInterface):
+class FileSystemCache(BaseCache):
     """Cache implementation using the file system.
 
     Attributes

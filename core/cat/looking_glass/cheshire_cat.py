@@ -28,7 +28,7 @@ from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
 from cat.cache.cache_manager import CacheManager
-from cat.cache.cache_interface import CacheInterface
+from cat.cache.base_cache import BaseCache
 
 
 class Procedure(Protocol):
@@ -441,5 +441,5 @@ class CheshireCat:
         return output
 
     @property
-    def cache(self) -> CacheInterface:
+    def cache(self) -> BaseCache:
         return self.cache_manager.cache
