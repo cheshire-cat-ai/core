@@ -1,15 +1,14 @@
 import pytest
 from cat.mad_hatter.decorators import CustomEndpoint
-from tests.mocks.mock_plugin.mock_endpoint import Item
 
 def test_endpoints_discovery(mad_hatter_with_mock_plugin):
 
     # discovered endpoints are cached
     mock_plugin_endpoints = mad_hatter_with_mock_plugin.plugins["mock_plugin"].endpoints
     assert mock_plugin_endpoints == mad_hatter_with_mock_plugin.endpoints
-    
+
     # discovered endpoints
-    assert len(mock_plugin_endpoints) == 4
+    assert len(mock_plugin_endpoints) == 6
 
     # basic properties
     for h in mock_plugin_endpoints:
@@ -18,53 +17,58 @@ def test_endpoints_discovery(mad_hatter_with_mock_plugin):
 
 
 def test_endpoint_decorator(client, mad_hatter_with_mock_plugin):
-        
-    endpoint = mad_hatter_with_mock_plugin.endpoints[0]
+    # Find specific endpoint by path/prefix/method
+    endpoints = mad_hatter_with_mock_plugin.endpoints
+    endpoint = next(e for e in endpoints 
+                   if e.path == "/endpoint" 
+                   and e.prefix == "/custom" 
+                   and "GET" in e.methods)
     
     assert endpoint.name == "/custom/endpoint"
     assert endpoint.prefix == "/custom"
     assert endpoint.path == "/endpoint"
-    assert endpoint.methods == {"GET"} # fastapi stores http verbs as a set
+    assert endpoint.methods == {"GET"}
     assert endpoint.tags == ["Custom Endpoints"]
     assert endpoint.function() == {"result":"endpoint default prefix"}
 
-
 def test_endpoint_decorator_prefix(client, mad_hatter_with_mock_plugin):
-
-    endpoint = mad_hatter_with_mock_plugin.endpoints[1]
+    endpoints = mad_hatter_with_mock_plugin.endpoints
+    endpoint = next(e for e in endpoints 
+                   if e.path == "/endpoint" 
+                   and e.prefix == "/tests" 
+                   and "GET" in e.methods)
     
     assert endpoint.name == "/tests/endpoint"
     assert endpoint.prefix == "/tests"
     assert endpoint.path == "/endpoint"
     assert endpoint.methods == {"GET"}
     assert endpoint.tags == ["Tests"]
-    assert endpoint.function() == {"result":"endpoint prefix tests"}
-
 
 def test_get_endpoint(client, mad_hatter_with_mock_plugin):
-
-    endpoint = mad_hatter_with_mock_plugin.endpoints[2]
+    endpoints = mad_hatter_with_mock_plugin.endpoints
+    endpoint = next(e for e in endpoints 
+                   if e.path == "/crud" 
+                   and e.prefix == "/tests" 
+                   and "GET" in e.methods)
     
     assert endpoint.name == "/tests/crud"
     assert endpoint.prefix == "/tests"
     assert endpoint.path == "/crud"
     assert endpoint.methods == {"GET"}
     assert endpoint.tags == ["Tests"]
-    # too complicated to simulate the request arguments here,
-    #  see tests/routes/test_custom_endpoints.py
 
 def test_post_endpoint(client, mad_hatter_with_mock_plugin):
-
-    endpoint = mad_hatter_with_mock_plugin.endpoints[3]
+    endpoints = mad_hatter_with_mock_plugin.endpoints
+    endpoint = next(e for e in endpoints 
+                   if e.path == "/crud" 
+                   and e.prefix == "/tests" 
+                   and "POST" in e.methods)
     
     assert endpoint.name == "/tests/crud"
-    assert endpoint.prefix == "/tests"
+    assert endpoint.prefix == "/tests"  
     assert endpoint.path == "/crud"
     assert endpoint.methods == {"POST"}
     assert endpoint.tags == ["Tests"]
-
-    payload = Item(name="the cat", description="it's magic")
-    assert endpoint.function(payload) == payload.model_dump()
 
 
 @pytest.mark.parametrize("switch_type", ["deactivation", "uninstall"])

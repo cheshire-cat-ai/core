@@ -191,6 +191,64 @@ class Endpoint:
             **kwargs,
         )
 
+    def put(
+        cls,
+        path,
+        prefix=default_prefix,
+        response_model=None,
+        tags=default_tags,
+        **kwargs,
+    ) -> Callable:
+        """
+        Define a custom API endpoint for PUT operation, parameters are the same as FastAPI path operation.
+        Examples:
+            .. code-block:: python
+                from cat.mad_hatter.decorators import endpoint
+                from pydantic import BaseModel
+    
+                class Item(BaseModel):
+                    name: str
+                    description: str
+    
+                @endpoint.put(path="/hello")
+                def my_put_endpoint(item: Item):
+                    return {"Hello": item.name, "Description": item.description}
+        """
+        return cls.endpoint(
+            path=path,
+            methods={"PUT"},
+            prefix=prefix,
+            response_model=response_model,
+            tags=tags,
+            **kwargs,
+        )
+    
+    def delete(
+        cls, 
+        path,
+        prefix=default_prefix,
+        response_model=None,
+        tags=default_tags,
+        **kwargs,
+    ) -> Callable:
+        """
+        Define a custom API endpoint for DELETE operation, parameters are the same as FastAPI path operation.
+        Examples:
+            .. code-block:: python
+                from cat.mad_hatter.decorators import endpoint
+    
+                @endpoint.delete(path="/hello/{item_id}")
+                def my_delete_endpoint(item_id: int):
+                    return {"message": f"Deleted item {item_id}"}
+        """
+        return cls.endpoint(
+            path=path,
+            methods={"DELETE"},
+            prefix=prefix,
+            response_model=response_model,
+            tags=tags,
+            **kwargs,
+        )
 
 endpoint = None
 

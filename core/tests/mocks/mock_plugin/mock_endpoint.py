@@ -22,3 +22,11 @@ def test_get(stray=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST))
 @endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])
 def test_post(item: Item) -> str:
     return {"name": item.name, "description": item.description}
+
+@endpoint.put(path="/crud", prefix="/tests", tags=["Tests"])
+def test_put(item: Item) -> str:
+    return {"name": item.name, "description": item.description}
+
+@endpoint.delete(path="/crud/{item_id}", prefix="/tests", tags=["Tests"]) 
+def test_delete(item_id: int):
+    return {"result": "ok", "deleted_id": item_id}
