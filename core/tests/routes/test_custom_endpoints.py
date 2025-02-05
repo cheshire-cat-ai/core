@@ -28,8 +28,26 @@ def test_custom_endpoint_post(client, just_installed_plugin):
     response = client.post("/tests/crud", json=payload)
 
     assert response.status_code == 200
+    assert response.json()["id"] == 1
     assert response.json()["name"] == "the cat"
     assert response.json()["description"] == "it's magic"
+
+
+def test_custom_endpoint_put(client, just_installed_plugin):
+    payload = {"name": "the cat", "description": "it's magic"}
+    response = client.put("/tests/crud/123", json=payload)
+    
+    assert response.status_code == 200
+    assert response.json()["id"] == 123
+    assert response.json()["name"] == "the cat"
+    assert response.json()["description"] == "it's magic"
+
+def test_custom_endpoint_delete(client, just_installed_plugin):
+    response = client.delete("/tests/crud/123")
+    
+    assert response.status_code == 200
+    assert response.json()["result"] == "ok"
+    assert response.json()["deleted_id"] == 123
 
 
 @pytest.mark.parametrize("switch_type", ["deactivation", "uninstall"])
@@ -43,6 +61,8 @@ def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
         ("GET", "/tests/endpoint", None),
         ("GET", "/tests/crud", None),
         ("POST", "/tests/crud", {"name": "the cat", "description": "it's magic"}),
+        ("PUT", "/tests/crud/123", {"name": "the cat", "description": "it's magic"}),
+        ("DELETE", "/tests/crud/123", None),
     ]
 
     # custom endpoints are active

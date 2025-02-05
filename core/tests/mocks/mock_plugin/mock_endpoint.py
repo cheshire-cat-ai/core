@@ -20,5 +20,13 @@ def test_get(stray=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST))
     return {"result":"ok", "stray_user_id":stray.user_id}
 
 @endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])
-def test_post(item: Item) -> str:
-    return {"name": item.name, "description": item.description}
+def test_post(item: Item):
+    return {"id": 1, "name": item.name, "description": item.description}
+
+@endpoint.put(path="/crud/{item_id}", prefix="/tests", tags=["Tests"])
+def test_put(item_id: int, item: Item):
+    return {"id": item_id, "name": item.name, "description": item.description}
+
+@endpoint.delete(path="/crud/{item_id}", prefix="/tests", tags=["Tests"]) 
+def test_delete(item_id: int):
+    return {"result": "ok", "deleted_id": item_id}
