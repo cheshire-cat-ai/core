@@ -41,7 +41,7 @@ class StrayCat:
         self.__user_id = user_id
         self.__user_data = user_data
 
-        self.working_memory = self._cache.get_value(f"{user_id}_working_memory") or WorkingMemory()
+        self.working_memory = self.cache.get_value(f"{user_id}_working_memory") or WorkingMemory()
 
         # attribute to store ws connection
         self.__ws = ws
@@ -472,7 +472,7 @@ class StrayCat:
             final_output
         )
 
-        self._cache.insert(CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1))
+        self.cache.insert(CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1))
 
         return final_output
 
@@ -636,6 +636,7 @@ Allowed classes are:
     @property
     def white_rabbit(self):
         return CheshireCat().white_rabbit
+    
     @property
-    def _cache(self):
+    def cache(self):
         return CheshireCat().cache

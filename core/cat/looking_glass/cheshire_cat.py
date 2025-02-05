@@ -3,7 +3,7 @@ from typing import List, Dict
 from typing_extensions import Protocol
 
 from langchain.base_language import BaseLanguageModel
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -422,7 +422,7 @@ class CheshireCat:
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
-                SystemMessage(content=prompt)
+                HumanMessage(content=prompt)
             ]
         )
 
