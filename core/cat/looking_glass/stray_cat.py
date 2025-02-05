@@ -5,13 +5,14 @@ import tiktoken
 
 from typing import Literal, get_args, List, Dict, Union, Any
 
+from websockets.exceptions import ConnectionClosedOK
+from fastapi import WebSocket
+
 from langchain.docstore.document import Document
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
-
-from fastapi import WebSocket
 
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
@@ -21,8 +22,6 @@ from cat.convo.messages import CatMessage, UserMessage, MessageWhy, EmbedderMode
 from cat.agents import AgentOutput
 from cat.auth.permissions import AuthUserInfo
 from cat import utils
-from websockets.exceptions import ConnectionClosedOK
-
 from cat.cache.cache_item import CacheItem
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]

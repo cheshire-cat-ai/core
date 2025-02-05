@@ -28,7 +28,6 @@ from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
 from cat.cache.cache_manager import CacheManager
-from cat.cache.base_cache import BaseCache
 
 
 class Procedure(Protocol):
@@ -97,6 +96,7 @@ class CheshireCat:
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)  # :(
 
+        # Cache for sessions / working memories et al.
         self.cache = CacheManager().cache
 
         # allows plugins to do something after the cat bootstrap is complete
