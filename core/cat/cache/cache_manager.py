@@ -5,6 +5,7 @@ from cat.utils import singleton
 
 @singleton
 class CacheManager:
+    """Class to instantiate different cache types."""
 
     def __init__(self):
 
