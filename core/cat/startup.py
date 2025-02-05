@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from scalar_fastapi import get_scalar_api_reference
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -77,6 +77,14 @@ if cors_enabled == "true":
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+# Auto update sessions cache witha  middleware
+#@cheshire_cat_api.middleware("http")
+#async def update_stray_cache(request: Request, call_next):
+#    log.critical("MIDDLEWARE")
+#    print(request)
+#    response = await call_next(request)
+#    return response
 
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Home"])
