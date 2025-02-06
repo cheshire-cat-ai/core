@@ -42,6 +42,7 @@ class StrayCat:
         self.__user_data = user_data
 
         # get working memory from cache or create a new one
+        log.warning(f"GET working memory for {user_id}")
         self.working_memory = self.cache.get_value(f"{user_id}_working_memory") or WorkingMemory()
 
         # attribute to store ws connection
@@ -52,11 +53,15 @@ class StrayCat:
     def __repr__(self):
         return f"StrayCat(user_id={self.user_id})"
 
-    def __del__(self):
+    #def __del__(self):
+    #    log.critical(f"StrayCat __del__ called for {self.user_id}")
+        #self.__main_loop = None
+        #self.__ws = None
         # when the garbage collector deletes the stray, we update working memory in cache
-        updated_cache_item = CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1)
-        self.cache.insert(updated_cache_item)
-        log.critical(f"StrayCat {self.user_id} deleted")
+    #    self.update_working_memory_cache()
+        #self.__user_id = None
+        #self.__user_data = None
+    #    del self
 
 
     def __send_ws_json(self, data: Any):
@@ -95,6 +100,12 @@ class StrayCat:
         )
 
         return why
+    
+    def update_working_memory_cache(self):
+        """Update the working memory in the cache."""
+        log.warning(f"SAVE working memory for {self.user_id}")
+        updated_cache_item = CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1)
+        self.cache.insert(updated_cache_item)
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
@@ -478,6 +489,7 @@ class StrayCat:
     def run(self, user_message_json, return_message=False):
         try:
             cat_message = self.__call__(user_message_json)
+            self.update_working_memory_cache()
             if return_message:
                 # return the message for HTTP usage
                 return cat_message

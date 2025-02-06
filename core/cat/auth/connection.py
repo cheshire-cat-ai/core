@@ -54,7 +54,13 @@ class ConnectionAuth(ABC):
                 protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
-                return await self.get_user_stray(user, connection)
+                stray = await self.get_user_stray(user, connection)
+                yield stray
+
+                log.critical("STRAY FINITO")
+                stray.update_working_memory_cache()
+                del stray
+                return
 
         # if no stray was obtained, raise exception
         self.not_allowed(connection)
@@ -135,7 +141,7 @@ class WebSocketAuth(ConnectionAuth):
     
 
     async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
-         return StrayCat(
+        return StrayCat(
             ws=connection,
             user_id=user.name, # TODOV2: user_id should be the user.id
             user_data=user,

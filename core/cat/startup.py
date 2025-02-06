@@ -78,14 +78,6 @@ if cors_enabled == "true":
         allow_headers=["*"],
     )
 
-# Auto update sessions cache witha  middleware
-#@cheshire_cat_api.middleware("http")
-#async def update_stray_cache(request: Request, call_next):
-#    log.critical("MIDDLEWARE")
-#    print(request)
-#    response = await call_next(request)
-#    return response
-
 # Add routers to the middleware stack.
 cheshire_cat_api.include_router(base.router, tags=["Home"])
 cheshire_cat_api.include_router(auth.router, tags=["User Auth"], prefix="/auth")

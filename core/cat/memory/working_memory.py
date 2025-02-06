@@ -63,7 +63,7 @@ class WorkingMemory(BaseModelDict):
         -----
         This method is deprecated and will be removed in future versions. Use `update_history` instead.
         """
-         
+
         deprecation_warning(
             "update_conversation_history is deprecated and will be removed in a future release. Use update_history instead."
         )

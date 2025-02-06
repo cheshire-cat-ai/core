@@ -5,6 +5,10 @@ from cat.auth.permissions import AuthUserInfo
 from tests.utils import send_websocket_message
 
 
+def test_no_sessions_at_startup(client):
+    assert False # TODO
+
+
 def test_session_creation_from_websocket(client):
     # send websocket message
     mex = {"text": "Where do I go?"}
@@ -14,7 +18,7 @@ def test_session_creation_from_websocket(client):
     assert "You did not configure" in res["content"]
 
     # verify session
-    strays = client.app.state.ccat.cache
+    strays = client.app.state.ccat.cache.get_value()
     assert "Alice" in strays
     assert isinstance(strays["Alice"], StrayCat)
     assert strays["Alice"].user_id == "Alice"
