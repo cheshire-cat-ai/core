@@ -502,17 +502,7 @@ class StrayCat:
             # load working memory from cache
             self.load_working_memory_from_cache()
             # run main flow
-            from cProfile import Profile
-            from pstats import SortKey, Stats
-            with Profile() as profile:
-                cat_message = self.__call__(user_message_json)
-            (
-                Stats(profile)
-                .strip_dirs()
-                .sort_stats(SortKey.TIME)
-                .reverse_order()
-                .print_stats()
-            )
+            cat_message = self.__call__(user_message_json)
             # save working memory to cache
             self.update_working_memory_cache()
 
