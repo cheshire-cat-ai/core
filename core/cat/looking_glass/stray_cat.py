@@ -95,7 +95,7 @@ class StrayCat:
     
     def load_working_memory_from_cache(self):
         """Load the working memory from the cache."""
-        log.warning(f"GET working memory for {self.user_id}")
+        log.critical(f"GET {self.user_id}")
         self.working_memory = \
             self.cache.get_value(f"{self.user_id}_working_memory") or WorkingMemory()
 
@@ -502,7 +502,17 @@ class StrayCat:
             # load working memory from cache
             self.load_working_memory_from_cache()
             # run main flow
-            cat_message = self.__call__(user_message_json)
+            from cProfile import Profile
+            from pstats import SortKey, Stats
+            with Profile() as profile:
+                cat_message = self.__call__(user_message_json)
+            (
+                Stats(profile)
+                .strip_dirs()
+                .sort_stats(SortKey.TIME)
+                .reverse_order()
+                .print_stats()
+            )
             # save working memory to cache
             self.update_working_memory_cache()
 
