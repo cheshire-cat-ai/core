@@ -1,4 +1,4 @@
-
+import os
 from cat.memory.working_memory import WorkingMemory
 
 from tests.utils import send_websocket_message
@@ -28,6 +28,32 @@ def test_session_creation_from_websocket(client):
     assert convo[0]["text"] == mex["text"]
     assert convo[1]["who"] == "AI"
     assert "You did not configure" in convo[1]["text"]
+
+
+def test_session_update_from_websocket(client):
+
+    for message in range(1,5):
+
+        # message
+        res = send_websocket_message(
+            {"text": message}, client, user_id="Alice"
+        )
+
+        # check response
+        assert "You did not configure" in res["content"]
+
+        # verify session
+        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+        assert isinstance(wm, WorkingMemory)
+        convo = wm.history
+        assert len(convo) == int(message) * 2 # user mex + reply
+        for c_idx, c in enumerate(convo):
+            if c_idx % 2 == 0:
+                assert c["who"] == "Human"
+                assert c["text"] == str(c_idx//2 + 1)
+            else:
+                assert c["who"] == "AI"
+                assert "You did not configure" in c["text"]
 
 
 def test_session_creation_from_http(client):
