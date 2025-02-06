@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from scalar_fastapi import get_scalar_api_reference
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError

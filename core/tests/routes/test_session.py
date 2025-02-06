@@ -1,12 +1,14 @@
 
-from cat.looking_glass.stray_cat import StrayCat
-from cat.auth.permissions import AuthUserInfo
+from cat.memory.working_memory import WorkingMemory
 
 from tests.utils import send_websocket_message
 
 
 def test_no_sessions_at_startup(client):
-    assert False # TODO
+    
+    for username in ["admin", "user", "Alice"]:
+        wm = client.app.state.ccat.cache.get_value(f"{username}_working_memory")
+        assert wm is None
 
 
 def test_session_creation_from_websocket(client):
@@ -18,17 +20,14 @@ def test_session_creation_from_websocket(client):
     assert "You did not configure" in res["content"]
 
     # verify session
-    strays = client.app.state.ccat.cache.get_value()
-    assert "Alice" in strays
-    assert isinstance(strays["Alice"], StrayCat)
-    assert strays["Alice"].user_id == "Alice"
-    assert hasattr(strays["Alice"], "user_data")
-    assert isinstance(strays["Alice"].user_data, AuthUserInfo)
-    assert strays["Alice"].user_data.id == "Alice"
-    convo = strays["Alice"].working_memory.history
+    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+    assert isinstance(wm, WorkingMemory)
+    convo = wm.history
     assert len(convo) == 2
     assert convo[0]["who"] == "Human"
     assert convo[0]["text"] == mex["text"]
+    assert convo[1]["who"] == "AI"
+    assert "You did not configure" in convo[1]["text"]
 
 
 def test_session_creation_from_http(client):
@@ -47,17 +46,14 @@ def test_session_creation_from_http(client):
     assert response.status_code == 200
 
     # verify session
-    strays = client.app.state.strays
-    assert "Alice" in strays
-    assert isinstance(strays["Alice"], StrayCat)
-    assert strays["Alice"].user_id == "Alice"
-    convo = strays["Alice"].working_memory.history
-    assert len(convo) == 0  # no ws message sent from Alice
+    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+    assert isinstance(wm, WorkingMemory)
+    assert len(wm.history) == 0  # no messages sent or received
 
 
 # TODO: how do we test that:
 # - session is coherent between ws and http calls
 # - streaming happens
 # - hooks receive the correct session
+# - sessions do not stay in memory forever
 
-# REFACTOR TODO: we still do not delete sessions
