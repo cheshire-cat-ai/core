@@ -141,12 +141,12 @@ def just_installed_plugin(client):
     # clean up of zip file and mock_plugin_folder is done for every test automatically (see client fixture)
 
 # fixtures to test the main agent
-@pytest.fixture
+@pytest.fixture(scope="function")
 def main_agent(client):
     yield CheshireCat().main_agent  # each test receives as argument the main agent instance
 
 # fixture to have available an instance of StrayCat
-@pytest.fixture
+@pytest.fixture(scope="function")
 def stray(client):
     user_id = "Alice"
     stray_cat = StrayCat(user_id=user_id, main_loop=asyncio.new_event_loop())
@@ -154,13 +154,13 @@ def stray(client):
     yield stray_cat
 
 # autouse fixture will be applied to *all* the tests
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="function")
 def apply_warning_filters():
     # ignore deprecation warnings due to langchain not updating to pydantic v2
     warnings.filterwarnings("ignore", category=PydanticDeprecatedSince20)
 
 #fixture for mock time.time function
-@pytest.fixture
+@pytest.fixture(scope="function")
 def patch_time_now(monkeypatch):
 
     def mytime():
@@ -169,7 +169,7 @@ def patch_time_now(monkeypatch):
     monkeypatch.setattr(time, 'time', mytime)
 
 #fixture for mad hatter with mock plugin installed
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mad_hatter_with_mock_plugin(client):  # client here injects the monkeypatched version of the cat
 
     # each test is given the mad_hatter instance (it's a singleton)

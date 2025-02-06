@@ -17,7 +17,7 @@ def get_class_from_decorated_singleton(singleton):
     return singleton().__class__
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def cheshire_cat(client):
     yield CheshireCat()  # don't panic, it's a singleton
 

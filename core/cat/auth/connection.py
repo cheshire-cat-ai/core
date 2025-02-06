@@ -58,7 +58,7 @@ class ConnectionAuth(ABC):
                 yield stray
 
                 stray.update_working_memory_cache()
-                del stray
+                #del stray
                 return
 
         # if no stray was obtained, raise exception
@@ -140,6 +140,7 @@ class WebSocketAuth(ConnectionAuth):
     
 
     async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
+        event_loop = connection.app.state.event_loop
         return StrayCat(
             ws=connection,
             user_id=user.name, # TODOV2: user_id should be the user.id

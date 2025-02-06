@@ -11,18 +11,22 @@ from cat.log import log
 router = APIRouter()
 
 
-async def receive_message(websocket: WebSocket, stray: StrayCat):
-    """
-    Continuously receive messages from the WebSocket and forward them to the `ccat` object for processing.
-    """
+async def receive_message(websocket: WebSocket, user_data):
 
     while True:
         # Receive the next message from the WebSocket.
         user_message = await websocket.receive_json()
-        user_message["user_id"] = stray.user_id # impose user_id as the one authenticated
+        user_message["user_id"] = user_data.id # impose user_id as the one authenticated
+
+        stray = StrayCat(
+            user_id = user_data.id,
+            user_data = user_data,
+            main_loop=websocket.app.state.event_loop
+        )
 
         # Run the `stray` object's method in a threadpool since it might be a CPU-bound operation.
         await run_in_threadpool(stray.run, user_message, return_message=False)
+        del stray
 
 
 @router.websocket("/ws")
@@ -35,11 +39,14 @@ async def websocket_endpoint(
     Endpoint to handle incoming WebSocket connections by user id, process messages, and check for messages.
     """
 
+    user_data = stray.user_data
+    del stray
+
     # Add the new WebSocket connection to the manager.
     await websocket.accept()
     try:
         # Process messages
-        await receive_message(websocket, stray)
+        await receive_message(websocket, user_data)
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
         log.info("WebSocket connection closed")

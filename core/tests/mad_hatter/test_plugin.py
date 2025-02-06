@@ -15,7 +15,7 @@ mock_plugin_path = "tests/mocks/mock_plugin/"
 
 # this fixture will give test functions a ready instantiated plugin
 # (and having the `client` fixture, a clean setup every unit)
-@pytest.fixture
+@pytest.fixture(scope="function")
 def plugin(client):
     p = Plugin(mock_plugin_path)
     yield p

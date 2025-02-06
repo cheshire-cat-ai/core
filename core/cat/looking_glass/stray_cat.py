@@ -498,9 +498,6 @@ class StrayCat:
 
     def run(self, user_message_json, return_message=False):
         try:
-            
-            # load working memory from cache
-            self.load_working_memory_from_cache()
             # run main flow
             cat_message = self.__call__(user_message_json)
             # save working memory to cache

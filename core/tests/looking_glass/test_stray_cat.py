@@ -6,7 +6,7 @@ from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import MessageWhy, CatMessage
 from cat.mad_hatter.decorators.hook import CatHook
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def stray(client):
     yield StrayCat(user_id="Alice", main_loop=asyncio.new_event_loop())
 

@@ -8,7 +8,7 @@ from tests.utils import create_mock_plugin_zip
 
 
 # this function will be run before each test function
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mad_hatter(client):  # client here injects the monkeypatched version of the cat
     # each test is given the mad_hatter instance (it's a singleton)
     mad_hatter = MadHatter()
