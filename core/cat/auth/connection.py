@@ -142,10 +142,10 @@ class WebSocketAuth(ConnectionAuth):
     async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
         event_loop = connection.app.state.event_loop
         return StrayCat(
-            ws=connection,
             user_id=user.name, # TODOV2: user_id should be the user.id
             user_data=user,
             main_loop=asyncio.get_running_loop(),
+            ws=connection,
         )
 
     def not_allowed(self, connection: WebSocket):

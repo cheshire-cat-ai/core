@@ -1,3 +1,4 @@
+import asyncio
 
 from cat.auth.permissions import AuthPermission, AuthResource
 from cat.auth.connection import WebSocketAuth
@@ -16,12 +17,12 @@ async def receive_message(websocket: WebSocket, user_data):
     while True:
         # Receive the next message from the WebSocket.
         user_message = await websocket.receive_json()
-        user_message["user_id"] = user_data.id # impose user_id as the one authenticated
-
+        
         stray = StrayCat(
-            user_id = user_data.id,
+            user_id = user_data.name,
             user_data = user_data,
-            main_loop=websocket.app.state.event_loop
+            main_loop=asyncio.get_running_loop(),
+            ws=websocket
         )
 
         # Run the `stray` object's method in a threadpool since it might be a CPU-bound operation.
@@ -50,7 +51,7 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
         log.info("WebSocket connection closed")
-    finally:
+    #finally:
         # Stray deletion will preserve working memory in cache
         # and cache will handle deletion of working memory in its own custom way
-        del stray
+    #    del stray

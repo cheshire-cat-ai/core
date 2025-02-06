@@ -394,6 +394,10 @@ class StrayCat:
 
         """
 
+        # Impose user_id as the one authenticated
+        # (ws message may contain a fake id)
+        message_dict["user_id"] = self.user_id
+
         # Parse websocket message into UserMessage obj
         user_message = UserMessage.model_validate(message_dict)
         log.info(user_message)
