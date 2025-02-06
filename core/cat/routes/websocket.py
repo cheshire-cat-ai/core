@@ -46,5 +46,4 @@ async def websocket_endpoint(
     finally:
         # Stray deletion will preserve working memory in cache
         # and cache will handle deletion of working memory in its own custom way
-        log.critical("WebSocket connection closed")
         del stray
