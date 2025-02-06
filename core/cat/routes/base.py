@@ -29,5 +29,4 @@ async def message_with_cat(
     """Get a response from the Cat"""
     user_message_json = {"user_id": stray.user_id, **payload}
     answer = await run_in_threadpool(stray.run, user_message_json, True)
-    del stray
     return answer

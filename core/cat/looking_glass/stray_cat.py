@@ -38,31 +38,23 @@ class StrayCat:
         user_data: AuthUserInfo = None,
         ws: WebSocket = None,
     ):
+        """Initialize the StrayCat object."""
+
+        # user data
         self.__user_id = user_id
         self.__user_data = user_data
-
-        # get working memory from cache or create a new one
-        log.warning(f"GET working memory for {user_id}")
-        self.working_memory = self.cache.get_value(f"{user_id}_working_memory") or WorkingMemory()
 
         # attribute to store ws connection
         self.__ws = ws
 
+        # main event loop (for ws messages)
         self.__main_loop = main_loop
+        
+        # get working memory from cache or create a new one
+        self.load_working_memory_from_cache()
 
     def __repr__(self):
         return f"StrayCat(user_id={self.user_id})"
-
-    #def __del__(self):
-    #    log.critical(f"StrayCat __del__ called for {self.user_id}")
-        #self.__main_loop = None
-        #self.__ws = None
-        # when the garbage collector deletes the stray, we update working memory in cache
-    #    self.update_working_memory_cache()
-        #self.__user_id = None
-        #self.__user_data = None
-    #    del self
-
 
     def __send_ws_json(self, data: Any):
         # Run the corutine in the main event loop in the main thread
@@ -101,9 +93,15 @@ class StrayCat:
 
         return why
     
+    def load_working_memory_from_cache(self):
+        """Load the working memory from the cache."""
+        log.warning(f"GET working memory for {self.user_id}")
+        self.working_memory = \
+            self.cache.get_value(f"{self.user_id}_working_memory") or WorkingMemory()
+
     def update_working_memory_cache(self):
         """Update the working memory in the cache."""
-        log.warning(f"SAVE working memory for {self.user_id}")
+        log.critical(f"SAVE {self.user_id}")
         updated_cache_item = CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1)
         self.cache.insert(updated_cache_item)
 
@@ -392,7 +390,7 @@ class StrayCat:
         user_message = UserMessage.model_validate(message_dict)
         log.info(user_message)
 
-        ### setup working memory
+        ### setup working memory for this convo turn
         # keeping track of model interactions
         self.working_memory.model_interactions = []
         # latest user message
@@ -488,8 +486,14 @@ class StrayCat:
 
     def run(self, user_message_json, return_message=False):
         try:
+            
+            # load working memory from cache
+            self.load_working_memory_from_cache()
+            # run main flow
             cat_message = self.__call__(user_message_json)
+            # save working memory to cache
             self.update_working_memory_cache()
+
             if return_message:
                 # return the message for HTTP usage
                 return cat_message

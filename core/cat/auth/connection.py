@@ -3,7 +3,7 @@
 #  to have a standard auth interface.
 
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, AsyncGenerator
 import asyncio
 from urllib.parse import urlencode
 
@@ -37,7 +37,7 @@ class ConnectionAuth(ABC):
     async def __call__(
         self,
         connection: HTTPConnection # Request | WebSocket,
-    ) -> StrayCat:
+    ) -> AsyncGenerator[StrayCat, None]:
 
         # get protocol from Starlette request
         protocol = connection.scope.get('type')
@@ -57,7 +57,6 @@ class ConnectionAuth(ABC):
                 stray = await self.get_user_stray(user, connection)
                 yield stray
 
-                log.critical("STRAY FINITO")
                 stray.update_working_memory_cache()
                 del stray
                 return
