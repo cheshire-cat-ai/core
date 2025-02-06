@@ -22,7 +22,10 @@ def test_get_env(client):
 
         if k == "CCAT_DEBUG":
             assert get_env(k) == "false" # we test installation with autoreload off
-        else:            
+        elif k == "CCAT_CACHE_DIR":
+            assert get_env(k) == "/tmp_test" # we test installation with a different cache dir
+        else:
+            # default values          
             assert get_env(k) == v
 
             # TODO: take away in v2

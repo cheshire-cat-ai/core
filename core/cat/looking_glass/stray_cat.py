@@ -5,13 +5,14 @@ import tiktoken
 
 from typing import Literal, get_args, List, Dict, Union, Any
 
+from websockets.exceptions import ConnectionClosedOK
+from fastapi import WebSocket
+
 from langchain.docstore.document import Document
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
-
-from fastapi import WebSocket
 
 from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
@@ -21,14 +22,14 @@ from cat.convo.messages import CatMessage, UserMessage, MessageWhy, EmbedderMode
 from cat.agents import AgentOutput
 from cat.auth.permissions import AuthUserInfo
 from cat import utils
-from websockets.exceptions import ConnectionClosedOK
+from cat.cache.cache_item import CacheItem
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
 
 
 # The Stray cat goes around tools, hooks and endpoints... making troubles
 class StrayCat:
-    """User/session based object containing working memory and a few utility pointers"""
+    """User/session based object containing working memory and a few utility pointers."""
 
     def __init__(
         self,
@@ -37,15 +38,20 @@ class StrayCat:
         user_data: AuthUserInfo = None,
         ws: WebSocket = None,
     ):
+        """Initialize the StrayCat object."""
+
+        # user data
         self.__user_id = user_id
         self.__user_data = user_data
-
-        self.working_memory = WorkingMemory()
 
         # attribute to store ws connection
         self.__ws = ws
 
+        # main event loop (for ws messages)
         self.__main_loop = main_loop
+        
+        # get working memory from cache or create a new one
+        self.load_working_memory_from_cache()
 
     def __repr__(self):
         return f"StrayCat(user_id={self.user_id})"
@@ -86,6 +92,18 @@ class StrayCat:
         )
 
         return why
+    
+    def load_working_memory_from_cache(self):
+        """Load the working memory from the cache."""
+        log.warning(f"GET working memory for {self.user_id}")
+        self.working_memory = \
+            self.cache.get_value(f"{self.user_id}_working_memory") or WorkingMemory()
+
+    def update_working_memory_cache(self):
+        """Update the working memory in the cache."""
+        log.critical(f"SAVE {self.user_id}")
+        updated_cache_item = CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1)
+        self.cache.insert(updated_cache_item)
 
     def send_ws_message(self, content: str, msg_type: MSG_TYPES = "notification"):
         """Send a message via websocket.
@@ -372,7 +390,7 @@ class StrayCat:
         user_message = UserMessage.model_validate(message_dict)
         log.info(user_message)
 
-        ### setup working memory
+        ### setup working memory for this convo turn
         # keeping track of model interactions
         self.working_memory.model_interactions = []
         # latest user message
@@ -468,7 +486,14 @@ class StrayCat:
 
     def run(self, user_message_json, return_message=False):
         try:
+            
+            # load working memory from cache
+            self.load_working_memory_from_cache()
+            # run main flow
             cat_message = self.__call__(user_message_json)
+            # save working memory to cache
+            self.update_working_memory_cache()
+
             if return_message:
                 # return the message for HTTP usage
                 return cat_message
@@ -626,3 +651,7 @@ Allowed classes are:
     @property
     def white_rabbit(self):
         return CheshireCat().white_rabbit
+    
+    @property
+    def cache(self):
+        return CheshireCat().cache

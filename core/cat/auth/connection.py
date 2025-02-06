@@ -3,7 +3,7 @@
 #  to have a standard auth interface.
 
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, AsyncGenerator
 import asyncio
 from urllib.parse import urlencode
 
@@ -23,6 +23,7 @@ from cat.auth.permissions import (
 from cat.looking_glass.stray_cat import StrayCat
 from cat.log import log
 
+
 class ConnectionAuth(ABC):
 
     def __init__(
@@ -36,7 +37,7 @@ class ConnectionAuth(ABC):
     async def __call__(
         self,
         connection: HTTPConnection # Request | WebSocket,
-    ) -> StrayCat:
+    ) -> AsyncGenerator[StrayCat, None]:
 
         # get protocol from Starlette request
         protocol = connection.scope.get('type')
@@ -53,7 +54,12 @@ class ConnectionAuth(ABC):
                 protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
-                return await self.get_user_stray(user, connection)
+                stray = await self.get_user_stray(user, connection)
+                yield stray
+
+                stray.update_working_memory_cache()
+                del stray
+                return
 
         # if no stray was obtained, raise exception
         self.not_allowed(connection)
@@ -103,16 +109,14 @@ class HTTPAuth(ConnectionAuth):
 
 
     async def get_user_stray(self, user: AuthUserInfo, connection: Request) -> StrayCat:
-        strays = connection.app.state.strays
         event_loop = connection.app.state.event_loop
 
-        if user.id not in strays.keys():
-            strays[user.id] = StrayCat(
-                    # TODOV2: user_id should be the user.id
-                user_id=user.name, user_data=user, main_loop=event_loop
-            )
-        return strays[user.id]
-    
+        return StrayCat(
+                # TODOV2: user_id should be the user.id
+            user_id=user.name, user_data=user, main_loop=event_loop
+        )
+
+
     def not_allowed(self, connection: Request):
         raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})
     
@@ -136,29 +140,13 @@ class WebSocketAuth(ConnectionAuth):
     
 
     async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
-        strays = connection.app.state.strays
+        return StrayCat(
+            ws=connection,
+            user_id=user.name, # TODOV2: user_id should be the user.id
+            user_data=user,
+            main_loop=asyncio.get_running_loop(),
+        )
 
-        if user.id in strays.keys():
-            stray = strays[user.id]
-            await stray.close_connection()
-
-            # Set new ws connection
-            stray.reset_connection(connection)
-            log.info(
-                f"New websocket connection for user '{user.id}', the old one has been closed."
-            )
-            return stray
-
-        else:
-            stray = StrayCat(
-                ws=connection,
-                user_id=user.name, # TODOV2: user_id should be the user.id
-                user_data=user,
-                main_loop=asyncio.get_running_loop(),
-            )
-            strays[user.id] = stray
-            return stray
-        
     def not_allowed(self, connection: WebSocket):
         raise WebSocketException(code=1004, reason="Invalid Credentials")
 

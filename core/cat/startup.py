@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from scalar_fastapi import get_scalar_api_reference
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -38,9 +38,6 @@ async def lifespan(app: FastAPI):
     # - Not using Depends because it only supports callables (not instances)
     # - Starlette allows this: https://www.starlette.io/applications/#storing-state-on-the-app-instance
     app.state.ccat = CheshireCat(cheshire_cat_api)
-
-    # Dict of pseudo-sessions (key is the user_id)
-    app.state.strays = {}
 
     # set a reference to asyncio event loop
     app.state.event_loop = asyncio.get_running_loop()

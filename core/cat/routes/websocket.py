@@ -42,7 +42,9 @@ async def websocket_endpoint(
         await receive_message(websocket, stray)
     except WebSocketDisconnect:
         # Handle the event where the user disconnects their WebSocket.
-        stray._StrayCat__ws = None
         log.info("WebSocket connection closed")
-    # finally:
-    #     del strays[user_id]
+    finally:
+        # Stray deletion will preserve working memory in cache (see StrayCat.__del__)
+        # and cache will handle deletion of working memory in its own custom way
+        log.critical(f"StrayCat about to be deleted")
+        del stray

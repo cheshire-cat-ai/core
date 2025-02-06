@@ -3,7 +3,7 @@ from typing import List, Dict
 from typing_extensions import Protocol
 
 from langchain.base_language import BaseLanguageModel
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
@@ -27,6 +27,8 @@ from cat.memory.long_term_memory import LongTermMemory
 from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
+from cat.cache.cache_manager import CacheManager
+
 
 class Procedure(Protocol):
     name: str
@@ -93,6 +95,9 @@ class CheshireCat:
 
         # Rabbit Hole Instance
         self.rabbit_hole = RabbitHole(self)  # :(
+
+        # Cache for sessions / working memories et al.
+        self.cache = CacheManager().cache
 
         # allows plugins to do something after the cat bootstrap is complete
         self.mad_hatter.execute_hook("after_cat_bootstrap", cat=self)
@@ -417,7 +422,7 @@ class CheshireCat:
         # here we deal with motherfucking langchain
         prompt = ChatPromptTemplate(
             messages=[
-                SystemMessage(content=prompt)
+                HumanMessage(content=prompt)
             ]
         )
 
