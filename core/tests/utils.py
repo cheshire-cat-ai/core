@@ -9,10 +9,12 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
         url += "?" + urlencode(query_params)
 
     with client.websocket_connect(url) as websocket:
-        # sed ws message
+        # send ws message
         websocket.send_json(msg)
+        print("\n\n----------Just sent message: ", msg)
         # get reply
         reply = websocket.receive_json()
+        print("\n\n----------Got reply: ", reply)
 
     return reply
 

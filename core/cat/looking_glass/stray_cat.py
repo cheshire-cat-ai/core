@@ -14,18 +14,18 @@ from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
 
-from cat.log import log
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, EmbedderModelInteraction
 from cat.agents import AgentOutput
 from cat.auth.permissions import AuthUserInfo
-from cat import utils
+from cat.routes.websocket.websocket_manager import WebsocketManager
 from cat.cache.cache_item import CacheItem
+from cat import utils
+from cat.log import log
 
 MSG_TYPES = Literal["notification", "chat", "error", "chat_token"]
-
 
 # The Stray cat goes around tools, hooks and endpoints... making troubles
 class StrayCat:
@@ -33,34 +33,34 @@ class StrayCat:
 
     def __init__(
         self,
-        user_id: str,
-        main_loop,
-        user_data: AuthUserInfo = None,
-        ws: WebSocket = None,
+        user_data
     ):
         """Initialize the StrayCat object."""
 
         # user data
-        self.__user_id = user_id
+        self.__user_id = user_data.name # TODOV2: use id
         self.__user_data = user_data
-
-        # attribute to store ws connection
-        self.__ws = ws
-
-        # main event loop (for ws messages)
-        self.__main_loop = main_loop
         
         # get working memory from cache or create a new one
         self.load_working_memory_from_cache()
 
     def __repr__(self):
-        return f"StrayCat(user_id={self.user_id})"
+        return f"StrayCat(user_id={self.user_id}, user_name={self.user_data.name})"
 
     def __send_ws_json(self, data: Any):
         # Run the corutine in the main event loop in the main thread
         # and wait for the result
+
+        ws_connection = WebsocketManager().get_connection(self.user_id)
+        if not ws_connection:
+            log.info(f"No websocket connection is open for user {self.user_id}")
+            return
+        
+        main_loop = CheshireCat().fastapi_app.state.event_loop
+
         asyncio.run_coroutine_threadsafe(
-            self.__ws.send_json(data), loop=self.__main_loop
+            ws_connection.send_json(data),
+            main_loop,
         ).result()
 
     def __build_why(self) -> MessageWhy:
@@ -119,10 +119,6 @@ class StrayCat:
             The type of the message. Should be either `notification`, `chat`, `chat_token` or `error`
         """
 
-        if self.__ws is None:
-            log.info(f"No websocket connection is open for user {self.user_id}")
-            return
-
         options = get_args(MSG_TYPES)
 
         if msg_type not in options:
@@ -146,9 +142,6 @@ class StrayCat:
             message (Union[str, CatMessage]): message to send
             save (bool, optional): Save the message in the conversation history. Defaults to False.
         """
-        if self.__ws is None:
-            log.info(f"No websocket connection is open for user {self.user_id}")
-            return
 
         if isinstance(message, str):
             why = self.__build_why()
@@ -179,9 +172,6 @@ class StrayCat:
         Args:
             error (Union[str, Exception]): message to send
         """        
-        if self.__ws is None:
-            log.info(f"No websocket connection is open for user {self.user_id}")
-            return
 
         if isinstance(error, str):
             error_message = {

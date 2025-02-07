@@ -1,6 +1,6 @@
 import pytest
-import asyncio
 
+from cat.auth.permissions import AuthUserInfo
 from cat.looking_glass.stray_cat import StrayCat
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import MessageWhy, CatMessage
@@ -8,7 +8,11 @@ from cat.mad_hatter.decorators.hook import CatHook
 
 @pytest.fixture(scope="function")
 def stray(client):
-    yield StrayCat(user_id="Alice", main_loop=asyncio.new_event_loop())
+    user_data = AuthUserInfo(
+        id="Alice",
+        name="Alice"
+    )
+    yield StrayCat(user_data)
 
 
 def test_stray_initialization(stray):

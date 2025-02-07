@@ -1,5 +1,4 @@
 
-import asyncio
 import pytest
 import os
 import shutil
@@ -14,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from cat.looking_glass.cheshire_cat import CheshireCat
 from cat.looking_glass.stray_cat import StrayCat
+from cat.auth.permissions import AuthUserInfo
 from cat.db.database import Database
 import cat.utils as utils
 from cat.memory.vector_memory import VectorMemory
@@ -148,9 +148,12 @@ def main_agent(client):
 # fixture to have available an instance of StrayCat
 @pytest.fixture(scope="function")
 def stray(client):
-    user_id = "Alice"
-    stray_cat = StrayCat(user_id=user_id, main_loop=asyncio.new_event_loop())
-    stray_cat.working_memory.user_message_json = {"user_id": user_id, "text": "meow"}
+    user_data = AuthUserInfo(
+        id="Alice",
+        name="Alice"
+    )
+    stray_cat = StrayCat(user_data)
+    stray_cat.working_memory.user_message_json = {"user_id": user_data.id, "text": "meow"}
     yield stray_cat
 
 # autouse fixture will be applied to *all* the tests

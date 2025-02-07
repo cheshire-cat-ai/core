@@ -4,7 +4,6 @@
 
 from abc import ABC, abstractmethod
 from typing import Tuple, AsyncGenerator
-import asyncio
 from urllib.parse import urlencode
 
 from fastapi import (
@@ -54,11 +53,11 @@ class ConnectionAuth(ABC):
                 protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
-                stray = await self.get_user_stray(user, connection)
+                stray = StrayCat(user)
                 yield stray
 
                 stray.update_working_memory_cache()
-                #del stray
+                del stray
                 return
 
         # if no stray was obtained, raise exception
@@ -66,10 +65,6 @@ class ConnectionAuth(ABC):
 
     @abstractmethod
     def extract_credentials(self, connection: Request | WebSocket) -> Tuple[str] | None:
-        pass
-
-    @abstractmethod
-    async def get_user_stray(self, user: AuthUserInfo, connection: Request | WebSocket) -> StrayCat:
         pass
 
     @abstractmethod
@@ -108,15 +103,6 @@ class HTTPAuth(ConnectionAuth):
         return user_id, token
 
 
-    async def get_user_stray(self, user: AuthUserInfo, connection: Request) -> StrayCat:
-        event_loop = connection.app.state.event_loop
-
-        return StrayCat(
-                # TODOV2: user_id should be the user.id
-            user_id=user.name, user_data=user, main_loop=event_loop
-        )
-
-
     def not_allowed(self, connection: Request):
         raise HTTPException(status_code=403, detail={"error": "Invalid Credentials"})
     
@@ -137,16 +123,6 @@ class WebSocketAuth(ConnectionAuth):
         token = connection.query_params.get("token", None)
         
         return user_id, token
-    
-
-    async def get_user_stray(self, user: AuthUserInfo, connection: WebSocket) -> StrayCat:
-        event_loop = connection.app.state.event_loop
-        return StrayCat(
-            user_id=user.name, # TODOV2: user_id should be the user.id
-            user_data=user,
-            main_loop=asyncio.get_running_loop(),
-            ws=connection,
-        )
 
     def not_allowed(self, connection: WebSocket):
         raise WebSocketException(code=1004, reason="Invalid Credentials")

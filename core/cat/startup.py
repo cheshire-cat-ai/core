@@ -20,8 +20,8 @@ from cat.routes import (
     auth_handler,
     plugins,
     upload,
-    websocket,
 )
+from cat.routes.websocket import websocket
 from cat.routes.memory.memory_router import memory_router
 from cat.routes.static import admin, static
 from cat.routes.openapi import get_openapi_configuration_function
