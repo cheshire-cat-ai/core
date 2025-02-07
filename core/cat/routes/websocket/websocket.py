@@ -8,18 +8,18 @@ from cat.looking_glass.stray_cat import StrayCat
 
 router = APIRouter()
 
-async def handle_messages(websocket: WebSocket, user_data):
+async def handle_messages(websocket: WebSocket, stray: StrayCat):
 
     while True:
+
         # Receive the next message from the WebSocket.
         user_message = await websocket.receive_json()
-        
-        # Create a new stray for each message received, as it happens for http endpoints
-        stray = StrayCat(user_data)
+
+        # http endpoints may have been called while waiting for a message
+        stray.load_working_memory_from_cache()
 
         # Run the `stray` object's method in a threadpool since it might be a CPU-bound operation.
         await run_in_threadpool(stray.run, user_message, return_message=False)
-        #del stray
 
 
 @router.websocket("/ws")
@@ -29,23 +29,21 @@ async def websocket_endpoint(
     stray=Depends(WebSocketAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ):
 
-    # keep reference to user but drop the stray
-    # (working memory is stored in cache so it's not lost)
-    user_data = stray.user_data
-
-    websocket_manager = websocket.scope["app"].state.websocket_manager
 
     # Establish connection
     await websocket.accept()
 
     # Add the new WebSocket connection to the manager.
-    websocket_manager.add_connection(user_data.name, websocket) # TODOV2: use id
+    websocket_manager = websocket.scope["app"].state.websocket_manager
+    websocket_manager.add_connection(stray.user_id, websocket)
 
     try:
         # Process messages
-        await handle_messages(websocket, user_data)
+        await handle_messages(websocket, stray)
     except WebSocketDisconnect:
+        
+        # stray's working memory in this scope has not been updated
+        stray.load_working_memory_from_cache()
+        
         # Remove connection on disconnect
-        #stray = StrayCat(user_data)
-        #stray.update_working_memory_cache()
-        websocket_manager.remove_connection(user_data.name) # TODOV2: use id
+        websocket_manager.remove_connection(stray.user_id)

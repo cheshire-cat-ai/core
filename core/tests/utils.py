@@ -9,10 +9,13 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
         url += "?" + urlencode(query_params)
 
     with client.websocket_connect(url) as websocket:
-        # send ws message
-        websocket.send_json(msg)
-        # get reply
-        reply = websocket.receive_json()
+        try:
+            # send ws message
+            websocket.send_json(msg)
+            # get reply
+            reply = websocket.receive_json()
+        finally:
+            print("Exiting the with block, connection should be closed.")
 
     return reply
 

@@ -92,13 +92,13 @@ class StrayCat:
     
     def load_working_memory_from_cache(self):
         """Load the working memory from the cache."""
-        log.critical(f"GET {self.user_id}")
+        
         self.working_memory = \
             self.cache.get_value(f"{self.user_id}_working_memory") or WorkingMemory()
 
     def update_working_memory_cache(self):
         """Update the working memory in the cache."""
-        log.critical(f"SAVE {self.user_id}")
+
         updated_cache_item = CacheItem(f"{self.user_id}_working_memory", self.working_memory, -1)
         self.cache.insert(updated_cache_item)
 

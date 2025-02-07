@@ -41,14 +41,23 @@ def check_correct_websocket_reply(reply):
             assert isinstance(mi["reply"], list)
             assert isinstance(mi["reply"][0], float)
             assert mi["source"] == "recall"
-        
+
+
+def test_websocket_no_connections(client):
+
+    # no ws 
+    assert client.app.state.websocket_manager.connections == {}
 
 
 def test_websocket(client):
+    
     # send websocket message
     res = send_websocket_message({"text": "It's late! It's late"}, client)
 
     check_correct_websocket_reply(res)
+
+    # websocket connection is closed
+    assert client.app.state.websocket_manager.connections == {}
 
 
 def test_websocket_multiple_messages(client):
@@ -57,6 +66,9 @@ def test_websocket_multiple_messages(client):
 
     for res in replies:
         check_correct_websocket_reply(res)
+
+    # websocket connection is closed
+    assert client.app.state.websocket_manager.connections == {}
 
 
 
