@@ -228,7 +228,6 @@ class StrayCat:
         recall_query_embedding = self.embedder.embed_query(recall_query)
         self.working_memory.recall_query = recall_query
 
-        print("...............embed done")
         # keep track of embedder model usage
         self.working_memory.model_interactions.append(
             EmbedderModelInteraction(
@@ -238,12 +237,8 @@ class StrayCat:
             )
         )
 
-        print("...............model interaction done")
-
         # hook to do something before recall begins
         self.mad_hatter.execute_hook("before_cat_recalls_memories", cat=self)
-
-        print("...............hook done")
 
         # Setting default recall configs for each memory
         # TODO: can these data structures become instances of a RecallSettings class?
@@ -300,11 +295,9 @@ class StrayCat:
                 self.working_memory, memory_key, memories
             )  # self.working_memory.procedural_memories = ...
 
-        print("...............qdrant done")
-
         # hook to modify/enrich retrieved memories
         self.mad_hatter.execute_hook("after_cat_recalls_memories", cat=self)
-        print("...............recall done")
+
 
     def llm(self, prompt: str, stream: bool = False) -> str:
         """Generate a response using the LLM model.
@@ -432,8 +425,6 @@ class StrayCat:
                 "description": err_message,
             }
 
-        print("...............start agent")
-
         # reply with agent
         try:
             agent_output: AgentOutput = self.main_agent.execute(self)
@@ -457,8 +448,6 @@ class StrayCat:
 
         log.info("Agent output returned to stray:")
         log.info(agent_output)
-
-        print("...............done agent")
 
         self._store_user_message_in_episodic_memory(
             self.working_memory.user_message_json.text
