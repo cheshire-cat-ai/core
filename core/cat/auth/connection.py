@@ -53,9 +53,13 @@ class ConnectionAuth(ABC):
                 protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
+                # create new stray
                 stray = StrayCat(user)
+                
+                # stray is passed to the endpoint
                 yield stray
 
+                # save working memory and delete stray after endpoint execution
                 stray.update_working_memory_cache()
                 del stray
                 return

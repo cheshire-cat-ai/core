@@ -19,7 +19,7 @@ async def handle_messages(websocket: WebSocket, user_data):
 
         # Run the `stray` object's method in a threadpool since it might be a CPU-bound operation.
         await run_in_threadpool(stray.run, user_message, return_message=False)
-        del stray
+        #del stray
 
 
 @router.websocket("/ws")
@@ -32,7 +32,6 @@ async def websocket_endpoint(
     # keep reference to user but drop the stray
     # (working memory is stored in cache so it's not lost)
     user_data = stray.user_data
-    del stray
 
     websocket_manager = websocket.scope["app"].state.websocket_manager
 
@@ -47,4 +46,6 @@ async def websocket_endpoint(
         await handle_messages(websocket, user_data)
     except WebSocketDisconnect:
         # Remove connection on disconnect
+        #stray = StrayCat(user_data)
+        #stray.update_working_memory_cache()
         websocket_manager.remove_connection(user_data.name) # TODOV2: use id
