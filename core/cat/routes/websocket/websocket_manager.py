@@ -1,9 +1,6 @@
 from fastapi import WebSocket
 
-from cat.log import log
-from cat.utils import singleton
 
-@singleton
 class WebsocketManager:
 
     def __init__(self):

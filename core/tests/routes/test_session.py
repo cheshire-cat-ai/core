@@ -1,5 +1,3 @@
-import os
-import time
 import pytest
 from cat.memory.working_memory import WorkingMemory
 
@@ -110,7 +108,6 @@ def test_session_sync_between_protocols(client):
 def test_session_sync_while_websocket_is_open(client):
     
     mex = {"text": "Oh dear!"}
-    start_time = time.time()
 
     # keep open a websocket connection
     with client.websocket_connect("/ws/Alice") as websocket:
@@ -119,36 +116,30 @@ def test_session_sync_while_websocket_is_open(client):
         # get reply
         res = websocket.receive_json()
 
-        # checks
-        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
-        assert res["user_id"] == "Alice"
-        assert len(wm.history) == 2
-        #del wm
+    # checks
+    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+    assert res["user_id"] == "Alice"
+    assert len(wm.history) == 2
+    #del wm
 
-        print(f"..........WebSocket message sent and received in {time.time() - start_time:.2f} seconds")
-        start_time = time.time()
+    # send another mex via http while ws connection is open
+    res = client.post(
+        "/message",
+        json=mex,
+        headers={"user_id": "Alice"}
+    ).json()
 
-        # send another mex via http while ws connection is open
-        res = client.post(
-            "/message",
-            json=mex,
-            headers={"user_id": "Alice"}
-        ).json()
+    # checks
+    assert res["user_id"] == "Alice"
+    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+    assert len(wm.history) == 4
 
-        print(f"..............HTTP message sent and received in {time.time() - start_time:.2f} seconds")
-        start_time = time.time()
-
-        # checks
-        assert res["user_id"] == "Alice"
-        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
-        assert len(wm.history) == 4
-
-        # clear convo history via http
-        res = client.delete("/memory/conversation_history", headers={"user_id": "Alice"})
-        # checks
-        assert res.status_code == 200
-        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
-        assert len(wm.history) == 0
+    # clear convo history via http
+    res = client.delete("/memory/conversation_history", headers={"user_id": "Alice"})
+    # checks
+    assert res.status_code == 200
+    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+    assert len(wm.history) == 0
 
 
 # TODO: how do we test that:

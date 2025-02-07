@@ -5,10 +5,6 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from fastapi.concurrency import run_in_threadpool
 
 from cat.looking_glass.stray_cat import StrayCat
-from cat.routes.websocket.websocket_manager import WebsocketManager
-
-# handles ws connections
-websocket_manager = WebsocketManager()
 
 router = APIRouter()
 
@@ -37,6 +33,8 @@ async def websocket_endpoint(
     # (working memory is stored in cache so it's not lost)
     user_data = stray.user_data
     del stray
+
+    websocket_manager = websocket.scope["app"].state.websocket_manager
 
     # Establish connection
     await websocket.accept()

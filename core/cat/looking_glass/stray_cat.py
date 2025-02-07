@@ -6,7 +6,6 @@ import tiktoken
 from typing import Literal, get_args, List, Dict, Union, Any
 
 from websockets.exceptions import ConnectionClosedOK
-from fastapi import WebSocket
 
 from langchain.docstore.document import Document
 from langchain_core.messages import BaseMessage, HumanMessage
@@ -19,8 +18,6 @@ from cat.looking_glass.callbacks import NewTokenHandler, ModelInteractionHandler
 from cat.memory.working_memory import WorkingMemory
 from cat.convo.messages import CatMessage, UserMessage, MessageWhy, EmbedderModelInteraction
 from cat.agents import AgentOutput
-from cat.auth.permissions import AuthUserInfo
-from cat.routes.websocket.websocket_manager import WebsocketManager
 from cat.cache.cache_item import CacheItem
 from cat import utils
 from cat.log import log
@@ -51,16 +48,16 @@ class StrayCat:
         # Run the corutine in the main event loop in the main thread
         # and wait for the result
 
-        ws_connection = WebsocketManager().get_connection(self.user_id)
+        app = CheshireCat().fastapi_app
+        ws_manager = app.state.websocket_manager
+        ws_connection = ws_manager.get_connection(self.user_id)
         if not ws_connection:
             log.info(f"No websocket connection is open for user {self.user_id}")
             return
-        
-        main_loop = CheshireCat().fastapi_app.state.event_loop
 
         asyncio.run_coroutine_threadsafe(
             ws_connection.send_json(data),
-            main_loop,
+            app.state.event_loop,
         ).result()
 
     def __build_why(self) -> MessageWhy:

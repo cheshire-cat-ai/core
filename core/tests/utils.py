@@ -11,10 +11,8 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
     with client.websocket_connect(url) as websocket:
         # send ws message
         websocket.send_json(msg)
-        print("\n\n----------Just sent message: ", msg)
         # get reply
         reply = websocket.receive_json()
-        print("\n\n----------Got reply: ", reply)
 
     return reply
 
