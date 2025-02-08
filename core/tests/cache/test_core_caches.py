@@ -1,5 +1,4 @@
 import os
-import pickle
 import pytest
 
 from cat.cache.cache_item import CacheItem
