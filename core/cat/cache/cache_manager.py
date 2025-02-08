@@ -1,5 +1,4 @@
 from cat.env import get_env
-from cat.utils import singleton
 
 
 class CacheManager:
