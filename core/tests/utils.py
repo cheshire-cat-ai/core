@@ -15,8 +15,6 @@ def send_websocket_message(msg, client, user_id="user", query_params=None):
         # get reply
         reply = websocket.receive_json()
 
-        websocket.close()
-
     return reply
 
 

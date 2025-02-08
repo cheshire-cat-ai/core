@@ -85,21 +85,22 @@ def test_websocket_multiple_connections(client):
 
         with client.websocket_connect("/ws/Caterpillar") as websocket2:
 
-                # send ws message
-                websocket2.send_json(mex)
-                # get reply
-                reply2 = websocket2.receive_json()
+            # send ws message
+            websocket2.send_json(mex)
+            # get reply
+            reply2 = websocket2.receive_json()
 
-                # two connections open
-                assert set(client.app.state.websocket_manager.connections.keys()) \
-                                == {"Alice", "Caterpillar"}
+            # two connections open
+            ws_users = client.app.state.websocket_manager.connections.keys()
+            assert set(ws_users) == {"Alice", "Caterpillar"}
 
-                websocket2.close()
+        # one connection open
+        time.sleep(0.5)
+        ws_users = client.app.state.websocket_manager.connections.keys()
+        assert set(ws_users) == {"Alice"}
 
         # get reply
         reply = websocket.receive_json()
-
-        websocket.close()
 
     check_correct_websocket_reply(reply)
     check_correct_websocket_reply(reply2)
