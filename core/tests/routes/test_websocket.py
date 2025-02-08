@@ -1,5 +1,4 @@
 import time
-import pytest
 
 from tests.utils import send_websocket_message, send_n_websocket_messages
 
