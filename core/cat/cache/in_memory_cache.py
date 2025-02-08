@@ -13,7 +13,8 @@ class InMemoryCache(BaseCache):
     """
 
     def __init__(self):
-        self.cache = {}
+        self.items = {}
+        self.max_items = 100
 
     def insert(self, cache_item):
         """Insert a key-value pair in the cache.
@@ -24,7 +25,25 @@ class InMemoryCache(BaseCache):
             Cache item to store.
 
         """
-        self.cache[cache_item.key] = cache_item
+
+        # add new item
+        self.items[cache_item.key] = cache_item
+        
+        # clean up cache if it's full
+        if len(self.items) >= self.max_items:
+
+            # sort caches by creation time
+            sorted_items = sorted(
+                self.items.items(),
+                key=lambda x: x[1].created_at,
+            )
+
+            # delete 10% of the oldest items
+            # not efficient, but it's honest work
+            # TODO: index items also by creation date
+            for k, v in sorted_items[:self.max_items//10]:
+                self.delete(k)
+
 
     def get_item(self, key) -> CacheItem:
         """Get the value stored in the cache.
@@ -40,10 +59,10 @@ class InMemoryCache(BaseCache):
             Value stored in the cache.
 
         """
-        item = self.cache.get(key)
+        item = self.items.get(key)
 
         if item and item.is_expired():
-            del self.cache[key]
+            del self.items[key]
             return None
 
         return item
@@ -78,5 +97,5 @@ class InMemoryCache(BaseCache):
             Key to delete the value.
 
         """
-        if key in self.cache:
-            del self.cache[key]
+        if key in self.items:
+            del self.items[key]

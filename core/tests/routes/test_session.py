@@ -9,6 +9,7 @@ from cat.cache.file_system_cache import FileSystemCache
 from tests.utils import send_websocket_message
 
 
+# only valid for in_memory cache
 def test_no_sessions_at_startup(client):
     
     for username in ["admin", "user", "Alice"]:
@@ -162,8 +163,21 @@ def test_session_sync_while_websocket_is_open(client):
     assert len(wm.history) == 0
 
 
+# in_memory cache can store max 100 sessions
+def test_sessions_are_deleted_from_in_memory_cache(client):
+
+    cache = client.app.state.ccat.cache
+    mex = {"text": "Oh dear!"}
+
+    for user_id in range(cache.max_items + 10):
+        send_websocket_message(mex, client, user_id=str(user_id))
+        print(user_id, "------------", len(cache.items))
+        assert len(cache.items) <= cache.max_items
+
+
+        
+
 # TODO: how do we test that:
 # - streaming happens
 # - hooks receive the correct session
-# - sessions do not stay in memory forever
 

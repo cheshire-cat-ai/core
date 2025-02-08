@@ -3,7 +3,7 @@ import time
 
 class CacheItem:
     
-    def __init__(self, key, value, ttl):
+    def __init__(self, key, value, ttl=None):
         self.key = key
         self.value = value
         self.ttl = ttl
