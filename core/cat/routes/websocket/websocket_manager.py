@@ -1,4 +1,4 @@
-from fastapi import WebSocket
+from fastapi.websockets import WebSocket, WebSocketState
 
 
 class WebsocketManager:

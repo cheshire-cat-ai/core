@@ -29,7 +29,6 @@ async def websocket_endpoint(
     stray=Depends(WebSocketAuth(AuthResource.CONVERSATION, AuthPermission.WRITE)),
 ):
 
-
     # Establish connection
     await websocket.accept()
 

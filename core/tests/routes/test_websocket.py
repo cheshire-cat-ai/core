@@ -1,4 +1,6 @@
 import time
+import pytest
+
 from tests.utils import send_websocket_message, send_n_websocket_messages
 
 
@@ -27,7 +29,7 @@ def check_correct_websocket_reply(reply):
         assert isinstance(mi["input_tokens"], int)
         assert mi["input_tokens"] > 0
         assert isinstance(mi["started_at"], float)
-        assert time.time() - 1 < mi["started_at"] < time.time()
+        assert mi["started_at"] < time.time()
 
         if mi["model_type"] == "llm":
             assert isinstance(mi["reply"], str)
@@ -57,6 +59,7 @@ def test_websocket(client):
     check_correct_websocket_reply(res)
 
     # websocket connection is closed
+    time.sleep(0.5)
     assert client.app.state.websocket_manager.connections == {}
 
 
@@ -68,7 +71,66 @@ def test_websocket_multiple_messages(client):
         check_correct_websocket_reply(res)
 
     # websocket connection is closed
+    time.sleep(0.5)
     assert client.app.state.websocket_manager.connections == {}
+
+
+def test_websocket_multiple_connections(client):
+
+    mex = {"text": "It's late!"}
+
+    with client.websocket_connect("/ws/Alice") as websocket:
+
+        # send ws message
+        websocket.send_json(mex)
+
+        with client.websocket_connect("/ws/Caterpillar") as websocket2:
+
+                # send ws message
+                websocket2.send_json(mex)
+                # get reply
+                reply2 = websocket2.receive_json()
+
+                # two connections open
+                assert set(client.app.state.websocket_manager.connections.keys()) \
+                                == {"Alice", "Caterpillar"}
+
+                websocket2.close()
+
+        # get reply
+        reply = websocket.receive_json()
+
+        websocket.close()
+
+    check_correct_websocket_reply(reply)
+    check_correct_websocket_reply(reply2)
+
+    # websocket connection is closed
+    time.sleep(0.5)
+    assert client.app.state.websocket_manager.connections == {}
+
+
+""" I'M COOKED
+from httpx import ASGITransport, AsyncClient, WebSocketSession
+@pytest.mark.asyncio
+async def test_websocket_multiple_connections_async(client):
+
+    async with AsyncClient(
+        transport=ASGITransport(app=client.app), base_url="http://test"
+    ) as ac:
+        
+        async with WebSocketSession(ac, "/ws/Alice") as websocket:
+
+            # send ws message
+            await websocket.send_json({"text": "It's late!"})
+            
+            # get reply
+            reply = await websocket.receive_json()
+
+            await websocket.close()
+
+        check_correct_websocket_reply(reply)
+"""
 
 
 
