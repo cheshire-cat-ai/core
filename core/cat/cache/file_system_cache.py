@@ -3,8 +3,6 @@ import pickle
 from cat.cache.base_cache import BaseCache
 from cat.utils import singleton
 
-
-@singleton
 class FileSystemCache(BaseCache):
     """Cache implementation using the file system.
 

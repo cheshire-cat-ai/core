@@ -1,9 +1,7 @@
 from cat.env import get_env
-
 from cat.utils import singleton
 
 
-@singleton
 class CacheManager:
     """Class to instantiate different cache types."""
 

@@ -1,5 +1,10 @@
+import os
+import time
 import pytest
 from cat.memory.working_memory import WorkingMemory
+from cat.cache.cache_manager import CacheManager
+from cat.cache.in_memory_cache import InMemoryCache
+from cat.cache.file_system_cache import FileSystemCache
 
 from tests.utils import send_websocket_message
 
@@ -73,7 +78,19 @@ def test_session_update(client, protocol):
                 assert "You did not configure" in c.text
 
 
-def test_session_sync_between_protocols(client):
+@pytest.mark.parametrize("cache_type", ["in_memory", "file_system"])
+def test_session_sync_between_protocols(client, cache_type):
+
+    # change cache type (depends on env variables)
+    os.environ["CCAT_CACHE_TYPE"] = cache_type
+    client.app.state.ccat.cache = CacheManager().cache
+
+    if cache_type == "file_system":
+        assert isinstance(client.app.state.ccat.cache, FileSystemCache)
+    elif cache_type == "in_memory":
+        assert isinstance(client.app.state.ccat.cache, InMemoryCache)
+    else:
+        assert False
 
     for message in range(5):
 
@@ -93,6 +110,7 @@ def test_session_sync_between_protocols(client):
         assert "You did not configure" in res["text"]
 
         # verify session
+        time.sleep(0.1) # give time to write file in case of file_system cache
         wm = client.app.state.ccat.cache.get_value("Caterpillar_working_memory")
         assert isinstance(wm, WorkingMemory)
         assert len(wm.history) == int(message + 1) * 2 # user mex + reply
@@ -103,6 +121,9 @@ def test_session_sync_between_protocols(client):
             else:
                 assert c.who == "AI"
                 assert "You did not configure" in c.text
+
+    # restore default env variable for cache
+    del os.environ["CCAT_CACHE_TYPE"]
 
 
 def test_session_sync_while_websocket_is_open(client):
@@ -120,7 +141,6 @@ def test_session_sync_while_websocket_is_open(client):
     wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
     assert res["user_id"] == "Alice"
     assert len(wm.history) == 2
-    #del wm
 
     # send another mex via http while ws connection is open
     res = client.post(

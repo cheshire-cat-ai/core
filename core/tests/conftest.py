@@ -85,9 +85,12 @@ def client(monkeypatch) -> Generator[TestClient, Any, None]:
     
     # clean up tmp files and folders
     clean_up_mocks()
+    
     # env variables
     os.environ["CCAT_DEBUG"] = "false" # do not autoreload
-    os.environ["CCAT_CACHE_DIR"] = "/tmp_test"  # use a different file system cache dir
+    # in case tests setup a file system cache, use a different file system cache dir
+    os.environ["CCAT_CACHE_DIR"] = "/tmp_test"
+
     # monkeypatch classes
     mock_classes(monkeypatch)
     # delete all singletons!!!

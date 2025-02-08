@@ -22,7 +22,7 @@ def get_supported_env_variables():
         "CCAT_HTTPS_PROXY_MODE": False,
         "CCAT_CORS_FORWARDED_ALLOW_IPS": "*",
         "CCAT_CORS_ENABLED": "true",
-        "CCAT_CACHE_TYPE": "file_system",
+        "CCAT_CACHE_TYPE": "in_memory",
         "CCAT_CACHE_DIR": "/tmp",
     }
 
