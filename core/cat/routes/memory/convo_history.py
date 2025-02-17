@@ -14,11 +14,11 @@ router = APIRouter()
 @router.delete("/conversation_history")
 async def wipe_conversation_history(
     request: Request,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete the specified user's conversation history from working memory"""
 
-    stray.working_memory.history = []
+    cat.working_memory.history = []
 
     return {
         "deleted": True,
@@ -29,10 +29,10 @@ async def wipe_conversation_history(
 @router.get("/conversation_history")
 async def get_conversation_history(
     request: Request,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Get the specified user's conversation history from working memory"""
 
-    return {"history": stray.working_memory.history}
+    return {"history": cat.working_memory.history}
 
 
