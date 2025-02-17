@@ -28,6 +28,9 @@ from cat.rabbit_hole import RabbitHole
 from cat.utils import singleton
 from cat import utils
 
+from urllib.parse import urlparse, unquote
+from base64 import b64encode
+
 class Procedure(Protocol):
     name: str
     procedure_type: str  # "tool" or "form"
@@ -143,12 +146,33 @@ class CheshireCat:
         # Obtain configuration and instantiate LLM
         selected_llm_config = crud.get_setting_by_name(name=selected_llm_class)
         try:
+            selected_llm_config["value"]["client_kwargs"] = {"headers": self.generate_basic_auth_header(selected_llm_config["value"]["base_url"])}
             llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
             return llm
         except Exception:
             import traceback
             traceback.print_exc()
             return LLMDefaultConfig.get_llm_from_config({})
+
+    def generate_basic_auth_header(self, url:str) -> dict:
+        # Parse the URL to extract username and password
+        parsed_url = urlparse(url)
+        username = parsed_url.username
+        password = parsed_url.password
+        
+        if username is None or password is None:
+            return {}
+        
+        # Decode URL-encoded username and password
+        username = unquote(username)
+        password = unquote(password)
+            
+        # Create the basic auth string
+        auth_str = f"{username}:{password}"
+        auth_encoded = b64encode(auth_str.encode()).decode()
+        
+        # Return the formatted Basic Auth header as a dictionary
+        return {"Authorization": f"Basic {auth_encoded}"}
 
     def load_language_embedder(self) -> embedders.EmbedderSettings:
         """Hook into the  embedder selection.
