@@ -12,11 +12,11 @@ router = APIRouter()
 @router.get("/collections")
 async def get_collections(
     request: Request,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ)
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ)
 ) -> Dict:
     """Get list of available collections"""
     
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
     
     collections_metadata = []
@@ -34,11 +34,11 @@ async def get_collections(
 @router.delete("/collections")
 async def wipe_collections(
     request: Request,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete and create all collections"""
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
 
     to_return = {}
@@ -60,11 +60,11 @@ async def wipe_collections(
 async def wipe_single_collection(
     request: Request,
     collection_id: str,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete and recreate a collection"""
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
     
     if collection_id not in collections:

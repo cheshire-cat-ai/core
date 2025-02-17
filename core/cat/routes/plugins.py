@@ -17,7 +17,7 @@ router = APIRouter()
 async def get_available_plugins(
     request: Request,
     query: str = None,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST),
     # author: str = None, to be activated in case of more granular search
     # tag: str = None, to be activated in case of more granular search
 ) -> Dict:
@@ -81,7 +81,7 @@ async def get_available_plugins(
 async def install_plugin(
     request: Request,
     file: UploadFile,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
 ) -> Dict:
     """Install a new plugin from a zip file"""
 
@@ -116,7 +116,7 @@ async def install_plugin(
 async def install_plugin_from_registry(
     request: Request,
     payload: Dict = Body({"url": "https://github.com/plugin-dev-account/plugin-repo"}),
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
 ) -> Dict:
     """Install a new plugin from registry"""
 
@@ -139,7 +139,7 @@ async def install_plugin_from_registry(
 async def toggle_plugin(
     plugin_id: str,
     request: Request,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.WRITE),
 ) -> Dict:
     """Enable or disable a single plugin"""
 
@@ -161,7 +161,7 @@ async def toggle_plugin(
 @router.get("/settings")
 async def get_plugins_settings(
     request: Request,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
 ) -> Dict:
     """Returns the settings of all the plugins"""
 
@@ -194,7 +194,7 @@ async def get_plugins_settings(
 async def get_plugin_settings(
     request: Request,
     plugin_id: str,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
 ) -> Dict:
     """Returns the settings of a specific plugin"""
 
@@ -221,7 +221,7 @@ async def upsert_plugin_settings(
     request: Request,
     plugin_id: str,
     payload: Dict = Body({"setting_a": "some value", "setting_b": "another value"}),
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.EDIT),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.EDIT),
 ) -> Dict:
     """Updates the settings of a specific plugin"""
 
@@ -254,7 +254,7 @@ async def upsert_plugin_settings(
 async def get_plugin_details(
     plugin_id: str,
     request: Request,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.READ),
 ) -> Dict:
     """Returns information on a single plugin"""
 
@@ -285,7 +285,7 @@ async def get_plugin_details(
 async def delete_plugin(
     plugin_id: str,
     request: Request,
-    stray=check_permissions(AuthResource.PLUGINS, AuthPermission.DELETE),
+    cat=check_permissions(AuthResource.PLUGINS, AuthPermission.DELETE),
 ) -> Dict:
     """Physically remove plugin."""
 

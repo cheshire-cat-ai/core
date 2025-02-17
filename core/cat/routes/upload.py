@@ -22,7 +22,7 @@ from cat.log import log
 
 # TODOV2:
 # - add proper request and response pydantic models
-# - stray.rabbit_hole without passing cat inside the function
+# - cat.rabbit_hole without passing cat inside the function
 # - rabbit_hole methods should receive UploadConfig directly
 
 
@@ -54,7 +54,7 @@ async def upload_file(
         description="Metadata to be stored with each chunk (e.g. author, category, etc.). "
                     "Since we are passing this along side form data, must be a JSON string (use `json.dumps(metadata)`)."
     ),
-    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Upload a file containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -94,7 +94,7 @@ async def upload_file(
     """
 
     # Check the file format is supported
-    admitted_types = stray.rabbit_hole.file_handlers.keys()
+    admitted_types = cat.rabbit_hole.file_handlers.keys()
 
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
@@ -113,8 +113,8 @@ async def upload_file(
     background_tasks.add_task(
         # we deepcopy the file because FastAPI does not keep the file in memory after the response returns to the client
         # https://github.com/tiangolo/fastapi/discussions/10936
-        stray.rabbit_hole.ingest_file,
-        stray,
+        cat.rabbit_hole.ingest_file,
+        cat,
         deepcopy(format_upload_file(file)),
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
@@ -148,7 +148,7 @@ async def upload_files(
         description="Metadata to be stored where each key is the name of a file being uploaded, and the corresponding value is another dictionary containing metadata specific to that file. "
                     "Since we are passing this along side form data, metadata must be a JSON string (use `json.dumps(metadata)`)."
     ),
-    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Batch upload multiple files containing text (.txt, .md, .pdf, etc.). File content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory.
@@ -200,7 +200,7 @@ async def upload_files(
     """
 
     # Check the file format is supported
-    admitted_types = stray.rabbit_hole.file_handlers.keys()
+    admitted_types = cat.rabbit_hole.file_handlers.keys()
     log.info(f"Uploading {len(files)} files")
 
     response = {}
@@ -224,8 +224,8 @@ async def upload_files(
         background_tasks.add_task(
             # we deepcopy the file because FastAPI does not keep the file in memory after the response returns to the client
             # https://github.com/tiangolo/fastapi/discussions/10936
-            stray.rabbit_hole.ingest_file,
-            stray,
+            cat.rabbit_hole.ingest_file,
+            cat,
             deepcopy(format_upload_file(file)),
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -266,7 +266,7 @@ class UploadURLConfig(BaseModel):
 async def upload_url(
     background_tasks: BackgroundTasks,
     upload_config: UploadURLConfig,
-    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ):
     """Upload a url. Website content will be extracted and segmented into chunks.
     Chunks will be then vectorized and stored into documents memory."""
@@ -284,8 +284,8 @@ async def upload_url(
         if response.status_code == 200:
             # upload file to long term memory, in the background
             background_tasks.add_task(
-                stray.rabbit_hole.ingest_file,
-                stray,
+                cat.rabbit_hole.ingest_file,
+                cat,
                 upload_config.url,
                 **upload_config.model_dump(exclude={"url"})
             )
@@ -307,7 +307,7 @@ async def upload_memory(
     request: Request,
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    stray=check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
 ) -> Dict:
     """Upload a memory json file to the cat memory"""
 
@@ -324,8 +324,8 @@ async def upload_memory(
 
     # Ingest memories in background and notify client
     background_tasks.add_task(
-        stray.rabbit_hole.ingest_memory,
-        stray,
+        cat.rabbit_hole.ingest_memory,
+        cat,
         deepcopy(file)
     )
 
@@ -340,7 +340,7 @@ async def upload_memory(
 @router.get("/allowed-mimetypes")
 async def get_allowed_mimetypes(
     request: Request,
-    stray=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.UPLOAD, AuthPermission.WRITE),
 ) -> Dict:
     """Retrieve the allowed mimetypes that can be ingested by the Rabbit Hole"""
 
