@@ -434,3 +434,7 @@ class Plugin:
     @property
     def endpoints(self):
         return self._endpoints
+    
+    @property
+    def overrides(self):
+        return self._plugin_overrides
