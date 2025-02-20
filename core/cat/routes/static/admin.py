@@ -20,7 +20,7 @@ def mount_admin_spa(cheshire_cat_api):
     @cheshire_cat_api.get("/admin/{page}", include_in_schema=False)
     @cheshire_cat_api.get("/admin/{page}/", include_in_schema=False)
     def get_admin_single_page_app(
-        stray: StrayCat = Depends(
+        cat: StrayCat = Depends(
             CoreFrontendAuth(AuthResource.STATIC, AuthPermission.READ)
         )
     ):

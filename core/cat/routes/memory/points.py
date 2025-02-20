@@ -28,13 +28,13 @@ async def recall_memory_points_from_text(
     request: Request,
     text: str = Query(description="Find memories similar to this text."),
     k: int = Query(default=100, description="How many memories to return."),
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Search k memories similar to given text."""
     log.warning("Deprecated: This endpoint will be removed in the next major version.")
 
     # Embed the query to plot it in the Memory page
-    query_embedding = stray.embedder.embed_query(text)
+    query_embedding = cat.embedder.embed_query(text)
     query = {
         "text": text,
         "vector": query_embedding,
@@ -42,18 +42,18 @@ async def recall_memory_points_from_text(
 
     # Loop over collections and retrieve nearby memories
     collections = list(
-        stray.memory.vectors.collections.keys()
+        cat.memory.vectors.collections.keys()
     )
     recalled = {}
     for c in collections:
         # only episodic collection has users
-        user_id = stray.user_id
+        user_id = cat.user_id
         if c == "episodic":
             user_filter = {"source": user_id}
         else:
             user_filter = None
 
-        memories = stray.memory.vectors.collections[c].recall_memories_from_embedding(
+        memories = cat.memory.vectors.collections[c].recall_memories_from_embedding(
             query_embedding, k=k, metadata=user_filter
         )
 
@@ -70,7 +70,7 @@ async def recall_memory_points_from_text(
         "query": query,
         "vectors": {
             "embedder": str(
-                stray.embedder.__class__.__name__
+                cat.embedder.__class__.__name__
             ),  # TODO: should be the config class name
             "collections": recalled,
         },
@@ -86,7 +86,7 @@ async def recall_memory_points(
                           description="Flat dictionary where each key-value pair represents a filter." 
                                       "The memory points returned will match the specified metadata criteria."
                           ),
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Search k memories similar to given text with specified metadata criteria.
         
@@ -120,7 +120,7 @@ async def recall_memory_points(
     """
 
     # Embed the query to plot it in the Memory page
-    query_embedding = stray.embedder.embed_query(text)
+    query_embedding = cat.embedder.embed_query(text)
     query = {
         "text": text,
         "vector": query_embedding,
@@ -128,18 +128,18 @@ async def recall_memory_points(
 
     # Loop over collections and retrieve nearby memories
     collections = list(
-        stray.memory.vectors.collections.keys()
+        cat.memory.vectors.collections.keys()
     )
     recalled = {}
     for c in collections:
         # only episodic collection has users
-        user_id = stray.user_id
+        user_id = cat.user_id
         if c == "episodic":
             metadata["source"] = user_id
         else:
             metadata.pop("source", None)
 
-        memories = stray.memory.vectors.collections[c].recall_memories_from_embedding(
+        memories = cat.memory.vectors.collections[c].recall_memories_from_embedding(
             query_embedding, k=k, metadata=metadata
         )
 
@@ -156,7 +156,7 @@ async def recall_memory_points(
         "query": query,
         "vectors": {
             "embedder": str(
-                stray.embedder.__class__.__name__
+                cat.embedder.__class__.__name__
             ),  # TODO: should be the config class name
             "collections": recalled,
         },
@@ -168,7 +168,7 @@ async def create_memory_point(
     request: Request,
     collection_id: str,
     point: MemoryPointBase,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.WRITE),
 ) -> MemoryPoint:
     """Create a point in memory"""
 
@@ -178,7 +178,7 @@ async def create_memory_point(
             status_code=400, detail={"error": "Procedural memory is read-only."}
         )
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
@@ -186,12 +186,12 @@ async def create_memory_point(
         )
 
     # embed content
-    embedding = stray.embedder.embed_query(point.content)
+    embedding = cat.embedder.embed_query(point.content)
 
     # ensure source is set
     if not point.metadata.get("source"):
         point.metadata["source"] = (
-            stray.user_id
+            cat.user_id
         )  # this will do also for declarative memory
 
     # ensure when is set
@@ -216,11 +216,11 @@ async def delete_memory_point(
     request: Request,
     collection_id: str,
     point_id: str,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete a specific point in memory"""
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
 
     # check if collection exists
@@ -247,11 +247,11 @@ async def delete_memory_points_by_metadata(
     request: Request,
     collection_id: str,
     metadata: Dict = {},
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.DELETE),
 ) -> Dict:
     """Delete points in memory by filter"""
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     
     # delete points
     vector_memory.collections[collection_id].delete_points_by_metadata_filter(metadata)
@@ -274,7 +274,7 @@ async def get_points_in_collection(
         default=None,
         description="If provided (or not empty string) - skip points with ids less than given `offset`"
     ),
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Retrieve all the points from a single collection
 
@@ -333,7 +333,7 @@ async def get_points_in_collection(
         )
 
     # check if collection exists
-    collections = list(stray.memory.vectors.collections.keys())
+    collections = list(cat.memory.vectors.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
             status_code=400,
@@ -346,7 +346,7 @@ async def get_points_in_collection(
     if offset == "":
         offset = None
     
-    memory_collection = stray.memory.vectors.collections[collection_id]
+    memory_collection = cat.memory.vectors.collections[collection_id]
     points, next_offset = memory_collection.get_all_points(limit=limit, offset=offset)
     
     return {
@@ -363,7 +363,7 @@ async def edit_memory_point(
     collection_id: str,
     point_id: str,
     point: MemoryPointBase,
-    stray: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.EDIT),
+    cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.EDIT),
 ) -> MemoryPoint:
     """Edit a point in memory
 
@@ -409,7 +409,7 @@ async def edit_memory_point(
             status_code=400, detail={"error": "Procedural memory is read-only."}
         )
 
-    vector_memory: VectorMemory = stray.memory.vectors
+    vector_memory: VectorMemory = cat.memory.vectors
     collections = list(vector_memory.collections.keys())
     if collection_id not in collections:
         raise HTTPException(
@@ -424,12 +424,12 @@ async def edit_memory_point(
         )
 
     # embed content
-    embedding = stray.embedder.embed_query(point.content)
+    embedding = cat.embedder.embed_query(point.content)
 
     # ensure source is set
     if not point.metadata.get("source"):
         point.metadata["source"] = (
-            stray.user_id
+            cat.user_id
         )  # this will do also for declarative memory
 
     # ensure when is set

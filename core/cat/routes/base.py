@@ -12,7 +12,7 @@ router = APIRouter()
 # server status
 @router.get("/")
 async def status(
-    stray=check_permissions(AuthResource.STATUS, AuthPermission.READ),
+    cat=check_permissions(AuthResource.STATUS, AuthPermission.READ),
 ) -> Dict:
     """Server status"""
     with open("pyproject.toml", "rb") as f:
@@ -24,9 +24,9 @@ async def status(
 @router.post("/message", response_model=CatMessage)
 async def message_with_cat(
     payload: Dict = Body({"text": "hello!"}),
-    stray=check_permissions(AuthResource.CONVERSATION, AuthPermission.WRITE),
+    cat=check_permissions(AuthResource.CONVERSATION, AuthPermission.WRITE),
 ) -> Dict:
     """Get a response from the Cat"""
-    user_message_json = {"user_id": stray.user_id, **payload}
-    answer = await run_in_threadpool(stray.run, user_message_json, True)
+    user_message_json = {"user_id": cat.user_id, **payload}
+    answer = await run_in_threadpool(cat.run, user_message_json, True)
     return answer
