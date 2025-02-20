@@ -116,13 +116,13 @@ class Plugin:
     # get plugin settings JSON schema
     def settings_schema(self):
         # is "settings_schema" hook defined in the plugin?
-        if "settings_schema" in self._plugin_overrides:
-            return self._plugin_overrides["settings_schema"].function()
+        if "settings_schema" in self.overrides:
+            return self.overrides["settings_schema"].function()
         else:
             # if the "settings_schema" is not defined but
-            # "settings_model" is it get the schema from the model
-            if "settings_model" in self._plugin_overrides:
-                return self._plugin_overrides["settings_model"].function().model_json_schema()
+            # "settings_model" is it gets the schema from the model
+            if "settings_model" in self.overrides:
+                return self.overrides["settings_model"].function().model_json_schema()
 
         # default schema (empty)
         return PluginSettingsModel.model_json_schema()
@@ -130,8 +130,8 @@ class Plugin:
     # get plugin settings Pydantic model
     def settings_model(self):
         # is "settings_model" hook defined in the plugin?
-        if "settings_model" in self._plugin_overrides:
-            return self._plugin_overrides["settings_model"].function()
+        if "settings_model" in self.overrides:
+            return self.overrides["settings_model"].function()
 
         # default schema (empty)
         return PluginSettingsModel
@@ -139,8 +139,8 @@ class Plugin:
     # load plugin settings
     def load_settings(self):
         # is "settings_load" hook defined in the plugin?
-        if "load_settings" in self._plugin_overrides:
-            return self._plugin_overrides["load_settings"].function()
+        if "load_settings" in self.overrides:
+            return self.overrides["load_settings"].function()
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json
@@ -165,8 +165,8 @@ class Plugin:
     # save plugin settings
     def save_settings(self, settings: Dict):
         # is "settings_save" hook defined in the plugin?
-        if "save_settings" in self._plugin_overrides:
-            return self._plugin_overrides["save_settings"].function(settings)
+        if "save_settings" in self.overrides:
+            return self.overrides["save_settings"].function(settings)
 
         # by default, plugin settings are saved inside the plugin folder
         #   in a JSON file called settings.json

@@ -121,6 +121,13 @@ def test_activate_plugin(plugin):
     assert form.ask_confirm is True
 
     # overrides by @plugin decorator
+    assert len(plugin.overrides) == 4
+    assert set(plugin.overrides.keys()) == {
+        "settings_schema",
+        "settings_model",
+        "activated",
+        "deactivated",
+    }
     assert plugin.custom_activation_executed is True
     assert not hasattr(plugin, "custom_deactivation_executed")
 
@@ -132,7 +139,7 @@ def test_deactivate_plugin(plugin):
 
     # deactivate it
     plugin.deactivate()
-    
+
     assert plugin.active is False
 
     # overrides by @plugin decorator
