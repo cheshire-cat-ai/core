@@ -77,3 +77,38 @@ def test_api_key_ws(client):
     # remove CCAT_API_KEY_WS
     del os.environ["CCAT_API_KEY_WS"]
 
+
+def test_all_core_endpoints_secured(secure_client):
+    # using secure_client fixture, so both http and ws keys are set
+
+    open_endpoints = [
+        "/openapi.json",
+        "/auth/login",
+        "/auth/token",
+    ]
+
+    # test all endpoints without using credentials
+    for endpoint in secure_client.app.routes:
+
+        # websocket endpoint
+        if "/ws" in endpoint.path:
+            with pytest.raises(Exception) as e_info:
+                send_websocket_message({"text": "Where do I go?"}, secure_client)
+                assert str(e_info.type.__name__) == "WebSocketDisconnect"
+        # static files http endpoints
+        elif "/admin" in endpoint.path \
+                or "/static" in endpoint.path \
+                or "/core-static" in endpoint.path \
+                or "/docs" in endpoint.path:
+            response = secure_client.get(endpoint.path)
+            assert response.status_code in {200, 404}
+        # REST API http endpoints
+        else:    
+            for verb in endpoint.methods:
+                response = secure_client.request(verb, endpoint.path)
+
+                if endpoint.path in open_endpoints:
+                    assert response.status_code in {200, 400}
+                else:
+                    assert response.status_code == 403
+                print("\t", response.status_code)

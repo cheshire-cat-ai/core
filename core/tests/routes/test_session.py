@@ -171,7 +171,6 @@ def test_sessions_are_deleted_from_in_memory_cache(client):
 
     for user_id in range(cache.max_items + 10):
         send_websocket_message(mex, client, user_id=str(user_id))
-        print(user_id, "------------", len(cache.items))
         assert len(cache.items) <= cache.max_items
 
 

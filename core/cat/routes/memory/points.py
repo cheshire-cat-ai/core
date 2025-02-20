@@ -83,9 +83,9 @@ async def recall_memory_points(
     text: str = Body(description="Find memories similar to this text."),
     k: int = Body(default=100, description="How many memories to return."),
     metadata: Dict = Body(default={}, 
-                          description="Flat dictionary where each key-value pair represents a filter." 
-                                      "The memory points returned will match the specified metadata criteria."
-                          ),
+                        description="Flat dictionary where each key-value pair represents a filter." 
+                                    "The memory points returned will match the specified metadata criteria."
+                        ),
     cat: StrayCat = check_permissions(AuthResource.MEMORY, AuthPermission.READ),
 ) -> Dict:
     """Search k memories similar to given text with specified metadata criteria.

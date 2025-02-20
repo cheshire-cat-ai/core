@@ -1,6 +1,7 @@
 from typing import Dict
 from fastapi import Request, APIRouter, Body, HTTPException
 
+from cat.looking_glass.stray_cat import StrayCat
 from cat.db import crud, models
 from cat.factory.auth_handler import get_auth_handlers_schemas
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
@@ -12,11 +13,11 @@ AUTH_HANDLER_SELECTED_NAME = "auth_handler_selected"
 AUTH_HANDLER_CATEGORY = "auth_handler_factory"
 
 
-@router.get(
-    "/settings",
-    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.LIST)],
-)
-def get_auth_handler_settings(request: Request) -> Dict:
+@router.get("/settings")
+def get_auth_handler_settings(
+    request: Request,
+    cat: StrayCat = check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.LIST),
+) -> Dict:
     """Get the list of the AuthHandlers"""
 
     # get selected AuthHandler
@@ -48,11 +49,12 @@ def get_auth_handler_settings(request: Request) -> Dict:
     }
 
 
-@router.get(
-    "/settings/{auth_handler_name}",
-    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.READ)],
-)
-def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
+@router.get("/settings/{auth_handler_name}")
+def get_auth_handler_setting(
+    request: Request,
+    auth_handler_name: str,
+    cat: StrayCat = check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.READ),
+) -> Dict:
     """Get the settings of a specific AuthHandler"""
 
     AUTH_HANDLER_SCHEMAS = get_auth_handlers_schemas()
@@ -77,14 +79,12 @@ def get_auth_handler_setting(request: Request, auth_handler_name: str) -> Dict:
     return {"name": auth_handler_name, "value": setting, "schema": schema}
 
 
-@router.put(
-    "/settings/{auth_handler_name}",
-    dependencies=[check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.EDIT)],
-)
+@router.put("/settings/{auth_handler_name}")
 def upsert_authenticator_setting(
     request: Request,
     auth_handler_name: str,
     payload: Dict = Body(...),
+    cat: StrayCat = check_permissions(AuthResource.AUTH_HANDLER, AuthPermission.EDIT),
 ) -> Dict:
     """Upsert the settings of a specific AuthHandler"""
 
