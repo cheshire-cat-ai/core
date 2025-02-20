@@ -20,7 +20,7 @@ COPY ./pyproject.toml /app/pyproject.toml
 WORKDIR /app
 RUN pip install -U pip && \
     pip install --no-cache-dir . &&\
-    python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger')"
+    python3 -c "import nltk; nltk.download('punkt');nltk.download('averaged_perceptron_tagger');import tiktoken;tiktoken.get_encoding('cl100k_base')"
 
 ### COPY CAT CODE INSIDE THE CONTAINER (so it can be run standalone) ###
 COPY ./cat /app/cat

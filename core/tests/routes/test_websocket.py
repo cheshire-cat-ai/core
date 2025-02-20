@@ -1,5 +1,4 @@
 import time
-
 from tests.utils import send_websocket_message, send_n_websocket_messages
 
 
@@ -110,27 +109,6 @@ def test_websocket_multiple_connections(client):
     assert client.app.state.websocket_manager.connections == {}
 
 
-""" I'M COOKED
-from httpx import ASGITransport, AsyncClient, WebSocketSession
-@pytest.mark.asyncio
-async def test_websocket_multiple_connections_async(client):
-
-    async with AsyncClient(
-        transport=ASGITransport(app=client.app), base_url="http://test"
-    ) as ac:
-        
-        async with WebSocketSession(ac, "/ws/Alice") as websocket:
-
-            # send ws message
-            await websocket.send_json({"text": "It's late!"})
-            
-            # get reply
-            reply = await websocket.receive_json()
-
-            await websocket.close()
-
-        check_correct_websocket_reply(reply)
-"""
 
 
 

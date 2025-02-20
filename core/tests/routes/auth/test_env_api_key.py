@@ -91,7 +91,6 @@ def test_all_core_endpoints_secured(secure_client):
     # test all endpoints without using credentials
     for endpoint in secure_client.app.routes:
 
-        print(endpoint)
         # websocket endpoint
         if "/ws" in endpoint.path:
             with pytest.raises(Exception) as e_info:
@@ -115,4 +114,3 @@ def test_all_core_endpoints_secured(secure_client):
                     assert response.status_code in {200, 400}
                 else:
                     assert response.status_code == 403
-        print("\t", response.status_code)
