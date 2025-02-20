@@ -1,8 +1,8 @@
-from fastapi import Request, HTTPException
 from fastapi.staticfiles import StaticFiles
+#from fastapi import Request, HTTPException
 
-from cat.auth.connection import HTTPAuth
-from cat.auth.permissions import AuthPermission, AuthResource
+#from cat.auth.connection import HTTPAuth
+#from cat.auth.permissions import AuthPermission, AuthResource
 
 
 # disabling auth for static files at the moment
