@@ -138,27 +138,32 @@ def test_session_sync_while_websocket_is_open(client):
         # get reply
         res = websocket.receive_json()
 
-    # checks
-    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
-    assert res["user_id"] == "Alice"
-    assert len(wm.history) == 2
+        # checks
+        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+        assert res["user_id"] == "Alice"
+        assert len(wm.history) == 2
 
-    # send another mex via http while ws connection is open
-    res = client.post(
-        "/message",
-        json=mex,
-        headers={"user_id": "Alice"}
-    ).json()
+        # send another mex via http while ws connection is open
+        res = client.post(
+            "/message",
+            json=mex,
+            headers={"user_id": "Alice"}
+        ).json()
 
-    # checks
-    assert res["user_id"] == "Alice"
-    wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
-    assert len(wm.history) == 4
+        # checks
+        assert res["user_id"] == "Alice"
+        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+        assert len(wm.history) == 4
 
-    # clear convo history via http
-    res = client.delete("/memory/conversation_history", headers={"user_id": "Alice"})
-    # checks
-    assert res.status_code == 200
+        # clear convo history via http while nw connection is open
+        res = client.delete("/memory/conversation_history", headers={"user_id": "Alice"})
+        # checks
+        assert res.status_code == 200
+        wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+        assert len(wm.history) == 0
+
+    # at connection closed, rerun checks
+    time.sleep(0.5)
     wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
     assert len(wm.history) == 0
 

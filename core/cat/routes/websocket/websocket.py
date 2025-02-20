@@ -1,10 +1,11 @@
-
-from cat.auth.permissions import AuthPermission, AuthResource
-from cat.auth.connection import WebSocketAuth
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from fastapi.concurrency import run_in_threadpool
 
+
+from cat.auth.permissions import AuthPermission, AuthResource
+from cat.auth.connection import WebSocketAuth
 from cat.looking_glass.stray_cat import StrayCat
+from cat.log import log
 
 router = APIRouter()
 
@@ -40,9 +41,11 @@ async def websocket_endpoint(
         # Process messages
         await handle_messages(websocket, cat)
     except WebSocketDisconnect:
+        log.warning(f"WebSocket connection closed for user {cat.user_id}")
+    finally:
         
         # cat's working memory in this scope has not been updated
-        cat.load_working_memory_from_cache()
+        #cat.load_working_memory_from_cache()
         
         # Remove connection on disconnect
         websocket_manager.remove_connection(cat.user_id)
