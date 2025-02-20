@@ -85,21 +85,25 @@ def test_all_core_endpoints_secured(secure_client):
         "/openapi.json",
         "/auth/login",
         "/auth/token",
+        "/docs",
     ]
 
     # test all endpoints without using credentials
     for endpoint in secure_client.app.routes:
 
+        print(endpoint)
         # websocket endpoint
         if "/ws" in endpoint.path:
             with pytest.raises(Exception) as e_info:
                 send_websocket_message({"text": "Where do I go?"}, secure_client)
                 assert str(e_info.type.__name__) == "WebSocketDisconnect"
-        # static files http endpoints
-        elif "/admin" in endpoint.path \
-                or "/static" in endpoint.path \
-                or "/core-static" in endpoint.path \
-                or "/docs" in endpoint.path:
+        # static admin files (redirect to login)
+        elif "/admin" in endpoint.path:
+            response = secure_client.get(endpoint.path, follow_redirects=False)
+            assert response.status_code == 307            
+        # static files http endpoints (open)
+        elif "/static" in endpoint.path \
+                or "/core-static" in endpoint.path:
             response = secure_client.get(endpoint.path)
             assert response.status_code in {200, 404}
         # REST API http endpoints
@@ -111,4 +115,4 @@ def test_all_core_endpoints_secured(secure_client):
                     assert response.status_code in {200, 400}
                 else:
                     assert response.status_code == 403
-                print("\t", response.status_code)
+        print("\t", response.status_code)
