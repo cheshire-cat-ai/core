@@ -72,7 +72,7 @@ class AuthUserInfo(BaseModelDict):
 
 def check_permissions(resource: AuthResource, permission: AuthPermission):
     """
-    Helper function to inject stray into endpoints after checking for required permissions.
+    Helper function to inject a StrayCat into endpoints after checking for required permissions.
 
     Parameters
     ----------
@@ -83,7 +83,7 @@ def check_permissions(resource: AuthResource, permission: AuthPermission):
 
     Returns
     ----------
-    stray: StrayCat | None
+    cat: StrayCat | None
         User session object if auth is successfull, None otherwise.
     """
 

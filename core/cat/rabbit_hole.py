@@ -39,7 +39,7 @@ class RabbitHole:
             "text/html": BS4HTMLParser(),
         }
 
-        # no access to stray
+        # no access to StrayCat yet
         self.__file_handlers = self.__cat.mad_hatter.execute_hook(
             "rabbithole_instantiates_parsers", self.__file_handlers, cat=self.__cat
         )
@@ -55,14 +55,14 @@ class RabbitHole:
             strip_whitespace=True,
         )
 
-        # no access to stray
+        # no access to StrayCat yet
         self.__text_splitter = self.__cat.mad_hatter.execute_hook(
             "rabbithole_instantiates_splitter", self.__text_splitter, cat=self.__cat
         )
 
     def ingest_memory(
             self,
-            stray,
+            cat,
             file: UploadFile
         ):
         """Upload memories to the declarative memory from a JSON file.
@@ -89,7 +89,7 @@ class RabbitHole:
 
         # Check the embedder used for the uploaded memories is the same the Cat is using now
         upload_embedder = memories["embedder"]
-        cat_embedder = str(stray.embedder.__class__.__name__)
+        cat_embedder = str(cat.embedder.__class__.__name__)
 
         if upload_embedder != cat_embedder:
             message = f"Embedder mismatch: file embedder {upload_embedder} is different from {cat_embedder}"
@@ -109,7 +109,7 @@ class RabbitHole:
         log.info(f"Preparing to load {len(vectors)} vector memories")
 
         # Check embedding size is correct
-        embedder_size = stray.memory.vectors.declarative.embedder_size
+        embedder_size = cat.memory.vectors.declarative.embedder_size
         len_mismatch = [len(v) == embedder_size for v in vectors]
 
         if not any(len_mismatch):
@@ -119,14 +119,14 @@ class RabbitHole:
             raise Exception(message)
 
         # Upsert memories in batch mode # TODO REFACTOR: use VectorMemoryCollection.add_point
-        stray.memory.vectors.vector_db.upsert(
+        cat.memory.vectors.vector_db.upsert(
             collection_name="declarative",
             points=models.Batch(ids=ids, payloads=payloads, vectors=vectors),
         )
 
     def ingest_file(
         self,
-        stray,
+        cat,
         file: Union[str, UploadFile],
         chunk_size: int | None = None,
         chunk_overlap: int | None = None,
@@ -161,7 +161,7 @@ class RabbitHole:
 
         # split file into a list of docs
         docs = self.file_to_docs(
-            stray=stray,
+            cat=cat,
             file=file,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap
@@ -173,11 +173,11 @@ class RabbitHole:
         else:
             filename = file.filename
 
-        self.store_documents(stray=stray, docs=docs, source=filename, metadata=metadata)
+        self.store_documents(cat=cat, docs=docs, source=filename, metadata=metadata)
 
     def file_to_docs(
         self,
-        stray,
+        cat,
         file: Union[str, UploadFile],
         chunk_size: int | None = None,
         chunk_overlap: int | None = None
@@ -246,7 +246,7 @@ class RabbitHole:
         else:
             raise ValueError(f"{type(file)} is not a valid type.")
         return self.string_to_docs(
-            stray=stray,
+            cat=cat,
             file_bytes=file_bytes,
             source=source,
             content_type=content_type,
@@ -256,7 +256,7 @@ class RabbitHole:
 
     def string_to_docs(
         self,
-        stray,
+        cat,
         file_bytes: str,
         source: str = None,
         content_type: str = "text/plain",
@@ -295,15 +295,15 @@ class RabbitHole:
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
 
         # Parse the text
-        stray.send_ws_message(
+        cat.send_ws_message(
             "I'm parsing the content. Big content could require some minutes..."
         )
         super_docs = parser.parse(blob)
 
         # Split
-        stray.send_ws_message("Parsing completed. Now let's go with reading process...")
+        cat.send_ws_message("Parsing completed. Now let's go with reading process...")
         docs = self.__split_text(
-            stray=stray,
+            cat=cat,
             text=super_docs,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -312,7 +312,7 @@ class RabbitHole:
 
     def store_documents(
             self,
-            stray,
+            cat,
             docs: List[Document],
             source: str, # TODOV2: is this necessary?
             metadata: dict = {}
@@ -344,8 +344,8 @@ class RabbitHole:
         log.info(f"Preparing to memorize {len(docs)} vectors")
 
         # hook the docs before they are stored in the vector memory
-        docs = stray.mad_hatter.execute_hook(
-            "before_rabbithole_stores_documents", docs, cat=stray
+        docs = cat.mad_hatter.execute_hook(
+            "before_rabbithole_stores_documents", docs, cat=cat
         )
 
         # classic embed
@@ -357,7 +357,7 @@ class RabbitHole:
                 time_last_notification = time.time()
                 perc_read = int(d / len(docs) * 100)
                 read_message = f"Read {perc_read}% of {source}"
-                stray.send_ws_message(read_message)
+                cat.send_ws_message(read_message)
                 log.warning(read_message)
 
             # add default metadata
@@ -367,13 +367,13 @@ class RabbitHole:
             for k,v in metadata.items():
                 doc.metadata[k] = v
 
-            doc = stray.mad_hatter.execute_hook(
-                "before_rabbithole_insert_memory", doc, cat=stray
+            doc = cat.mad_hatter.execute_hook(
+                "before_rabbithole_insert_memory", doc, cat=cat
             )
             inserting_info = f"{d + 1}/{len(docs)}):    {doc.page_content}"
             if doc.page_content != "":
-                doc_embedding = stray.embedder.embed_documents([doc.page_content])
-                stored_point = stray.memory.vectors.declarative.add_point(
+                doc_embedding = cat.embedder.embed_documents([doc.page_content])
+                stored_point = cat.memory.vectors.declarative.add_point(
                     doc.page_content,
                     doc_embedding[0],
                     doc.metadata,
@@ -388,8 +388,8 @@ class RabbitHole:
             time.sleep(0.05)
 
         # hook the points after they are stored in the vector memory
-        stray.mad_hatter.execute_hook(
-            "after_rabbithole_stored_documents", source, stored_points, cat=stray
+        cat.mad_hatter.execute_hook(
+            "after_rabbithole_stored_documents", source, stored_points, cat=cat
         )
 
         # notify client
@@ -397,11 +397,11 @@ class RabbitHole:
             f"Finished reading {source}, I made {len(docs)} thoughts on it."
         )
 
-        stray.send_ws_message(finished_reading_message)
+        cat.send_ws_message(finished_reading_message)
 
         log.warning(f"Done uploading {source}")
 
-    def __split_text(self, stray, text, chunk_size, chunk_overlap):
+    def __split_text(self, cat, text, chunk_size, chunk_overlap):
         """Split text in overlapped chunks.
 
         This method executes the `rabbithole_splits_text` to split the incoming text in overlapped
@@ -434,8 +434,8 @@ class RabbitHole:
 
         """
         # do something on the text before it is split
-        text = stray.mad_hatter.execute_hook(
-            "before_rabbithole_splits_text", text, cat=stray
+        text = cat.mad_hatter.execute_hook(
+            "before_rabbithole_splits_text", text, cat=cat
         )
 
         # hooks decide the test splitter (see @property .text_splitter)
@@ -455,8 +455,8 @@ class RabbitHole:
         docs = list(filter(lambda d: len(d.page_content) > 10, docs))
 
         # do something on the text after it is split
-        docs = stray.mad_hatter.execute_hook(
-            "after_rabbithole_splitted_text", docs, cat=stray
+        docs = cat.mad_hatter.execute_hook(
+            "after_rabbithole_splitted_text", docs, cat=cat
         )
 
         return docs

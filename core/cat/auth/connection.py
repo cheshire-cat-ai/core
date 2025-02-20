@@ -53,18 +53,18 @@ class ConnectionAuth(ABC):
                 protocol, credential, self.resource, self.permission, user_id=user_id
             )
             if user:
-                # create new stray
-                stray = StrayCat(user)
+                # create new StrayCat
+                cat = StrayCat(user)
                 
-                # stray is passed to the endpoint
-                yield stray
+                # StrayCat is passed to the endpoint
+                yield cat
 
-                # save working memory and delete stray after endpoint execution
-                stray.update_working_memory_cache()
-                del stray
+                # save working memory and delete StrayCat after endpoint execution
+                cat.update_working_memory_cache()
+                del cat
                 return
 
-        # if no stray was obtained, raise exception
+        # if no StrayCat was obtained, raise exception
         self.not_allowed(connection)
 
     @abstractmethod

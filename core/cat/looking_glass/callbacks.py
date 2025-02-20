@@ -7,12 +7,12 @@ import time
 
 
 class NewTokenHandler(BaseCallbackHandler):
-    def __init__(self, stray):
+    def __init__(self, cat):
         # cat could be an instance of CheshireCat or StrayCat
-        self.stray = stray
+        self.cat = cat
 
     def on_llm_new_token(self, token: str, **kwargs) -> None:
-        self.stray.send_ws_message(token, msg_type="chat_token")
+        self.cat.send_ws_message(token, msg_type="chat_token")
 
 
 class ModelInteractionHandler(BaseCallbackHandler):
@@ -20,9 +20,9 @@ class ModelInteractionHandler(BaseCallbackHandler):
     Langchain callback handler for tracking model interactions.
     """
 
-    def __init__(self, stray, source: str):
-        self.stray = stray
-        self.stray.working_memory.model_interactions.append(
+    def __init__(self, cat, source: str):
+        self.cat = cat
+        self.cat.working_memory.model_interactions.append(
             LLMModelInteraction(
                 source=source,
                 prompt="",
@@ -50,4 +50,4 @@ class ModelInteractionHandler(BaseCallbackHandler):
 
     @property
     def last_interaction(self) -> LLMModelInteraction:
-        return self.stray.working_memory.model_interactions[-1]
+        return self.cat.working_memory.model_interactions[-1]

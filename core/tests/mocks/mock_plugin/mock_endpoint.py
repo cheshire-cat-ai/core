@@ -16,7 +16,7 @@ def test_endpoint_prefix():
     return {"result":"endpoint prefix tests"}
 
 @endpoint.get(path="/crud", prefix="/tests", tags=["Tests"])
-def test_get(stray=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST)):
+def test_get(cat=check_permissions(AuthResource.PLUGINS, AuthPermission.LIST)):
     return {"result":"ok", "stray_user_id":stray.user_id}
 
 @endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])

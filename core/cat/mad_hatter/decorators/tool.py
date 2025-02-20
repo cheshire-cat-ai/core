@@ -33,8 +33,8 @@ class CatTool:
     def __repr__(self) -> str:
         return f"CatTool(name={self.name}, return_direct={self.return_direct}, description={self.description})"
 
-    def run(self, input_by_llm: str, stray) -> str:
-        return self.func(input_by_llm, cat=stray)
+    def run(self, input_by_llm: str, cat) -> str:
+        return self.func(input_by_llm, cat=cat)
 
     # override `extra = 'forbid'` for Tool pydantic model in langchain
     class Config:

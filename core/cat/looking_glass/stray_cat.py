@@ -523,7 +523,7 @@ class StrayCat:
                 output=unparsable_llm_output,
             )
 
-        log.info("Agent output returned to stray:")
+        log.info("Agent output returned to StrayCat:")
         log.info(agent_output)
 
         self._store_user_message_in_episodic_memory(

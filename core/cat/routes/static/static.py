@@ -11,10 +11,10 @@ class AuthStatic(StaticFiles):
 
     async def __call__(self, scope, receive, send) -> None:
         request = Request(scope, receive=receive)
-        stray_http_auth = HTTPAuth(
+        http_auth = HTTPAuth(
             resource=AuthResource.STATIC, permission=AuthPermission.READ
         )
-        allowed = stray_http_auth(request)
+        allowed = http_auth(request)
         if allowed:
             await super().__call__(scope, receive, send)
         else:
