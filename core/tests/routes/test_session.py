@@ -179,5 +179,4 @@ def test_sessions_are_deleted_from_in_memory_cache(client):
 
 # TODO: how do we test that:
 # - streaming happens
-# - hooks receive the correct session
 
