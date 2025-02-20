@@ -6,7 +6,7 @@ from langchain_community.embeddings import FakeEmbeddings, FastEmbedEmbeddings
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from fastembed import TextEmbedding
-from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings
+from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings, CustomOllamaEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain_cohere import CohereEmbeddings
 
@@ -64,6 +64,20 @@ class EmbedderOpenAICompatibleConfig(EmbedderSettings):
             "humanReadableName": "OpenAI-compatible API embedder",
             "description": "Configuration for OpenAI-compatible API embeddings",
             "link": "",
+        }
+    )
+
+class EmbedderOllamaConfig(EmbedderSettings):
+    base_url: str
+    model: str = "mxbai-embed-large"
+    _pyclass: Type = CustomOllamaEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Ollama embeddding models",
+            "description": "Configuration for Ollama embeddings API",
+            "link": "",
+            "model": "mxbai-embed-large",
         }
     )
 
@@ -176,6 +190,7 @@ def get_allowed_embedder_models():
         EmbedderCohereConfig,
         EmbedderDumbConfig,
         EmbedderFakeConfig,
+        EmbedderOllamaConfig,
     ]
 
     mad_hatter_instance = MadHatter()
