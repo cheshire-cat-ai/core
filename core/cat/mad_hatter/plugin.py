@@ -87,7 +87,16 @@ class Plugin:
 
         self._active = True
 
+        # run custom activation from @plugin
+        if "activated" in self.overrides:
+            self.overrides["activated"].function(self)
+
     def deactivate(self):
+
+        # run custom deactivation from @plugin
+        if "deactivated" in self.overrides:
+            self.overrides["deactivated"].function(self)
+
         # Remove the imported modules
         for py_file in self.py_files:
             py_filename = py_file.replace("/", ".").replace(".py", "")
@@ -191,7 +200,7 @@ class Plugin:
             settings = model().model_dump_json(indent=4)
 
             # If each field have a default value and the model is correct,
-            # create the settings.json wiht default values
+            # create the settings.json with default values
             with open(settings_file_path, "x") as json_file:
                 json_file.write(settings)
                 log.debug(

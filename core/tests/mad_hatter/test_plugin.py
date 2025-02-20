@@ -122,7 +122,7 @@ def test_activate_plugin(plugin):
 
     # overrides by @plugin decorator
     assert plugin.custom_activation_executed is True
-    assert plugin.custom_deactivation_executed is True
+    assert not hasattr(plugin, "custom_deactivation_executed")
 
 
 def test_deactivate_plugin(plugin):
@@ -132,11 +132,19 @@ def test_deactivate_plugin(plugin):
 
     # deactivate it
     plugin.deactivate()
+    
+    assert plugin.active is False
+
+    # overrides by @plugin decorator
+    assert plugin.custom_activation_executed is True
+    assert plugin.custom_deactivation_executed is True
 
     # decorators
     assert len(plugin.hooks) == 0
     assert len(plugin.tools) == 0
     assert len(plugin.endpoints) == 0
+    assert len(plugin.forms) == 0
+    assert len(plugin.overrides) == 0
     
 
 def test_settings_schema(plugin):
