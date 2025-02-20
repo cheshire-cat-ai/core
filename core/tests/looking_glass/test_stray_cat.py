@@ -33,7 +33,7 @@ def test_stray_nlp(stray_cat):
 def test_stray_call_with_text(stray_cat):
     msg = {"text": "Where do I go?", "user_id": "Alice"}
 
-    reply = stray.__call__(msg)
+    reply = stray_cat.__call__(msg)
 
     assert isinstance(reply, CatMessage)
     assert "You did not configure" in reply.text
@@ -92,7 +92,7 @@ def test_stray_fast_reply_hook(stray_cat):
     fast_reply_msg = "This is a fast reply"
 
     def fast_reply_hook(fast_reply: dict, cat):
-        if user_msg in cat.working_memory.user_message_json.text:
+        if user_msg in stray_cat.working_memory.user_message_json.text:
             fast_reply["output"] = fast_reply_msg
             return fast_reply
 

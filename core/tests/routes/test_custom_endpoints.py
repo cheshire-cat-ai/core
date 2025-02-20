@@ -19,7 +19,7 @@ def test_custom_endpoint_get(client, just_installed_plugin):
     response = client.get("/tests/crud")
     assert response.status_code == 200
     assert response.json()["result"] == "ok"
-    assert response.json()["stray_user_id"] == "user"
+    assert response.json()["user_id"] == "user"
 
 
 def test_custom_endpoint_post(client, just_installed_plugin):
