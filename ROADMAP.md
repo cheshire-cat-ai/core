@@ -6,22 +6,22 @@
  - multiagent apis
  - review clients
  - all endpoints typed
+ - function calling standard
 
 **Version 1.8 (temp)**
 
- - custom endpoints (OK - missing DELETE and PUT decorators)
+ - custom endpoints (OK)
  - stress tests:
    - load testing (OK - https://github.com/lucagobbi/stressed-cat)
-   - benchmark threads vs async/await (PANIK)
 - form & tools
    - model getter (OK)
    - json schema + Pydantic support at choice
 - telemetry
   - anonymous (just unique instance id, country, (n.utenti, info plugin))
-- open issues (see repo, we just clean them out)
+- open issues (OK)
 - community:
-  - real pizza challenge
-  - meow talk
+  - real pizza challenge (MAYBE)
+  - meow talk (YT lives)
 
 * **Version 1.5**
 	* Technical 
