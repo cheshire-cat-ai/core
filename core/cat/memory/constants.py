@@ -1,0 +1,1 @@
+COLLECTION_NAMES = ["episodic", "declarative", "procedural"]
