@@ -30,7 +30,7 @@ async def registry_search_plugins(
                 return response.json()
             else:
                 log.error(
-                    f"Error with registry response {response.status_code}: {response.text}"
+                    f"Error with registry response: {response.status_code} {response.text}"
                 )
                 return []
         else:
@@ -53,12 +53,12 @@ async def registry_search_plugins(
                 return registry_plugins
             else:
                 log.error(
-                    f"Error with registry response {response.status_code}: {response.text}"
+                    f"Error with registry response: {response.status_code} {response.text}"
                 )
                 return []
 
-    except Exception as e:
-        log.error(e)
+    except Exception:
+        log.error("Error with registry")
         return []
 
 

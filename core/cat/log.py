@@ -69,14 +69,7 @@ class CatLogEngine:
         -------
         """
 
-        color = {
-            "DEBUG": "white",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "white",
-        }.get(self.LOG_LEVEL, "green")
-
-        level = f"<level>" + "{level}" + f"</level>"
+        level = "<level>{level}:</level>"
         # time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
         # origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
         message = "<level>{message}</level>"
@@ -88,8 +81,8 @@ class CatLogEngine:
             level=self.LOG_LEVEL,
             colorize=True,
             format=log_format,
-            backtrace=True,
-            diagnose=True,
+            # backtrace=True,
+            # diagnose=True,
             filter=self.show_log_level,
         )
 
@@ -199,7 +192,9 @@ class CatLogEngine:
             Logging level."""
 
         # prettify
-        if type(msg) in [dict, list, str]:  # TODO: should be recursive
+        if isinstance(msg, str):
+            pass
+        elif type(msg) in [dict, list]:  # TODO: should be recursive
             try:
                 msg = json.dumps(msg, indent=4)
             except Exception:
@@ -209,8 +204,8 @@ class CatLogEngine:
 
         # actual log
         lines = msg.split("\n")
-        for l in lines:
-            logger.log(level, l)
+        for line in lines:
+            logger.log(level, line)
 
     def welcome(self):
         """Welcome message in the terminal."""
@@ -232,14 +227,22 @@ class CatLogEngine:
 
 
     def log_examples(self):
-
         """Log examples for the log engine."""
-        for c in [self, "Hello there!", [1, 4, "sdfsf"], {"a": 1, "b": {"c": 2}}]:
+
+        for c in [self, "Hello there!", {"ready", "set", "go"}, [1, 4, "sdfsf"], {"a": 1, "b": {"c": 2}}]:
             self.debug(c)
             self.info(c)
             self.warning(c)
             self.error(c)
             self.critical(c)
+
+        def intentional_error():
+            print(42/0)
+
+        try:
+            intentional_error()
+        except Exception:
+            self.error("This error is just for demonstration purposes.")
             
 
 # logger instance

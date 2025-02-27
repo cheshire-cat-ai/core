@@ -92,8 +92,8 @@ class CoreAuthHandler(BaseAuthHandler):
                         extra=user,
                     )
 
-        except Exception as e:
-            log.error(f"Could not auth user from JWT: {e}")
+        except Exception:
+            log.error("Could not auth user from JWT")
 
         # do not pass
         return None

@@ -146,7 +146,7 @@ def upsert_embedder_setting(
     try:
         ccat.load_memory()
     except Exception as e:
-        log.error(e)
+        log.error("Error while changing embedder")
         crud.delete_settings_by_category(category=EMBEDDER_SELECTED_CATEGORY)
         crud.delete_settings_by_category(category=EMBEDDER_CATEGORY)
 
@@ -171,7 +171,7 @@ def upsert_embedder_setting(
             ccat.load_natural_language()
 
         raise HTTPException(
-            status_code=400, detail={"error": utils.explicit_error_message(e)}
+            status_code=400, detail={"error": utils.explicit_error_message(f"Error while changing embedder: {e}")}
         )
     # recreate tools embeddings
     ccat.mad_hatter.find_plugins()

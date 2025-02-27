@@ -3,7 +3,6 @@ import sys
 import json
 import glob
 import tempfile
-import traceback
 import importlib
 import subprocess
 from typing import Dict, List
@@ -158,7 +157,7 @@ class Plugin:
                     return settings
 
             except Exception as e:
-                log.error(f"Unable to load plugin {self._id} settings: {e}")
+                log.error(f"Unable to load plugin {self._id} settings.")
                 log.warning(self.plugin_specific_error_message())
                 raise e
 
@@ -183,10 +182,9 @@ class Plugin:
             with open(settings_file_path, "w") as json_file:
                 json.dump(updated_settings, json_file, indent=4)
             return updated_settings
-        except Exception as e:
-            log.error(f"Unable to save plugin {self._id} settings: {e}")
+        except Exception:
+            log.error(f"Unable to save plugin {self._id} settings.")
             log.warning(self.plugin_specific_error_message())
-            traceback.print_exc()
             return {}
 
     def _create_settings_from_model(self) -> bool:
@@ -229,7 +227,7 @@ class Plugin:
                 json_file_data = json.load(json_file)
                 json_file.close()
             except Exception:
-                log.info(
+                log.debug(
                     f"Loading plugin {self._path} metadata, defaulting to generated values"
                 )
 
@@ -265,7 +263,7 @@ class Plugin:
                     requirements = read_file.readlines()
 
                 for req in requirements:
-                    log.info(f"Installing requirements for: {self.id}")
+                    log.info(f"Installing requirements for plugin {self.id}")
 
                     # get package name
                     package_name = Requirement(req).name
@@ -274,10 +272,10 @@ class Plugin:
                     if package_name not in installed_packages:
                         filtered_requirements.append(req)
                     else:
-                        log.debug(f"{package_name} is alredy installed")
+                        log.debug(f"{package_name} is already installed")
 
-            except Exception as e:
-                log.error(f"Error during requirements check: {e}, for {self.id}")
+            except Exception:
+                log.error(f"Error during requirements checks for plugin {self.id}")
 
             if len(filtered_requirements) == 0:
                 return
@@ -291,14 +289,14 @@ class Plugin:
                     subprocess.run(
                         ["pip", "install", "--no-cache-dir", "-r", tmp.name], check=True
                     )
-                except subprocess.CalledProcessError as e:
-                    log.error(f"Error during installing {self.id} requirements: {e}")
+                except subprocess.CalledProcessError:
+                    log.error(f"Error while installing plugin {self.id} requirements.")
 
                     # Uninstall the previously installed packages
-                    log.info(f"Uninstalling requirements for: {self.id}")
+                    log.info(f"Uninstalling requirements for plugin {self.id}")
                     subprocess.run(["pip", "uninstall", "-r", tmp.name], check=True)
 
-                    raise Exception(f"Error during {self.id} requirements installation")
+                    raise Exception(f"Error during plugin {self.id} requirements installation")
 
     # lists of hooks and tools
     def _load_decorated_functions(self):
@@ -324,12 +322,11 @@ class Plugin:
                 plugin_overrides += getmembers(
                     plugin_module, self._is_cat_plugin_override
                 )
-            except Exception as e:
+            except Exception:
                 log.error(
-                    f"Error in {py_filename}: {str(e)}. Unable to load plugin {self._id}"
+                    f"Error in {py_filename}. Unable to load plugin {self._id}"
                 )
                 log.warning(self.plugin_specific_error_message())
-                traceback.print_exc()
 
         # clean and enrich instances
         self._hooks = list(map(self._clean_hook, hooks))

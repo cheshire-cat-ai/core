@@ -1,4 +1,3 @@
-import traceback
 import random
 from typing import Dict
 
@@ -57,9 +56,8 @@ class ProceduresAgent(BaseAgent):
                         )
                 return procedures_result
 
-            except Exception as e:
-                log.error(e)
-                traceback.print_exc()
+            except Exception:
+                log.error("Error while executing procedures")
 
         return AgentOutput()
 
@@ -160,10 +158,8 @@ class ProceduresAgent(BaseAgent):
                     # execute form
                     return self.form_agent.execute(cat)
                 
-            except Exception as e:
+            except Exception:
                 log.error(f"Error executing {chosen_procedure.procedure_type} `{chosen_procedure.name}`")
-                log.error(e)
-                traceback.print_exc()
 
         return AgentOutput(output="")
 

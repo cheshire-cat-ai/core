@@ -2,7 +2,6 @@ import os
 import glob
 import shutil
 import inspect
-import traceback
 from copy import deepcopy
 from typing import List, Dict
 
@@ -101,7 +100,8 @@ class MadHatter:
             f"{self.plugins_folder}*/"
         )
 
-        log.info(f"Active Plugins: {self.active_plugins}")
+        log.info("Active Plugins:")
+        log.info(self.active_plugins)
 
         # discover plugins, folder by folder
         for folder in all_plugin_folders:
@@ -128,10 +128,10 @@ class MadHatter:
             plugin = Plugin(plugin_path)
             # if plugin is valid, keep a reference
             self.plugins[plugin.id] = plugin
-        except Exception as e:
+        except Exception:
             # Something happened while loading the plugin.
             # Print the error and go on with the others.
-            log.error(str(e))
+            log.error(f"Error while loading plugin from {plugin_path}")
 
     # Load hooks, tools and forms of the active plugins into MadHatter
     def sync_hooks_tools_and_forms(self):
@@ -237,12 +237,10 @@ class MadHatter:
                         f"Executing {hook.plugin_id}::{hook.name} with priority {hook.priority}"
                     )
                     hook.function(cat=cat)
-                except Exception as e:
+                except Exception:
                     log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
-                    log.error(e)
                     plugin_obj = self.plugins[hook.plugin_id]
                     log.warning(plugin_obj.plugin_specific_error_message())
-                    traceback.print_exc()
             return
 
         # Hook with arguments.
@@ -265,12 +263,10 @@ class MadHatter:
                 # log.debug(f"Hook {hook.plugin_id}::{hook.name} returned {tea_spoon}")
                 if tea_spoon is not None:
                     tea_cup = tea_spoon
-            except Exception as e:
+            except Exception:
                 log.error(f"Error in plugin {hook.plugin_id}::{hook.name}")
-                log.error(e)
                 plugin_obj = self.plugins[hook.plugin_id]
                 log.warning(plugin_obj.plugin_specific_error_message())
-                traceback.print_exc()
 
         # tea_cup has passed through all hooks. Return final output
         return tea_cup

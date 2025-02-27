@@ -98,8 +98,7 @@ JSON must be in this format:
 User said "{user_message}"
 
 JSON:
-{{
-    "exit": """
+"""
 
         # Queries the LLM and check if user is agree or not
         response = self.cat.llm(check_exit_prompt)
@@ -200,17 +199,15 @@ JSON:
     # Extract model informations from user message
     def extract(self):
         prompt = self.extraction_prompt()
-        log.debug(prompt)
 
         json_str = self.cat.llm(prompt)
-
-        log.debug(f"Form JSON after parser:\n{json_str}")
 
         # json parser
         try:
             output_model = parse_json(json_str)
         except Exception as e:
             output_model = {}
+            log.warning("LLM did not produce a valid JSON")
             log.warning(e)
 
         return output_model

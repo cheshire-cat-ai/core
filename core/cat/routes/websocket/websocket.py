@@ -41,7 +41,7 @@ async def websocket_endpoint(
         # Process messages
         await handle_messages(websocket, cat)
     except WebSocketDisconnect:
-        log.warning(f"WebSocket connection closed for user {cat.user_id}")
+        log.info(f"WebSocket connection closed for user {cat.user_id}")
     finally:
         
         # cat's working memory in this scope has not been updated

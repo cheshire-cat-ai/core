@@ -49,7 +49,7 @@ class VectorMemory:
         qdrant_host = get_env("CCAT_QDRANT_HOST")
 
         if not qdrant_host:
-            log.info(f"Qdrant path: {db_path}")
+            log.debug(f"Qdrant path: {db_path}")
             # Qdrant local vector DB client
 
             # reconnect only if it's the first boot and not a reload
