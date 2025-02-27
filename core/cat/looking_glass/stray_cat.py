@@ -631,7 +631,6 @@ Allowed classes are:
 "{sentence}" -> """
 
         response = self.llm(prompt)
-        log.info(response)
 
         # find the closest match and its score with levenshtein distance
         best_label, score = min(

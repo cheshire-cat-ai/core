@@ -101,8 +101,7 @@ class MadHatter:
             f"{self.plugins_folder}*/"
         )
 
-        log.info("ACTIVE PLUGINS:")
-        log.info(self.active_plugins)
+        log.info(f"Active Plugins: {self.active_plugins}")
 
         # discover plugins, folder by folder
         for folder in all_plugin_folders:

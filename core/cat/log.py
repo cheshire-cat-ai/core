@@ -4,6 +4,7 @@ import logging
 import sys
 import inspect
 import json
+import traceback
 from pprint import pformat
 from loguru import logger
 
@@ -36,8 +37,7 @@ class CatLogEngine:
         - `ERROR`
         - `CRITICAL`
 
-    Default to `INFO`.
-
+    Default to `CCAT_LOG_LEVEL` env variable (`INFO`).
     """
 
     def __init__(self):
@@ -69,11 +69,18 @@ class CatLogEngine:
         -------
         """
 
-        time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
-        level = "<level>{level: <6}</level>"
-        origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
+        color = {
+            "DEBUG": "white",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "white",
+        }.get(self.LOG_LEVEL, "green")
+
+        level = f"<level>" + "{level}" + f"</level>"
+        # time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
+        # origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
         message = "<level>{message}</level>"
-        log_format = f"{time} {level} {origin} \n{message}"
+        log_format = f"{level}\t{message}"
 
         logger.remove()
         if self.LOG_LEVEL == "DEBUG":
@@ -177,9 +184,17 @@ class CatLogEngine:
         """Logs an ERROR message"""
         self.log(msg, level="ERROR")
 
+        # Only print the traceback if an exception handler is being executed
+        if sys.exc_info()[0] is not None:
+            traceback.print_exc()
+
     def critical(self, msg):
         """Logs a CRITICAL message"""
         self.log(msg, level="CRITICAL")
+        
+        # Only print the traceback if an exception handler is being executed
+        if sys.exc_info()[0] is not None:
+            traceback.print_exc()
 
     def log(self, msg, level="DEBUG"):
         """Log a message
@@ -191,15 +206,6 @@ class CatLogEngine:
         level : str
             Logging level."""
 
-        (package, module, klass, caller, line) = self.get_caller_info()
-
-        custom_logger = logger.bind(
-            original_name=f"{package}.{module}",
-            original_line=line,
-            original_class=klass,
-            original_caller=caller,
-        )
-
         # prettify
         if type(msg) in [dict, list, str]:  # TODO: should be recursive
             try:
@@ -210,7 +216,9 @@ class CatLogEngine:
             msg = pformat(msg)
 
         # actual log
-        custom_logger.log(level, msg)
+        lines = msg.split("\n")
+        for l in lines:
+            logger.log(level, l)
 
     def welcome(self):
         """Welcome message in the terminal."""
@@ -228,6 +236,19 @@ class CatLogEngine:
         print(f"\n\n{left_margin} Cat REST API:   {cat_address}/docs")
         print(f"{left_margin} Cat ADMIN:      {cat_address}/admin\n\n")
 
+        self.log_examples()
+
+
+    def log_examples(self):
+
+        """Log examples for the log engine."""
+        for c in [self, "Hello there!", [1, 4, "sdfsf"], {"a": 1, "b": {"c": 2}}]:
+            self.debug(c)
+            self.info(c)
+            self.warning(c)
+            self.error(c)
+            self.critical(c)
+            
 
 # logger instance
 log = CatLogEngine()

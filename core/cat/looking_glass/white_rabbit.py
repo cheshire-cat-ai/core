@@ -23,7 +23,7 @@ class WhiteRabbit:
     """
 
     def __init__(self):
-        log.info("Initializing WhiteRabbit...")
+        log.debug("Initializing WhiteRabbit...")
 
         # Where the jobs are stored. We can also use an external db to have persistence
         jobstores = {"default": MemoryJobStore()}
@@ -50,12 +50,12 @@ class WhiteRabbit:
             self._job_ended_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
         )
 
-        log.info("WhiteRabbit: Starting scheduler")
+        log.debug("WhiteRabbit: Starting scheduler")
 
         # Start the scheduler
         try:
             self.scheduler.start()
-            log.info("WhiteRabbit: Scheduler started")
+            log.debug("WhiteRabbit: Scheduler started")
         except Exception as e:
             log.error("WhiteRabbit: Error during scheduler start: ", e)
 
