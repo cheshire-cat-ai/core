@@ -97,7 +97,7 @@ class WorkingMemory(BaseModelDict):
         self.history.append(message)
 
 
-    def stringify_chat_history(self, latest_n: int = 10) -> str:
+    def stringify_chat_history(self, latest_n: int = 20) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
         Useful for retrocompatibility with old non-chat models, and to easily insert convo into a prompt without using dedicated objects and libraries.

@@ -102,7 +102,7 @@ class ProceduresAgent(BaseAgent):
                 for tool in allowed_procedures.values()
             ),
             "tool_names": '"' + '", "'.join(allowed_procedures.keys()) + '"',
-            #"chat_history": cat.stringify_chat_history(),
+            #"chat_history": cat.working_memory.stringify_chat_history(),
             "examples": self.generate_examples(allowed_procedures),
         }
 

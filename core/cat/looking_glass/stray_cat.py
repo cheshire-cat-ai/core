@@ -642,11 +642,11 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
-    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]:
+    def langchainfy_chat_history(self, latest_n: int = 20) -> List[BaseMessage]:
         """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
         return self.working_memory.langchainfy_chat_history(latest_n)
     
-    def stringify_chat_history(self, latest_n: int = 10) -> str:
+    def stringify_chat_history(self, latest_n: int = 20) -> str:
         """Redirects to WorkingMemory.stringify_chat_history. Will be removed from this class in v2."""
         return self.working_memory.stringify_chat_history(latest_n)
 
