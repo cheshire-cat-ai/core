@@ -83,23 +83,15 @@ class CatLogEngine:
         log_format = f"{level}\t{message}"
 
         logger.remove()
-        if self.LOG_LEVEL == "DEBUG":
-            return logger.add(
-                sys.stdout,
-                colorize=True,
-                format=log_format,
-                backtrace=True,
-                diagnose=True,
-                filter=self.show_log_level,
-            )
-        else:
-            return logger.add(
-                sys.stdout,
-                colorize=True,
-                format=log_format,
-                filter=self.show_log_level,
-                level=self.LOG_LEVEL,
-            )
+        logger.add(
+            sys.stdout,
+            level=self.LOG_LEVEL,
+            colorize=True,
+            format=log_format,
+            backtrace=True,
+            diagnose=True,
+            filter=self.show_log_level,
+        )
 
     def get_caller_info(self, skip=3):
         """Get the name of a caller in the format module.class.method.
@@ -236,7 +228,7 @@ class CatLogEngine:
         print(f"\n\n{left_margin} Cat REST API:   {cat_address}/docs")
         print(f"{left_margin} Cat ADMIN:      {cat_address}/admin\n\n")
 
-        self.log_examples()
+        # self.log_examples()
 
 
     def log_examples(self):
