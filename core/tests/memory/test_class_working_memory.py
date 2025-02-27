@@ -3,14 +3,17 @@ from langchain_core.messages import AIMessage, HumanMessage
 from cat.convo.messages import Role, UserMessage, CatMessage
 from cat.memory.working_memory import WorkingMemory
 
-def create_working_memory_with_convo_history():
+def create_working_memory_with_convo_history(turns=1):
     """Utility to create a working memory and populate its convo history."""
 
     working_memory = WorkingMemory()
-    human_message = UserMessage(user_id="123", who="Human", text="Hi")
-    working_memory.update_history(human_message)
-    cat_message = CatMessage(user_id="123", who="AI", text="Meow")
-    working_memory.update_history(cat_message)
+    
+    for i in range(turns):
+        human_message = UserMessage(user_id="123", who="Human", text="Hi")
+        working_memory.update_history(human_message)
+        cat_message = CatMessage(user_id="123", who="AI", text="Meow")
+        working_memory.update_history(cat_message)
+    
     return working_memory
 
 def test_create_working_memory():
@@ -41,6 +44,14 @@ def test_update_history():
     assert wm.history[1].who == "AI"
     assert wm.history[1].role == Role.AI
     assert wm.history[1].text == "Meow"
+
+
+def test_history_max_length():
+
+    wm = create_working_memory_with_convo_history(turns=50)
+
+    # TODO: make it configurable
+    assert len(wm.history) == 20 # current max history length
 
 
 def test_stringify_chat_history():

@@ -6,6 +6,7 @@ from cat.convo.model_interactions import ModelInteraction
 from cat.experimental.form import CatForm
 from cat.utils import BaseModelDict, deprecation_warning
 
+MAX_WORKING_HISTORY_LENGTH = 20
 
 class WorkingMemory(BaseModelDict):
     """
@@ -95,9 +96,10 @@ class WorkingMemory(BaseModelDict):
             The message, must be of type `ConversationMessage` (typically a subclass like `UserMessage` or `CatMessage`).
         """
         self.history.append(message)
+        self.history = self.history[-MAX_WORKING_HISTORY_LENGTH:]
 
 
-    def stringify_chat_history(self, latest_n: int = 20) -> str:
+    def stringify_chat_history(self, latest_n: int = MAX_WORKING_HISTORY_LENGTH) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
         Useful for retrocompatibility with old non-chat models, and to easily insert convo into a prompt without using dedicated objects and libraries.
@@ -121,7 +123,7 @@ class WorkingMemory(BaseModelDict):
 
         return history_string
 
-    def langchainfy_chat_history(self, latest_n: int = 20) -> List[BaseMessage]: 
+    def langchainfy_chat_history(self, latest_n: int = MAX_WORKING_HISTORY_LENGTH) -> List[BaseMessage]: 
         """Convert chat history in working memory to langchain objects.
 
         Parameters
