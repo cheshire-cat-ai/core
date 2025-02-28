@@ -23,7 +23,9 @@ def check_correct_websocket_reply(reply):
     for mi in why["model_interactions"]:
         assert mi["model_type"] in ["llm", "embedder"]
         assert isinstance(mi["source"], str)
-        assert isinstance(mi["prompt"], str)
+        assert isinstance(mi["prompt"], list)
+        for p in mi["prompt"]:
+            assert isinstance(p, str)
         assert isinstance(mi["input_tokens"], int)
         assert mi["input_tokens"] > 0
         assert isinstance(mi["started_at"], float)

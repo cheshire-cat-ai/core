@@ -70,8 +70,8 @@ class LLMCustomConfig(LLMSettings):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "humanReadableName": "Custom LLM",
-            "description": "LLM on a custom endpoint. See docs for examples.",
+            "humanReadableName": "Custom LLM (Deprecated)",
+            "description": "Legacy LLM adapter, you can now have it more custom in a plugin.",
             "link": "https://cheshirecat.ai/custom-large-language-model/",
         }
     )
@@ -312,9 +312,9 @@ def get_allowed_language_models():
         LLMAzureChatOpenAIConfig,
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
+        LLMAnthropicChatConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
-        LLMAnthropicChatConfig
     ]
 
     mad_hatter_instance = MadHatter()

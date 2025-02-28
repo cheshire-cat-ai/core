@@ -50,10 +50,10 @@ class LLMCustom(LLM):
 
         try:
             response_json = requests.post(self.url, json=request_body).json()
-        except Exception as e:
+        except Exception as exc:
             raise ValueError(
                 "Custom LLM endpoint error " "during http POST request"
-            ) from e
+            ) from exc
 
         generated_text = response_json["text"]
 
