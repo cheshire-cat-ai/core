@@ -1,4 +1,4 @@
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, AuthenticationException, AuthorizationException
 
 from cat.memory.constants import COLLECTION_NAMES
 from cat.memory.elasticsearch.vector_memory_collection import VectorMemoryCollectionES
@@ -41,15 +41,20 @@ class VectorMemoryES:
         es_cloud_id = get_env("CCAT_ES_CLOUD_ID")
         es_api_key = get_env("CCAT_ES_API_KEY")
 
-        if es_cloud_id and len(es_cloud_id) > 0:
-            log.info(f"Connecting to Elastic Cloud: {es_cloud_id}")
-            self.vector_db = Elasticsearch(cloud_id=es_cloud_id, api_key=es_api_key)
-        else:
-            host = get_env("CCAT_ES_HOST")
-            port = get_env("CCAT_ES_PORT")
-            log.info(f"Connecting to Elastic Host: {host}:{port}")
-            self.vector_db = Elasticsearch([f"{host}:{port}"], api_key=es_api_key)
-
+        try:
+            if es_cloud_id and len(es_cloud_id) > 0:
+                log.info(f"Connecting to Elastic Cloud: {es_cloud_id}")
+                self.vector_db = Elasticsearch(cloud_id=es_cloud_id, api_key=es_api_key)
+            else:
+                host = get_env("CCAT_ES_HOST")
+                port = get_env("CCAT_ES_PORT")
+                log.info(f"Connecting to Elastic Host: {host}:{port}")
+                self.vector_db = Elasticsearch([f"{host}:{port}"], api_key=es_api_key)
+        except AuthenticationException as err:
+                print(f"Authentication error {err=}, {type(err)=}")
+        except AuthorizationException as err:
+                print(f"Authorization error {err=}, {type(err)=}")
+        log.info(f"Connection established")
 
     def delete_collection(self, collection_name: str):
         """Delete specific vector indexes"""
@@ -59,4 +64,4 @@ class VectorMemoryES:
     def get_collection(self, collection_name: str):
         """Get index info"""
         
-        return self.collections[collection_name].get_collection()
+        return self.collections[collection_name].get()
