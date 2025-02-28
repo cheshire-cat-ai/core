@@ -339,7 +339,10 @@ class Plugin:
     def plugin_specific_error_message(self):
         name = self.manifest.get("name")
         url = self.manifest.get("plugin_url")
-        return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
+
+        if url:
+            return f"To resolve any problem related to {name} plugin, contact the creator using github issue at the link {url}"
+        return f"Error in {name} plugin, contact the creator"
 
     def _deactivate_endpoints(self):
 
