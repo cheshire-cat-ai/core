@@ -164,7 +164,7 @@ class VectorMemoryCollectionES:
             })
         
         status = update_status["result"] if update_status else None
-        print(status)
+        
         if status and status == "completed" or status == "updated":
             # returnign stored point
             return MemoryPoint(
@@ -231,7 +231,6 @@ class VectorMemoryCollectionES:
                     m["_id"],
                 )
             )
-        print(langchain_documents_from_points)
 
         return langchain_documents_from_points
     
