@@ -49,7 +49,6 @@ class ModelInteractionHandler(BaseCallbackHandler):
         # guide here: https://platform.openai.com/docs/guides/vision/calculating-costs#calculating-costs
         messages = prompts[0]
         for m in messages:
-            print("AAAAAAAAAAAAAAA       ", m)
             if isinstance(m.content, str):
                 input_tokens += self._count_tokens(m.content)
                 input_prompt.append(m.content)
