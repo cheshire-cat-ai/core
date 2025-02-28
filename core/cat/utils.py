@@ -296,7 +296,16 @@ def langchain_log_prompt(langchain_prompt, title):
         print(get_colored_text(f"==================== {title} ====================", "green"))
         for m in langchain_prompt.messages:
             print(get_colored_text(type(m).__name__, "green"))
-            print(m.content)
+            if type(m.content) == list:
+                for sub_m in m.content:
+                    if sub_m.get("type") == "text":
+                        print(sub_m["text"])
+                    elif sub_m.get("type") == "image_url":
+                        print("(image)")
+                    else:
+                        print(" -- Could not log content:", sub_m.keys())
+            else:
+                print(m.content)
         print(get_colored_text("========================================", "green"))
     return langchain_prompt
 
