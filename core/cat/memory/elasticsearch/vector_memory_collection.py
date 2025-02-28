@@ -13,7 +13,13 @@ from cat.env import get_env
 from cat.memory.collection_info import CollectionInfo
 from cat.memory.memory_point import MemoryPoint
 
-
+# A little bit of glossary here to help navigate the code:
+# - collection => ES index
+# - point/memory => ES document
+# - vector => dense_vector field in ES document
+# - metadata => metadata field in ES document
+# - page_content => page_content field in ES document
+# - dump => ES snapshot of the specific index on disk
 class VectorMemoryCollectionES:
     def __init__(
         self,
