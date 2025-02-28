@@ -36,11 +36,12 @@ def check_correct_websocket_reply(reply):
             assert mi["output_tokens"] > 0
             assert isinstance(mi["ended_at"], float)
             assert mi["ended_at"] > mi["started_at"]
+            assert mi["source"] == "MemoryAgent.execute"
         else:
             assert mi["model_type"] == "embedder"
             assert isinstance(mi["reply"], list)
             assert isinstance(mi["reply"][0], float)
-            assert mi["source"] == "recall"
+            assert mi["source"] == "StrayCat.recall_relevant_memories_to_working_memory"
 
 
 def test_websocket_no_connections(client):

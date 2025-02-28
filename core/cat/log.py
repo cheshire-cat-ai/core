@@ -2,7 +2,6 @@
 
 import logging
 import sys
-import inspect
 import json
 import traceback
 from pprint import pformat
@@ -85,69 +84,6 @@ class CatLogEngine:
             # diagnose=True,
             filter=self.show_log_level,
         )
-
-    def get_caller_info(self, skip=3):
-        """Get the name of a caller in the format module.class.method.
-
-        Copied from: https://gist.github.com/techtonik/2151727
-
-        Parameters
-        ----------
-        skip :  int
-            Specifies how many levels of stack to skip while getting caller name.
-
-        Returns
-        -------
-        package : str
-            Caller package.
-        module : str
-            Caller module.
-        klass : str
-            Caller classname if one otherwise None.
-        caller : str
-            Caller function or method (if a class exist).
-        line : int
-            The line of the call.
-
-
-        Notes
-        -----
-        skip=1 means "who calls me",
-        skip=2 "who calls my caller" etc.
-
-        An empty string is returned if skipped levels exceed stack height.
-        """
-        stack = inspect.stack()
-        start = 0 + skip
-        if len(stack) < start + 1:
-            return ""
-        parentframe = stack[start][0]
-
-        # module and packagename.
-        module_info = inspect.getmodule(parentframe)
-        if module_info:
-            mod = module_info.__name__.split(".")
-            package = mod[0]
-            module = ".".join(mod[1:])
-
-        # class name.
-        klass = ""
-        if "self" in parentframe.f_locals:
-            klass = parentframe.f_locals["self"].__class__.__name__
-
-        # method or function name.
-        caller = None
-        if parentframe.f_code.co_name != "<module>":  # top level usually
-            caller = parentframe.f_code.co_name
-
-        # call line.
-        line = parentframe.f_lineno
-
-        # Remove reference to frame
-        # See: https://docs.python.org/3/library/inspect.html#the-interpreter-stack
-        del parentframe
-
-        return package, module, klass, caller, line
 
     def __call__(self, msg, level="DEBUG"):
         """Alias of self.log()"""

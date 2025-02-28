@@ -143,7 +143,7 @@ class CheshireCat:
         if selected_llm is None:
             # Return default LLM
             return LLMDefaultConfig.get_llm_from_config({})
-       
+
         # Get LLM factory class
         selected_llm_class = selected_llm["value"]["name"]
         FactoryClass = get_llm_from_name(selected_llm_class)
