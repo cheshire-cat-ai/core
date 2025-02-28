@@ -1,4 +1,5 @@
 
+import os
 import uuid
 from typing import Any, List, Iterable, Mapping, Optional
 
@@ -266,48 +267,43 @@ class VectorMemoryCollectionES:
 
     # dump collection on disk before deleting
     def save_dump(self, folder="dormouse/"):
-        # # only do snapshotting if using remote Qdrant
+        # # only do snapshotting if using remote Elasticsearch
         if not self.db_is_remote():
             return
+        
+        
 
-        # host = self.client._client._host
-        # port = self.client._client._port
+        if os.path.isdir(folder):
+            log.info(f"Directory {folder} exists")
+        else:
+            log.warning(f"Directory {folder} does NOT exists, creating it.")
+            os.mkdir(folder)
 
-        # if os.path.isdir(folder):
-        #     log.info("Directory dormouse exists")
-        # else:
-        #     log.warning("Directory dormouse does NOT exists, creating it.")
-        #     os.mkdir(folder)
+        # create repository if it does not exists yet
+        if not self.client.snapshot.get_repository(repository=folder):
+            self.client.snapshot.create_repository(
+                repository=folder,
+                body={
+                    "type": "fs",
+                    "settings": {
+                        "location": folder,
+                    },
+                },
+            )
 
-        # self.snapshot_info = self.client.create_snapshot(
-        #     collection_name=self.collection_name
-        # )
-        # snapshot_url_in = (
-        #     "http://"
-        #     + str(host)
-        #     + ":"
-        #     + str(port)
-        #     + "/collections/"
-        #     + self.collection_name
-        #     + "/snapshots/"
-        #     + self.snapshot_info.name
-        # )
-        # snapshot_url_out = folder + self.snapshot_info.name
-        # # rename snapshots for a easyer restore in the future
-        # alias = (
-        #     self.client.get_collection_aliases(self.collection_name)
-        #     .aliases[0]
-        #     .alias_name
-        # )
-        # response = requests.get(snapshot_url_in)
-        # open(snapshot_url_out, "wb").write(response.content)
-        # new_name = folder + alias.replace("/", "-") + ".snapshot"
-        # os.rename(snapshot_url_out, new_name)
-        # for s in self.client.list_snapshots(self.collection_name):
-        #     self.client.delete_snapshot(
-        #         collection_name=self.collection_name, snapshot_name=s.name
-        #     )
-        # log.warning(f'Dump "{new_name}" completed')
+        # now create a snapshot of the index
+        self.client.snapshot.create(
+            repository=folder,
+            snapshot=self.collection_name,
+            body={
+                "indices": self.collection_name,
+                "include_global_state": False,
+            },
+        )
+
+        alias = self.embedder_name + "_" + self.collection_name + "_" + str(self.embedder_size)
+
+        log.warning(f'Dump "{alias}" completed')
 
 
     def delete(self):
