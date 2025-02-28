@@ -296,7 +296,7 @@ def langchain_log_prompt(langchain_prompt, title):
         print(get_colored_text(f"===== {title} =====", "green"))
         for m in langchain_prompt.messages:
             print(get_colored_text(type(m).__name__, "green"))
-            if type(m.content) == list:
+            if isinstance(m.content, list):
                 for sub_m in m.content:
                     if sub_m.get("type") == "text":
                         print(sub_m["text"])
