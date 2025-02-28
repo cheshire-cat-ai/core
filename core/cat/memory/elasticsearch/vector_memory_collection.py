@@ -44,7 +44,7 @@ class VectorMemoryCollectionES:
             self.get().config["params"]["vectors"]["size"]
             == self.embedder_size
         )
-        alias = self.embedder_name + "_" + self.collection_name
+        alias = self.embedder_name + "_" + self.collection_name + "_" + str(self.embedder_size)
         if (self.client.indices.exists(index=alias) and same_size):
             log.debug(f'Collection "{self.collection_name}" has the same embedder')
         else:
@@ -96,7 +96,7 @@ class VectorMemoryCollectionES:
 
         self.client.indices.put_alias(
             index=self.collection_name,
-            name=self.embedder_name + "_" + self.collection_name
+            name=self.embedder_name + "_" + self.collection_name + "_" + str(self.embedder_size)
         )
 
 
