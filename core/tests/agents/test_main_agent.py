@@ -18,5 +18,4 @@ def test_execute_main_agent(main_agent, stray):
     assert isinstance(out, AgentOutput)
     assert not out.return_direct
     assert out.intermediate_steps == []
-    assert out.output == \
-        "AI: You did not configure a Language Model. Do it in the settings!"
+    assert "You did not configure" in out.output

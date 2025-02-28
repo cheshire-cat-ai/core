@@ -23,7 +23,7 @@ class WhiteRabbit:
     """
 
     def __init__(self):
-        log.info("Initializing WhiteRabbit...")
+        log.debug("Initializing WhiteRabbit...")
 
         # Where the jobs are stored. We can also use an external db to have persistence
         jobstores = {"default": MemoryJobStore()}
@@ -50,14 +50,14 @@ class WhiteRabbit:
             self._job_ended_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR
         )
 
-        log.info("WhiteRabbit: Starting scheduler")
+        log.debug("WhiteRabbit: Starting scheduler")
 
         # Start the scheduler
         try:
             self.scheduler.start()
-            log.info("WhiteRabbit: Scheduler started")
-        except Exception as e:
-            log.error("WhiteRabbit: Error during scheduler start: ", e)
+            log.debug("WhiteRabbit: Scheduler started")
+        except Exception:
+            log.error("WhiteRabbit: Error during scheduler start")
 
     def _job_ended_listener(self, event):
         """
@@ -132,8 +132,8 @@ class WhiteRabbit:
             self.scheduler.pause_job(job_id)
             log.info(f"WhiteRabbit: paused job {job_id}")
             return True
-        except Exception as e:
-            log.error(f"WhiteRabbit: error during job pause. {e}")
+        except Exception:
+            log.error("WhiteRabbit: error during job pause.")
             return False
 
     def resume_job(self, job_id: str) -> bool:
@@ -154,8 +154,8 @@ class WhiteRabbit:
             self.scheduler.resume_job(job_id)
             log.info(f"WhiteRabbit: resumed job {job_id}")
             return True
-        except Exception as e:
-            log.error(f"WhiteRabbit: error during job resume. {e}")
+        except Exception:
+            log.error("WhiteRabbit: error during job resume.")
             return False
 
     def remove_job(self, job_id: str) -> bool:
@@ -176,8 +176,8 @@ class WhiteRabbit:
             self.scheduler.remove_job(job_id)
             log.info(f"WhiteRabbit: Removed job {job_id}")
             return True
-        except Exception as e:
-            log.error(f"WhiteRabbit: error during job removal. {e}")
+        except Exception:
+            log.error("WhiteRabbit: error during job removal.")
             return False
 
     def schedule_job(

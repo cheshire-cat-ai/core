@@ -72,16 +72,15 @@ class VectorMemoryCollectionQdrant:
         ):
             log.debug(f'Collection "{self.collection_name}" has the same embedder')
         else:
-            log.warning(f'Collection "{self.collection_name}" has different embedder')
+            log.warning(f'Collection "{self.collection_name}" has a different embedder')
             # Memory snapshot saving can be turned off in the .env file with:
             # SAVE_MEMORY_SNAPSHOTS=false
             if get_env("CCAT_SAVE_MEMORY_SNAPSHOTS") == "true":
                 # dump collection on disk before deleting
                 self.save_dump()
-                log.info(f"Dump '{self.collection_name}' completed")
 
             self.client.delete_collection(self.collection_name)
-            log.warning(f"Collection '{self.collection_name}' deleted")
+            log.warning(f'Collection "{self.collection_name}" deleted')
             self.create_collection()
 
     def create_db_collection_if_not_exists(self):
@@ -90,8 +89,8 @@ class VectorMemoryCollectionQdrant:
         for c in collections_response.collections:
             if c.name == self.collection_name:
                 # collection exists. Do nothing
-                log.info(
-                    f"Collection '{self.collection_name}' already present in vector store"
+                log.debug(
+                    f'Collection "{self.collection_name}" already present in vector store'
                 )
                 return
 
@@ -99,7 +98,7 @@ class VectorMemoryCollectionQdrant:
 
     # create collection
     def create_collection(self):
-        log.warning(f"Creating collection '{self.collection_name}' ...")
+        log.warning(f'Creating collection "{self.collection_name}" ...')
         self.client.recreate_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(
@@ -300,9 +299,9 @@ class VectorMemoryCollectionQdrant:
         port = self.client._client._port
 
         if os.path.isdir(folder):
-            log.info("Directory dormouse exists")
+            log.debug("Directory dormouse exists")
         else:
-            log.warning("Directory dormouse does NOT exists, creating it.")
+            log.info("Directory dormouse does NOT exists, creating it.")
             os.mkdir(folder)
 
         self.snapshot_info = self.client.create_snapshot(

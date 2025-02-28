@@ -129,7 +129,6 @@ async def install_plugin_from_registry(
         ccat.mad_hatter.install_plugin(tmp_plugin_path)
     except Exception as e:
         log.error("Could not download plugin form registry")
-        log.error(e)
         raise HTTPException(status_code=500, detail={"error": str(e)})
 
     return {"url": payload["url"], "info": "Plugin is being installed asynchronously"}
@@ -155,6 +154,7 @@ async def toggle_plugin(
         ccat.mad_hatter.toggle_plugin(plugin_id)
         return {"info": f"Plugin {plugin_id} toggled"}
     except Exception as e:
+        log.error(f"Could not toggle plugin {plugin_id}")
         raise HTTPException(status_code=500, detail={"error": str(e)})
 
 
@@ -180,9 +180,9 @@ async def get_plugins_settings(
             settings.append(
                 {"name": plugin.id, "value": plugin_settings, "schema": plugin_schema}
             )
-        except Exception as e:
+        except Exception:
             log.error(
-                f"Error loading {plugin} settings. The result will not contain the settings for this plugin. Error details: {e}"
+                f"Error loading plugin {plugin.id} settings. The result will not contain the settings for this plugin."
             )
 
     return {

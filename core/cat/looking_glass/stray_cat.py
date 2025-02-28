@@ -1,6 +1,5 @@
 import time
 import asyncio
-import traceback
 import tiktoken
 
 from typing import Literal, get_args, List, Dict, Union, Any
@@ -82,7 +81,7 @@ class StrayCat:
         ws_manager = app.state.websocket_manager
         ws_connection = ws_manager.get_connection(self.user_id)
         if not ws_connection:
-            log.info(f"No websocket connection is open for user {self.user_id}")
+            log.debug(f"No websocket connection is open for user {self.user_id}")
             return
 
         asyncio.run_coroutine_threadsafe(
@@ -306,8 +305,9 @@ class StrayCat:
         # keep track of embedder model usage
         self.working_memory.model_interactions.append(
             EmbedderModelInteraction(
-                prompt=recall_query,
-                reply=recall_query_embedding,
+                prompt=[recall_query],
+                source=utils.get_caller_info(skip=1),
+                reply=recall_query_embedding, # TODO: should we avoid storing the embedding?
                 input_tokens=len(tiktoken.get_encoding("cl100k_base").encode(recall_query)),
             )
         )
@@ -407,7 +407,7 @@ class StrayCat:
             callbacks.append(NewTokenHandler(self))
 
         # Add a token counter to the callbacks
-        caller = utils.get_caller_info()
+        caller = utils.get_caller_info(return_short=False)
         callbacks.append(ModelInteractionHandler(self, caller or "StrayCat"))
 
         # here we deal with motherfucking langchain
@@ -490,9 +490,8 @@ class StrayCat:
         #   and store them in working_memory
         try:
             self.recall_relevant_memories_to_working_memory()
-        except Exception as e:
-            log.error(e)
-            traceback.print_exc(e)
+        except Exception:
+            log.error("Error during recall.")
 
             err_message = "An error occurred while recalling relevant memories."
 
@@ -501,7 +500,7 @@ class StrayCat:
                 "name": "VectorMemoryError",
                 "description": err_message,
             }
-
+        
         # reply with agent
         try:
             agent_output: AgentOutput = self.main_agent.execute(self)
@@ -523,7 +522,6 @@ class StrayCat:
                 output=unparsable_llm_output,
             )
 
-        log.info("Agent output returned to StrayCat:")
         log.info(agent_output)
 
         self._store_user_message_in_episodic_memory(
@@ -568,7 +566,6 @@ class StrayCat:
                 self.send_chat_message(cat_message)
         except Exception as e:
             log.error(e)
-            traceback.print_exc()
             if return_message:
                 return {"error": str(e)}
             else:
@@ -631,7 +628,6 @@ Allowed classes are:
 "{sentence}" -> """
 
         response = self.llm(prompt)
-        log.info(response)
 
         # find the closest match and its score with levenshtein distance
         best_label, score = min(
@@ -642,11 +638,11 @@ Allowed classes are:
         # set 0.5 as threshold - let's see if it works properly
         return best_label if score < 0.5 else None
 
-    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]:
+    def langchainfy_chat_history(self, latest_n: int = 20) -> List[BaseMessage]:
         """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
         return self.working_memory.langchainfy_chat_history(latest_n)
     
-    def stringify_chat_history(self, latest_n: int = 10) -> str:
+    def stringify_chat_history(self, latest_n: int = 20) -> str:
         """Redirects to WorkingMemory.stringify_chat_history. Will be removed from this class in v2."""
         return self.working_memory.stringify_chat_history(latest_n)
 

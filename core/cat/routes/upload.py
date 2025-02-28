@@ -201,7 +201,7 @@ async def upload_files(
 
     # Check the file format is supported
     admitted_types = cat.rabbit_hole.file_handlers.keys()
-    log.info(f"Uploading {len(files)} files")
+    log.info(f"Uploading {len(files)} files down the rabbit hole")
 
     response = {}
     metadata_dict = json.loads(metadata)
@@ -209,7 +209,7 @@ async def upload_files(
     for file in files:
         # Get file mime type
         content_type = mimetypes.guess_type(file.filename)[0]
-        log.info(f"Uploaded {file.filename} {content_type} down the rabbit hole")
+        log.info(f"...Uploading {file.filename} {content_type}")
 
         # check if MIME type of uploaded file is supported
         if content_type not in admitted_types:
@@ -296,6 +296,7 @@ async def upload_url(
                 detail={"error": "Invalid URL", "url": upload_config.url},
             )
     except httpx.RequestError as _e:
+        log.error(f"Unable to reach the URL {upload_config.url}")
         raise HTTPException(
             status_code=400,
             detail={"error": "Unable to reach the URL", "url": upload_config.url},
@@ -313,7 +314,7 @@ async def upload_memory(
 
     # Get file mime type
     content_type = mimetypes.guess_type(file.filename)[0]
-    log.info(f"Uploaded {content_type} down the rabbit hole")
+    log.info(f"Uploading {content_type} down the rabbit hole")
     if content_type != "application/json":
         raise HTTPException(
             status_code=400,

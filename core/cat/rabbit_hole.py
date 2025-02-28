@@ -358,7 +358,7 @@ class RabbitHole:
                 perc_read = int(d / len(docs) * 100)
                 read_message = f"Read {perc_read}% of {source}"
                 cat.send_ws_message(read_message)
-                log.warning(read_message)
+                log.info(read_message)
 
             # add default metadata
             doc.metadata["source"] = source
@@ -399,7 +399,7 @@ class RabbitHole:
 
         cat.send_ws_message(finished_reading_message)
 
-        log.warning(f"Done uploading {source}")
+        log.info(f"Done uploading {source}")
 
     def __split_text(self, cat, text, chunk_size, chunk_overlap):
         """Split text in overlapped chunks.

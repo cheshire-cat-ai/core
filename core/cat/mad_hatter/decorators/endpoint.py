@@ -30,16 +30,17 @@ class CustomEndpoint:
 
     def activate(self, cheshire_cat_api):
 
-        log.info(f"Activating custom endpoint {self.methods} {self.name}")
 
         self.cheshire_cat_api = cheshire_cat_api
 
         # Set the fastapi api_route into the Custom Endpoint
         for api_route in self.cheshire_cat_api.routes:
             if api_route.path == self.name and api_route.methods == self.methods:
-                log.info(f"There is already an active {self.methods} endpoint with path {self.name}")
+                log.warning(f"There is already an active {self.methods} endpoint with path {self.name}")
                 return
 
+        log.info(f"Activating custom endpoint {self.methods} {self.name}")
+        
         plugins_router = APIRouter()
         plugins_router.add_api_route(
             path=self.path,
@@ -51,8 +52,8 @@ class CustomEndpoint:
 
         try:
             self.cheshire_cat_api.include_router(plugins_router, prefix=self.prefix)
-        except BaseException as e:
-            log.error(f"Error activating custom endpoint [{self.methods} {self.name}]: {e}")
+        except Exception:
+            log.error(f"Error activating custom endpoint {self.methods} {self.name}")
             return
 
         self.cheshire_cat_api.openapi_schema = None  # Flush the cache of openapi schema

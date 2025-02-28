@@ -13,10 +13,10 @@ class LLMDefault(LLM):
         return ""
 
     def _call(self, prompt, stop=None):
-        return "AI: You did not configure a Language Model. " "Do it in the settings!"
+        return "You did not configure a Language Model. " "Do it in the settings!"
 
     async def _acall(self, prompt, stop=None):
-        return "AI: You did not configure a Language Model. " "Do it in the settings!"
+        return "You did not configure a Language Model. " "Do it in the settings!"
 
 
 # elaborated from

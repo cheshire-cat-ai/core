@@ -1,4 +1,3 @@
-import traceback
 from cat.experimental.form import CatFormState
 from cat.agents import BaseAgent, AgentOutput
 from cat.log import log
@@ -29,9 +28,8 @@ class FormAgent(BaseAgent):
                     ]
                 )
 
-            except Exception as e:
-                log.error(e)
-                traceback.print_exc()
+            except Exception:
+                log.error("Error while executing form")
                 return AgentOutput()
     
         

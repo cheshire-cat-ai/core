@@ -1,4 +1,3 @@
-import traceback
 import random
 from typing import Dict
 
@@ -57,9 +56,8 @@ class ProceduresAgent(BaseAgent):
                         )
                 return procedures_result
 
-            except Exception as e:
-                log.error(e)
-                traceback.print_exc()
+            except Exception:
+                log.error("Error while executing procedures")
 
         return AgentOutput()
 
@@ -102,7 +100,7 @@ class ProceduresAgent(BaseAgent):
                 for tool in allowed_procedures.values()
             ),
             "tool_names": '"' + '", "'.join(allowed_procedures.keys()) + '"',
-            #"chat_history": cat.stringify_chat_history(),
+            #"chat_history": cat.working_memory.stringify_chat_history(),
             "examples": self.generate_examples(allowed_procedures),
         }
 
@@ -130,7 +128,9 @@ class ProceduresAgent(BaseAgent):
 
         llm_action: LLMAction = chain.invoke(
             prompt_variables,
-            config=RunnableConfig(callbacks=[ModelInteractionHandler(cat, self.__class__.__name__)])
+            config=RunnableConfig(callbacks=[
+                ModelInteractionHandler(cat, utils.get_caller_info(skip=1))
+            ])
         )
 
         return llm_action
@@ -160,10 +160,8 @@ class ProceduresAgent(BaseAgent):
                     # execute form
                     return self.form_agent.execute(cat)
                 
-            except Exception as e:
+            except Exception:
                 log.error(f"Error executing {chosen_procedure.procedure_type} `{chosen_procedure.name}`")
-                log.error(e)
-                traceback.print_exc()
 
         return AgentOutput(output="")
 

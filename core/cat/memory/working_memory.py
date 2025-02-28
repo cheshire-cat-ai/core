@@ -6,6 +6,7 @@ from cat.convo.model_interactions import ModelInteraction
 from cat.experimental.form import CatForm
 from cat.utils import BaseModelDict, deprecation_warning
 
+MAX_WORKING_HISTORY_LENGTH = 20
 
 class WorkingMemory(BaseModelDict):
     """
@@ -13,7 +14,7 @@ class WorkingMemory(BaseModelDict):
 
     Attributes
     ----------
-    history : List[HistoryMessage]
+    history : List[ConversationMessage]
         A list that maintains the conversation history between the Human and the AI.
     user_message_json : Optional[UserMessage], default=None
         An optional UserMessage object representing the last user message.
@@ -95,9 +96,10 @@ class WorkingMemory(BaseModelDict):
             The message, must be of type `ConversationMessage` (typically a subclass like `UserMessage` or `CatMessage`).
         """
         self.history.append(message)
-      
+        self.history = self.history[-MAX_WORKING_HISTORY_LENGTH:]
 
-    def stringify_chat_history(self, latest_n: int = 10) -> str:
+
+    def stringify_chat_history(self, latest_n: int = MAX_WORKING_HISTORY_LENGTH) -> str:
         """Serialize chat history.
         Converts to text the recent conversation turns.
         Useful for retrocompatibility with old non-chat models, and to easily insert convo into a prompt without using dedicated objects and libraries.
@@ -121,7 +123,7 @@ class WorkingMemory(BaseModelDict):
 
         return history_string
 
-    def langchainfy_chat_history(self, latest_n: int = 10) -> List[BaseMessage]: 
+    def langchainfy_chat_history(self, latest_n: int = MAX_WORKING_HISTORY_LENGTH) -> List[BaseMessage]: 
         """Convert chat history in working memory to langchain objects.
 
         Parameters
@@ -134,8 +136,8 @@ class WorkingMemory(BaseModelDict):
         history : List[BaseMessage]
             List of langchain HumanMessage / AIMessage.
         """
-        chat_history = self.history[-latest_n:]
-        recent_history = chat_history[-latest_n:]
+        
+        recent_history = self.history[-latest_n:]
         langchain_chat_history = []
 
         for message in recent_history:

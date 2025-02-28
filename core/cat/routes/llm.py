@@ -133,7 +133,7 @@ def upsert_llm_setting(
     try:
         ccat.load_memory()
     except Exception as e:
-        log.error(e)
+        log.error("Error while changing LLM")
         crud.delete_settings_by_category(category=LLM_SELECTED_CATEGORY)
         crud.delete_settings_by_category(category=LLM_CATEGORY)
         raise HTTPException(

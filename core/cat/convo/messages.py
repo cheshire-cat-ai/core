@@ -107,7 +107,6 @@ class ConversationMessage(Message):
 
         super().__init__(**data)
 
-    @computed_field
     @property
     def message(self) -> str:
         """
@@ -195,12 +194,11 @@ class CatMessage(ConversationMessage):
         str
             The text content of the message.
         """
-        deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
         return self.text
     
     @content.setter
     def content(self, value):
-        deprecation_warning("The `content` attribute is deprecated. Use `text` instead.")
+        deprecation_warning("The `content` attribute is deprecated. Use `text` instead.", skip=4)
         self.text = value
 
     @property

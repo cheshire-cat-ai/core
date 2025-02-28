@@ -2,8 +2,8 @@
 
 import logging
 import sys
-import inspect
 import json
+import traceback
 from pprint import pformat
 from loguru import logger
 
@@ -36,8 +36,7 @@ class CatLogEngine:
         - `ERROR`
         - `CRITICAL`
 
-    Default to `INFO`.
-
+    Default to `CCAT_LOG_LEVEL` env variable (`INFO`).
     """
 
     def __init__(self):
@@ -69,93 +68,22 @@ class CatLogEngine:
         -------
         """
 
-        time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
-        level = "<level>{level: <6}</level>"
-        origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
+        level = "<level>{level}:</level>"
+        # time = "<green>[{time:YYYY-MM-DD HH:mm:ss.SSS}]</green>"
+        # origin = "<level>{extra[original_name]}.{extra[original_class]}.{extra[original_caller]}::{extra[original_line]}</level>"
         message = "<level>{message}</level>"
-        log_format = f"{time} {level} {origin} \n{message}"
+        log_format = f"{level}\t{message}"
 
         logger.remove()
-        if self.LOG_LEVEL == "DEBUG":
-            return logger.add(
-                sys.stdout,
-                colorize=True,
-                format=log_format,
-                backtrace=True,
-                diagnose=True,
-                filter=self.show_log_level,
-            )
-        else:
-            return logger.add(
-                sys.stdout,
-                colorize=True,
-                format=log_format,
-                filter=self.show_log_level,
-                level=self.LOG_LEVEL,
-            )
-
-    def get_caller_info(self, skip=3):
-        """Get the name of a caller in the format module.class.method.
-
-        Copied from: https://gist.github.com/techtonik/2151727
-
-        Parameters
-        ----------
-        skip :  int
-            Specifies how many levels of stack to skip while getting caller name.
-
-        Returns
-        -------
-        package : str
-            Caller package.
-        module : str
-            Caller module.
-        klass : str
-            Caller classname if one otherwise None.
-        caller : str
-            Caller function or method (if a class exist).
-        line : int
-            The line of the call.
-
-
-        Notes
-        -----
-        skip=1 means "who calls me",
-        skip=2 "who calls my caller" etc.
-
-        An empty string is returned if skipped levels exceed stack height.
-        """
-        stack = inspect.stack()
-        start = 0 + skip
-        if len(stack) < start + 1:
-            return ""
-        parentframe = stack[start][0]
-
-        # module and packagename.
-        module_info = inspect.getmodule(parentframe)
-        if module_info:
-            mod = module_info.__name__.split(".")
-            package = mod[0]
-            module = ".".join(mod[1:])
-
-        # class name.
-        klass = ""
-        if "self" in parentframe.f_locals:
-            klass = parentframe.f_locals["self"].__class__.__name__
-
-        # method or function name.
-        caller = None
-        if parentframe.f_code.co_name != "<module>":  # top level usually
-            caller = parentframe.f_code.co_name
-
-        # call line.
-        line = parentframe.f_lineno
-
-        # Remove reference to frame
-        # See: https://docs.python.org/3/library/inspect.html#the-interpreter-stack
-        del parentframe
-
-        return package, module, klass, caller, line
+        logger.add(
+            sys.stdout,
+            level=self.LOG_LEVEL,
+            colorize=True,
+            format=log_format,
+            # backtrace=True,
+            # diagnose=True,
+            filter=self.show_log_level,
+        )
 
     def __call__(self, msg, level="DEBUG"):
         """Alias of self.log()"""
@@ -177,9 +105,17 @@ class CatLogEngine:
         """Logs an ERROR message"""
         self.log(msg, level="ERROR")
 
+        # Only print the traceback if an exception handler is being executed
+        if sys.exc_info()[0] is not None:
+            traceback.print_exc()
+
     def critical(self, msg):
         """Logs a CRITICAL message"""
         self.log(msg, level="CRITICAL")
+        
+        # Only print the traceback if an exception handler is being executed
+        if sys.exc_info()[0] is not None:
+            traceback.print_exc()
 
     def log(self, msg, level="DEBUG"):
         """Log a message
@@ -191,17 +127,10 @@ class CatLogEngine:
         level : str
             Logging level."""
 
-        (package, module, klass, caller, line) = self.get_caller_info()
-
-        custom_logger = logger.bind(
-            original_name=f"{package}.{module}",
-            original_line=line,
-            original_class=klass,
-            original_caller=caller,
-        )
-
         # prettify
-        if type(msg) in [dict, list, str]:  # TODO: should be recursive
+        if isinstance(msg, str):
+            pass
+        elif type(msg) in [dict, list]:  # TODO: should be recursive
             try:
                 msg = json.dumps(msg, indent=4)
             except Exception:
@@ -210,7 +139,9 @@ class CatLogEngine:
             msg = pformat(msg)
 
         # actual log
-        custom_logger.log(level, msg)
+        lines = msg.split("\n")
+        for line in lines:
+            logger.log(level, line)
 
     def welcome(self):
         """Welcome message in the terminal."""
@@ -228,6 +159,27 @@ class CatLogEngine:
         print(f"\n\n{left_margin} Cat REST API:   {cat_address}/docs")
         print(f"{left_margin} Cat ADMIN:      {cat_address}/admin\n\n")
 
+        # self.log_examples()
+
+
+    def log_examples(self):
+        """Log examples for the log engine."""
+
+        for c in [self, "Hello there!", {"ready", "set", "go"}, [1, 4, "sdfsf"], {"a": 1, "b": {"c": 2}}]:
+            self.debug(c)
+            self.info(c)
+            self.warning(c)
+            self.error(c)
+            self.critical(c)
+
+        def intentional_error():
+            print(42/0)
+
+        try:
+            intentional_error()
+        except Exception:
+            self.error("This error is just for demonstration purposes.")
+            
 
 # logger instance
 log = CatLogEngine()

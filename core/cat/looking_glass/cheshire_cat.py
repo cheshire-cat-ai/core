@@ -143,7 +143,7 @@ class CheshireCat:
         if selected_llm is None:
             # Return default LLM
             return LLMDefaultConfig.get_llm_from_config({})
-       
+
         # Get LLM factory class
         selected_llm_class = selected_llm["value"]["name"]
         FactoryClass = get_llm_from_name(selected_llm_class)
@@ -154,8 +154,7 @@ class CheshireCat:
             llm = FactoryClass.get_llm_from_config(selected_llm_config["value"])
             return llm
         except Exception:
-            import traceback
-            traceback.print_exc()
+            log.error("Error during LLM instantiation")
             return LLMDefaultConfig.get_llm_from_config({})
 
     def load_language_embedder(self) -> embedders.EmbedderSettings:
@@ -193,10 +192,8 @@ class CheshireCat:
                 embedder = FactoryClass.get_embedder_from_config(
                     selected_embedder_config["value"]
                 )
-            except AttributeError:
-                import traceback
-
-                traceback.print_exc()
+            except Exception:
+                log.error("Error during Embedder instantiation")
                 embedder = embedders.EmbedderDumbConfig.get_embedder_from_config({})
             return embedder
 
@@ -276,9 +273,7 @@ class CheshireCat:
                 selected_auth_handler_config["value"]
             )
         except Exception:
-            import traceback
-
-            traceback.print_exc()
+            log.error("Error during AuthHandler instantiation")
 
             auth_handler = (
                 auth_handlers.CoreOnlyAuthConfig.get_auth_handler_from_config({})
@@ -312,7 +307,6 @@ class CheshireCat:
     def build_embedded_procedures_hashes(self, embedded_procedures):
         hashes = {}
         for ep in embedded_procedures:
-            # log.warning(ep)
             metadata = ep.payload["metadata"]
             content = ep.payload["page_content"]
             source = metadata["source"]
@@ -372,13 +366,19 @@ class CheshireCat:
             embedded_procedures_hashes[p] for p in points_to_be_deleted
         ]
         if points_to_be_deleted_ids:
-            log.warning(f"Deleting triggers: {points_to_be_deleted}")
+            log.info("Deleting procedural triggers:")
+            log.info(points_to_be_deleted)
             self.memory.vectors.procedural.delete_points(points_to_be_deleted_ids)
 
         active_triggers_to_be_embedded = [
             active_procedures_hashes[p] for p in points_to_be_embedded
         ]
+        
+        if active_triggers_to_be_embedded:
+            log.info("Embedding new procedural triggers:")
         for t in active_triggers_to_be_embedded:
+
+
             metadata = {
                 "source": t["source"],
                 "type": t["type"],
@@ -393,12 +393,12 @@ class CheshireCat:
                 metadata,
             )
 
-            log.warning(
-                f"Newly embedded {t['type']} trigger: {t['source']}, {t['trigger_type']}, {t['content']}"
+            log.info(
+                f" {t['source']}.{t['trigger_type']}.{t['content']}"
             )
 
     def send_ws_message(self, content: str, msg_type="notification"):
-        log.error("No websocket connection open")
+        log.error("CheshireCat has no websocket connection. Call `send_ws_message` from a StrayCat instance.")
 
     # REFACTOR: cat.llm should be available here, without streaming clearly
     # (one could be interested in calling the LLM anytime, not only when there is a session)
