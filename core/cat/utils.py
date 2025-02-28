@@ -293,7 +293,7 @@ def get_caller_info(skip=2, return_short=True, return_string=True):
 def langchain_log_prompt(langchain_prompt, title):
     if(get_env("CCAT_DEBUG") == "true"):
         print("\n")
-        print(get_colored_text(f"==================== {title} ====================", "green"))
+        print(get_colored_text(f"===== {title} =====", "green"))
         for m in langchain_prompt.messages:
             print(get_colored_text(type(m).__name__, "green"))
             if type(m.content) == list:
@@ -313,7 +313,7 @@ def langchain_log_prompt(langchain_prompt, title):
 def langchain_log_output(langchain_output, title):
     if(get_env("CCAT_DEBUG") == "true"):
         print("\n")
-        print(get_colored_text(f"==================== {title} ====================", "blue"))
+        print(get_colored_text(f"===== {title} =====", "blue"))
         if hasattr(langchain_output, 'content'):
             print(langchain_output.content)
         else:

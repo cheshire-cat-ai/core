@@ -407,7 +407,7 @@ class StrayCat:
             callbacks.append(NewTokenHandler(self))
 
         # Add a token counter to the callbacks
-        caller = utils.get_caller_info()
+        caller = utils.get_caller_info(return_short=False)
         callbacks.append(ModelInteractionHandler(self, caller or "StrayCat"))
 
         # here we deal with motherfucking langchain
