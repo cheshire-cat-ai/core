@@ -3,6 +3,7 @@ import uuid
 from typing import Any, List, Iterable, Optional
 import requests
 
+from qdrant_client import QdrantClient
 from qdrant_client.qdrant_remote import QdrantRemote
 from qdrant_client.http.models import (
     PointStruct,
@@ -26,11 +27,13 @@ from langchain.docstore.document import Document
 from cat.log import log
 from cat.env import get_env
 
+from cat.memory.collection_info import CollectionInfo
 
-class VectorMemoryCollection:
+
+class VectorMemoryCollectionQdrant:
     def __init__(
         self,
-        client: Any,
+        client: QdrantClient,
         collection_name: str,
         embedder_name: str,
         embedder_size: int,
@@ -52,6 +55,7 @@ class VectorMemoryCollection:
         log.debug(self.client.get_collection(self.collection_name))
 
     def check_embedding_size(self):
+        log.debug(f"Checking embedding size for {self.collection_name} + {self.embedder_name}:")
         # having the same size does not necessarily imply being the same embedder
         # having vectors with the same size but from diffent embedder in the same vector space is wrong
         same_size = (
@@ -329,3 +333,12 @@ class VectorMemoryCollection:
                 collection_name=self.collection_name, snapshot_name=s.name
             )
         log.warning(f'Dump "{new_name}" completed')
+
+
+    def delete(self):
+        """Delete the collection from the vectorstore."""
+        return self.client.delete_collection(self.collection_name)
+    
+    def get(self):
+        """Get the collection from the vectorstore."""
+        return CollectionInfo(self.client.get_collection(self.collection_name).points_count)
