@@ -51,9 +51,9 @@ class VectorMemoryES:
                 log.info(f"Connecting to Elastic Host: {host}:{port}")
                 self.vector_db = Elasticsearch([f"{host}:{port}"], api_key=es_api_key)
         except AuthenticationException as err:
-                print(f"Authentication error {err=}, {type(err)=}")
+                log.error(f"Authentication error {err=}, {type(err)=}")
         except AuthorizationException as err:
-                print(f"Authorization error {err=}, {type(err)=}")
+                log.error(f"Authorization error {err=}, {type(err)=}")
         log.info(f"Connection established")
 
     def delete_collection(self, collection_name: str):
