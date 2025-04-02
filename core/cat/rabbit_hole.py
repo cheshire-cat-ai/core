@@ -53,6 +53,8 @@ class RabbitHole:
             encoding_name="cl100k_base",
             keep_separator=True,
             strip_whitespace=True,
+            allowed_special={"\n"},  # Consenti esplicitamente il token speciale '\n'
+            disallowed_special=()    # Disabilita il controllo per altri token speciali            
         )
 
         # no access to StrayCat yet
