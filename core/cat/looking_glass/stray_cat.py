@@ -575,7 +575,7 @@ class StrayCat:
                     log.warning(ex)
 
     def classify(
-        self, sentence: str, labels: List[str] | Dict[str, List[str]]
+        self, sentence: str, labels: List[str] | Dict[str, List[str]], score_threshold: float = 0.5
     ) -> str | None:
         """Classify a sentence.
 
@@ -635,8 +635,7 @@ Allowed classes are:
             key=lambda x: x[1],
         )
 
-        # set 0.5 as threshold - let's see if it works properly
-        return best_label if score < 0.5 else None
+        return best_label if score < score_threshold else None
 
     def langchainfy_chat_history(self, latest_n: int = 20) -> List[BaseMessage]:
         """Redirects to WorkingMemory.langchainfy_chat_history. Will be removed from this class in v2."""
