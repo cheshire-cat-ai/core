@@ -24,6 +24,7 @@ def get_supported_env_variables():
         "CCAT_CORS_ENABLED": "true",
         "CCAT_CACHE_TYPE": "in_memory",
         "CCAT_CACHE_DIR": "/tmp",
+        "CCAT_QDRANT_CLIENT_TIMEOUT": None,
     }
 
 
