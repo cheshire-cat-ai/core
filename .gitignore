@@ -19,6 +19,7 @@ local_vector_memory
 *metadata.json
 *metadata-test.json
 test_db.db
+/qdrant
 
 # old admin folder
 admin

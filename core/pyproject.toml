@@ -1,7 +1,7 @@
 [project]
 name = "Cheshire-Cat"
 description = "Production ready AI assistant framework"
-version = "1.9.0"
+version = "1.9.1"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
@@ -21,7 +21,7 @@ dependencies = [
     "Jinja2==3.1.4",
     "pandas==1.5.3",
     "scikit-learn==1.2.1",
-    "qdrant_client==1.11.0",
+    "qdrant_client==1.13.3",
     "langchain==0.2.1",
     "langchain-community==0.2.1",
     "langchain-ollama==0.1.3",

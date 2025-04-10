@@ -95,7 +95,7 @@ class VectorMemoryCollection:
     # create collection
     def create_collection(self):
         log.warning(f'Creating collection "{self.collection_name}" ...')
-        self.client.recreate_collection(
+        self.client.create_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(
                 size=self.embedder_size, distance=Distance.COSINE
@@ -107,7 +107,6 @@ class VectorMemoryCollection:
                     type=ScalarType.INT8, quantile=0.95, always_ram=True
                 )
             ),
-            # shard_number=3,
         )
 
         self.client.update_collection_aliases(
@@ -219,9 +218,9 @@ class VectorMemoryCollection:
     ):
         """Retrieve similar memories from embedding"""
 
-        memories = self.client.search(
+        memories = self.client.query_points(
             collection_name=self.collection_name,
-            query_vector=embedding,
+            query=embedding,
             query_filter=self._qdrant_filter_from_dict(metadata),
             with_payload=True,
             with_vectors=True,
@@ -234,7 +233,7 @@ class VectorMemoryCollection:
                     oversampling=2.0,  # Available as of v1.3.0
                 )
             ),
-        )
+        ).points
 
         # convert Qdrant points to langchain.Document
         langchain_documents_from_points = []
