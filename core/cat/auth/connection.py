@@ -43,10 +43,10 @@ class ConnectionAuth(ABC):
         # extract credentials (user_id, token_or_key) from connection
         user_id, credential = self.extract_credentials(connection)
         auth_handlers = [
-            # try to get user from local idp
-            connection.app.state.ccat.core_auth_handler,
             # try to get user from auth_handler
             connection.app.state.ccat.custom_auth_handler,
+            # try to get user from local idp
+            connection.app.state.ccat.core_auth_handler,
         ]
         for ah in auth_handlers:
             user: AuthUserInfo = ah.authorize_user_from_credential(
