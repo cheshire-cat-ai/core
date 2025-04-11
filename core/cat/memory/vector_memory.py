@@ -65,6 +65,9 @@ class VectorMemory:
             qdrant_https = is_https(qdrant_host)
             qdrant_host = extract_domain_from_url(qdrant_host)
             qdrant_api_key = get_env("CCAT_QDRANT_API_KEY")
+            
+            qdrant_client_timeout = get_env("CCAT_QDRANT_CLIENT_TIMEOUT")
+            qdrant_client_timeout = int(qdrant_client_timeout) if qdrant_client_timeout is not None else None
 
             try:
                 s = socket.socket()
@@ -81,6 +84,7 @@ class VectorMemory:
                 port=qdrant_port,
                 https=qdrant_https,
                 api_key=qdrant_api_key,
+                timeout=qdrant_client_timeout
             )
 
     def delete_collection(self, collection_name: str):
