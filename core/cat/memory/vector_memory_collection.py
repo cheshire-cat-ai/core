@@ -59,11 +59,11 @@ class VectorMemoryCollection:
             == self.embedder_size
         )
         alias = self.embedder_name + "_" + self.collection_name
-        if (
-            alias
-            == self.client.get_collection_aliases(self.collection_name)
-            .aliases[0]
-            .alias_name
+
+        existing_aliases = self.client.get_collection_aliases(self.collection_name).aliases
+
+        if ( len(existing_aliases) > 0 and
+            alias == existing_aliases[0].alias_name
             and same_size
         ):
             log.debug(f'Collection "{self.collection_name}" has the same embedder')
@@ -94,31 +94,48 @@ class VectorMemoryCollection:
 
     # create collection
     def create_collection(self):
-        log.warning(f'Creating collection "{self.collection_name}" ...')
-        self.client.create_collection(
-            collection_name=self.collection_name,
-            vectors_config=VectorParams(
-                size=self.embedder_size, distance=Distance.COSINE
-            ),
-            # hybrid mode: original vector on Disk, quantized vector in RAM
-            optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
-            quantization_config=ScalarQuantization(
-                scalar=ScalarQuantizationConfig(
-                    type=ScalarType.INT8, quantile=0.95, always_ram=True
-                )
-            ),
-        )
-
-        self.client.update_collection_aliases(
-            change_aliases_operations=[
-                CreateAliasOperation(
-                    create_alias=CreateAlias(
-                        collection_name=self.collection_name,
-                        alias_name=self.embedder_name + "_" + self.collection_name,
+        try:
+            log.warning(f'Creating collection "{self.collection_name}" ...')
+            self.client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=VectorParams(
+                    size=self.embedder_size, distance=Distance.COSINE
+                ),
+                # hybrid mode: original vector on Disk, quantized vector in RAM
+                optimizers_config=OptimizersConfigDiff(memmap_threshold=20000),
+                quantization_config=ScalarQuantization(
+                    scalar=ScalarQuantizationConfig(
+                        type=ScalarType.INT8, quantile=0.95, always_ram=True
                     )
-                )
-            ]
-        )
+                ),
+            )
+        except Exception as e:
+            log.error(f"Error creating collection {self.collection_name}. Try setting a higher timeout value in CCAT_QDRANT_CLIENT_TIMEOUT: {e}")
+            self.client.delete_collection(self.collection_name)
+            raise
+
+        try:
+            alias_name=self.embedder_name + "_" + self.collection_name
+            log.warning(f'Creating alias {alias_name} for collection "{self.collection_name}" ...')
+
+            self.client.update_collection_aliases(
+                change_aliases_operations=[
+                    CreateAliasOperation(
+                        create_alias=CreateAlias(
+                            collection_name=self.collection_name,
+                            alias_name=alias_name,
+                        )
+                    )
+                ]
+            )
+
+            log.warning(f'Created alias {alias_name} for collection "{self.collection_name}" ...')
+        except Exception as e:
+            log.error(f"Error creating collection alias {alias_name} for collection {self.collection_name}: {e}")
+            self.client.delete_collection(self.collection_name)
+            log.error(f" collection {self.collection_name} deleted")
+            raise
+
 
     # adapted from https://github.com/langchain-ai/langchain/blob/bfc12a4a7644cfc4d832cc4023086a7a5374f46a/libs/langchain/langchain/vectorstores/qdrant.py#L1965
     def _qdrant_filter_from_dict(self, filter: dict) -> Filter:
