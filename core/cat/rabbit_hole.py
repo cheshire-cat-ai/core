@@ -53,6 +53,8 @@ class RabbitHole:
             encoding_name="cl100k_base",
             keep_separator=True,
             strip_whitespace=True,
+            allowed_special={"\n"}, # Explicitly allow the special token ‘\n’
+            disallowed_special=() # Disallow control for other special tokens
         )
 
         # no access to StrayCat yet
@@ -227,7 +229,7 @@ class RabbitHole:
                 request = httpx.get(file, headers={"User-Agent": "Magic Browser"})
 
                 # Define mime type and source of url
-                content_type = request.headers["Content-Type"].split(";")[0]
+                content_type = request.headers.get("Content-Type", "").split(";")[0]
                 source = file
 
                 try:
@@ -254,17 +256,9 @@ class RabbitHole:
             chunk_overlap=chunk_overlap
         )
 
-    def string_to_docs(
-        self,
-        cat,
-        file_bytes: str,
-        source: str = None,
-        content_type: str = "text/plain",
-        chunk_size: int | None = None,
-        chunk_overlap: int | None = None
-    ) -> List[Document]:
+    def string_to_docs(self, cat, file_bytes: str, source: str = None, content_type: str = "text/plain", chunk_size: int | None = None, chunk_overlap: int | None = None) -> List[Document]:
         """Convert string to Langchain `Document`.
-
+    
         Takes a string, converts it to langchain `Document`.
         Hence, loads it in memory and splits it in overlapped chunks of text.
 
@@ -286,19 +280,46 @@ class RabbitHole:
         docs : List[Document]
             List of Langchain `Document` of chunked text.
         """
+    
+        # Add fallback for empty/None content_type
+        if not content_type:
+            content_type = "text/html" if source.startswith(("http://", "https://")) else "text/plain"
+        
+        # Create blob with correct mimetype
 
         # Load the bytes in the Blob schema
         blob = Blob(data=file_bytes, mimetype=content_type, source=source).from_data(
             data=file_bytes, mime_type=content_type, path=source
         )
+        
         # Parser based on the mime type
         parser = MimeTypeBasedParser(handlers=self.file_handlers)
-
-        # Parse the text
-        cat.send_ws_message(
-            "I'm parsing the content. Big content could require some minutes..."
-        )
-        super_docs = parser.parse(blob)
+    
+        # Add debug logging
+        log.debug(f"Attempting to parse file: {source}")
+        log.debug(f"Detected MIME type: {content_type}")
+        log.debug(f"Available handlers: {list(self.file_handlers.keys())}")
+    
+        try:
+            # Parse the text
+            cat.send_ws_message(
+                "I'm parsing the content. Big content could require some minutes..."
+            )
+            super_docs = parser.parse(blob)
+        except ValueError as e:
+            if "Unsupported mime type" in str(e):
+                # Try with HTML parser as fallback for URLs
+                if source.startswith(("http://", "https://")):
+                    log.warning(f"Falling back to HTML parser for URL: {source}")
+                    html_parser = BS4HTMLParser()
+                    super_docs = html_parser.parse(blob)
+                else:
+                    log.error(f"Unsupported file type: {content_type}")
+                    log.error(f"File source: {source}")
+                    cat.send_ws_message(f"Sorry, I can't process {source} - unsupported file type")
+                    return []
+            else:
+                raise
 
         # Split
         cat.send_ws_message("Parsing completed. Now let's go with reading process...")
