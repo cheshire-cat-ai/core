@@ -30,11 +30,11 @@ async def get_available_plugins(
     for p in registry_plugins:
         plugin_url = p.get("plugin_url", None)
         if plugin_url is None:
-            log.warning(f"Plugin {p.get('name')} has no `plugin_url`. It will be skipped from the plugins list.")
+            log.warning(f"Plugin {p.get('name')} has no `plugin_url`. It will be skipped from the registry list.")
             continue
-        url = p.get("url", None)
-        if url and url != plugin_url:
-            log.warning(f"Plugin {p.get('name')} has `url` {url} different from `plugin_url` {plugin_url}. please check the plugin.")
+        # url = p.get("url", None)
+        # if url and url != plugin_url:
+        #     log.info(f"Plugin {p.get('name')} has `url` {url} different from `plugin_url` {plugin_url}. please check the plugin.")
         if plugin_url in registry_plugins_index:
             current = registry_plugins_index[plugin_url]
             log.warning(f"duplicate plugin_url {plugin_url} found in registry. Plugins {p.get('name')} has same url than {current.get('name')}. Skipping.")
