@@ -28,7 +28,18 @@ async def get_available_plugins(
     # index registry plugins by url
     registry_plugins_index = {}
     for p in registry_plugins:
-        plugin_url = p["url"]
+        plugin_url = p.get("plugin_url", None)
+        if plugin_url is None:
+            log.warning(f"Plugin {p.get('name')} has no `plugin_url`. It will be skipped from the registry list.")
+            continue
+        # url = p.get("url", None)
+        # if url and url != plugin_url:
+        #     log.info(f"Plugin {p.get('name')} has `url` {url} different from `plugin_url` {plugin_url}. please check the plugin.")
+        if plugin_url in registry_plugins_index:
+            current = registry_plugins_index[plugin_url]
+            log.warning(f"duplicate plugin_url {plugin_url} found in registry. Plugins {p.get('name')} has same url than {current.get('name')}. Skipping.")
+            continue    
+
         registry_plugins_index[plugin_url] = p
 
     # get active plugins
@@ -53,18 +64,19 @@ async def get_available_plugins(
         manifest["endpoints"] = [{"name": endpoint.name, "tags": endpoint.tags} for endpoint in p.endpoints]
         manifest["forms"] = [{"name": form.name} for form in p.forms]
 
+        # do not show already installed plugins among registry plugins
+        r = registry_plugins_index.pop(manifest["plugin_url"], None)
+        
         # filter by query
         plugin_text = [str(field) for field in manifest.values()]
         plugin_text = " ".join(plugin_text).lower()
-        if (query is None) or (query.lower() in plugin_text):
-            for r in registry_plugins:
-                if r["plugin_url"] == p.manifest["plugin_url"]:
-                    if r["version"] != p.manifest["version"]:
-                        manifest["upgrade"] = r["version"]
-            installed_plugins.append(manifest)
 
-        # do not show already installed plugins among registry plugins
-        registry_plugins_index.pop(manifest["plugin_url"], None)
+        if (query is None) or (query.lower() in plugin_text):
+            if r is not None:
+                r_version = r.get("version", None)
+                if r_version is not None and r_version != p.manifest.get("version"):
+                    manifest["upgrade"] = r["version"]
+            installed_plugins.append(manifest)
 
     return {
         "filters": {
