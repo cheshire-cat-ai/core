@@ -23,7 +23,6 @@ def get_settings_by_category(category: str) -> List[Dict]:
 
 
 def create_setting(payload: models.Setting) -> Dict:
-    # Missing fields (setting_id, updated_at) are filled automatically by pydantic
     return get_db().settings.create(payload)
 
 
