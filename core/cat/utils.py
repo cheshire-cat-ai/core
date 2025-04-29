@@ -171,8 +171,8 @@ def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
 
     # clean to help small LLMs
     replaces = {
-        "\_": "_",
-        "\-": "-",
+        "\\_": "_",
+        "\\-": "-",
         "None": "null",
         "{{": "{",
         "}}": "}",
