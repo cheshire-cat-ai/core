@@ -15,6 +15,7 @@ def get_supported_env_variables():
         "CCAT_QDRANT_PORT": "6333",
         "CCAT_QDRANT_API_KEY": None,
         "CCAT_SAVE_MEMORY_SNAPSHOTS": "false",
+        "CCAT_DB_TYPE": "tiny",
         "CCAT_METADATA_FILE": "cat/data/metadata.json",
         "CCAT_JWT_SECRET": "secret",
         "CCAT_JWT_ALGORITHM": "HS256",
