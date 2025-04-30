@@ -4,9 +4,7 @@ from pydantic import BaseModel
 from tinydb import TinyDB, Query
 from tinydb.queries import QueryInstance
 
-from cat.env import get_env
 from cat.utils import singleton
-
 from cat.db.database.abstract import AbstractDatabase
 from cat.db.tables import DefaultTable
 
@@ -14,106 +12,98 @@ from cat.db.tables import DefaultTable
 @singleton
 class TinyDatabase(AbstractDatabase):
     """
-    Database manager for handling database operations.
+    TinyDB implementation of AbstractDatabase.
+    Provides lightweight, document-oriented storage using JSON files.
     """
 
-    settings_table_class: Type = DefaultTable
-
+    setting_table_class: Type = DefaultTable
 
     def __init__(self, db_name: str = None, connect: bool = True, *args, **kwargs):
+        """
+        Initialize TinyDB database.
+
+        Args:
+            db_name: Database file name (without extension)
+            connect: Whether to connect to database immediately
+        """
         super().__init__(db_name=db_name, connect=connect, *args, **kwargs)
 
-        self._settings_table = self.settings_table_class(
+        self._setting_table = self.setting_table_class(
             db=self,
-            model=self.settings_model_class,
-            primary_key=self.settings_primary_key,
+            model=self.setting_model_class,
+            primary_key=self.setting_primary_key,
             table_name=None
         )
 
-    def get_file_name(self):
-        tinydb_file = get_env("CCAT_METADATA_FILE")
-        return tinydb_file
-
-
-    def get_settings(self):
-        """
-        Get settings from the database.
-        """
-        return self._settings_table
-
+    def get_setting(self):
+        """Get settings table from the database"""
+        return self._setting_table
 
     def connect(self):
-        self.db = TinyDB(self.db_name or self.get_file_name())
+        """Connect to TinyDB database"""
+        self.db = TinyDB(self.db_name or self.get_file_name() + ".json")
 
     def disconnect(self):
+        """Disconnect from TinyDB database"""
         if self.db:
             self.db.close()
             self.db = None
 
-
     def _build_query(self, field_name: str, field_value: Any, **kwargs):
+        """Build a TinyDB query for field comparison"""
         query = Query()
         return getattr(query, field_name) == field_value
 
     def _get_table(self, table_name: str, **kwargs):
+        """Get a TinyDB table object (or default table if none specified)"""
         if not table_name:
             return self.db
-
         return self.db.table(table_name)
-    
 
     def search_query(self, table_name: str, query: Any, first: bool = True, **kwargs):
         """
-        Search for data in the database.
+        Execute a custom query search.
+
+        Args:
+            table_name: Name of the table to search
+            query: TinyDB QueryInstance to execute
+            first: Return only first result if True
+
+        Raises:
+            TypeError: If query is not a valid QueryInstance
         """
         if not isinstance(query, QueryInstance):
             raise TypeError("Query must be an instance of Query class.")
 
         result = self._get_table(table_name).search(query)
-        if first:
-            return result[0] if result else None
-        else:
-            return result
+        return result[0] if result and first else result
 
     def select(self, table_name: str, field_name: str, field_value: Any, **kwargs):
-        """
-        Select data from the database.
-        """
+        """Select records matching a field value"""
         return self._get_table(table_name).search(self._build_query(field_name, field_value))
 
     def get_data(self, table_name: str, field_name: str, field_value: Any, **kwargs):
-        """
-        Get data from the database.
-        """
+        """Get single record matching a field value or None"""
         result = self.select(table_name=table_name, field_name=field_name, field_value=field_value, **kwargs)
+        return result[0] if result else None
 
-        if len(result) > 0:
-            return result[0]
-        else:
-            return None
-
-    def create_table(self, table_name: str, data: BaseModel,  **kwargs):
-        """
-        Create a table in the database.
-        """
+    def create_table(self, table_name: str, data: BaseModel, **kwargs):
+        """Insert new record into a table"""
         self._get_table(table_name).insert(data.model_dump(mode="json"))
 
     def drop_table(self, **kwargs):
-        """
-        Drop the existing table.
-        """
+        """Drop table (not implemented for TinyDB)"""
         pass
 
     def update_table(self, table_name: str, data: BaseModel, field_name: str, field_value: Any, **kwargs):
-        """
-        Update data in the table.
-        """
-        self._get_table(table_name).update(data.model_dump(mode="json"), self._build_query(field_name, field_value))
+        """Update records matching a field value"""
+        self._get_table(table_name).update(
+            data.model_dump(mode="json"), 
+            self._build_query(field_name, field_value)
+        )
 
     def upsert_table(self, table_name: str, data: BaseModel, **kwargs):
-        """
-        Upsert data in the table.
-        """
+        """Insert or update records based on field matching"""
         old_record = self.get_data(table_name=table_name, **kwargs)
         if not old_record:
             self.create_table(table_name=table_name, data=data, **kwargs)
@@ -121,13 +111,9 @@ class TinyDatabase(AbstractDatabase):
             self.update_table(table_name=table_name, data=data, **kwargs)
 
     def delete_table(self, table_name: str, field_name: str, field_value: Any, **kwargs):
-        """
-        Delete data from the table.
-        """
+        """Delete records matching a field value"""
         self._get_table(table_name).remove(self._build_query(field_name, field_value))
 
     def all_table(self, table_name: str, **kwargs):
-        """
-        Get all data from the table.
-        """
+        """Get all records from a table"""
         return self._get_table(table_name).all()
