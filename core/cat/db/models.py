@@ -1,7 +1,8 @@
 from datetime import datetime
 from uuid import uuid4
-from pydantic import BaseModel, Field
 from typing import Optional, Dict, Union, List
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import DeclarativeBase
 
 
 def generate_uuid():
@@ -23,3 +24,8 @@ class SettingBody(BaseModel):
 class Setting(SettingBody):
     setting_id: str = Field(default_factory=generate_uuid)
     updated_at: int = Field(default_factory=generate_timestamp)
+
+
+# SQLAlchemy base class for declarative models
+class SQLBase(DeclarativeBase):
+    pass
