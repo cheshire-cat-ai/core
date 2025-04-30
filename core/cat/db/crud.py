@@ -12,38 +12,59 @@ from cat.db.database import get_db
 def get_settings(search: str = "") -> List[Dict]:
     query = Query()
 
-    settings = get_db().settings.query(query.name.matches(search), first=False)
+    settings = get_db().setting.query(query.name.matches(search), first=False)
     # Workaround: do not expose users in the settings list
     settings = [s for s in settings if s["name"] != "users"]
     return settings
 
 
 def get_settings_by_category(category: str) -> List[Dict]:
-    return get_db().settings.get_by_attribute("category", category, first=False)
-
+    result = get_db().setting.get_by_attribute("category", category, first=False)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def create_setting(payload: models.Setting) -> Dict:
-    return get_db().settings.create(payload)
-
+    result = get_db().setting.create(payload)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def get_setting_by_name(name: str) -> Dict:
-    return get_db().settings.get_by_attribute("name", name, first=True)
+    result = get_db().setting.get_by_attribute("name", name, first=True)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def get_setting_by_id(setting_id: str) -> Dict:
-    return get_db().settings.get_by_attribute("setting_id", setting_id, first=True)
+    result = get_db().setting.get_by_attribute("setting_id", setting_id, first=True)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def delete_setting_by_id(setting_id: str) -> None:
-    return get_db().settings.delete("setting_id", setting_id)
+    result = get_db().setting.delete("setting_id", setting_id)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def delete_settings_by_category(category: str) -> None:
-    return get_db().settings.delete("category", category)
-
+    result = get_db().setting.delete("category", category)
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def update_setting_by_id(payload: models.Setting) -> Dict:
-    return get_db().settings.update(payload, "setting_id")
+    result = get_db().setting.update(payload, "setting_id")
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 def upsert_setting_by_name(payload: models.Setting) -> models.Setting:
-    return get_db().settings.upsert(payload, "name")
+    result = get_db().setting.upsert(payload, "name")
+    if result:
+        return result.model_dump(mode="json")
+    return result
 
 
 # We store users in a setting and when there will be a graph db in the cat, we will store them there.
