@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers.string import StrOutputParser
-from langchain_community.llms import Cohere
+from langchain_cohere import ChatCohere
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -208,7 +208,7 @@ class CheshireCat:
         # For Azure avoid automatic embedder selection
 
         # Cohere
-        elif type(self._llm) in [Cohere]:
+        elif type(self._llm) in [ChatCohere]:
             embedder = embedders.EmbedderCohereConfig.get_embedder_from_config(
                 {
                     "cohere_api_key": self._llm.cohere_api_key,
