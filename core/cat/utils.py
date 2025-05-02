@@ -7,7 +7,8 @@ from urllib.parse import urlparse
 from typing import Dict, Tuple
 from pydantic import BaseModel, ConfigDict
 
-from langchain.evaluation import StringDistance, load_evaluator, EvaluatorType
+from rapidfuzz.fuzz import ratio
+from rapidfuzz.distance import Levenshtein
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.utils import get_colored_text
@@ -155,15 +156,8 @@ def deprecation_warning(message: str, skip=3):
 
 
 def levenshtein_distance(prediction: str, reference: str) -> int:
-    jaro_evaluator = load_evaluator(
-        EvaluatorType.STRING_DISTANCE, distance=StringDistance.LEVENSHTEIN
-    )
-    result = jaro_evaluator.evaluate_strings(
-        prediction=prediction,
-        reference=reference,
-    )
-    return result["score"]
-
+    res = Levenshtein.normalized_distance(prediction, reference)
+    return res
 
 def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
     # instantiate parser
