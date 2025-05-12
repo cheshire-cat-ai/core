@@ -43,9 +43,9 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         log.info(f"WebSocket connection closed for user {cat.user_id}")
     finally:
-        
+
         # cat's working memory in this scope has not been updated
-        #cat.load_working_memory_from_cache()
-        
+        cat.load_working_memory_from_cache()
+
         # Remove connection on disconnect
         websocket_manager.remove_connection(cat.user_id)

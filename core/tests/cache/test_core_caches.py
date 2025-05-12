@@ -16,18 +16,23 @@ def create_cache(cache_type):
         assert False
 
 
+
 @pytest.mark.parametrize("cache_type", ["in_memory", "file_system"])
 def test_cache_creation(cache_type):
+    try:
+        cache = create_cache(cache_type)
 
-    cache = create_cache(cache_type)
-    
-    if cache_type == "in_memory":
-        assert cache.items == {}
-        assert cache.max_items == 100
-    else:
-        assert cache.cache_dir == "/tmp_cache"
-        assert os.path.exists("/tmp_cache")
-        assert os.listdir("/tmp_cache") == []
+        if cache_type == "in_memory":
+            assert cache.items == {}
+            assert cache.max_items == 100
+        else:
+            assert cache.cache_dir == "/tmp_cache"
+            assert os.path.exists("/tmp_cache")
+            assert os.listdir("/tmp_cache") == []
+    finally:
+        import shutil
+        if os.path.exists("/tmp_cache"):
+            shutil.rmtree("/tmp_cache")
 
 
 @pytest.mark.parametrize("cache_type", ["in_memory", "file_system"])
@@ -36,13 +41,13 @@ def test_cache_get_insert(cache_type):
     cache = create_cache(cache_type)
 
     assert cache.get_item("a") is None
-    
-    c1 = CacheItem("a", [])  
+
+    c1 = CacheItem("a", [])
     cache.insert(c1)
     assert cache.get_item("a").value == []
     assert cache.get_value("a") == []
 
-        
+
     c1.value = [0]
     cache.insert(c1) # will be overwritten
     assert cache.get_item("a").value == [0]
@@ -64,7 +69,7 @@ def test_cache_delete(cache_type):
 
     c1 = CacheItem("a", [])
     cache.insert(c1)
-    
+
     cache.delete("a")
     assert cache.get_item("a") is None
 

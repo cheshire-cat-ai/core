@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 from typing import Dict, Tuple
 from pydantic import BaseModel, ConfigDict
 
-from rapidfuzz.fuzz import ratio
 from rapidfuzz.distance import Levenshtein
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -146,7 +145,7 @@ HOW TO FIX: go to your OpenAI accont and add a credit card"""
 def deprecation_warning(message: str, skip=3):
     """Log a deprecation warning with caller's information.
         "skip" is the number of stack levels to go back to the caller info."""
-    
+
     caller = get_caller_info(skip, return_short=False)
 
     # Format and log the warning message
@@ -179,7 +178,7 @@ def parse_json(json_string: str, pydantic_model: BaseModel = None) -> dict:
 
     # parse
     parsed = parser.parse(json_string[start_index:])
-    
+
     if pydantic_model:
         return pydantic_model(**parsed)
     return parsed
@@ -207,7 +206,7 @@ def match_prompt_variables(
             prompt_template = \
                 prompt_template.replace("{" + m + "}", "")
             log.debug(f"Placeholder '{m}' not found in prompt variables, removed")
-            
+
     return prompt_variables, prompt_template
 
 
@@ -249,7 +248,7 @@ def get_caller_info(skip=2, return_short=True, return_string=True):
     start = 0 + skip
     if len(stack) < start + 1:
         return None
-    
+
     parentframe = stack[start][0]
 
     # module and packagename.
@@ -341,7 +340,7 @@ class BaseModelDict(BaseModel):
     def __getitem__(self, key):
         # deprecate dictionary usage
         deprecation_warning(
-            f'To get `{key}` use dot notation instead of dictionary keys, example:' 
+            f'To get `{key}` use dot notation instead of dictionary keys, example:'
             f'`obj.{key}` instead of `obj["{key}"]`'
         )
 
