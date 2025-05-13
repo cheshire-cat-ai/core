@@ -86,16 +86,28 @@ class WorkingMemory(BaseModelDict):
 
         self.history.append(content)
 
-    def update_history(self, message: ConversationMessage):
+    def update_history(self, message: ConversationMessage, index: int = None):
         """
-        Adds a message to the history.
+        Adds a message to the history or updates an existing message if an index is provided.
 
         Parameters
         ----------
         message : ConversationMessage
             The message, must be of type `ConversationMessage` (typically a subclass like `UserMessage` or `CatMessage`).
+        index : int, optional
+            The index at which to modify the message in the history. Defaults to None (appends a new message).
         """
-        self.history.append(message)
+
+        if index is None:
+            # index is None append to history
+            self.history.append(message)
+        else:
+            # check index value
+            if index >= len(self.history) or index < -len(self.history):
+                raise Exception(f"Index {index} is out of bounds for history of length {len(self.history)}.")
+            
+            self.history[index] = message 
+        
         self.history = self.history[-MAX_WORKING_HISTORY_LENGTH:]
 
 

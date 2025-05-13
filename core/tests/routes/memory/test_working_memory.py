@@ -1,5 +1,6 @@
 import time
 from tests.utils import send_websocket_message
+import pytest
 
 
 def test_convo_history_absent(client):
@@ -107,3 +108,79 @@ def test_convo_history_by_user(client):
     )
     json = response.json()
     assert len(json["history"]) == convos["Alice"] * 2
+
+
+
+@pytest.mark.parametrize("index", [0,2,3,-1,-4])
+def test_convo_history_edit(client, index):
+    message1 = "It's late! It's late!"
+    message2 = "We're all mad here."
+
+    # send websocket messages
+    send_websocket_message({"text": message1}, client)
+    send_websocket_message({"text": message2}, client)
+
+    response = client.get("/memory/conversation_history")
+    # check the history memory is following:
+    # history[0] -> "It's late! It's late!"
+    # history[1] -> AI reply
+    # history[2] -> "We're all mad here."
+    # history[3] -> AI reply
+    expected_history_size = 4
+    json = response.json()
+    assert "history" in json
+    history = json["history"]
+    assert len(history) == expected_history_size
+    assert history[0]["text"] == message1
+    assert history[2]["text"] == message2
+
+    # overwrite history message1 using index
+    req_json = history[index]
+    req_json["text"] = f"MIAO_{index}!"
+ 
+    # if index is even overwrite who param
+    if index % 2 == 0:
+        req_json["who"] = "AI"
+
+    response = client.put(f"/memory/conversation_history/{index}",json=req_json)
+    json = response.json()
+
+    # check response
+    assert response.status_code == 200
+    params = ["who","text"]
+    for p in params:
+        assert json[p] == req_json[p]
+
+    # check working memory update
+    response = client.get("/memory/conversation_history")
+    json = response.json()
+    assert response.status_code == 200
+    assert "history" in json
+    history = json["history"]
+    assert len(history) == expected_history_size
+
+    for p in params:
+     assert history[index][p] == req_json[p]
+
+@pytest.mark.parametrize("index", [4,-5])
+def test_convo_history_edit_wrong_index(client, index):
+    message1 = "It's late! It's late!"
+    message2 = "We're all mad here."
+
+    # send websocket messages
+    send_websocket_message({"text": message1}, client)
+    send_websocket_message({"text": message2}, client)
+
+    # overwrite history message1 using index out of range 4
+    req_json1 = {
+        "who": "Human",
+        "text": "MIAO!",
+        "user_id": "123"
+    }
+    response = client.put(f"/memory/conversation_history/{index}",json=req_json1)
+
+    # check response
+    assert response.status_code == 400
+
+    assert "Index out of range. " in response.json()["detail"]["error"]
+

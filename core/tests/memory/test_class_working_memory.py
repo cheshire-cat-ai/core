@@ -1,3 +1,5 @@
+import pytest
+
 from langchain_core.messages import AIMessage, HumanMessage
 
 from cat.convo.messages import Role, UserMessage, CatMessage
@@ -44,6 +46,54 @@ def test_update_history():
     assert wm.history[1].who == "AI"
     assert wm.history[1].role == Role.AI
     assert wm.history[1].text == "Meow"
+
+
+def test_update_history_with_index():
+
+    wm = create_working_memory_with_convo_history(turns=2)
+
+    # test negative index
+    human_message = UserMessage(user_id="123", who="Human", text="Hello")
+    wm.update_history(human_message, index = -4)
+    cat_message = CatMessage(user_id="123", who="AI", text="Meow Update!!!")
+    wm.update_history(cat_message, index = -1)
+
+    assert len(wm.history) == 4
+
+    assert isinstance(wm.history[0], UserMessage)
+    assert wm.history[0].who == "Human"
+    assert wm.history[0].role == Role.Human
+    assert wm.history[0].text == "Hello"
+
+    assert isinstance(wm.history[3], CatMessage)
+    assert wm.history[3].who == "AI"
+    assert wm.history[3].role == Role.AI
+    assert wm.history[3].text == "Meow Update!!!"
+
+    # test positive index
+    cat_message = CatMessage(user_id="123", who="AI", text="Meow!")
+    wm.update_history(cat_message, index = 0)
+    human_message = UserMessage(user_id="123", who="Human", text="Hi!")
+    wm.update_history(human_message, index = 3)
+
+    assert isinstance(wm.history[0], CatMessage)
+    assert wm.history[0].who == "AI"
+    assert wm.history[0].role == Role.AI
+    assert wm.history[0].text == "Meow!"
+
+    assert isinstance(wm.history[3], UserMessage)
+    assert wm.history[3].who == "Human"
+    assert wm.history[3].role == Role.Human
+    assert wm.history[3].text == "Hi!"
+
+    with pytest.raises(Exception) as excinfo:
+        wm.update_history(human_message, index = 4)
+    assert  "Index 4 is out of bounds for history of length 4" in str(excinfo)
+
+    with pytest.raises(Exception) as excinfo:
+        wm.update_history(human_message, index = -5)
+    assert  "Index -5 is out of bounds for history of length 4" in str(excinfo)
+
 
 
 def test_history_max_length():
