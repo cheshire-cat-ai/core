@@ -2,7 +2,6 @@
 
 from typing import Dict
 from fastapi import Request, APIRouter, HTTPException
-from pydantic import BaseModel
 
 from cat.auth.permissions import AuthPermission, AuthResource, check_permissions
 from cat.looking_glass.stray_cat import StrayCat
