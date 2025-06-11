@@ -149,6 +149,9 @@ class PizzaForm(CatForm):
 
 ## Roadmap & Contributing
 
+*Attention*: while version 2 is being worked out, we'll only accept bug fixes for v1. Send your PR for v1 on branch `develop`.
+Do not expect to see merged PRs not previously discussed and agreed upon in an issue.
+
 Detailed roadmap is [here](./ROADMAP.md).  
 Send your pull request to the `develop` branch. Here is a [full guide to contributing](./CONTRIBUTING.md).
 
