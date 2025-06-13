@@ -11,7 +11,7 @@ from tests.utils import send_websocket_message
 
 # only valid for in_memory cache
 def test_no_sessions_at_startup(client):
-    
+
     for username in ["admin", "user", "Alice"]:
         wm = client.app.state.ccat.cache.get_value(f"{username}_working_memory")
         assert wm is None
@@ -128,7 +128,7 @@ def test_session_sync_between_protocols(client, cache_type):
 
 
 def test_session_sync_while_websocket_is_open(client):
-    
+
     mex = {"text": "Oh dear!"}
 
     # keep open a websocket connection
@@ -167,6 +167,44 @@ def test_session_sync_while_websocket_is_open(client):
     wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
     assert len(wm.history) == 0
 
+@pytest.mark.parametrize("cache_type", ["in_memory", "file_system"])
+def test_session_sync_when_websocket_gets_closed_and_reopened(client, cache_type):
+    mex = {"text": "Oh dear!"}
+
+    try:
+        os.environ["CCAT_CACHE_TYPE"] = cache_type
+        client.app.state.ccat.cache = CacheManager().cache
+
+        # keep open a websocket connection
+        with client.websocket_connect("/ws/Alice") as websocket:
+            # send ws message
+            websocket.send_json(mex)
+            # get reply
+            res = websocket.receive_json()
+
+            # checks
+            wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+            assert res["user_id"] == "Alice"
+            assert len(wm.history) == 2
+
+            # clear convo history via http while nw connection is open
+            res = client.delete("/memory/conversation_history", headers={"user_id": "Alice"})
+            # checks
+            assert res.status_code == 200
+            wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+            assert len(wm.history) == 0
+
+        time.sleep(0.5)
+
+        # at connection closed, reopen a new connection and rerun checks
+        with client.websocket_connect("/ws/Alice") as websocket:
+            wm = client.app.state.ccat.cache.get_value("Alice_working_memory")
+            assert len(wm.history) == 0
+
+    finally:
+        del os.environ["CCAT_CACHE_TYPE"]
+
+
 
 # in_memory cache can store max 100 sessions
 def test_sessions_are_deleted_from_in_memory_cache(client):
@@ -179,7 +217,7 @@ def test_sessions_are_deleted_from_in_memory_cache(client):
         assert len(cache.items) <= cache.max_items
 
 
-        
+
 
 # TODO: how do we test that:
 # - streaming happens
