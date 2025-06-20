@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cheshire-cat
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cheshire-cat-deployment
+  namespace: cheshire-cat
+  labels:
+    app: cheshire-cat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cheshire-cat
+  template:
+    metadata:
+      labels:
+        app: cheshire-cat
+    spec:
+      containers:
+      - name: cheshire-cat-container
+        image: ghcr.io/cheshire-cat-ai/core:latest
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cheshire-cat-service
+  namespace: cheshire-cat
+spec:
+  selector:
+    app: cheshire-cat
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 31865
+  type: NodePort
