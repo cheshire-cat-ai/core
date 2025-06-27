@@ -3,7 +3,7 @@ import uvicorn
 from cat.env import get_env, fix_legacy_env_variables
 
 # RUN!
-if __name__ == "__main__":
+def main():
 
     # TODO: take away in v2
     fix_legacy_env_variables()
@@ -27,9 +27,12 @@ if __name__ == "__main__":
     uvicorn.run(
         "cat.startup:cheshire_cat_api",
         host="0.0.0.0",
-        port=80,
+        port=int(get_env("CCAT_CORE_PORT")),
         use_colors=True,
         log_level=get_env("CCAT_LOG_LEVEL").lower(),
         **debug_config,
         **proxy_pass_config,
     )
+
+if __name__ == "__main__":
+    main()

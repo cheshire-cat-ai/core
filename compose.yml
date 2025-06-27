@@ -16,8 +16,8 @@ services:
     environment:
       # Timezone
       - TZ=${CCAT_TIMEZONE:-UTC}
-    volumes:
-      - ./core:/app
+    #volumes:
+    #  - ./core:/app
     command:
       - python
       - "-m"

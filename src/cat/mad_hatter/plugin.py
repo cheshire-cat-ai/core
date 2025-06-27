@@ -12,7 +12,7 @@ from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import CatTool, CatHook, CatPluginDecorator, CustomEndpoint
 from cat.experimental.form import CatForm
-from cat.utils import to_camel_case
+from cat.utils import to_camel_case, get_base_path
 from cat.log import log
 
 
@@ -307,7 +307,10 @@ class Plugin:
         plugin_overrides = []
 
         for py_file in self.py_files:
-            py_filename = py_file.replace(".py", "").replace("/", ".")
+            base_path_dotted_notation = get_base_path().replace("/", ".")
+            py_filename = py_file.replace(".py", "")\
+                                .replace("/", ".")\
+                                .replace(base_path_dotted_notation, "cat.")
 
             log.debug(f"Import module {py_filename}")
 

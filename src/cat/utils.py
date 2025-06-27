@@ -12,6 +12,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.utils import get_colored_text
 
+import cat
 from cat.log import log
 from cat.env import get_env
 
@@ -92,7 +93,7 @@ def get_base_url():
 
 def get_base_path():
     """Allows exposing the base path."""
-    return "cat/"
+    return os.path.dirname(os.path.abspath(cat.__file__)) + "/"
 
 
 def get_plugins_path():

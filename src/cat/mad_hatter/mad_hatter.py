@@ -8,7 +8,7 @@ from typing import List, Dict
 from cat.log import log
 
 import cat.utils as utils
-from cat.utils import singleton
+from cat.utils import singleton, get_base_path
 
 from cat.db import crud
 from cat.db.models import Setting
@@ -93,7 +93,7 @@ class MadHatter:
 
         # plugins are found in the plugins folder,
         # plus the default core plugin s(where default hooks and tools are defined)
-        core_plugin_folder = "cat/mad_hatter/core_plugin/"
+        core_plugin_folder = get_base_path() + "mad_hatter/core_plugin/"
 
         # plugin folder is "cat/plugins/" in production, "tests/mocks/mock_plugin_folder/" during tests
         all_plugin_folders = [core_plugin_folder] + glob.glob(

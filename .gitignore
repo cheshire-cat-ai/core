@@ -1,19 +1,16 @@
+# python 
 __pycache__
+*.egg-info
 .env
 *mypy_cache
 *.pytest_cache
-
-# python local dev
 venv
 .venv
-
 .DS_Store
 .idea
 
 # DBs
-long_term_memory
-local_vector_memory
-/core/dormouse/*
+*dormouse/*
 *metadata.db
 *metadata-v*.db
 *metadata.json
@@ -21,18 +18,15 @@ local_vector_memory
 test_db.db
 /qdrant
 
-# old admin folder
-admin
-
 # data folder (settings and models)
-core/cat/data/*
+src/cat/data/*
 !core/cat/data/.gitkeep
 
 # plugins are not tracked by git
-core/cat/plugins/*
+src/cat/plugins/*
 # plugins readme can stay
-!core/cat/plugins/how-to-write-a-plugin.md
+!src/cat/plugins/how-to-write-a-plugin.md
 
 # cache embedder
-core/local_cache/*
+src/local_cache/*
 

@@ -7,7 +7,7 @@ from qdrant_client import QdrantClient
 from cat.memory.vector_memory_collection import VectorMemoryCollection
 from cat.log import log
 from cat.env import get_env
-# from cat.utils import singleton
+from cat.utils import get_base_path
 
 
 # @singleton REFACTOR: worth it to have this (or LongTermMemory) as singleton?
@@ -45,7 +45,7 @@ class VectorMemory:
             setattr(self, collection_name, collection)
 
     def connect_to_vector_memory(self) -> None:
-        db_path = "cat/data/local_vector_memory/"
+        db_path = get_base_path() + "data/local_vector_memory/"
         qdrant_host = get_env("CCAT_QDRANT_HOST")
 
         if not qdrant_host:

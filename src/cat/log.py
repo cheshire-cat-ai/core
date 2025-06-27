@@ -151,8 +151,9 @@ class CatLogEngine:
         cat_port = get_env("CCAT_CORE_PORT")
         cat_address = f"http{secure}://{cat_host}:{cat_port}"
 
+        from cat.utils import get_base_path
         print("\n\n")
-        with open("cat/welcome.txt", "r") as f:
+        with open(get_base_path() + "welcome.txt", "r") as f:
             print(f.read())
 
         left_margin = " " * 15
