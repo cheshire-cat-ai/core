@@ -50,10 +50,18 @@ class Tweedledum(MadHatter):
         extractor = PluginExtractor(package_plugin)
         plugin_path = extractor.extract(self.__plugins_folder)
         plugin_id = extractor.id
+        
+        plugin_existed = self.plugin_exists(plugin_id)
+        was_active = plugin_id in self.active_plugins if plugin_existed else False
+        
+        if plugin_existed:
+            self.deactivate_plugin(plugin_id)
+            del self.plugins[plugin_id]
 
         # create plugin obj, and eventually activate it
         if plugin_id != "core_plugin" and self.__load_plugin(plugin_path):
-            self.activate_plugin(plugin_id)
+            if not plugin_existed or was_active:
+                self.activate_plugin(plugin_id)
 
         # notify install has finished (the Lizard will ensure to notify the already loaded Cheshire Cats about the
         # plugin)
