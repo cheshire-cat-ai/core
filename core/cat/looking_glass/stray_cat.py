@@ -653,6 +653,10 @@ Just output the class, nothing else."""
         doc = self.mad_hatter.execute_hook(
             "before_cat_stores_episodic_memory", doc, cat=self
         )
+        match doc:
+            case (None, True):
+                log.info("Document is None; skipping storing in episodic memory.")
+                return
         # store user message in episodic memory
         # TODO: vectorize and store also conversation chunks
         #   (not raw dialog, but summarization)
