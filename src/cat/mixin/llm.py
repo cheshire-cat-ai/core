@@ -1,6 +1,6 @@
 import time
 from uuid import uuid4
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from cat.protocols.agui import events
 from cat import log
@@ -11,7 +11,16 @@ if TYPE_CHECKING:
 
 
 class LLMMixin:
-    """Mixin for LLM interaction methods."""
+    """Mixin for LLM and client streaming methods."""
+
+    async def send_json(self, data: Dict):
+        """Send JSON data to the client via stream callback."""
+        if hasattr(self.request.state, "stream_callback"):
+            await self.request.state.stream_callback(data)
+
+    async def agui_event(self, event: events.BaseEvent):
+        """Send an AGUI event to the client."""
+        await self.send_json(dict(event))
 
     async def llm(
         self,
@@ -28,7 +37,7 @@ class LLMMixin:
         elif self.model:
             slug = self.model
         else:
-            core_settings = await self.ccat.get("core", "core")
+            core_settings = await self.ccat.get("config", "core")
             slug = (await core_settings.load_settings()).default_llm
 
         # Parse "provider:model" slug
@@ -43,16 +52,19 @@ class LLMMixin:
 
         # Build on_token callback for streaming AGUI events
         on_token = None
+        text_started = False
         if stream:
-            await self.agui_event(
-                events.TextMessageStartEvent(
-                    message_id=str(uuid4()),
-                    timestamp=int(time.time())
-                )
-            )
-
             async def on_token(token: str):
+                nonlocal text_started
                 if token:
+                    if not text_started:
+                        await self.agui_event(
+                            events.TextMessageStartEvent(
+                                message_id=str(uuid4()),
+                                timestamp=int(time.time())
+                            )
+                        )
+                        text_started = True
                     await self.agui_event(
                         events.TextMessageContentEvent(
                             message_id=str(uuid4()),
@@ -65,7 +77,7 @@ class LLMMixin:
             model_slug, messages, system_prompt, tools, on_token
         )
 
-        if stream:
+        if text_started:
             await self.agui_event(
                 events.TextMessageEndEvent(
                     message_id=str(uuid4()),

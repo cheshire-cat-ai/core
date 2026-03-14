@@ -8,18 +8,14 @@ from cat import log
 class CoreSettings(SingletonService):
     """Framework-wide installation settings (default LLM, embedder, etc.)."""
 
-    service_type = "core"
+    service_type = "config"
     slug = "core"
     name = "Core Settings"
     description = "Framework-wide installation defaults."
-    plugin_id = "core"
 
     class Settings(BaseModel):
         default_llm: str = "default:default"
         default_embedder: str = "default:default"
-
-    async def setup(self):
-        await self.load_settings()
 
     async def settings_model(self) -> Type[BaseModel]:
         """Build a dynamic settings model with enum options from all model providers."""

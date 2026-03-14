@@ -94,6 +94,7 @@ class CheshireCat:
 
         # Register default services
         for ServiceClass in [CoreSettings, DefaultAuth, DefaultModelProvider, DefaultAgent]:
+            ServiceClass.plugin_id = "core"
             self.factory.register(ServiceClass)
 
         # Register all services from plugins

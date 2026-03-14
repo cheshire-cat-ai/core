@@ -114,7 +114,7 @@ async def update_settings(
 ) -> SettingsEntry:
     """
     Save settings for a single service identified by its composite id.
-    Validates against schema, saves to DB, triggers full factory refresh.
+    Validates against schema, saves to DB, refreshes the affected service.
     """
     plugin_id, service_type, slug = _parse_id(id)
 
@@ -160,8 +160,8 @@ async def update_settings(
     saved = validated.model_dump()
     await DB.save(db_key, saved)
 
-    # Trigger full factory refresh
-    await ccat.mad_hatter.refresh_caches()
+    # Targeted refresh — only restart the affected service
+    await ccat.factory.refresh(service_type, slug)
 
     return SettingsEntry(
         id=id,

@@ -1,8 +1,5 @@
-from typing import Union, Literal, Type, Any, TYPE_CHECKING
+from typing import Union, Literal, Type, Any, Dict, List, TYPE_CHECKING
 from pydantic import BaseModel, ValidationError
-
-from cat.mixin.llm import LLMMixin
-from cat.mixin.stream import EventStreamMixin
 
 if TYPE_CHECKING:
     from fastapi import Request
@@ -25,6 +22,13 @@ class Service:
     name: str | None = None
     description: str | None = None
     plugin_id: str | None = None
+
+    requires: Dict[str, Union[str, List[str]]] = {}
+    """
+    Static dependency declarations resolved by ServiceFactory before setup().
+    Keys are service_type strings; values are a slug or list of slugs.
+    Each resolved instance is injected as self.<service_type>.
+    """
 
     ccat: "CheshireCat"
 
@@ -194,7 +198,7 @@ class SingletonService(Service):
     lifecycle = "singleton"
 
 
-class RequestService(Service, LLMMixin, EventStreamMixin):
+class RequestService(Service):
     """
     Base class for request-scoped services (e.g. Agent).
     Request services are instantiated fresh for each request and related to a specific user.

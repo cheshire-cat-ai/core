@@ -6,13 +6,15 @@ from pydantic import BaseModel
 from cat.types import Message, Task, TaskResult
 from cat.mad_hatter.decorators import Tool
 
+from cat.mixin.llm import LLMMixin
+from cat import log
 from ..service import RequestService
 
 if TYPE_CHECKING:
     from cat.base import Directive
 
 
-class Agent(RequestService):
+class Agent(RequestService, LLMMixin):
 
     service_type = "agents"
     system_prompt = "You are an Agent in the Cheshire Cat AI fleet. Help the user and other agents with their requests."
@@ -105,6 +107,7 @@ class Agent(RequestService):
                 stream=self.task.stream
             )
 
+            log.message(llm_mex)
             self.result.messages.append(llm_mex)
 
             if len(llm_mex.tool_calls) == 0:

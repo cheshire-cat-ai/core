@@ -193,6 +193,22 @@ class LogEngine:
         color_str = colors[color]
         return f"\u001b[{color_str}m\033[1;3m{text}\u001b[0m"
 
+    def message(self, msg):
+        """Log an LLM response to the terminal."""
+        text = msg.text
+        tool_calls = msg.tool_calls
+
+        if text and tool_calls:
+            truncated = (text[:200] + "...") if len(text) > 200 else text
+            tool_names = ", ".join(tc["name"] for tc in tool_calls)
+            self.info(f"LLM: {truncated} | tools: [{tool_names}]")
+        elif text:
+            truncated = (text[:200] + "...") if len(text) > 200 else text
+            self.info(f"LLM: {truncated}")
+        elif tool_calls:
+            tool_names = ", ".join(tc["name"] for tc in tool_calls)
+            self.info(f"LLM: tools: [{tool_names}]")
+
     def log_examples(self):
         """Log examples for the log engine."""
 

@@ -119,6 +119,19 @@ class ServiceFactory:
                         resolved.append(instance)
             setattr(service, service_type, resolved)
 
+    async def refresh(self, type: str, slug: str) -> None:
+        """Tear down and re-setup a single singleton service."""
+        ServiceClass = self._resolve_service_class(type, slug, raise_error=True)
+
+        # Find the singleton instance in the container
+        for key, instance in self.container._singletons.items():
+            if isinstance(instance, ServiceClass):
+                await instance.teardown()
+                if hasattr(instance, '_setup_done'):
+                    del instance._setup_done
+                # Re-setup will happen on next get() call
+                break
+
     async def _setup_service(self, service: "Service", type: str, slug: str) -> None:
         """Setup service with singleton locking or direct call for request-scoped."""
 
