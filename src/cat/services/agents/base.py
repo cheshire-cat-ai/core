@@ -51,22 +51,22 @@ class Agent(RequestService, LLMMixin):
             self.system_prompt = await self.get_system_prompt()
             self.tools = await self.list_tools()
 
-            self = await self.execute_hook(
-                "before_agent_execution", self
+            self.task = await self.execute_hook(
+                "before_agent_execution", self.task
             )
-            self = await self.execute_hook(
-                f"before_{self.slug}_agent_execution", self
+            self.task = await self.execute_hook(
+                f"before_{self.slug}_agent_execution", self.task
             )
 
             await self.start()
             await self.loop()
             await self.finish()
 
-            self = await self.execute_hook(
-                f"after_{self.slug}_agent_execution", self
+            self.result = await self.execute_hook(
+                f"after_{self.slug}_agent_execution", self.result
             )
-            self = await self.execute_hook(
-                "after_agent_execution", self
+            self.result = await self.execute_hook(
+                "after_agent_execution", self.result
             )
 
         return self.result
@@ -107,8 +107,12 @@ class Agent(RequestService, LLMMixin):
                 stream=self.task.stream
             )
 
-            log.message(llm_mex)
             self.result.messages.append(llm_mex)
+            log.convo_summary(
+                self.system_prompt,
+                self.task.messages + self.result.messages,
+                self.slug
+            )
 
             if len(llm_mex.tool_calls) == 0:
                 # No tool calls, exit the loop
@@ -172,7 +176,7 @@ class Agent(RequestService, LLMMixin):
     async def call_tool(self, tool_call, *args, **kwargs):
         """Call a tool."""
 
-        name = tool_call["name"]
+        name = tool_call.name
         for t in await self.list_tools():
             if t.name == name:
                 return await t.execute(self, tool_call)

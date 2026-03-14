@@ -5,7 +5,7 @@ from cat.services.service import SingletonService
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
-    from cat.types import Message
+    from cat.types import Message, ToolCall
     from cat.mad_hatter.decorators import Tool
 
 
@@ -55,6 +55,7 @@ class ModelProvider(SingletonService):
         system_prompt: str = "",
         tools: list["Tool"] = [],
         on_token: "Callable[[str], Awaitable[None]] | None" = None,
+        on_tool_call: "Callable[[ToolCall], Awaitable[None]] | None" = None,
     ) -> "Message":
         """
         Chat completion.
@@ -72,6 +73,9 @@ class ModelProvider(SingletonService):
         on_token : callback
             If provided, enables streaming. Called with each text delta
             as it arrives.
+        on_tool_call : callback
+            If provided, called with each complete ToolCall as it is
+            parsed from the stream (or from the final response).
 
         Returns
         -------

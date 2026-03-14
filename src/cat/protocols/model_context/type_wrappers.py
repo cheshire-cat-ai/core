@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import field_serializer
+from pydantic import BaseModel, field_serializer
 from mcp import types as mcp_types
 
 
@@ -7,7 +7,15 @@ class Resource(mcp_types.Resource):
     @field_serializer("uri")
     def serialize_uri(self, uri):
         return str(uri)
-    
+
+
+class ToolCall(BaseModel):
+    type: Literal["tool_call"] = "tool_call"
+    id: str
+    name: str
+    args: dict
+
+
 ContentTypeLiteral = Literal[
     "text", "image", "audio", "resource_link", "resource"
 ]

@@ -2,8 +2,7 @@ from typing import List, TYPE_CHECKING
 from collections.abc import Awaitable, Callable
 
 from cat.base import ModelProvider
-from cat.types import Message
-from cat.protocols.model_context.type_wrappers import TextContent
+from cat.types import Message, TextContent, ToolCall
 
 if TYPE_CHECKING:
     from cat.mad_hatter.decorators import Tool
@@ -31,6 +30,7 @@ class MockModelProvider(ModelProvider):
         system_prompt: str = "",
         tools: list["Tool"] = [],
         on_token: Callable[[str], Awaitable[None]] | None = None,
+        on_tool_call: Callable[[ToolCall], Awaitable[None]] | None = None,
     ) -> Message:
         text = self.responses[self._call_count % len(self.responses)]
         self._call_count += 1

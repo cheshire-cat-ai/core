@@ -5,7 +5,7 @@ import traceback
 from pprint import pformat
 from loguru import logger
 
-from cat.env import get_env
+from cat.env import get_env, get_env_bool
 
 def get_log_level():
     """Return the global LOG level."""
@@ -191,23 +191,52 @@ class LogEngine:
         }
 
         color_str = colors[color]
-        return f"\u001b[{color_str}m\033[1;3m{text}\u001b[0m"
+        return f"\u001b[{color_str}m{text}\u001b[0m"
 
-    def message(self, msg):
-        """Log an LLM response to the terminal."""
-        text = msg.text
-        tool_calls = msg.tool_calls
+    def convo_summary(self, system_prompt, messages, agent_slug):
+        """Log a summary of the conversation sent to the LLM."""
 
-        if text and tool_calls:
-            truncated = (text[:200] + "...") if len(text) > 200 else text
-            tool_names = ", ".join(tc["name"] for tc in tool_calls)
-            self.info(f"LLM: {truncated} | tools: [{tool_names}]")
-        elif text:
-            truncated = (text[:200] + "...") if len(text) > 200 else text
-            self.info(f"LLM: {truncated}")
-        elif tool_calls:
-            tool_names = ", ".join(tc["name"] for tc in tool_calls)
-            self.info(f"LLM: tools: [{tool_names}]")
+        if not get_env_bool("CCAT_DEBUG"):
+            return
+
+        c = self.colored_text
+        bar = c("━" * 60, "blue")
+
+        lines = ["", bar, c(f"  🐱 {agent_slug}", "blue"), bar]
+
+        # System prompt
+        trunc = system_prompt[:60] + "..." if len(system_prompt) > 60 else system_prompt
+        lines.append(c("  system  ", "yellow") + trunc.replace("\n", " "))
+
+        # Messages
+        for msg in messages:
+            content = self._summarize_content(msg)
+
+            if msg.role == "user":
+                lines.append(c("  user    ", "green") + content)
+            elif msg.role == "assistant":
+                if msg.tool_calls:
+                    tool_names = ", ".join(tc.name for tc in msg.tool_calls)
+                    lines.append(c("  agent   ", "pink") + f"🔧 {tool_names}")
+                    if content:
+                        lines.append(c("          ", "pink") + content)
+                else:
+                    lines.append(c("  agent   ", "pink") + f"💬 {content}")
+            elif msg.role == "tool":
+                lines.append(c("  tool    ", "yellow") + content)
+
+        lines.append(bar + "\n")
+        print("\n".join(lines))
+
+    def _summarize_content(self, msg):
+        parts = []
+        for block in msg.content:
+            if hasattr(block, "text"):
+                t = block.text.replace("\n", " ").strip()
+                parts.append((t[:80] + "...") if len(t) > 80 else t)
+            else:
+                parts.append(f"[{block.type}]")
+        return " ".join(parts)
 
     def log_examples(self):
         """Log examples for the log engine."""

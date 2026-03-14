@@ -73,8 +73,32 @@ class LLMMixin:
                         )
                     )
 
+        # Build on_tool_call callback for tool call AGUI events
+        async def on_tool_call(tool_call):
+            await self.agui_event(
+                events.ToolCallStartEvent(
+                    timestamp=int(time.time()),
+                    tool_call_id=str(tool_call.id),
+                    tool_call_name=tool_call.name,
+                )
+            )
+            await self.agui_event(
+                events.ToolCallArgsEvent(
+                    timestamp=int(time.time()),
+                    tool_call_id=str(tool_call.id),
+                    delta=str(tool_call.args),
+                    raw_event=tool_call.model_dump(),
+                )
+            )
+            await self.agui_event(
+                events.ToolCallEndEvent(
+                    timestamp=int(time.time()),
+                    tool_call_id=str(tool_call.id),
+                )
+            )
+
         result = await provider.llm(
-            model_slug, messages, system_prompt, tools, on_token
+            model_slug, messages, system_prompt, tools, on_token, on_tool_call
         )
 
         if text_started:

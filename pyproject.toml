@@ -1,7 +1,7 @@
 [project]
 name = "cheshire-cat-ai"
 description = "Production ready AI agent framework"
-version = "2.0.14"
+version = "2.0.15"
 requires-python = ">=3.13"
 license-files = ["LICEN[CS]E*"]
 license = "GPL-3.0"
@@ -25,7 +25,7 @@ dependencies = [
     "aiofiles>=24.1.0",
     "fastmcp>=2.12.4",
     "asgi-lifespan>=2.1.0",
-    "ag-ui-protocol>=0.1.8",
+    "ag-ui-protocol>=0.1.13",
     "cachetools>=6.2.0",
     "httpx>=0.28.1",
     "punq>=0.7.0",

@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from cat import urls, paths
 from cat.scaffold import scaffolder
-from cat.env import get_env
+from cat.env import get_env, get_env_bool
 
 # RUN!
 def main():
@@ -21,7 +21,7 @@ def main():
 
     # debugging utilities, to deactivate put `DEBUG=false` in .env
     debug_config = {}
-    if get_env("CCAT_DEBUG") == "true":
+    if get_env_bool("CCAT_DEBUG"):
         debug_config = {
             "reload": True,
             "reload_dirs": [

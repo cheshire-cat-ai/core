@@ -5,7 +5,6 @@ from typing import Callable, List, Dict, TYPE_CHECKING
 
 from fastmcp.tools.tool import FunctionTool, ParsedFunction
 from fastmcp.client.client import CallToolResult
-from ag_ui.core.events import EventType # take away after they fix the bug
 
 from cat.protocols.agui import events
 from cat.utils import run_sync_or_async
@@ -87,7 +86,7 @@ class Tool:
     async def execute(self, agent, tool_call) -> "Message":
         """
         Execute a Tool with the provided tool_call data structure (which is returned by the LLM).
-        Will emit AGUI events for tool execution and return a Message with role="tool".
+        Will emit a ToolCallResult AGUI event and return a Message with role="tool".
 
         Parameters
         ----------
@@ -102,25 +101,25 @@ class Tool:
             A Message with role="tool" and the tool output.
         """
 
-        # Emit AGUI events
-        await self.emit_agui_tool_start_events(agent, tool_call)
-
         # execute the tool
-        if self.is_internal:
-            # internal tool
-            tool_result: str = await run_sync_or_async(
-                self.func, **tool_call["args"], caller=agent
-            )
-        else:
-            # MCP tool
-            async with agent.mcp:
-                tool_result: CallToolResult = await self.func(self.name, tool_call["args"])
-        
+        try:
+            if self.is_internal:
+                # internal tool
+                tool_result: str = await run_sync_or_async(
+                    self.func, **tool_call.args, caller=agent
+                )
+            else:
+                # MCP tool
+                async with agent.mcp:
+                    tool_result: CallToolResult = await self.func(self.name, tool_call.args)
+        except Exception as e:
+            tool_result = f"Error: {e}"
+
         # Standardize output
-        tool_result = self.standardize_output(tool_call, tool_result) 
-        
-        # Emit AGUI events
-        await self.emit_agui_tool_end_events(agent, tool_call, tool_result)
+        tool_result = self.standardize_output(tool_call, tool_result)
+
+        # Emit AGUI result event
+        await self.emit_agui_tool_result_event(agent, tool_call, tool_result)
 
         # TODOV2: should return CallToolResult directly
         #   Only supporting text for now
@@ -147,40 +146,15 @@ class Tool:
         return Message(
             role="tool",
             content=content_blocks,
-            tool_call_id=tool_call["id"],
-            tool_name=tool_call["name"]
+            tool_call_id=tool_call.id,
         )
 
-    async def emit_agui_tool_start_events(self, agent, tool_call):
-        await agent.agui_event(
-            events.ToolCallStartEvent(
-                timestamp=int(time.time()),
-                tool_call_id=str(tool_call["id"]),
-                tool_call_name=tool_call["name"]
-            )
-        )
-        await agent.agui_event(
-            events.ToolCallArgsEvent(
-                timestamp=int(time.time()),
-                tool_call_id=str(tool_call["id"]),
-                delta=str(tool_call["args"]), # here the protocol assumes tool args are streamed
-                raw_event=tool_call
-            )
-        )
-    
-    async def emit_agui_tool_end_events(self, agent, tool_call, tool_output):
-        await agent.agui_event(
-            events.ToolCallEndEvent(
-                timestamp=int(time.time()),
-                tool_call_id=str(tool_call["id"])
-            )
-        )
+    async def emit_agui_tool_result_event(self, agent, tool_call, tool_output):
         await agent.agui_event(
             events.ToolCallResultEvent(
-                type=EventType.TOOL_CALL_RESULT,  # bug in the lib, this should not be necessary
                 timestamp=int(time.time()),
-                message_id=str(uuid4()),  # should be the id of the last user message
-                tool_call_id=str(tool_call["id"]),
+                message_id=str(uuid4()),
+                tool_call_id=str(tool_call.id),
                 content=tool_output.text,
                 raw_event=tool_output.model_dump()
             )

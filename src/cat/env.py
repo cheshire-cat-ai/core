@@ -39,3 +39,8 @@ def get_env(name) -> str | None:
         default = None
 
     return os.getenv(name, default)
+
+
+def get_env_bool(name) -> bool:
+    """Check if an env variable is truthy (True, true, 1)."""
+    return get_env(name) in ("true", "True", "1")

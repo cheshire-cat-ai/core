@@ -3,8 +3,7 @@ from typing import List, TYPE_CHECKING
 from collections.abc import Awaitable, Callable
 
 from .base import ModelProvider
-from ...types import Message
-from ...protocols.model_context.type_wrappers import TextContent
+from ...types import Message, TextContent, ToolCall
 
 if TYPE_CHECKING:
     from cat.mad_hatter.decorators import Tool
@@ -33,6 +32,7 @@ class DefaultModelProvider(ModelProvider):
         system_prompt: str = "",
         tools: list["Tool"] = [],
         on_token: Callable[[str], Awaitable[None]] | None = None,
+        on_tool_call: Callable[[ToolCall], Awaitable[None]] | None = None,
     ) -> Message:
         text = "You did not configure a Language Model. Do it in the settings!"
         return Message(
