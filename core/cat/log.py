@@ -172,14 +172,6 @@ class CatLogEngine:
             self.error(c)
             self.critical(c)
 
-        def intentional_error():
-            print(42/0)
-
-        try:
-            intentional_error()
-        except Exception:
-            self.error("This error is just for demonstration purposes.")
-            
 
 # logger instance
 log = CatLogEngine()
