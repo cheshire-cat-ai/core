@@ -11,7 +11,6 @@ from langchain_cohere import ChatCohere
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from cat.factory.custom_llm import ChatMiniMax
 from cat.factory.auth_handler import get_auth_handler_from_name
 from cat.factory.custom_auth_handler import CoreAuthHandler
 import cat.factory.auth_handler as auth_handlers
@@ -223,15 +222,6 @@ class CheshireCat:
                 {
                     "model": "models/embedding-001",
                     "google_api_key": self._llm.google_api_key,
-                }
-            )
-
-        # MiniMax
-        elif type(self._llm) in [ChatMiniMax]:
-            embedder = embedders.EmbedderMinimaxConfig.get_embedder_from_config(
-                {
-                    "minimax_api_key": self._llm.openai_api_key,
-                    "model": "embo-01",
                 }
             )
 

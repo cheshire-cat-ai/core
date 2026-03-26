@@ -66,54 +66,6 @@ class CustomOpenAIEmbeddings(Embeddings):
         return ret.json()["data"][0]["embedding"]
 
 
-class MiniMaxEmbeddings(Embeddings):
-    """MiniMax Embeddings using the embo-01 model.
-
-    Calls MiniMax's native embedding API at https://api.minimax.io/v1/embeddings.
-    Supports both 'db' (for indexing) and 'query' (for search) embedding types.
-    """
-
-    def __init__(self, minimax_api_key: str, model: str = "embo-01", embed_type: str = "db"):
-        self.api_key = minimax_api_key
-        self.model = model
-        self.embed_type = embed_type
-        self.url = "https://api.minimax.io/v1/embeddings"
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        payload = json.dumps({
-            "model": self.model,
-            "texts": texts,
-            "type": "db",
-        })
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        ret = httpx.post(self.url, data=payload, headers=headers, timeout=None)
-        ret.raise_for_status()
-        data = ret.json()
-        if data.get("vectors") is None:
-            raise ValueError(f"MiniMax embedding API error: {data.get('base_resp', {}).get('status_msg', 'unknown error')}")
-        return data["vectors"]
-
-    def embed_query(self, text: str) -> List[float]:
-        payload = json.dumps({
-            "model": self.model,
-            "texts": [text],
-            "type": "query",
-        })
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-        ret = httpx.post(self.url, data=payload, headers=headers, timeout=None)
-        ret.raise_for_status()
-        data = ret.json()
-        if data.get("vectors") is None:
-            raise ValueError(f"MiniMax embedding API error: {data.get('base_resp', {}).get('status_msg', 'unknown error')}")
-        return data["vectors"][0]
-
-
 class CustomOllamaEmbeddings(Embeddings):
     """Use Ollama to serve embedding models."""
 
