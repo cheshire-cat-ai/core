@@ -13,7 +13,7 @@ from typing import Type
 import json
 from pydantic import BaseModel, ConfigDict
 
-from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama
+from cat.factory.custom_llm import LLMDefault, LLMCustom, CustomOpenAI, CustomOllama, ChatMiniMax
 from cat.mad_hatter.mad_hatter import MadHatter
 
 
@@ -300,6 +300,22 @@ class LLMAnthropicChatConfig(LLMSettings):
         }
     )
 
+class LLMMinimaxChatConfig(LLMSettings):
+    minimax_api_key: str
+    model_name: str = "MiniMax-M2.7"
+    temperature: float = 0.7
+    streaming: bool = True
+    _pyclass: Type = ChatMiniMax
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "MiniMax AI",
+            "description": "Chat model by MiniMax (M2.7, M2.5). OpenAI-compatible API.",
+            "link": "https://www.minimaxi.com/",
+        }
+    )
+
+
 def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
@@ -313,6 +329,7 @@ def get_allowed_language_models():
         LLMHuggingFaceEndpointConfig,
         LLMHuggingFaceTextGenInferenceConfig,
         LLMAnthropicChatConfig,
+        LLMMinimaxChatConfig,
         LLMCustomConfig,
         LLMDefaultConfig,
     ]

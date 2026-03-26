@@ -77,3 +77,24 @@ class CustomOllama(ChatOllama):
         if kwargs["base_url"].endswith("/"):
             kwargs["base_url"] = kwargs["base_url"][:-1]
         super().__init__(**kwargs)
+
+
+class ChatMiniMax(ChatOpenAI):
+    """MiniMax chat model via OpenAI-compatible API.
+
+    Uses MiniMax's OpenAI-compatible endpoint at https://api.minimax.io/v1.
+    Clamps temperature to (0.0, 1.0] as required by MiniMax API.
+    """
+
+    minimax_api_key: str = ""
+
+    def __init__(self, **kwargs):
+        # Clamp temperature to MiniMax's valid range (0.0, 1.0]
+        temp = kwargs.get("temperature", 0.7)
+        kwargs["temperature"] = max(0.01, min(float(temp), 1.0))
+
+        # Wire MiniMax credentials into ChatOpenAI fields
+        kwargs["openai_api_key"] = kwargs.pop("minimax_api_key", "")
+        kwargs["openai_api_base"] = "https://api.minimax.io/v1"
+        kwargs.setdefault("model_name", "MiniMax-M2.7")
+        super().__init__(model_kwargs={}, **kwargs)

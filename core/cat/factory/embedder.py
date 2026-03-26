@@ -6,7 +6,7 @@ from langchain_community.embeddings import FakeEmbeddings, FastEmbedEmbeddings
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from fastembed import TextEmbedding
-from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings, CustomOllamaEmbeddings
+from cat.factory.custom_embedder import DumbEmbedder, CustomOpenAIEmbeddings, CustomOllamaEmbeddings, MiniMaxEmbeddings
 from cat.mad_hatter.mad_hatter import MadHatter
 from langchain_cohere import CohereEmbeddings
 
@@ -180,6 +180,20 @@ class EmbedderGeminiChatConfig(EmbedderSettings):
     )
 
 
+class EmbedderMinimaxConfig(EmbedderSettings):
+    minimax_api_key: str
+    model: str = "embo-01"
+    _pyclass: Type = MiniMaxEmbeddings
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "MiniMax Embedder",
+            "description": "Configuration for MiniMax embeddings (embo-01, 1536 dimensions)",
+            "link": "https://www.minimaxi.com/",
+        }
+    )
+
+
 def get_allowed_embedder_models():
     list_embedder_default = [
         EmbedderQdrantFastEmbedConfig,
@@ -188,6 +202,7 @@ def get_allowed_embedder_models():
         EmbedderGeminiChatConfig,
         EmbedderOpenAICompatibleConfig,
         EmbedderCohereConfig,
+        EmbedderMinimaxConfig,
         EmbedderDumbConfig,
         EmbedderFakeConfig,
         EmbedderOllamaConfig,

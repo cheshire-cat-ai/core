@@ -34,7 +34,7 @@ The Cheshire Cat is a framework to build custom AI agents:
 - 🚀 Extensible via plugins
 - 🪛 Event callbacks, function calling (tools), conversational forms
 - 🏛 Easy to use admin panel
-- 🌍 Supports any language model via langchain
+- 🌍 Supports any language model via langchain (OpenAI, Anthropic, Google Gemini, MiniMax, Cohere, Ollama, and more)
 - 👥 Multiuser with granular permissions, compatible with any identity provider
 - 🐋 100% dockerized
 - 🦄 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
