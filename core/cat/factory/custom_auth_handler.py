@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Literal
 from pytz import utc
+import hmac
 import jwt
 
 from cat.db.crud import get_users
@@ -124,7 +125,7 @@ class CoreAuthHandler(BaseAuthHandler):
     def _authorize_http_key(self, user_id: str, api_key: str, http_key: str) -> AuthUserInfo | None:
 
         # HTTP API key match -> allow access with full permissions
-        if api_key == http_key:
+        if api_key and http_key and hmac.compare_digest(api_key, http_key):
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,
@@ -137,7 +138,7 @@ class CoreAuthHandler(BaseAuthHandler):
     def _authorize_websocket_key(self, user_id: str, api_key: str, ws_key: str) -> AuthUserInfo | None:
 
         # WebSocket API key match -> allow access with base permissions
-        if api_key == ws_key:
+        if api_key and ws_key and hmac.compare_digest(api_key, ws_key):
             return AuthUserInfo(
                 id=user_id,
                 name=user_id,
