@@ -182,3 +182,49 @@ The Cheshire Cat AI logo and name are property of Piero Savastano (founder and m
 (Alice's Adventures in Wonderland - Lewis Carroll)
 
 ```
+
+## FAQ
+
+### What is Cheshire Cat?
+Cheshire Cat is a framework to build custom AI agents as a microservice. It provides API-first conversational AI with built-in RAG, plugin extensibility, and an easy-to-use admin panel.
+
+### How does Cheshire Cat compare to LangChain or other frameworks?
+Cheshire Cat focuses on being an AI agent microservice with:
+- **API-first**: WebSocket chat + REST API management
+- **Built-in RAG**: Qdrant vector database included
+- **Plugin system**: Easy extensibility without code changes
+- **Admin panel**: Ready-to-use UI for agent management
+
+### How do I run Cheshire Cat?
+With Docker:
+```bash
+docker run --rm -it -p 1865:80 ghcr.io/cheshire-cat-ai/core:latest
+```
+Access:
+- Admin panel: `http://localhost:1865/admin`
+- REST API: `http://localhost:1865/docs`
+
+### What LLM providers does Cheshire Cat support?
+Cheshire Cat supports any language model via LangChain integration, including OpenAI, Anthropic, local models via Ollama, and more.
+
+### How do plugins work?
+Plugins extend the Cat via:
+- **Hooks**: Event callbacks for fine-grained control
+- **Tools**: Function calling (LangChain-style)
+- **Forms**: Conversational forms for structured input
+
+See the minimal plugin example in the Quickstart section.
+
+### Is Cheshire Cat multiuser?
+Yes! Cheshire Cat supports multiuser with granular permissions and is compatible with any identity provider.
+
+### What vector database does it use?
+Cheshire Cat uses Qdrant for built-in RAG functionality.
+
+### Can I deploy it in production?
+Yes! Cheshire Cat is 100% dockerized and designed for production deployment. See [docker compose documentation](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/) for proper setup.
+
+### Where can I get help?
+- [Documentation](https://cheshire-cat-ai.github.io/docs/)
+- [Discord community](https://discord.gg/bHX5sNFCYU)
+- [GitHub Issues](https://github.com/cheshire-cat-ai/core/issues)
