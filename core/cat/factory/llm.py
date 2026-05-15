@@ -300,6 +300,39 @@ class LLMAnthropicChatConfig(LLMSettings):
         }
     )
 
+class LLMAstraflowConfig(LLMSettings):
+    openai_api_key: str
+    model_name: str = "gpt-4o-mini"
+    temperature: float = 0.7
+    streaming: bool = True
+    url: str = "https://api-us-ca.umodelverse.ai/v1"
+    _pyclass: Type = CustomOpenAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Astraflow (Global)",
+            "description": "Astraflow by UCloud — OpenAI-compatible platform supporting 200+ models (global endpoint)",
+            "link": "https://astraflow.ucloud-global.com",
+        }
+    )
+
+
+class LLMAstraflowCNConfig(LLMSettings):
+    openai_api_key: str
+    model_name: str = "gpt-4o-mini"
+    temperature: float = 0.7
+    streaming: bool = True
+    url: str = "https://api.modelverse.cn/v1"
+    _pyclass: Type = CustomOpenAI
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "humanReadableName": "Astraflow (China)",
+            "description": "Astraflow by UCloud — OpenAI-compatible platform supporting 200+ models (China endpoint)",
+            "link": "https://astraflow.ucloud.cn",
+        }
+    )
+
 def get_allowed_language_models():
     list_llms_default = [
         LLMOpenAIChatConfig,
@@ -314,6 +347,8 @@ def get_allowed_language_models():
         LLMHuggingFaceTextGenInferenceConfig,
         LLMAnthropicChatConfig,
         LLMCustomConfig,
+        LLMAstraflowConfig,
+        LLMAstraflowCNConfig,
         LLMDefaultConfig,
     ]
 
