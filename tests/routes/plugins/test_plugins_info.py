@@ -1,6 +1,6 @@
 
-def test_list_plugins(client, admin_headers):
-    response = client.get("/plugins", headers=admin_headers)
+def test_list_plugins(client, admin_headers, api_prefix):
+    response = client.get(f"{api_prefix}/plugins", headers=admin_headers)
     json = response.json()
 
     assert response.status_code == 200
@@ -22,8 +22,8 @@ def test_list_plugins(client, admin_headers):
     assert len(json["registry"]) > 0
 
 
-def test_get_plugin_id(client, admin_headers):
-    response = client.get("/plugins/qdrant_vector_memory", headers=admin_headers) # one of the core plugins
+def test_get_plugin_id(client, admin_headers, api_prefix):
+    response = client.get(f"{api_prefix}/plugins/qdrant_vector_memory", headers=admin_headers) # one of the core plugins
 
     json = response.json()
 
@@ -34,8 +34,8 @@ def test_get_plugin_id(client, admin_headers):
     assert json["data"]["active"]
 
 
-def test_get_non_existent_plugin(client, admin_headers):
-    response = client.get("/plugins/no_plugin", headers=admin_headers)
+def test_get_non_existent_plugin(client, admin_headers, api_prefix):
+    response = client.get(f"{api_prefix}/plugins/no_plugin", headers=admin_headers)
     json = response.json()
 
     assert response.status_code == 404

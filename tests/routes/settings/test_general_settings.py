@@ -1,9 +1,9 @@
 """Tests for the unified /settings endpoint."""
 
 
-def test_get_settings_list(client, admin_headers):
+def test_get_settings_list(client, admin_headers, api_prefix):
     """GET /settings returns a list of services that have settings."""
-    response = client.get("/settings", headers=admin_headers)
+    response = client.get(f"{api_prefix}/settings", headers=admin_headers)
     assert response.status_code == 200
 
     entries = response.json()
@@ -20,10 +20,10 @@ def test_get_settings_list(client, admin_headers):
     assert isinstance(core_entry["value"], dict)
 
 
-def test_put_settings_success(client, admin_headers):
+def test_put_settings_success(client, admin_headers, api_prefix):
     """PUT /settings/{id} updates core settings."""
     payload = {"default_llm": "openai:gpt-4", "default_embedder": "openai:text-embedding-3-small"}
-    response = client.put("/settings/core__core__core", json=payload, headers=admin_headers)
+    response = client.put(f"{api_prefix}/settings/core__core__core", json=payload, headers=admin_headers)
     assert response.status_code == 200
 
     data = response.json()
@@ -35,12 +35,12 @@ def test_put_settings_success(client, admin_headers):
     assert data["schema"] is not None
 
 
-def test_put_settings_persists(client, admin_headers):
+def test_put_settings_persists(client, admin_headers, api_prefix):
     """PUT then GET shows persisted settings."""
     payload = {"default_llm": "anthropic:claude", "default_embedder": "openai:embed"}
-    client.put("/settings/core__core__core", json=payload, headers=admin_headers)
+    client.put(f"{api_prefix}/settings/core__core__core", json=payload, headers=admin_headers)
 
-    response = client.get("/settings", headers=admin_headers)
+    response = client.get(f"{api_prefix}/settings", headers=admin_headers)
     assert response.status_code == 200
 
     entries = response.json()
@@ -49,31 +49,31 @@ def test_put_settings_persists(client, admin_headers):
     assert core_entry["value"]["default_llm"] == "anthropic:claude"
 
 
-def test_put_settings_unknown_service(client, admin_headers):
+def test_put_settings_unknown_service(client, admin_headers, api_prefix):
     """PUT /settings/{id} with unknown id returns 404."""
     response = client.put(
-        "/settings/nonexistent__model_providers__fake",
+        f"{api_prefix}/settings/nonexistent__model_providers__fake",
         json={"key": "value"},
         headers=admin_headers,
     )
     assert response.status_code == 404
 
 
-def test_put_settings_invalid_id_format(client, admin_headers):
+def test_put_settings_invalid_id_format(client, admin_headers, api_prefix):
     """PUT /settings/{id} with malformed id returns 404."""
     response = client.put(
-        "/settings/invalid_id",
+        f"{api_prefix}/settings/invalid_id",
         json={"key": "value"},
         headers=admin_headers,
     )
     assert response.status_code == 404
 
 
-def test_put_settings_validation_error(client, admin_headers):
+def test_put_settings_validation_error(client, admin_headers, api_prefix):
     """PUT /settings/{id} with wrong type returns 400."""
     # default_llm expects a string, send an int
     response = client.put(
-        "/settings/core__core__core",
+        f"{api_prefix}/settings/core__core__core",
         json={"default_llm": 123},
         headers=admin_headers,
     )
@@ -82,30 +82,30 @@ def test_put_settings_validation_error(client, admin_headers):
     assert response.status_code in (200, 400)
 
 
-def test_old_plugin_settings_endpoint_removed(client, admin_headers):
+def test_old_plugin_settings_endpoint_removed(client, admin_headers, api_prefix):
     """GET /plugins/{id}/settings should no longer exist."""
-    response = client.get("/plugins/core/settings", headers=admin_headers)
+    response = client.get(f"{api_prefix}/plugins/core/settings", headers=admin_headers)
     # Should be 404 or 405 since the endpoint was removed
     assert response.status_code in (404, 405, 422)
 
 
-def test_old_me_settings_endpoint_removed(client, admin_headers):
+def test_old_me_settings_endpoint_removed(client, admin_headers, api_prefix):
     """GET /me/settings should no longer exist."""
-    response = client.get("/me/settings", headers=admin_headers)
+    response = client.get(f"{api_prefix}/me/settings", headers=admin_headers)
     # Should be 404 or 405 since the endpoint was removed
     assert response.status_code in (404, 405, 422)
 
 
-def test_old_service_settings_endpoint_removed(client, admin_headers):
+def test_old_service_settings_endpoint_removed(client, admin_headers, api_prefix):
     """GET /services/core/core/settings should no longer exist."""
-    response = client.get("/services/core/core/settings", headers=admin_headers)
+    response = client.get(f"{api_prefix}/services/core/core/settings", headers=admin_headers)
     # Should be 404 or 405 since the endpoint was removed
     assert response.status_code in (404, 405, 422)
 
 
-def test_services_catalog_still_works(client, admin_headers):
+def test_services_catalog_still_works(client, admin_headers, api_prefix):
     """GET /services still returns the read-only service catalog."""
-    response = client.get("/services", headers=admin_headers)
+    response = client.get(f"{api_prefix}/services", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)

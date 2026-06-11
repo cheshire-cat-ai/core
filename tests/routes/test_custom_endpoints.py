@@ -64,7 +64,7 @@ def test_custom_endpoint_delete(client, just_installed_plugin, admin_headers):
 
 @pytest.mark.parametrize("switch_type", ["deactivation", "uninstall"])
 def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
-        switch_type, client, just_installed_plugin, admin_headers
+        switch_type, client, just_installed_plugin, admin_headers, api_prefix
     ):
 
     # custom endpoints are active
@@ -74,11 +74,11 @@ def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
 
     if switch_type == "deactivation":
         # deactivate plugin
-        response = client.put("/plugins/toggle/mock_plugin", headers=admin_headers)
+        response = client.put(f"{api_prefix}/plugins/toggle/mock_plugin", headers=admin_headers)
         assert response.status_code == 200
     else:
         # uninstall plugin
-        response = client.delete("/plugins/mock_plugin", headers=admin_headers)
+        response = client.delete(f"{api_prefix}/plugins/mock_plugin", headers=admin_headers)
         assert response.status_code == 200
 
     # no more custom endpoints

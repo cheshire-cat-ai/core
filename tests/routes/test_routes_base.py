@@ -1,8 +1,9 @@
 
 from tests.utils import send_http_message
 
-def test_ping_success(client, admin_headers):
-    response = client.get("/status", headers=admin_headers)
+
+def test_ping_success(client, admin_headers, api_prefix):
+    response = client.get(f"{api_prefix}/status", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["status"] == "We're all mad here, dear!"
 

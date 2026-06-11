@@ -28,10 +28,11 @@ def send_http_message(
         msg,
         client,
         streaming=False,
-        headers={}
+        headers={},
+        path="/api/v2/chat",
     ):
     res = client.post(
-        "/chat",
+        path,
         headers=headers,
         json={
             "messages": [

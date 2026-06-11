@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from cat.env import get_env
+from cat.urls import API_PREFIX
 from cat.routes import (
     status,
     openapi,
@@ -70,7 +71,7 @@ for r in [
     me, status, settings, agents, oauth,
     plugins
 ]:
-    cheshire_cat_api.include_router(r.router, prefix="/api/v2")
+    cheshire_cat_api.include_router(r.router, prefix=API_PREFIX)
 
 # user facing routers
 for r in [ openapi, idp ]:

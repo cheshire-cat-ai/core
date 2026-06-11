@@ -2,8 +2,8 @@ import pytest
 
 
 # utility to make http requests with some headers
-def http_request(client, headers={}):
-    response = client.get("/status", headers=headers)
+def http_request(client, headers={}, api_prefix="/api/v2"):
+    response = client.get(f"{api_prefix}/status", headers=headers)
     return response.status_code, response.json()
 
 
