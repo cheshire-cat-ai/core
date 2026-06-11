@@ -9,9 +9,11 @@ from httpx import ASGITransport, AsyncClient
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cat.looking_glass.stray_cat import StrayCat
-from cat.auth import User
+# TODOV2: StrayCat removed in 0673d0d7, restore when re-added
+# from cat.looking_glass.stray_cat import StrayCat
+# from cat.auth import User
 from cat.mad_hatter.plugin import Plugin
+from cat.urls import API_PREFIX
 import cat.paths
 
 from tests.utils import create_mock_plugin_zip
@@ -90,6 +92,10 @@ async def async_client(app):
 def admin_headers():
     yield { "Authorization": "Bearer meow"}
 
+@pytest.fixture(scope="session")
+def api_prefix():
+    return API_PREFIX
+
 @pytest.fixture(scope="package")
 def admin_query_params():
     yield { "token": "meow"}
@@ -108,7 +114,7 @@ def just_installed_plugin(client, admin_headers):
     # upload plugin via endpoint
     with open(zip_path, "rb") as f:
         response = client.post(
-            "/plugins/upload/",
+            f"{API_PREFIX}/plugins/upload/",
             headers=admin_headers,
             files={"file": (zip_file_name, f, "application/zip")}
         )
@@ -125,17 +131,18 @@ def just_installed_plugin(client, admin_headers):
 
 
 # fixture to have available an instance of StrayCat
-@pytest.fixture(scope="function")
-def stray(async_client):
-    user = User(
-        id="Alice",
-        name="Alice"
-    )
-    stray_cat = StrayCat(user)
-    # TODOV2: update to new data structure
-    # TODOV2: remember mixin_init
-    stray_cat.working_memory.user_message_json = {"user_id": user.id, "text": "meow"}
-    yield stray_cat
+# TODOV2: StrayCat removed in 0673d0d7, restore when re-added
+# @pytest.fixture(scope="function")
+# def stray(async_client):
+#     user = User(
+#         id="Alice",
+#         name="Alice"
+#     )
+#     stray_cat = StrayCat(user)
+#     # TODOV2: update to new data structure
+#     # TODOV2: remember mixin_init
+#     stray_cat.working_memory.user_message_json = {"user_id": user.id, "text": "meow"}
+#     yield stray_cat
 
 
 #fixture for mock time.time function
