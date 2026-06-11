@@ -2,6 +2,9 @@ import shutil
 from cat.types import Task, Message, TextContent
 
 
+from cat.urls import API_PREFIX
+
+
 def get_mock_plugin_info():
     return {
         "id": "mock_plugin",
@@ -29,7 +32,7 @@ def send_http_message(
         client,
         streaming=False,
         headers={},
-        path="/api/v2/chat",
+        path=f"{API_PREFIX}/chat",
     ):
     res = client.post(
         path,

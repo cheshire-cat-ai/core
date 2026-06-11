@@ -1,3 +1,5 @@
+from cat.urls import API_PREFIX
+
 # utility to make http requests with some headers
 def http_request(client, path, headers={}):
     response = client.get(path, headers=headers)
@@ -40,11 +42,11 @@ OPEN_ENDPOINTS = {
     "/docs",
     "/",
     # status is a public health check
-    "/api/v2/status",
+    f"{API_PREFIX}/status",
     # auth flow must be public (login, logout, callback, idp)
-    "/api/v2/auth/logout",
-    "/api/v2/auth/login/{name}",
-    "/api/v2/auth/callback/{name}",
+    f"{API_PREFIX}/auth/logout",
+    f"{API_PREFIX}/auth/login/{{name}}",
+    f"{API_PREFIX}/auth/callback/{{name}}",
     "/auth/internal-idp",
     "/auth/internal-idp/login",
     # static assets from plugins (e.g. UI)
