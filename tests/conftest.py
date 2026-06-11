@@ -25,6 +25,7 @@ FAKE_TIMESTAMP = 1705855981
 def clean_up_envs():
     # env variables
     os.environ["CCAT_DEBUG"] = "false" # do not autoreload
+    os.environ["CCAT_API_KEY"] = "meow" # enable auth enforcement in tests
 
 
 @pytest.fixture(scope="function")
