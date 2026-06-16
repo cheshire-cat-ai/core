@@ -110,11 +110,17 @@ class CoreAuthHandler(BaseAuthHandler):
         ws_key = get_env("CCAT_API_KEY_WS")
 
         if not http_key and not ws_key:
-            return AuthUserInfo(
-                id=user_id,
-                name=user_id,
-                permissions=get_full_permissions()
+            # No API keys are configured — warn once and deny non-JWT access.
+            # Setting CCAT_API_KEY (and optionally CCAT_API_KEY_WS) is required
+            # to protect the server. JWT-based auth continues to work because
+            # is_jwt() routes those credentials through authorize_user_from_jwt()
+            # before this method is ever called.
+            log.warning(
+                "SECURITY WARNING: Neither CCAT_API_KEY nor CCAT_API_KEY_WS is set. "
+                "API key authentication is disabled. Set these environment variables "
+                "to secure your installation."
             )
+            return None
 
         if protocol == "websocket":
             return self._authorize_websocket_key(user_id, api_key, ws_key)
