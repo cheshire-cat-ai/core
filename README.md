@@ -1,5 +1,8 @@
 <a name="readme-top"></a>
 
+> [!WARNING]
+> **Version 2 is super alpha!** This new version is still under heavy development and needs work before it becomes stable. Expect breaking changes, rough edges, and incomplete features. Not recommended for production use yet.
+
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
