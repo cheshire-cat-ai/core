@@ -1,5 +1,8 @@
 <a name="readme-top"></a>
 
+> [!WARNING]
+> **Version 2 is super alpha!** This new version is still under heavy development and needs work before it becomes stable. Expect breaking changes, rough edges, and incomplete features. Not recommended for production use yet.
+
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
@@ -29,16 +32,17 @@
 The Cheshire Cat is a framework to build custom AI agents:
 
 - ⚡️ API first, to easily add a conversational layer to your app
-- 💬 Chat via WebSocket and manage your agent with an customizable REST API
-- 🐘 Built-in RAG with Qdrant
+- 🌐 Acts as an MCP client
 - 🚀 Extensible via plugins
-- 🪛 Event callbacks, function calling (tools), conversational forms
-- 🏛 Easy to use admin panel
-- 🌍 Supports any language model via langchain
-- 👥 Multiuser with granular permissions, compatible with any identity provider
+    - Extend endpoints
+    - Custom multiple agents
+    - Event callbacks
+- 📱 Easy to use Web UI supporting the AGUI protocol
+- 🦜 Supports any language model via adapter pattern
+- 👥 Multiuser with granular permissions, SSO/Oauth2 compatible
 - 🐋 100% dockerized
-- 🦄 Active [Discord community](https://discord.gg/bHX5sNFCYU) and easy to understand [docs](https://cheshire-cat-ai.github.io/docs/)
- 
+- 🦄 Active [Discord community](https://discord.gg/bHX5sNFCYU) and clear [docs](https://cheshire-cat-ai.github.io/docs/)
+- (🐘 Built-in RAG with Qdrant) now a plugin
 
 
 ## Quickstart
@@ -48,96 +52,12 @@ To make Cheshire Cat run on your machine, you just need [`docker`](https://docs.
 ```bash
 docker run --rm -it -p 1865:80 ghcr.io/cheshire-cat-ai/core:latest
 ```
-- Chat with the Cheshire Cat on [localhost:1865/admin](http://localhost:1865/admin)
+- Chat with the Cheshire Cat on [localhost:1865](http://localhost:1865)
 - Try out the REST API on [localhost:1865/docs](http://localhost:1865/docs)
 
 Enjoy the Cat!  
 Follow instructions on how to run it properly with [docker compose and volumes](https://cheshire-cat-ai.github.io/docs/quickstart/installation-configuration/).
 
-## Minimal plugin example
-
-<details>
-    <summary>
-        Hooks (events)
-    </summary>
-
-```python
-from cat.mad_hatter.decorators import hook
-
-# hooks are an event system to get finegraned control over your assistant
-@hook
-def agent_prompt_prefix(prefix, cat):
-    prefix = """You are Marvin the socks seller, a poetic vendor of socks.
-You are an expert in socks, and you reply with exactly one rhyme.
-"""
-    return prefix
-```
-</details>
-
-<details>
-    <summary>
-        Tools
-    </summary>
-
-```python
-from cat.mad_hatter.decorators import tool
-
-# langchain inspired tools (function calling)
-@tool(return_direct=True)
-def socks_prices(color, cat):
-    """How much do socks cost? Input is the sock color."""
-    prices = {
-        "black": 5,
-        "white": 10,
-        "pink": 50,
-    }
-
-    price = prices.get(color, 0)
-    return f"{price} bucks, meeeow!" 
-```
-</details>
-
-<details>
-    <summary>
-        Conversational Forms
-    </summary>
-
-## Conversational form example
-
-```python
-from pydantic import BaseModel
-from cat.experimental.form import form, CatForm
-
-# data structure to fill up
-class PizzaOrder(BaseModel):
-    pizza_type: str
-    phone: int
-
-# forms let you control goal oriented conversations
-@form
-class PizzaForm(CatForm):
-    description = "Pizza Order"
-    model_class = PizzaOrder
-    start_examples = [
-        "order a pizza!",
-        "I want pizza"
-    ]
-    stop_examples = [
-        "stop pizza order",
-        "not hungry anymore",
-    ]
-    ask_confirm = True
-
-    def submit(self, form_data):
-        
-        # do the actual order here!
-
-        # return to convo
-        return {
-            "output": f"Pizza order on its way: {form_data}"
-        }
-```
-</details>
 
 ## Docs and Resources
 

@@ -6,7 +6,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Remote Attach to Cat",
+            "name": "Chashire Cat Debug (local)",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "justMyCode": true
+        },
+        {
+            "name": "Cheshire Cat Debug (docker)",
             "type": "debugpy",
             "request": "attach",
             "connect": {

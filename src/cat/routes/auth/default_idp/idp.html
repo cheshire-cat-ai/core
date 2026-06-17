@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Internal Cat IDP Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <p>Please use the internal identity provider only for developing, testing and personal usage.<br>
+        When going to production, install in the Cat a plugin with a SSO compliant Auth handler.</p>
+    <form method="post" action="/auth/internal-idp/login">
+        <label>CCAT_API_KEY:<br>
+            <input type="text" name="api_key" />
+        </label>
+        <br><br>
+        <input type="hidden" name="redirect_uri" value="{{redirect_uri}}">
+        <br><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>

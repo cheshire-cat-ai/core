@@ -1,37 +1,29 @@
+# python 
 __pycache__
+*.egg-info
 .env
 *mypy_cache
 *.pytest_cache
-
-# python local dev
 venv
 .venv
-
 .DS_Store
 .idea
+/dist/
 
-# DBs
-long_term_memory
-local_vector_memory
-/core/dormouse/*
-*metadata.db
-*metadata-v*.db
-*metadata.json
-*metadata-test.json
-test_db.db
+# agents
+.claude/
+openspec
+AGENTS.md
+CLAUDE.md
 
-# old admin folder
-admin
+# installation folders
+/data/
+/plugins/
+/static/
 
-# data folder (settings and models)
-core/cat/data/*
-!core/cat/data/.gitkeep
-
-# plugins are not tracked by git
-core/cat/plugins/*
-# plugins readme can stay
-!core/cat/plugins/how-to-write-a-plugin.md
+# testing folder (should be removed automatically)
+/mocks/
 
 # cache embedder
-core/local_cache/*
+src/local_cache/*
 
