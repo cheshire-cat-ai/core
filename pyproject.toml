@@ -46,6 +46,6 @@ package = true
 
 [project.scripts]
 # CLI
-cat = "cat.main:main"
+ccat = "cat.main:main"
 
 

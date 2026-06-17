@@ -5,11 +5,11 @@ import traceback
 from pprint import pformat
 from loguru import logger
 
-from cat.env import get_env, get_env_bool
+from cat import config
 
 def get_log_level():
     """Return the global LOG level."""
-    return get_env("CCAT_LOG_LEVEL")
+    return config.LOG_LEVEL
 
 
 class LogEngine:
@@ -33,7 +33,7 @@ class LogEngine:
         - `ERROR`
         - `CRITICAL`
 
-    Default to `CCAT_LOG_LEVEL` env variable (`INFO`).
+    Default to `config.LOG_LEVEL` (`INFO`).
     """
 
     def __init__(self):
@@ -154,20 +154,19 @@ class LogEngine:
     def welcome(self):
         """Welcome message in the terminal."""
  
-        from cat import paths
-        cat_address = get_env("CCAT_URL")
+        cat_address = config.URL
 
-        if os.path.exists( paths.DATA_PATH + "/.welcome" ):
+        if os.path.exists( config.DATA_PATH + "/.welcome" ):
             print("\n^._.^\n")
         else:
             print("\n\n")
-            with open(paths.BASE_PATH + "/welcome.txt", "r") as f:
+            with open(config.BASE_PATH + "/welcome.txt", "r") as f:
                 print(f.read())
 
             left_margin = " " * 15
             print(f"\n\n{left_margin} WEB UI:           {cat_address}")
             print(f"{left_margin} API PLAYGROUND:   {cat_address}/docs\n\n")
-            open( paths.DATA_PATH + "/.welcome", "w").close()
+            open( config.DATA_PATH + "/.welcome", "w").close()
 
         # self.log_examples()
 
@@ -196,7 +195,7 @@ class LogEngine:
     def convo_summary(self, system_prompt, messages, agent_slug):
         """Log a summary of the conversation sent to the LLM."""
 
-        if not get_env_bool("CCAT_DEBUG"):
+        if not config.DEBUG:
             return
 
         c = self.colored_text

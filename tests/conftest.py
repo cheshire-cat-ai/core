@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from cat.looking_glass.stray_cat import StrayCat
 from cat.auth import User
 from cat.mad_hatter.plugin import Plugin
-import cat.paths
+from cat import config
 
 from tests.utils import create_mock_plugin_zip
 
@@ -21,8 +21,8 @@ FAKE_TIMESTAMP = 1705855981
 
 
 def clean_up_envs():
-    # env variables
-    os.environ["CCAT_DEBUG"] = "false" # do not autoreload
+    # disable autoreload-related debug behavior during tests
+    config._values["DEBUG"] = False
 
 
 @pytest.fixture(scope="function")
@@ -33,12 +33,12 @@ def patches(monkeypatch, tmp_path):
     (tmp_path / "mocks/plugins").mkdir()
     (tmp_path / "mocks/static").mkdir()
 
-    # Use mock folder as project folder
-    monkeypatch.setattr(
-        cat.paths,
-        'PROJECT_PATH',
-        str(tmp_path / "mocks")
-    )
+    # Use mock folder as project folder (patch project paths consistently)
+    mocks = str(tmp_path / "mocks")
+    monkeypatch.setitem(config._values, "PROJECT_PATH", mocks)
+    monkeypatch.setitem(config._values, "PLUGINS_PATH", os.path.join(mocks, "plugins"))
+    monkeypatch.setitem(config._values, "DATA_PATH", os.path.join(mocks, "data"))
+    monkeypatch.setitem(config._values, "UPLOADS_PATH", os.path.join(mocks, "data", "uploads"))
 
     # TODOV2: maybe with uv this is fast enough
     # do not check plugin dependencies at every restart

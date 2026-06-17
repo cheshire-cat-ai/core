@@ -4,7 +4,7 @@ import datetime
 from uuid import uuid4
 
 from cat.db import DB
-from cat import paths
+from cat import config
 
 
 def setup_project():
@@ -21,11 +21,11 @@ def setup_project():
 def create_folders():
     """Create necessary folders if they do not exist."""
 
-    scaffold_path = os.path.join(paths.BASE_PATH, "scaffold")
+    scaffold_path = os.path.join(config.BASE_PATH, "scaffold")
 
     for folder in ["data", "plugins"]:
         origin = os.path.join(scaffold_path, folder)
-        destination = os.path.join(paths.PROJECT_PATH, folder)
+        destination = os.path.join(config.PROJECT_PATH, folder)
         if not os.path.exists(destination):
             shutil.copytree(origin, destination)
 

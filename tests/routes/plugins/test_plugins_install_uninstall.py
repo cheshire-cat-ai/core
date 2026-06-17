@@ -1,12 +1,12 @@
 import os
 
-from cat import paths
+from cat import config
 
 # NOTE: here we test zip upload install
 # install from registry is in `./test_plugins_registry.py`
 def test_plugin_install_from_zip(client, just_installed_plugin, admin_headers):
     # during tests, the cat uses a different folder for plugins
-    mock_plugin_final_folder = paths.PLUGINS_PATH + "/mock_plugin"
+    mock_plugin_final_folder = config.PLUGINS_PATH + "/mock_plugin"
 
     #### PLUGIN IS ALREADY ACTIVE
 
@@ -34,7 +34,7 @@ def test_plugin_install_from_zip(client, just_installed_plugin, admin_headers):
 
 def test_plugin_uninstall(client, just_installed_plugin, admin_headers):
     # during tests, the cat uses a different folder for plugins
-    mock_plugin_final_folder = paths.PLUGINS_PATH + "/mock_plugin"
+    mock_plugin_final_folder = config.PLUGINS_PATH + "/mock_plugin"
 
     # remove plugin via endpoint (will delete also plugin folder in mock_plugin_folder)
     response = client.delete("/plugins/mock_plugin", headers=admin_headers)

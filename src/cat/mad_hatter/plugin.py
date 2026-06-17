@@ -15,7 +15,7 @@ from cat.mad_hatter.decorators import (
 )
 from cat.mad_hatter.plugin_manifest import PluginManifest
 from cat.services.service import Service, SingletonService, RequestService
-from cat import log, paths
+from cat import log, config
 
 
 
@@ -169,7 +169,7 @@ class Plugin:
         services = []
 
         # TODOV2: this should probably go in mad_hatter
-        base_path = paths.PLUGINS_PATH
+        base_path = config.PLUGINS_PATH
         if base_path not in sys.path:
             sys.path.insert(0, base_path)
 

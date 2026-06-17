@@ -17,7 +17,7 @@
   cd mycat
   uv python pin 3.13
   uv add cheshire-cat-ai
-  uv run cat
+  uv run ccat
   ```
 
 - contributor:
@@ -25,7 +25,7 @@
   git clone ....
   cd core
   uv venv
-  uv run cat
+  uv run ccat
   ```
 
   To run linter and tests
@@ -41,7 +41,7 @@
   uv publish --token={TOKEN}
   ```
 
-- the docker is broken btw
+- docker has been removed from core; the blessed path is `uv`
 
 
 ## Agents
@@ -147,10 +147,10 @@
   from cat.auth import check_permissions, User, Auth
   ```
 - factory explanation XXX
-- Environment variables:
-  - there are less env variables, as many things are delegated to plugins (which can decide whether to use them or not).
-  - `CCAT_CORE_HOST`, `CCAT_CORE_PORT` and `CCAT_CORE_USE_SECURE_PROTOCOLS` have been collapsed into one single env variable `CCAT_URL` with default value `http://localhost:1865`
-  - can get main paths and urls from `cat.paths` and `cat.urls`
+- Configuration (Django-style):
+  - core ships a single source of defaults in `cat/defaults.py` (plain UPPERCASE constants, no `CCAT_` prefix). It is the reference for every available setting — there is no `.env.example`.
+  - a project overrides defaults with an optional `config.py` in the project folder (cwd), redefining the constants it cares about. The file is plain Python, so a project can read `.env`/`os.environ` itself; core never parses env on its behalf.
+  - everything is accessed through one read-only merged object: `from cat import config; config.URL`. Project paths and derived URLs (`config.PROJECT_PATH`, `config.PLUGINS_PATH`, `config.DATA_PATH`, `config.UPLOADS_PATH`, `config.API_URL`) live on the same object. `cat.env`, `cat.paths` and `cat.urls` are gone.
   - `StrayCat` and `Agent` share `CatMixin` to use both llm, invoking agents, request/response and access to `CheshireCat` via `self.ccat`
 
 ## Hooks
@@ -258,7 +258,7 @@ Auth system semplifications (TODO review):
 - user based settings `cat.user.load_settings()`
 - `cat.plugin.load_settings` should allow to choose the format (`as_dict=True` otherwise return directly the pydantic obj)
 - `cat.plugin.save_settings` should accept both a dictionary or a pydantic model
-- `settings.py` file in project path alà django, and if not in any case get rid of `get_env`
+- ~~`settings.py` file in project path alà django, and if not in any case get rid of `get_env`~~ DONE: `config.py` + `cat/defaults.py`, `get_env` removed
 
 ### other
 

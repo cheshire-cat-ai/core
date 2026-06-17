@@ -3,7 +3,6 @@ import pytest
 import time
 import jwt
 
-from cat.env import get_env
 from cat.auth import JWTHelper
 
 from tests.utils import send_http_message

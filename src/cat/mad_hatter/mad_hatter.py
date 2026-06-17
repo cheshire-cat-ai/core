@@ -4,8 +4,7 @@ import glob
 import shutil
 from typing import List, Dict, Any, Callable, Type, Union, TYPE_CHECKING
 
-from cat import log, paths, utils
-from cat.env import get_env
+from cat import log, config, utils
 from cat.db import DB
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.registry import registry_download_plugin
@@ -46,12 +45,12 @@ class MadHatter:
     #def _ensure_plugins_path_importable(self):
     #    """Let plugins import each other constructs."""
     #    
-    #    init_file = os.path.join(paths.PLUGINS_PATH, "__init__.py")
+    #    init_file = os.path.join(config.PLUGINS_PATH, "__init__.py")
     #    if not os.path.exists(init_file):
     #        with open(init_file, "w") as f:
     #            f.write("# Do not remove this file, it makes the plugins folder importable.\n")
     #
-    #    plugins_parent = os.path.dirname(paths.PLUGINS_PATH)
+    #    plugins_parent = os.path.dirname(config.PLUGINS_PATH)
     #    if plugins_parent not in os.sys.path:
     #        os.sys.path.insert(0, plugins_parent)
 
@@ -80,7 +79,7 @@ class MadHatter:
 
             # extract zip/tar file into plugin folder
             extractor = PluginExtractor(plugin_zip_path)
-            plugin_path = extractor.extract(paths.PLUGINS_PATH)
+            plugin_path = extractor.extract(config.PLUGINS_PATH)
 
             # remove zip after extraction
             shutil.rmtree(plugin_zip_path, ignore_errors=True)
@@ -117,7 +116,7 @@ class MadHatter:
 
     async def preinstall_plugins(self):
         """
-        Preinstall plugins based on env CCAT_PREINSTALLED_PLUGINS.
+        Preinstall plugins listed in config.PREINSTALLED_PLUGINS.
         Called by CheshireCat during bootstrap.
         Will only run if there are no active plugins.
         """
@@ -127,9 +126,9 @@ class MadHatter:
             log.info("Plugins already present, skipping preinstallation.")
             return
 
-        preinstalled_plugins = get_env("CCAT_PREINSTALLED_PLUGINS")
+        preinstalled_plugins = config.PREINSTALLED_PLUGINS or []
         if preinstalled_plugins:
-            for location in preinstalled_plugins.split(","):
+            for location in preinstalled_plugins:
                 location = location.strip()
                 try:
                     if location.startswith("http") or location.endswith((".zip", ".tar", ".tar.gz")):
@@ -140,7 +139,7 @@ class MadHatter:
                         # plugin already in plugins folder, just save it as active
                         log.info(f"Preactivating plugin {location}")
                         active_plugins = await self.get_active_plugins()
-                        plugin_code_is_present = os.path.exists( os.path.join(paths.PLUGINS_PATH, location))
+                        plugin_code_is_present = os.path.exists( os.path.join(config.PLUGINS_PATH, location))
                         if location not in active_plugins and plugin_code_is_present:
                             active_plugins.append(location)
                             await self.set_active_plugins(active_plugins)
@@ -157,7 +156,7 @@ class MadHatter:
         self.plugins = {}
 
         # plugins are found in the `./plugins` folder
-        all_plugin_folders = glob.glob( f"{paths.PLUGINS_PATH}/*/")
+        all_plugin_folders = glob.glob( f"{config.PLUGINS_PATH}/*/")
 
         # active plugins ids (stored in db)
         active_plugins = await self.get_active_plugins()
@@ -317,7 +316,7 @@ class MadHatter:
         """Internal use only. Services should use `self.plugin`."""
 
         stack = inspect.stack()
-        norm_plugins_path = os.path.normpath(paths.PLUGINS_PATH)
+        norm_plugins_path = os.path.normpath(config.PLUGINS_PATH)
 
         for frame_info in stack:
 

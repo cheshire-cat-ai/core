@@ -5,8 +5,7 @@ from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import Form
 
-from cat import paths
-from cat.env import get_env
+from cat import config
 
 router = APIRouter(prefix="/auth/internal-idp", tags=["Default IDP"])
 
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/auth/internal-idp", tags=["Default IDP"])
 @router.get("", include_in_schema=False
 )
 async def internal_idp(redirect_uri: str) -> HTMLResponse:
-    html_path = os.path.join( paths.BASE_PATH, "routes/auth/default_idp/idp.html" )
+    html_path = os.path.join( config.BASE_PATH, "routes/auth/default_idp/idp.html" )
     with open(html_path, "r") as f:
         html = f.read()
     html = html.replace("{{redirect_uri}}", redirect_uri)
@@ -27,7 +26,7 @@ async def internal_idp_login(
     api_key: str = Form(...),
     redirect_uri: str = Form(...)
 ):
-    if api_key == get_env("CCAT_API_KEY"):
+    if api_key == config.API_KEY:
         code = hashlib.sha256(api_key.encode()).hexdigest()[:16]
         return RedirectResponse(
             url=f"{redirect_uri}?code={code}",

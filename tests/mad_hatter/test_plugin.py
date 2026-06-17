@@ -9,7 +9,7 @@ from tests.utils import get_mock_plugin_info
 
 from cat.mad_hatter.mad_hatter import Plugin
 from cat.mad_hatter.decorators import Hook, Tool, Endpoint
-from cat import paths
+from cat import config
 
 
 # this fixture will give test functions a ready instantiated plugin
@@ -17,7 +17,7 @@ from cat import paths
 @pytest.fixture(scope="function")
 def plugin(client):
 
-    mock_plugin_path = paths.PLUGINS_PATH + "/mock_plugin"
+    mock_plugin_path = config.PLUGINS_PATH + "/mock_plugin"
 
     shutil.copytree(
         "tests/mocks/mock_plugin",
@@ -36,7 +36,7 @@ def test_create_plugin_wrong_folder():
 
 
 def test_not_create_plugin_with_empty_folder():
-    path = paths.PLUGINS_PATH + "/empty_folder"
+    path = config.PLUGINS_PATH + "/empty_folder"
 
     os.mkdir(path)
 
@@ -49,7 +49,7 @@ def test_not_create_plugin_with_empty_folder():
 
 def test_create_plugin(plugin):
 
-    assert plugin.path == paths.PLUGINS_PATH + "/mock_plugin"
+    assert plugin.path == config.PLUGINS_PATH + "/mock_plugin"
     assert plugin.id == "mock_plugin"
 
     # manifest

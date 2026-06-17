@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from cat.env import get_env
+from cat import config
 from cat.routes import (
     status,
     openapi,
@@ -41,9 +41,8 @@ cheshire_cat_api = FastAPI(
 )
 
 # Configures the CORS middleware for the FastAPI app
-cors_enabled = get_env("CCAT_CORS_ENABLED")
-if cors_enabled == "true":
-    cors_allowed_origins_str = get_env("CCAT_CORS_ALLOWED_ORIGINS")
+if config.CORS_ENABLED:
+    cors_allowed_origins_str = config.CORS_ALLOWED_ORIGINS
 
     # When credentials=True, browsers reject wildcard "*" for Access-Control-Allow-Origin.
     # Using allow_origin_regex=".*" reflects the actual Origin header, which works with credentials.

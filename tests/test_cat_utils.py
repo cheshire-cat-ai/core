@@ -1,47 +1,36 @@
 import os
-import pytest
-from cat import urls, paths, utils
+from cat import config, utils
 
 
 def test_get_base_url(client):
-    # TODOV2: update to new env var CCAT_URL
-    assert urls.BASE_URL == "http://localhost:1865"
-    # test when CCAT_CORE_USE_SECURE_PROTOCOLS is set
-    os.environ["CCAT_CORE_USE_SECURE_PROTOCOLS"] = "1"
-    assert urls.BASE_URL == "https://localhost:1865"
-    os.environ["CCAT_CORE_USE_SECURE_PROTOCOLS"] = "0"
-    assert urls.BASE_URL == "http://localhost:1865"
-    os.environ["CCAT_CORE_USE_SECURE_PROTOCOLS"] = ""
-    assert urls.BASE_URL == "http://localhost:1865"
-
-
-# TODOV2: check get_api_url()
+    assert config.URL == "http://localhost:1865"
+    assert config.API_URL == "http://localhost:1865/api/v2/"
 
 
 def test_get_base_path(client):
-    assert paths.BASE_PATH == os.getcwd() + "/src/cat"
+    assert config.BASE_PATH == os.getcwd() + "/src/cat"
 
 
 def test_get_project_path(client):
     # during tests, project is in a temp folder
-    pytest_tmp_folder = paths.PROJECT_PATH
+    pytest_tmp_folder = config.PROJECT_PATH
     assert pytest_tmp_folder.startswith("/tmp/pytest-")
     assert pytest_tmp_folder.endswith("/mocks")
 
 
 def test_get_data_path(client):
     # "data" in production, "mocks/data" during tests
-    assert paths.DATA_PATH == os.path.join(paths.PROJECT_PATH, "data")
+    assert config.DATA_PATH == os.path.join(config.PROJECT_PATH, "data")
 
 
 def test_get_plugin_path(client):
     # "plugins" in production, "mocks/plugins" during tests
-    assert paths.PLUGINS_PATH == os.path.join(paths.PROJECT_PATH, "plugins")
+    assert config.PLUGINS_PATH == os.path.join(config.PROJECT_PATH, "plugins")
 
 
 def test_get_uploads_path(client):
     # "uploads" in production, "mocks/uploads" during tests
-    assert paths.UPLOADS_PATH == os.path.join(paths.DATA_PATH, "uploads")
+    assert config.UPLOADS_PATH == os.path.join(config.DATA_PATH, "uploads")
 
 def test_levenshtein_distance():
     # identical strings → 0

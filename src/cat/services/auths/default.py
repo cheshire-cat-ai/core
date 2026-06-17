@@ -2,8 +2,9 @@ from uuid import uuid5, NAMESPACE_DNS
 from urllib.parse import urljoin
 from typing import Dict
 
-from cat import urls
-from cat.env import get_env
+from fastapi import Request
+
+from cat import config
 
 from .base import Auth, User
 
@@ -22,6 +23,12 @@ class DefaultAuth(Auth):
             roles=["admin"],
         )
 
+    async def authenticate(self, request: Request) -> User | None:
+        # No API key configured: everything is open, grant admin to all.
+        if config.API_KEY is None:
+            return self.get_admin()
+        return await super().authenticate(request)
+
     async def authorize_user_from_jwt(
         self,
         token: str,
@@ -38,8 +45,8 @@ class DefaultAuth(Auth):
         self,
         key: str,
     ) -> User | None:
-        env_key = get_env("CCAT_API_KEY")
-        if (env_key is None) or (env_key == key):
+        api_key = config.API_KEY
+        if (api_key is None) or (api_key == key):
             return self.get_admin()
 
     async def get_provider_login_url(
@@ -47,7 +54,7 @@ class DefaultAuth(Auth):
         redirect_uri: str
     ) -> str:
         return urljoin(
-            urls.BASE_URL, f"/auth/internal-idp?redirect_uri={redirect_uri}"
+            config.URL, f"/auth/internal-idp?redirect_uri={redirect_uri}"
         )
 
     async def authorize_user_from_oauth_code(

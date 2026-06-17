@@ -43,7 +43,7 @@ def get_user(role: str | None = None) -> Depends:
         request: Request,
         credential: str | None = Depends(APIKeyHeader(
             name="Authorization",
-            description="Insert here your CCAT_API_KEY, or Bearer JWT token.",
+            description="Insert here your API key (config.API_KEY), or Bearer JWT token.",
             auto_error=False,
         )),
     ) -> User:

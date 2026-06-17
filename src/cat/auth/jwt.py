@@ -4,8 +4,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 
 from cat.auth.user import User
-from cat.env import get_env
-from cat import log
+from cat import config, log
 
 
 class JWTHelper:
@@ -19,7 +18,7 @@ class JWTHelper:
             return False
 
     def encode(self, user: User) -> str:
-        expire_delta_in_seconds = float(get_env("CCAT_JWT_EXPIRE_MINUTES")) * 60
+        expire_delta_in_seconds = float(config.JWT_EXPIRE_MINUTES) * 60
         expires = datetime.now(timezone.utc) + timedelta(seconds=expire_delta_in_seconds)
 
         jwt_content = {
@@ -31,7 +30,7 @@ class JWTHelper:
         }
         return jwt.encode(
             jwt_content,
-            get_env("CCAT_JWT_SECRET"),
+            config.JWT_SECRET,
             algorithm="HS256",
         )
 
@@ -40,7 +39,7 @@ class JWTHelper:
         try:
             return jwt.decode(
                 token,
-                get_env("CCAT_JWT_SECRET"),
+                config.JWT_SECRET,
                 algorithms=["HS256"],
             )
         except Exception:

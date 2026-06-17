@@ -22,7 +22,7 @@ def test_http_auth(client):
         assert status_code == 403
         assert json["detail"] == "Invalid Credentials"
 
-    # allow access if CCAT_API_KEY is right
+    # allow access if API_KEY is right
     headers = {"Authorization": "Bearer meow"}
     status_code, json = http_request(client, headers)
     assert status_code == 200

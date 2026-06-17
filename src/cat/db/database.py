@@ -4,9 +4,9 @@ os.environ["PICCOLO_CONF"] = "cat.db.database"
 from piccolo.engine.postgres import PostgresEngine
 from piccolo.engine.sqlite import SQLiteEngine
 
-from cat.env import get_env
+from cat import config
 
-DB_URL = get_env("CCAT_SQL")
+DB_URL = config.SQL
 
 if DB_URL.startswith("sqlite"):
     # sqlite:///data/core/core.db
