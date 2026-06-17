@@ -21,7 +21,6 @@ Main use case of the Cat is to give [Pollo Watzlawick](https://www.youtube.com/@
 ```bash
 uv init --bare mycat
 cd mycat
-uv python pin 3.13
 uv add cheshire-cat-ai
 uv run ccat
 ```
