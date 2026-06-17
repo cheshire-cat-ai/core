@@ -1,7 +1,7 @@
 [project]
 name = "cheshire-cat-ai"
 description = "Production ready AI agent framework"
-version = "2.0.15"
+version = "2.0.16"
 requires-python = ">=3.11"
 license-files = ["LICEN[CS]E*"]
 license = "GPL-3.0"

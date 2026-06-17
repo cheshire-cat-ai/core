@@ -105,7 +105,10 @@ class CheshireCat:
         # remove all plugin Endpoint routes from fastapi app
         routes_to_remove = []
         for route in self.fastapi_app.routes:
-            if hasattr(route.endpoint, 'plugin_id'):
+            # route may be a plain APIRoute (has `.endpoint`) or a nested
+            # router/mount (from `@endpoint.router`) that does not
+            if hasattr(getattr(route, "endpoint", None), 'plugin_id') \
+                    or hasattr(route, "plugin_id"):
                 routes_to_remove.append(route)
         for route in routes_to_remove:
             self.fastapi_app.routes.remove(route)

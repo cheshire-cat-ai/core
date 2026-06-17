@@ -231,10 +231,21 @@ class Plugin:
         # writing it at all levels (even at low level function) because
         #  fastapi rebuild the routes when doing `app.include_router`
         e.plugin_id = self._id
-        for route in e.routes:
-            route.plugin_id = self._id
-            route.endpoint.plugin_id = self._id # this works
+        self._tag_routes(e.routes)
         return e
+
+    def _tag_routes(self, routes):
+        # routes may contain APIRoute (with `.endpoint`) or, when a plugin uses
+        # `@endpoint.router` (which calls `include_router`), nested router/mount
+        # objects whose shape varies across Starlette versions. Tag whatever we
+        # find and recurse into nested routes when present.
+        for route in routes:
+            route.plugin_id = self._id
+            if hasattr(route, "endpoint"):
+                route.endpoint.plugin_id = self._id  # this works
+            nested = getattr(route, "routes", None)
+            if nested:
+                self._tag_routes(nested)
     
     def _clean_service(self, service: Type[Service]):
         s = service[1]
