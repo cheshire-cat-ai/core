@@ -11,7 +11,6 @@ def test_defaults_present():
     assert global_config.API_URL == "http://localhost:1865/api/v2/"
     assert isinstance(global_config.DEBUG, bool)
     assert isinstance(global_config.JWT_EXPIRE_MINUTES, int)
-    assert isinstance(global_config.PREINSTALLED_PLUGINS, list)
 
 
 def test_derived_paths_under_project():

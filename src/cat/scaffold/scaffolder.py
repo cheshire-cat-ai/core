@@ -12,11 +12,29 @@ def setup_project():
     Scaffold the project:
      - populate the database with initial settings.
      - create minimal project folders/files if they do not exist.
-     - preinstall plugins if specified in env variable.
     """
 
     create_folders()
     populate_db()
+
+def installed_plugin_names():
+    """Names of the plugin directories present in the project's `plugins/` folder.
+
+    Read from disk *after* `create_folders()` has copied the vendored starters
+    in, so the seeded active set always matches what is actually installed —
+    never a dangling reference to a plugin that isn't on disk. On a fresh
+    project this is exactly the starters just copied (e.g. ['chats', 'llms',
+    'ui']). Files (like the plugin-authoring readme) are ignored; only plugin
+    folders count.
+    """
+    plugins_path = config.PLUGINS_PATH
+    if not os.path.isdir(plugins_path):
+        return []
+    return sorted(
+        name
+        for name in os.listdir(plugins_path)
+        if os.path.isdir(os.path.join(plugins_path, name))
+    )
 
 def create_folders():
     """Create necessary folders if they do not exist."""
@@ -33,7 +51,11 @@ def populate_db():
     """Init DB and insert minimal settings into it."""
 
     initial_settings = {
-        "active_plugins": [],
+        # Seed the active plugins from the plugins actually present in the
+        # project folder (the starters just copied in on a fresh install), so a
+        # fresh install boots with a working LLM, UI and chats — and the seed
+        # never points at a plugin that isn't on disk.
+        "active_plugins": installed_plugin_names(),
         "installation_info": {
             "id": str(uuid4()),
             "alive_since": datetime.datetime.now(datetime.timezone.utc),

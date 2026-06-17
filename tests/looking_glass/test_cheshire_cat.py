@@ -1,7 +1,10 @@
 import pytest
 
 from cat.mad_hatter.mad_hatter import MadHatter
-from cat.services.model_providers.default import DefaultModelProvider
+from cat.services.model_providers.openai_compatible import (
+    OpenAICompatibleProvider,
+    NO_KEY_MESSAGE,
+)
 
 
 @pytest.fixture(scope="function")
@@ -17,9 +20,13 @@ def test_main_modules_loaded(cheshire_cat):
 
 @pytest.mark.asyncio
 async def test_default_provider_loaded(cheshire_cat):
-    provider = await cheshire_cat.get("model_providers", "default")
-    assert isinstance(provider, DefaultModelProvider)
-    assert await provider.list_llms() == ["default"]
+    provider = await cheshire_cat.get("model_providers", "openai_compatible")
+    assert isinstance(provider, OpenAICompatibleProvider)
+    # No key configured in tests: no live models, and llm() replies with a
+    # clear next step instead of raising.
+    assert await provider.list_llms() == []
+    reply = await provider.llm("gpt-4o-mini", messages=[])
+    assert reply.text == NO_KEY_MESSAGE
 
 
 @pytest.mark.asyncio

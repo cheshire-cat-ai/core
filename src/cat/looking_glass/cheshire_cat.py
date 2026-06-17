@@ -44,8 +44,6 @@ class CheshireCat:
             self.mad_hatter.on_refresh_callbacks.append(
                 self.on_mad_hatter_refresh
             )
-            # Preinstall plugins if needed
-            await self.mad_hatter.preinstall_plugins()
             # Trigger plugin discovery
             await self.mad_hatter.find_plugins()
 
@@ -82,14 +80,17 @@ class CheshireCat:
         # avoid circular imports
         from cat.services.auths.default import DefaultAuth
         from cat.services.agents.default import DefaultAgent
+        from cat.services.model_providers.openai_compatible import OpenAICompatibleProvider
         from cat.services.model_providers.default import DefaultModelProvider
         from cat.services.core_settings import CoreSettings
 
         # Reset registry (shutdown existing singletons and clear classes)
         await self.registry.teardown()
 
-        # Register default services (all core-provided, one place)
-        for ServiceClass in [CoreSettings, DefaultAuth, DefaultModelProvider, DefaultAgent]:
+        # Register default services (all core-provided, one place). Core ships
+        # exactly one model provider — the generic OpenAI-compatible engine; the
+        # named vendor presets live in the scaffolded `llms` plugin.
+        for ServiceClass in [CoreSettings, DefaultAuth, DefaultAgent, DefaultModelProvider, OpenAICompatibleProvider]:
             ServiceClass.plugin_id = "core"
             self.registry.register(ServiceClass)
 
@@ -123,11 +124,7 @@ class CheshireCat:
         raise_error: bool = True
     ) -> "Service | None":
         """
-        Get a service instance by type and slug. The low-level escape hatch
-        behind the `cat` package capability functions — not the front door.
-
-        Request-scoped state is read from the request context (`from cat import
-        user`), never injected through `get()`.
+        Get a service instance by type and slug.
         """
         return await self.registry.get(type, slug, raise_error=raise_error)
 

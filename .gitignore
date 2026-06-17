@@ -19,7 +19,7 @@ CLAUDE.md
 # installation folders
 /data/
 /plugins/
-/static/
+/_plugins/
 
 # testing folder (should be removed automatically)
 /mocks/

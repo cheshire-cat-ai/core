@@ -108,7 +108,7 @@ _app: "CheshireCat | None" = None
 
 
 def app() -> "CheshireCat":
-    """Return the one CheshireCat instance. Internal plumbing — not the front door."""
+    """Return the one CheshireCat instance. Internal usage only."""
     if _app is None:
         raise RuntimeError("CheshireCat is not bootstrapped yet.")
     return _app

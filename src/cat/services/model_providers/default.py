@@ -1,20 +1,33 @@
-import random
 from typing import List, TYPE_CHECKING
-from collections.abc import Awaitable, Callable
 
-from .base import ModelProvider
-from ...types import Message, TextContent, ToolCall
+from cat.services.model_providers.base import ModelProvider
+from cat.types import Message, TextContent
 
 if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+    from cat.types import ToolCall
     from cat.mad_hatter.decorators import Tool
 
 
+# Shown by the default LLM until a real provider is configured.
+NOT_CONFIGURED_MESSAGE = (
+    "No Language Model is configured yet. Choose one in the settings!"
+)
+
+
 class DefaultModelProvider(ModelProvider):
-    """Default model provider (placeholder models)."""
+    """
+    The "nothing configured yet" provider.
+
+    It is the safe `default:default` fallback a fresh Cat boots with: it never
+    needs a key, always lists a single `default` model, and answers every call
+    with a clear next step instead of crashing. Selecting a real provider in the
+    settings replaces it.
+    """
 
     slug = "default"
-    name = "Default model provider"
-    description = "Default model provider with placeholder models."
+    name = "Default (not configured)"
+    description = "Placeholder until you configure a real model provider."
 
     async def setup(self):
         pass
@@ -28,17 +41,13 @@ class DefaultModelProvider(ModelProvider):
     async def llm(
         self,
         model: str,
-        messages: list[Message],
+        messages: list["Message"],
         system_prompt: str = "",
         tools: list["Tool"] = [],
-        on_token: Callable[[str], Awaitable[None]] | None = None,
-        on_tool_call: Callable[[ToolCall], Awaitable[None]] | None = None,
-    ) -> Message:
-        text = "You did not configure a Language Model. Do it in the settings!"
-        return Message(
-            role="assistant",
-            content=[TextContent(text=text)]
-        )
+        on_token: "Callable[[str], Awaitable[None]] | None" = None,
+        on_tool_call: "Callable[[ToolCall], Awaitable[None]] | None" = None,
+    ) -> "Message":
+        return Message(role="assistant", content=[TextContent(text=NOT_CONFIGURED_MESSAGE)])
 
     async def embed(self, model: str, text: str) -> list[float]:
-        return [random.random() for _ in range(8)]
+        raise RuntimeError(NOT_CONFIGURED_MESSAGE)

@@ -70,9 +70,7 @@ class Service:
         Return the Pydantic model describing this service's settings, or None.
 
         Default: the nested `class Settings(BaseModel)` if declared. Override to
-        build a dynamic model (e.g. an enum derived from installed plugins). The
-        single argument is the app, so there is one resolution path for both
-        static and dynamic schemas — no per-request instance needed.
+        build a dynamic model (e.g. an enum derived from installed plugins).
         """
         nested = getattr(cls, "Settings", None)
         if isinstance(nested, type) and issubclass(nested, BaseModel):

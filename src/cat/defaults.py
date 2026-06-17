@@ -42,10 +42,3 @@ CORS_ALLOWED_ORIGINS = "*"
 
 # Anonymous telemetry.
 TELEMETRY = True
-
-# Plugins installed automatically on first launch (git URLs, zip/tar URLs,
-# or names of plugins already present in the plugins folder).
-PREINSTALLED_PLUGINS = [
-    "https://github.com/cheshire-cat-ai/llms",
-    "https://github.com/cheshire-cat-ai/ui",
-]

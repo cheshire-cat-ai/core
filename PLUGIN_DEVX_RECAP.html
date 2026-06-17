@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheshire Cat v2 — Plugin DevX after the giga-refactor</title>
+<style>
+  :root {
+    --bg: #1b1530;
+    --panel: #251c42;
+    --panel-2: #2e2350;
+    --ink: #ece8ff;
+    --muted: #b3a7d6;
+    --accent: #ff8ad4;
+    --accent-2: #8ad4ff;
+    --green: #7ee7a8;
+    --red: #ff7a8a;
+    --code-bg: #160f29;
+    --border: #3a2e63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px 96px; }
+  header {
+    padding: 56px 24px 40px;
+    text-align: center;
+    background: radial-gradient(120% 140% at 50% 0%, #34265e 0%, var(--bg) 70%);
+    border-bottom: 1px solid var(--border);
+  }
+  header .kitty { font-size: 52px; }
+  h1 { font-size: 2.1rem; margin: 12px 0 6px; letter-spacing: -0.5px; }
+  header p { color: var(--muted); max-width: 640px; margin: 6px auto 0; }
+  .tag {
+    display: inline-block; margin-top: 16px; padding: 5px 14px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--accent-2);
+    font-size: 0.8rem; font-family: ui-monospace, monospace;
+  }
+  h2 {
+    font-size: 1.5rem; margin: 56px 0 6px; padding-top: 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 10px; font-size: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #1b1530; font-weight: 700;
+  }
+  h3 { font-size: 1.05rem; margin: 28px 0 8px; color: var(--accent-2); }
+  .lede { color: var(--muted); margin: 0 0 20px; }
+  p { margin: 12px 0; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--code-bg); padding: 2px 6px; border-radius: 5px; font-size: 0.88em;
+    border: 1px solid var(--border); color: #ffd9f0;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; overflow-x: auto; margin: 14px 0; font-size: 0.86rem; line-height: 1.55;
+  }
+  pre code { background: none; border: none; padding: 0; color: #e7e1ff; }
+  .tok-kw { color: #ff8ad4; }
+  .tok-fn { color: #8ad4ff; }
+  .tok-str { color: #b6e8a0; }
+  .tok-com { color: #7d72a8; font-style: italic; }
+  .tok-cls { color: #ffd479; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 4px 24px 20px; margin: 18px 0;
+  }
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  @media (max-width: 720px){ .ba { grid-template-columns: 1fr; } }
+  .ba > div { border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
+  .before { background: rgba(255,122,138,0.07); border-color: rgba(255,122,138,0.35); }
+  .after  { background: rgba(126,231,168,0.07); border-color: rgba(126,231,168,0.35); }
+  .ba h4 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+  .before h4 { color: var(--red); }
+  .after h4  { color: var(--green); }
+  .ba pre { background: var(--code-bg); margin: 0; font-size: 0.78rem; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--accent-2); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  td code { font-size: 0.82em; }
+  .pill { font-family: ui-monospace, monospace; font-size: 0.82rem; }
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--panel-2);
+    padding: 12px 18px; border-radius: 0 10px 10px 0; margin: 18px 0; color: var(--ink);
+  }
+  .callout strong { color: var(--accent); }
+  .toc { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px 24px; margin: 28px 0; }
+  .toc h3 { margin: 0 0 10px; color: var(--ink); }
+  .toc ol { margin: 0; padding-left: 22px; columns: 2; }
+  @media (max-width: 720px){ .toc ol { columns: 1; } }
+  .toc a { color: var(--accent-2); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .imports { font-size: 1.05rem; text-align: center; padding: 20px; }
+  .imports code { font-size: 1rem; background: none; border: none; color: var(--accent); }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border); }
+  a { color: var(--accent-2); }
+</style>
+</head>
+<body>
+<header>
+  <div class="kitty">🐱</div>
+  <h1>Cheshire Cat v2 — Plugin DevX</h1>
+  <p>What changed for plugin authors after the <em>giga-refactor</em>: one import surface, no god-object, no dependency-injection ceremony.</p>
+  <span class="tag">openspec: 2026-06-17-giga-refactor-ctx</span>
+</header>
+
+<div class="wrap">
+
+  <div class="callout">
+    <strong>The one-line summary:</strong> the framework used to offer <em>six different ways</em> to reach the same ambient state
+    (the user, the LLM, settings, a hook). They are all gone. Now there is exactly one:
+    <code>from cat import &hellip;</code>. The name <code>cat</code> means <em>only the package</em> — there is no
+    <code>self.ccat</code>, no <code>caller</code>, no <code>get_user()</code> dependency to thread around anymore.
+  </div>
+
+  <div class="imports">
+    <code>from cat import llm, embedder, memory, auth, hook, user, tool, endpoint, config, log, Agent</code>
+  </div>
+
+  <div class="toc">
+    <h3>In this recap</h3>
+    <ol>
+      <li><a href="#big">The big idea</a></li>
+      <li><a href="#agents">Agents</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#endpoints">Endpoints</a></li>
+      <li><a href="#hooks">Hooks</a></li>
+      <li><a href="#llm">LLM &amp; Embedder</a></li>
+      <li><a href="#providers">Writing a provider</a></li>
+      <li><a href="#settings">Settings</a></li>
+      <li><a href="#cheat">Cheat sheet</a></li>
+    </ol>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="big"><span class="num">1</span> The big idea</h2>
+  <p class="lede">Import names, not objects. Behaviour is resolved per-call.</p>
+
+  <p>
+    <code>from cat import llm</code> binds a <strong>name</strong> to a <strong>function</strong>. Importing builds nothing.
+    When you <em>call</em> <code>await llm(&hellip;)</code>, the function resolves the configured provider through the registry
+    <em>at that moment</em>. That is why the friendly import surface can coexist with runtime/plugin/config selection — the name is
+    fixed, the behaviour is late-bound.
+  </p>
+
+  <p>Two flavours of ambient access:</p>
+  <table>
+    <tr><th>Kind</th><th>What</th><th>How you reach it</th></tr>
+    <tr><td><span class="pill">Capabilities</span></td><td>swappable, config-chosen implementations — <code>llm</code>, <code>embedder</code>, <code>memory</code>, <code>auth</code>, <code>hook</code></td><td>imported <strong>functions</strong>, resolved on call</td></tr>
+    <tr><td><span class="pill">Request context</span></td><td>per-request facts — the current <code>user</code> and the stream callback</td><td>imported <strong>proxy</strong>, backed by <code>contextvars</code>, live per request</td></tr>
+  </table>
+
+  <p>
+    <code>user</code> is backed by a <code>contextvars.ContextVar</code> that middleware sets once per request. Each async task gets its
+    own isolated copy, so concurrent requests from alice and bob never see each other's user. Reading <code>user</code> outside a
+    request raises a clear <code>RuntimeError</code> instead of returning stale state.
+  </p>
+
+  <div class="callout">
+    <strong>Why this doesn't bring back the v1 god-object.</strong> v1 cycled because <code>cat.x</code> were eagerly-wired attributes
+    referencing each other at construction time. Module-level capability functions are inherently lazy: importing them builds nothing,
+    and a provider that needs another provider just asks at call-time. The registry caches singletons but builds them on first use.
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="agents"><span class="num">2</span> Agents</h2>
+  <p class="lede">An agent is a <em>verb you run</em> — a fresh instance per run, mutated during the run, thrown away.</p>
+
+  <p>
+    Subclass <code>Agent</code>, give it a <code>slug</code>, and override what you need. Run state lives on <code>self</code>:
+    <code>self.task</code> (input), <code>self.result</code> (accumulating output), <code>self.system_prompt</code>,
+    <code>self.tools</code>, and — if you declare an <code>ArgsSchema</code> — <code>self.args</code>. Because every run is a fresh
+    instance, mutating these is safe under concurrency. There is <strong>no</strong> <code>self.ccat</code>,
+    <code>self.request</code>, or <code>self.factory</code> — ambient needs come from imports.
+  </p>
+
+  <h3>The simplest agent</h3>
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> Agent
+
+<span class="tok-kw">class</span> <span class="tok-cls">StoryBrandAgent</span>(<span class="tok-cls">Agent</span>):
+    <span class="tok-str">"""Your truly StoryBrand Agent."""</span>
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">get_system_prompt</span>(<span class="tok-kw">self</span>):
+        <span class="tok-kw">return</span> STORY_BRAND_PROMPT
+</code></pre>
+  </div>
+  <p>That's it — the base <code>loop()</code> drives the agentic LLM-and-tools cycle for you, streaming to the client.</p>
+
+  <h3>Typed arguments with <code>ArgsSchema</code></h3>
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> pydantic <span class="tok-kw">import</span> BaseModel
+<span class="tok-kw">from</span> cat <span class="tok-kw">import</span> Agent
+<span class="tok-kw">from</span> cat.types <span class="tok-kw">import</span> Message, TextContent
+
+<span class="tok-kw">class</span> <span class="tok-cls">ParrotAgent</span>(<span class="tok-cls">Agent</span>):
+
+    slug = <span class="tok-str">"parrot"</span>
+    name = <span class="tok-str">"Parrot Agent"</span>
+    description = <span class="tok-str">"Just replies back what you just said."</span>
+
+    <span class="tok-kw">class</span> <span class="tok-cls">ArgsSchema</span>(<span class="tok-cls">BaseModel</span>):
+        system_prompt: str = <span class="tok-str">"You are a parrot. Repeat what the user says."</span>
+        repeat_n: int = <span class="tok-str">1</span>
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">get_system_prompt</span>(<span class="tok-kw">self</span>):
+        <span class="tok-kw">return</span> <span class="tok-kw">self</span>.args.system_prompt
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">loop</span>(<span class="tok-kw">self</span>):              <span class="tok-com"># override the loop entirely</span>
+        <span class="tok-kw">for</span> _ <span class="tok-kw">in</span> range(<span class="tok-kw">self</span>.args.repeat_n):
+            <span class="tok-kw">self</span>.result.messages.append(
+                Message(role=<span class="tok-str">"assistant"</span>, content=[
+                    TextContent(text=<span class="tok-kw">self</span>.args.system_prompt + <span class="tok-kw">self</span>.task.messages[-1].text)
+                ])
+            )
+</code></pre>
+  </div>
+
+  <h3>Calling a sub-agent — no request threading</h3>
+  <div class="ba">
+    <div class="before">
+      <h4>Before</h4>
+<pre><code>result = <span class="tok-kw">await</span> self.call_agent(
+    <span class="tok-str">"default"</span>, task,
+    request=self.request,   <span class="tok-com"># 😩</span>
+)</code></pre>
+    </div>
+    <div class="after">
+      <h4>After</h4>
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> call_agent
+
+result = <span class="tok-kw">await</span> call_agent(<span class="tok-str">"default"</span>, task)
+self.result.messages.extend(result.messages)</code></pre>
+    </div>
+  </div>
+
+  <h3>Directives — shaping the agent in three phases</h3>
+  <p>
+    A <code>Directive</code> inspects and changes the agent <em>in place</em> around the loop. It receives the running
+    <code>agent</code> explicitly (it operates <em>on</em> it — so it is intentionally <strong>not</strong> ambient). The system
+    prompt is reset to its baseline before each <code>step()</code>, which makes per-iteration RAG a non-event.
+  </p>
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> cat.base <span class="tok-kw">import</span> Directive
+
+<span class="tok-kw">class</span> <span class="tok-cls">RecallContext</span>(<span class="tok-cls">Directive</span>):
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">start</span>(<span class="tok-kw">self</span>, agent):   <span class="tok-com"># once, before the loop — filter tools, set base prompt</span>
+        ...
+    <span class="tok-kw">async def</span> <span class="tok-fn">step</span>(<span class="tok-kw">self</span>, agent):    <span class="tok-com"># every iteration, after prompt reset — inject RAG, guardrails</span>
+        agent.system_prompt += <span class="tok-str">"\n\nRelevant context: ..."</span>
+    <span class="tok-kw">async def</span> <span class="tok-fn">finish</span>(<span class="tok-kw">self</span>, agent):  <span class="tok-com"># once, after the loop — save memories, log</span>
+        ...
+</code></pre>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="tools"><span class="num">3</span> Tools</h2>
+  <p class="lede">Just an <code>async</code> function with a docstring. The signature is exactly what the LLM fills in — nothing else.</p>
+
+  <p>
+    The framework <code>caller</code> parameter is <strong>gone</strong>. A tool's input schema (what the LLM sees) now contains only
+    real arguments. Need the current user or a capability? Import it.
+  </p>
+
+  <div class="ba">
+    <div class="before">
+      <h4>Before</h4>
+<pre><code><span class="tok-kw">@tool</span>
+<span class="tok-kw">async def</span> <span class="tok-fn">send_mail</span>(text, to, <span class="tok-cls">caller</span>):
+    user = caller.user           <span class="tok-com"># 😩 framework arg</span>
+    <span class="tok-kw">return</span> f<span class="tok-str">"Sent by {user.name}"</span></code></pre>
+    </div>
+    <div class="after">
+      <h4>After</h4>
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> tool, user
+
+<span class="tok-kw">@tool</span>
+<span class="tok-kw">async def</span> <span class="tok-fn">send_mail</span>(text: str, to: str):
+    <span class="tok-str">"""Send email text to an address."""</span>
+    <span class="tok-kw">return</span> f<span class="tok-str">"Sent mail to {to} by {user.name}"</span></code></pre>
+    </div>
+  </div>
+
+  <p>You can still pass examples for the trigger matching:</p>
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> datetime <span class="tok-kw">import</span> datetime
+<span class="tok-kw">from</span> cat <span class="tok-kw">import</span> tool
+
+<span class="tok-kw">@tool</span>(examples=[<span class="tok-str">"what time is it"</span>, <span class="tok-str">"get the time"</span>])
+<span class="tok-kw">async def</span> <span class="tok-fn">get_the_time</span>():
+    <span class="tok-str">"""Useful to get the current time when asked. Input is always None."""</span>
+    <span class="tok-kw">return</span> f<span class="tok-str">"The current time is {datetime.now()}"</span>
+</code></pre>
+  </div>
+
+  <p>Agents can also carry their own tools as methods, with <code>@tool</code> on a bound method:</p>
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> Agent, tool
+
+<span class="tok-kw">class</span> <span class="tok-cls">Tooler</span>(<span class="tok-cls">Agent</span>):
+    slug = <span class="tok-str">"tooler"</span>
+
+    <span class="tok-kw">@tool</span>
+    <span class="tok-kw">async def</span> <span class="tok-fn">list_modules</span>(<span class="tok-kw">self</span>) -> str:
+        <span class="tok-str">"""List available modules."""</span>
+        <span class="tok-kw">return</span> [...]
+</code></pre>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="endpoints"><span class="num">4</span> Endpoints</h2>
+  <p class="lede">Plain FastAPI routes via <code>@endpoint</code>. Reach the user and hooks by import, not by <code>Depends()</code>.</p>
+
+  <p>
+    <code>get_user()</code> and <code>get_ccat()</code> FastAPI dependencies are removed. Your endpoint signature now contains only its
+    real request parameters; <code>user</code>, <code>config</code> and <code>hook</code> come from <code>cat</code>.
+  </p>
+
+  <div class="ba">
+    <div class="before">
+      <h4>Before</h4>
+<pre><code><span class="tok-kw">@endpoint</span>.post(<span class="tok-str">"/api/v2/uploads"</span>)
+<span class="tok-kw">async def</span> <span class="tok-fn">upload_file</span>(
+    file = File(...),
+    user = <span class="tok-fn">get_user</span>(),      <span class="tok-com"># 😩</span>
+    ccat = <span class="tok-fn">get_ccat</span>(),      <span class="tok-com"># 😩</span>
+):
+    ...
+    <span class="tok-kw">await</span> ccat.mad_hatter.execute_hook(
+        <span class="tok-str">"after_file_upload"</span>, val, caller=ccat)</code></pre>
+    </div>
+    <div class="after">
+      <h4>After</h4>
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> config, endpoint, user, hook
+
+<span class="tok-kw">@endpoint</span>.post(<span class="tok-str">"/api/v2/uploads"</span>, tags=[<span class="tok-str">"Uploads"</span>])
+<span class="tok-kw">async def</span> <span class="tok-fn">upload_file</span>(file: UploadFile = File(...)):
+    hashed = uuid5(NAMESPACE_URL, str(user.id))
+    save_dir = os.path.join(config.UPLOADS_PATH, str(hashed))
+    ...
+    <span class="tok-kw">await</span> hook(<span class="tok-str">"after_file_upload"</span>, uploaded)</code></pre>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="hooks"><span class="num">5</span> Hooks</h2>
+  <p class="lede">One <code>hook</code> name, two jobs: <em>decorate</em> to listen, <em>await</em> to fire.</p>
+
+  <p>The trick: arity tells them apart. Firing passes a <em>name and a value</em>; decorating doesn't.</p>
+
+  <table>
+    <tr><th>Goal</th><th>Code</th></tr>
+    <tr><td>Listen (define)</td><td><code>@hook</code> &nbsp;·&nbsp; <code>@hook("custom_name")</code> &nbsp;·&nbsp; <code>@hook(priority=2)</code></td></tr>
+    <tr><td>Fire (emit)</td><td><code>await hook("after_file_upload", value)</code></td></tr>
+  </table>
+
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> hook, log
+
+<span class="tok-com"># Listen: receive the value, return the (possibly modified) value.</span>
+<span class="tok-kw">@hook</span>
+<span class="tok-kw">async def</span> <span class="tok-fn">after_file_upload</span>(uploaded):
+    log.info(f<span class="tok-str">"got a file at {uploaded.path}"</span>)
+    <span class="tok-kw">return</span> uploaded
+
+<span class="tok-kw">@hook</span>(priority=100)
+<span class="tok-kw">async def</span> <span class="tok-fn">agent_prompt_prefix</span>(prefix):
+    <span class="tok-kw">return</span> prefix + <span class="tok-str">"\nAlways answer in a friendly tone."</span>
+</code></pre>
+  </div>
+
+  <div class="callout">
+    <strong>No more <code>cat</code> argument in hooks.</strong> The old <code>async def my_hook(value, cat)</code> signature is gone.
+    A hook receives only the value it transforms; everything ambient (<code>user</code>, <code>llm</code>, &hellip;) is imported.
+  </div>
+
+  <p>Hooks fired by the core that you can listen on include the agent lifecycle ones: <code>before_agent_execution</code>,
+  <code>after_agent_execution</code>, <code>agent_prompt_prefix</code>/<code>agent_prompt_suffix</code>, <code>agent_allowed_tools</code>,
+  plus the slug-scoped variants like <code>before_parrot_agent_execution</code>.</p>
+
+  <!-- ============================================================= -->
+  <h2 id="llm"><span class="num">6</span> LLM &amp; Embedder</h2>
+  <p class="lede">Call the configured model in one line. Streaming to the client is automatic.</p>
+
+  <div class="ba">
+    <div class="before">
+      <h4>Before</h4>
+<pre><code>emb = self.ccat.<span class="tok-fn">get_embedder</span>(...)   <span class="tok-com"># 😩</span>
+<span class="tok-kw">await</span> self.<span class="tok-fn">load_settings</span>()           <span class="tok-com"># 😩</span>
+vec = emb.<span class="tok-fn">embed_query</span>(text)</code></pre>
+    </div>
+    <div class="after">
+      <h4>After</h4>
+<pre><code><span class="tok-kw">from</span> cat <span class="tok-kw">import</span> llm, embedder
+
+reply = <span class="tok-kw">await</span> <span class="tok-fn">llm</span>(<span class="tok-str">"Summarise this in one line."</span>)
+vec   = <span class="tok-kw">await</span> <span class="tok-fn">embedder</span>(<span class="tok-str">"text to embed"</span>)</code></pre>
+    </div>
+  </div>
+
+  <p>Both default to the installation's configured model. Pass an explicit <code>model="provider:model"</code> as a power-user escape hatch:</p>
+  <div class="card">
+<pre><code><span class="tok-com"># Use the installation default (from core settings):</span>
+msg = <span class="tok-kw">await</span> <span class="tok-fn">llm</span>(<span class="tok-str">"Hello!"</span>)
+
+<span class="tok-com"># Force a specific provider:model — the escape hatch:</span>
+msg = <span class="tok-kw">await</span> <span class="tok-fn">llm</span>(<span class="tok-str">"Hello!"</span>, model=<span class="tok-str">"anthropic:claude-opus-4-8"</span>)
+
+<span class="tok-com"># Full control — pass conversation, tools, toggle streaming:</span>
+msg = <span class="tok-kw">await</span> <span class="tok-fn">llm</span>(
+    system_prompt=<span class="tok-str">"You are concise."</span>,
+    messages=task.messages,
+    tools=my_tools,
+    stream=<span class="tok-kw">True</span>,
+)
+
+vec = <span class="tok-kw">await</span> <span class="tok-fn">embedder</span>(<span class="tok-str">"text"</span>, model=<span class="tok-str">"openai:text-embedding-3-small"</span>)
+</code></pre>
+  </div>
+
+  <div class="callout">
+    <strong>Streaming is free.</strong> When <code>stream=True</code>, <code>llm()</code> pushes AGUI token events to the current
+    client via the request-context stream callback — no <code>self.request.state</code> to wire up. The slug syntax is
+    <code>"provider:model"</code>; a bare name resolves against the default provider.
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="providers"><span class="num">7</span> Writing a provider</h2>
+  <p class="lede">LLM/embedder providers are services — subclass <code>ModelProvider</code>, read <code>self.settings</code>, implement <code>llm()</code>/<code>embed()</code>.</p>
+
+  <p>
+    Providers moved out of core into the <code>llms</code> plugin (OpenAI, Anthropic, Ollama). A provider declares a nested
+    <code>Settings</code>; the registry loads and injects <code>self.settings</code> <strong>before</strong> <code>setup()</code> runs,
+    so you read config synchronously and never touch the DB.
+  </p>
+
+  <div class="card">
+<pre><code><span class="tok-kw">from</span> pydantic <span class="tok-kw">import</span> BaseModel, Field
+<span class="tok-kw">from</span> cat <span class="tok-kw">import</span> log
+<span class="tok-kw">from</span> cat.services.model_providers.base <span class="tok-kw">import</span> ModelProvider
+
+<span class="tok-kw">class</span> <span class="tok-cls">Anthropic</span>(<span class="tok-cls">ModelProvider</span>):
+    <span class="tok-str">"""Anthropic Claude models."""</span>
+
+    slug = <span class="tok-str">"anthropic"</span>
+    description = <span class="tok-str">"Anthropic Claude models via the Anthropic API."</span>
+
+    <span class="tok-kw">class</span> <span class="tok-cls">Settings</span>(<span class="tok-cls">BaseModel</span>):
+        anthropic_key: str = <span class="tok-fn">Field</span>(default=<span class="tok-str">""</span>, title=<span class="tok-str">"Anthropic API Key"</span>)
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">setup</span>(<span class="tok-kw">self</span>):                 <span class="tok-com"># self.settings already injected & typed</span>
+        <span class="tok-kw">from</span> anthropic <span class="tok-kw">import</span> AsyncAnthropic
+        key = <span class="tok-kw">self</span>.settings.anthropic_key
+        <span class="tok-kw">self</span>.client = <span class="tok-fn">AsyncAnthropic</span>(api_key=key) <span class="tok-kw">if</span> key <span class="tok-kw">else</span> <span class="tok-kw">None</span>
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">list_llms</span>(<span class="tok-kw">self</span>):            <span class="tok-com"># powers the dynamic model dropdown</span>
+        models = <span class="tok-kw">await</span> <span class="tok-kw">self</span>.client.models.list()
+        <span class="tok-kw">return</span> [m.id <span class="tok-kw">for</span> m <span class="tok-kw">in</span> models.data]
+
+    <span class="tok-kw">async def</span> <span class="tok-fn">llm</span>(<span class="tok-kw">self</span>, model, messages, system_prompt=<span class="tok-str">""</span>, tools=[],
+                  on_token=<span class="tok-kw">None</span>, on_tool_call=<span class="tok-kw">None</span>):
+        <span class="tok-com"># build request, stream via on_token / on_tool_call, return a Message</span>
+        ...
+</code></pre>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="settings"><span class="num">8</span> Settings</h2>
+  <p class="lede">Declare a nested <code>Settings</code>. The registry injects a loaded, typed <code>self.settings</code> before <code>setup()</code>.</p>
+
+  <ul>
+    <li><code>Service.load_settings()</code> / <code>save_settings()</code> are <strong>gone</strong>. A stateless <code>cat.settings</code> manager owns persistence; <code>self.settings</code> is your per-lifecycle cache.</li>
+    <li>No <code>Settings</code> and no <code>settings_schema()</code> override ⟶ <code>self.settings</code> is <code>None</code> and the service doesn't appear under <code>GET /settings</code>.</li>
+    <li><strong>Loading never destroys data.</strong> A corrupted blob falls back to defaults; a changed schema is salvaged field-by-field — every still-valid value is kept, the rest default, nothing is deleted. Give every field a default and migration is a non-event.</li>
+  </ul>
+
+  <p>Need runtime-derived options (e.g. an enum of available models)? Override the single classmethod — there is one resolution path, no static-vs-dynamic branching:</p>
+  <div class="card">
+<pre><code><span class="tok-kw">class</span> <span class="tok-cls">MyService</span>(<span class="tok-cls">Service</span>):
+
+    <span class="tok-kw">class</span> <span class="tok-cls">Settings</span>(<span class="tok-cls">BaseModel</span>):
+        verbose: bool = <span class="tok-kw">True</span>
+
+    <span class="tok-kw">@classmethod</span>
+    <span class="tok-kw">async def</span> <span class="tok-fn">settings_schema</span>(cls, app):
+        <span class="tok-com"># build a dynamic model from runtime data; default returns Settings</span>
+        <span class="tok-kw">return</span> <span class="tok-fn">build_enum_model</span>(<span class="tok-kw">await</span> app.<span class="tok-fn">get_all</span>(<span class="tok-str">"model_providers"</span>))
+</code></pre>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2 id="cheat"><span class="num">9</span> Cheat sheet</h2>
+  <p class="lede">Old way → new way, at a glance.</p>
+
+  <table>
+    <tr><th>You want…</th><th>Old (gone)</th><th>New</th></tr>
+    <tr><td>The current user</td><td><code>caller.user</code>, <code>get_user()</code>, <code>self.request</code></td><td><code>from cat import user</code></td></tr>
+    <tr><td>The LLM</td><td><code>self.ccat.get(...)</code></td><td><code>from cat import llm</code> → <code>await llm(...)</code></td></tr>
+    <tr><td>The embedder</td><td><code>self.ccat.get_embedder(...)</code></td><td><code>from cat import embedder</code> → <code>await embedder(...)</code></td></tr>
+    <tr><td>Memory</td><td><code>cat.memory.vectors</code></td><td><code>from cat import memory</code></td></tr>
+    <tr><td>Fire a hook</td><td><code>ccat.mad_hatter.execute_hook(n, v, caller=ccat)</code></td><td><code>await hook(n, v)</code></td></tr>
+    <tr><td>Listen to a hook</td><td><code>@hook async def h(v, cat)</code></td><td><code>@hook async def h(v)</code></td></tr>
+    <tr><td>A tool needing the user</td><td><code>def t(x, caller)</code></td><td><code>def t(x)</code> + <code>from cat import user</code></td></tr>
+    <tr><td>Call a sub-agent</td><td><code>self.call_agent(s, task, request=...)</code></td><td><code>await call_agent(s, task)</code></td></tr>
+    <tr><td>Read settings</td><td><code>await self.load_settings()</code></td><td><code>self.settings.&lt;field&gt;</code> (injected)</td></tr>
+    <tr><td>The app instance</td><td><code>self.ccat</code> / <code>self.factory</code></td><td>— (gone; use imports, or <code>cat.get()</code> as a last resort)</td></tr>
+    <tr><td>Config / paths</td><td>env-var soup</td><td><code>from cat import config</code> → <code>config.UPLOADS_PATH</code></td></tr>
+    <tr><td>Logging</td><td>various</td><td><code>from cat import log</code></td></tr>
+  </table>
+
+  <div class="callout">
+    <strong>Power-user escape hatch.</strong> The registry still exists; it's just demoted to plumbing. If you truly need a service the
+    capabilities don't expose: <code>await get("model_providers", "anthropic")</code>. You'll rarely see it.
+  </div>
+
+  <footer>
+    Cheshire Cat AI v2 · plugin developer experience after <code>giga-refactor-ctx</code> (2026-06-17)<br>
+    One import surface. No god-object. <code>cat</code> means the package. 🐱
+  </footer>
+
+</div>
+</body>
+</html>

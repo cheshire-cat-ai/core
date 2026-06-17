@@ -5,7 +5,6 @@ import mimetypes
 from slugify import slugify
 
 
-
 class PluginExtractor:
     admitted_mime_types = ["application/zip", "application/x-tar"]
 

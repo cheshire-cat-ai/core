@@ -113,38 +113,6 @@ class MadHatter:
         # remove plugin folder
         shutil.rmtree(plugin_path, ignore_errors=True)
 
-    async def preinstall_plugins(self):
-        """
-        Preinstall plugins listed in config.PREINSTALLED_PLUGINS.
-        Called by CheshireCat during bootstrap.
-        Will only run if there are no active plugins.
-        """
-
-        active_plugins = await self.get_active_plugins()
-        if len(active_plugins) > 0:
-            log.info("Plugins already present, skipping preinstallation.")
-            return
-
-        preinstalled_plugins = config.PREINSTALLED_PLUGINS or []
-        if preinstalled_plugins:
-            for location in preinstalled_plugins:
-                location = location.strip()
-                try:
-                    if location.startswith("http") or location.endswith((".zip", ".tar", ".tar.gz")):
-                        # install plugin from url or zip/tar file
-                        log.info(f"Preinstalling plugin from {location}")
-                        await self.install_plugin(location)
-                    else:
-                        # plugin already in plugins folder, just save it as active
-                        log.info(f"Preactivating plugin {location}")
-                        active_plugins = await self.get_active_plugins()
-                        plugin_code_is_present = os.path.exists( os.path.join(config.PLUGINS_PATH, location))
-                        if location not in active_plugins and plugin_code_is_present:
-                            active_plugins.append(location)
-                            await self.set_active_plugins(active_plugins)
-                except Exception as e:
-                    log.error(f"Error preinstalling plugin {location}: {e}")
-
     async def find_plugins(self):
         """
         Discover plugins in the plugins folder, activate the ones
