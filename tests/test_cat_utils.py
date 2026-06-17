@@ -1,20 +1,21 @@
 import os
+import tempfile
 from cat import config, utils
 
 
 def test_get_base_url(client):
     assert config.URL == "http://localhost:1865"
-    assert config.API_URL == "http://localhost:1865/api/v2/"
 
 
 def test_get_base_path(client):
-    assert config.BASE_PATH == os.getcwd() + "/src/cat"
+    # BASE_PATH is the installed package dir, independent of the cwd
+    assert config.BASE_PATH.endswith("/src/cat")
 
 
 def test_get_project_path(client):
-    # during tests, project is in a temp folder
+    # during tests, each test gets its own temp project folder (see conftest)
     pytest_tmp_folder = config.PROJECT_PATH
-    assert pytest_tmp_folder.startswith("/tmp/pytest-")
+    assert pytest_tmp_folder.startswith(tempfile.gettempdir())
     assert pytest_tmp_folder.endswith("/mocks")
 
 

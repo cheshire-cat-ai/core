@@ -1,7 +1,7 @@
 import pytest
 
 from cat.mad_hatter.decorators import Hook
-from cat.types import ChatResponse
+from cat.types import TaskResult
 
 from tests.utils import create_mock_plugin_zip, get_mock_plugin_info
 
@@ -29,7 +29,11 @@ def test_hook_discovery(mad_hatter):
 
 
 def test_hook_priority_execution(mad_hatter):
-    fake_message = ChatResponse(text="Priorities:", user_id="Alice")
+    # TODOV2: port the message shape + async execute_hook contract.
+    # ChatResponse(text=..., user_id=...) was the v1 message; TaskResult carries
+    # `messages`/`resources`, not `text`/`user_id`, so the assertion below still
+    # needs reworking against the v2 hook payload.
+    fake_message = TaskResult()
 
     out = mad_hatter.execute_hook("before_cat_sends_message", fake_message, None)
     assert out.text == "Priorities: priority 3 priority 2"

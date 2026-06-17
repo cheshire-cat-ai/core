@@ -1,18 +1,29 @@
-import time
-import pytest
-import pytest_asyncio
+# ---------------------------------------------------------------------------
+# Every test runs in its own fresh project folder, so nothing accumulates
+# between tests (installed plugins, DB rows, uploads) and the developer's real
+# ./data and ./plugins are never touched.
+#
+# Importing `cat` no longer touches the filesystem — the DB engine path is fixed
+# at import, but folders/tables are materialized by `scaffolder.setup_project()`.
+# So each test just repoints the process-wide engine at its own folder and
+# scaffolds it, exactly like running `ccat` in an empty directory.
+# ---------------------------------------------------------------------------
 import os
+import time
 from typing import Any, Generator
 
+import pytest
+import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from cat.looking_glass.stray_cat import StrayCat
-from cat.auth import User
-from cat.mad_hatter.plugin import Plugin
 from cat import config
+from cat.context import app as cat_app  # aliased: `app` is also a fixture name below
+from cat.mad_hatter.plugin import Plugin
+from cat.scaffold import scaffolder
+from cat.db.database import DB as db_engine
 
 from tests.utils import create_mock_plugin_zip
 
@@ -20,46 +31,36 @@ from tests.utils import create_mock_plugin_zip
 FAKE_TIMESTAMP = 1705855981
 
 
-def clean_up_envs():
-    # disable autoreload-related debug behavior during tests
-    config._values["DEBUG"] = False
-
-
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def patches(monkeypatch, tmp_path):
+    # Per-test isolated project folder ("mocks" mirrors a real project layout).
+    mocks = tmp_path / "mocks"
+    monkeypatch.setitem(config._values, "PROJECT_PATH", str(mocks))
+    monkeypatch.setitem(config._values, "PLUGINS_PATH", str(mocks / "plugins"))
+    monkeypatch.setitem(config._values, "DATA_PATH", str(mocks / "data"))
+    monkeypatch.setitem(config._values, "UPLOADS_PATH", str(mocks / "data" / "uploads"))
 
-    # scaffold directories
-    (tmp_path / "mocks/data").mkdir(parents=True)
-    (tmp_path / "mocks/plugins").mkdir()
-    (tmp_path / "mocks/static").mkdir()
+    # do not check plugin dependencies on every (re)install during tests
+    monkeypatch.setattr(Plugin, "_install_requirements", lambda self, *a, **k: None)
 
-    # Use mock folder as project folder (patch project paths consistently)
-    mocks = str(tmp_path / "mocks")
-    monkeypatch.setitem(config._values, "PROJECT_PATH", mocks)
-    monkeypatch.setitem(config._values, "PLUGINS_PATH", os.path.join(mocks, "plugins"))
-    monkeypatch.setitem(config._values, "DATA_PATH", os.path.join(mocks, "data"))
-    monkeypatch.setitem(config._values, "UPLOADS_PATH", os.path.join(mocks, "data", "uploads"))
+    # Point the process-wide SQLite engine at this test's own db file. The engine
+    # opens a fresh connection per query, so flipping `.path` redirects every
+    # read/write for this test.
+    monkeypatch.setattr(db_engine, "path", str(mocks / "data" / "core" / "core.db"))
 
-    # TODOV2: maybe with uv this is fast enough
-    # do not check plugin dependencies at every restart
-    def mock_install_requirements(self, *args, **kwargs):
-        pass
-    monkeypatch.setattr(Plugin, "_install_requirements", mock_install_requirements)
-    # TODOV2: this was in cleanups
-    # installed with mock_plugin, here we uninstall
-    #os.system("uv pip uninstall -y pip-install-test")
+    # Scaffold the fresh project (folders + db/tables + seeded settings) — the
+    # same thing `cat.main.main()` does before launching the server.
+    scaffolder.setup_project()
 
 
 ####################################
 # Main fixture for the FastAPI app #
 ####################################
 @pytest.fixture(scope="function")
-def app(patches) -> Generator[FastAPI, Any, None]:
-    
-    clean_up_envs()
-    from cat.startup import cheshire_cat_api # will instantiate the cat
-    yield cheshire_cat_api
-    clean_up_envs()
+def app() -> Generator[FastAPI, Any, None]:
+    # a fresh app per test (isolated routes + lifespan); see startup.create_app
+    from cat.startup import create_app
+    yield create_app()
 
 
 ##############################
@@ -67,18 +68,16 @@ def app(patches) -> Generator[FastAPI, Any, None]:
 ##############################
 @pytest.fixture(scope="function")
 def client(app) -> Generator[TestClient, Any, None]:
-    """
-    Create a new FastAPI TestClient.
-    """
+    """Create a new FastAPI TestClient."""
     with TestClient(app) as client:
         yield client
+
 
 ###############################
 # Async version of the client #
 ###############################
 @pytest_asyncio.fixture(scope="function")
 async def async_client(app):
-    
     async with LifespanManager(app):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -88,78 +87,53 @@ async def async_client(app):
 
 @pytest.fixture(scope="package")
 def admin_headers():
-    yield { "Authorization": "Bearer meow"}
+    yield {"Authorization": "Bearer meow"}
+
 
 @pytest.fixture(scope="package")
 def admin_query_params():
-    yield { "token": "meow"}
-
-# This fixture is useful to write tests in which
-#   a plugin was just uploaded via http.
-#   It wraps any test function having `just_installed_plugin` as an argument
-@pytest.fixture(scope="function")
-def just_installed_plugin(client, admin_headers):
-    ### executed before each test function
-
-    # create zip file with a plugin
-    zip_path = create_mock_plugin_zip(flat=True)
-    zip_file_name = zip_path.split("/")[-1]  # mock_plugin.zip in tests/mocks folder
-
-    # upload plugin via endpoint
-    with open(zip_path, "rb") as f:
-        response = client.post(
-            "/plugins/upload/",
-            headers=admin_headers,
-            files={"file": (zip_file_name, f, "application/zip")}
-        )
-
-    # request was processed
-    assert response.status_code == 200
-    assert response.json()["filename"] == zip_file_name
-
-    ### each test function having `just_installed_plugin` as argument, is run here
-    yield
-    ###
-
-    # clean up of zip file and mock_plugin_folder is done for every test automatically (see client fixture)
+    yield {"token": "meow"}
 
 
-# fixture to have available an instance of StrayCat
-@pytest.fixture(scope="function")
-def stray(async_client):
-    user = User(
-        id="Alice",
-        name="Alice"
-    )
-    stray_cat = StrayCat(user)
-    # TODOV2: update to new data structure
-    # TODOV2: remember mixin_init
-    stray_cat.working_memory.user_message_json = {"user_id": user.id, "text": "meow"}
-    yield stray_cat
-
-
-#fixture for mock time.time function
+# fixture for mock time.time function
 @pytest.fixture(scope="function")
 def patch_time_now(monkeypatch):
-
     def mytime():
         return FAKE_TIMESTAMP
 
-    monkeypatch.setattr(time, 'time', mytime)
+    monkeypatch.setattr(time, "time", mytime)
 
-#fixture for mad hatter with mock plugin installed
+
+# The mock plugin installed two ways, mirroring the two install paths in core:
+
+# 1) via HTTP — uploaded through the real POST /api/v2/plugins endpoint.
 @pytest.fixture(scope="function")
-def mad_hatter_with_mock_plugin(client):  # client here injects the monkeypatched version of the cat
+def just_installed_plugin(client, admin_headers):
+    zip_path = create_mock_plugin_zip(flat=True)
+    zip_file_name = os.path.basename(zip_path)  # mock_plugin.zip
 
-    # each test is given the mad_hatter instance
-    mad_hatter = client.app.state.ccat.mad_hatter
+    with open(zip_path, "rb") as f:
+        response = client.post(
+            "/plugins",
+            headers=admin_headers,
+            files={"file": (zip_file_name, f, "application/zip")},
+        )
 
-    # install plugin
+    assert response.status_code == 200, response.text
+    assert response.json()["id"] == "mock_plugin"
+
+    yield
+    # no teardown needed: each test runs in its own throwaway project folder
+
+
+# 2) via MadHatter directly — install_plugin is async in v2, so this is an
+#    async fixture bootstrapped through async_client.
+@pytest_asyncio.fixture(scope="function")
+async def mad_hatter_with_mock_plugin(async_client):
+    mad_hatter = cat_app().mad_hatter
+
     new_plugin_zip_path = create_mock_plugin_zip(flat=True)
-    mad_hatter.install_plugin(new_plugin_zip_path)
+    await mad_hatter.install_plugin(new_plugin_zip_path)
 
     yield mad_hatter
-
-    # remove plugin (unless the test already removed it)
-    if mad_hatter.plugin_exists("mock_plugin"):
-        mad_hatter.uninstall_plugin("mock_plugin")
+    # no teardown needed: each test runs in its own throwaway project folder

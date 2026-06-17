@@ -1,5 +1,7 @@
 import pytest
+import pytest_asyncio
 
+from cat.context import app
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.services.model_providers.openai_compatible import (
     OpenAICompatibleProvider,
@@ -7,18 +9,17 @@ from cat.services.model_providers.openai_compatible import (
 )
 
 
-@pytest.fixture(scope="function")
-def cheshire_cat(client):
-    yield client.app.state.ccat
+# async_client bootstraps the cat in the test's own event loop (no blocking
+# TestClient portal), and the ambient instance is reached via cat.context.app().
+@pytest_asyncio.fixture(scope="function")
+async def cheshire_cat(async_client):
+    yield app()
 
 
-def test_main_modules_loaded(cheshire_cat):
-    assert isinstance(
-        cheshire_cat.mad_hatter, MadHatter
-    )
+async def test_main_modules_loaded(cheshire_cat):
+    assert isinstance(cheshire_cat.mad_hatter, MadHatter)
 
 
-@pytest.mark.asyncio
 async def test_default_provider_loaded(cheshire_cat):
     provider = await cheshire_cat.get("model_providers", "openai_compatible")
     assert isinstance(provider, OpenAICompatibleProvider)
@@ -29,26 +30,22 @@ async def test_default_provider_loaded(cheshire_cat):
     assert reply.text == NO_KEY_MESSAGE
 
 
-@pytest.mark.asyncio
 async def test_get_returns_none_when_not_found(cheshire_cat):
     result = await cheshire_cat.get("model_providers", "nonexistent", raise_error=False)
     assert result is None
 
 
-@pytest.mark.asyncio
 async def test_get_raises_when_not_found(cheshire_cat):
     with pytest.raises(Exception, match="not found"):
         await cheshire_cat.get("model_providers", "nonexistent")
 
 
-@pytest.mark.asyncio
 async def test_get_all_auths(cheshire_cat):
     auths = await cheshire_cat.get_all("auths")
     assert isinstance(auths, dict)
     assert "default" in auths
 
 
-@pytest.mark.asyncio
 async def test_get_all_empty_type(cheshire_cat):
     result = await cheshire_cat.get_all("nonexistent_type")
     assert result == {}

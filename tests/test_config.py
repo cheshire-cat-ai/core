@@ -8,7 +8,6 @@ from cat import config as global_config
 def test_defaults_present():
     # zero-config: values resolve from cat/defaults.py
     assert global_config.URL == "http://localhost:1865"
-    assert global_config.API_URL == "http://localhost:1865/api/v2/"
     assert isinstance(global_config.DEBUG, bool)
     assert isinstance(global_config.JWT_EXPIRE_MINUTES, int)
 
@@ -46,8 +45,6 @@ def test_override_from_project_config(tmp_path, monkeypatch):
     # overridden values win
     assert cfg.URL == "http://0.0.0.0:9000"
     assert cfg.API_KEY == "secret"
-    # derived values follow the override
-    assert cfg.API_URL == "http://0.0.0.0:9000/api/v2/"
     # untouched values fall back to defaults
     assert cfg.JWT_SECRET == "meow_jwt"
 

@@ -1,4 +1,3 @@
-from urllib.parse import urljoin
 from typing import Dict
 
 from fastapi import APIRouter, Request, HTTPException, Body
@@ -41,7 +40,7 @@ async def oauth_login(
         raise HTTPException(status_code=404, detail=f"Auth Handler {name} not found.")
     
 
-    redirect_uri = urljoin(config.API_URL, f"auth/callback/{name}")
+    redirect_uri = f"{config.URL}/auth/callback/{name}"
     origin_url = r.headers.get("origin") or r.headers.get("referer") or config.URL
     
     # start OAuth flow and set origin cookie so callback can redirect back
@@ -71,7 +70,7 @@ async def oauth_callback(r: Request, name: str):
             detail=f"Auth Handler {name} not found."
         )
 
-    redirect_uri = urljoin(config.API_URL, f"auth/callback/{name}")
+    redirect_uri = f"{config.URL}/auth/callback/{name}"
 
     user = await auth.authorize_user_from_oauth_code(
         redirect_uri,

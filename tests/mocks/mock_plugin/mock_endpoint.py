@@ -7,11 +7,11 @@ class Item(BaseModel):
     name: str
     description: str
 
-@endpoint.endpoint(path="/endpoint", methods=["GET"])
+@endpoint.get(path="/endpoint")
 def test_endpoint():
     return {"result":"endpoint default prefix"}
 
-@endpoint.endpoint(path="/endpoint", prefix="/tests", methods=["GET"], tags=["Tests"])
+@endpoint.get(path="/endpoint", prefix="/tests", tags=["Tests"])
 def test_endpoint_prefix():
     return {"result":"endpoint prefix tests"}
 

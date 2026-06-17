@@ -1,25 +1,28 @@
 import os
 import pytest
+import pytest_asyncio
 
 from cat import config
+from cat.context import app
 from cat.mad_hatter.mad_hatter import MadHatter, Plugin
 
 from tests.utils import create_mock_plugin_zip, get_mock_plugin_info
 
 
-# this function will be run before each test function
-@pytest.fixture(scope="function")
-def mad_hatter(client):  # client here injects the monkeypatched version of the cat
+# async_client bootstraps the cat in the test's own event loop (no blocking
+# TestClient portal inside an async test), so cat.context.app() is live here.
+@pytest_asyncio.fixture(scope="function")
+async def mad_hatter(async_client):
     # each test is given the mad_hatter instance
-    yield client.app.state.ccat.mad_hatter
+    yield app().mad_hatter
 
 
 # installation tests will be run for both flat and nested plugin
 @pytest.mark.parametrize("plugin_is_flat", [True, False])
-def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
+async def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     # install plugin
     new_plugin_zip_path = create_mock_plugin_zip(flat=plugin_is_flat)
-    mad_hatter.install_plugin(new_plugin_zip_path)
+    await mad_hatter.install_plugin(new_plugin_zip_path)
 
     core_plugins = []
     assert core_plugins == 1 # TODOV2 fix these tests
@@ -65,7 +68,7 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     #mock_hook_name = "before_cat_sends_message"
     #cached_hooks = mad_hatter.hooks[mock_hook_name]
     #assert set(mad_hatter.hooks).issuperset(cached_hooks)
-    
+
     # hook properties
     #expected_priorities = [3, 2]
     #assert len(cached_hooks) == 2  # two in mock plugin
@@ -85,14 +88,14 @@ def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     assert "mock_plugin" in active_plugins
 
 
-def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
+async def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
 
     # default
     assert set(mad_hatter.plugins.keys()) == set()
-    
+
     # should throw error
     with pytest.raises(Exception) as e:
-        mad_hatter.uninstall_plugin("wrong_plugin")
+        await mad_hatter.uninstall_plugin("wrong_plugin")
         assert "PORCO DIO" in str(e)
 
     # still the same plugins
@@ -103,13 +106,13 @@ def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
 
 
 @pytest.mark.parametrize("plugin_is_flat", [True, False])
-def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
+async def test_plugin_uninstall(mad_hatter: MadHatter, plugin_is_flat):
     # install plugin
     new_plugin_zip_path = create_mock_plugin_zip(flat=plugin_is_flat)
-    mad_hatter.install_plugin(new_plugin_zip_path)
+    await mad_hatter.install_plugin(new_plugin_zip_path)
 
     # uninstall
-    mad_hatter.uninstall_plugin("mock_plugin")
+    await mad_hatter.uninstall_plugin("mock_plugin")
 
     # directory removed
     assert not os.path.exists(os.path.join(config.PLUGINS_PATH, "mock_plugin"))

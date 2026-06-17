@@ -16,7 +16,6 @@ Usage:
 
 import os
 import importlib.util
-from urllib.parse import urljoin
 
 from . import defaults
 
@@ -53,9 +52,6 @@ class Config:
 
         # package installation directory (not overridable)
         values["BASE_PATH"] = os.path.dirname(os.path.abspath(__file__))
-
-        # 5. derived URLs
-        values["API_URL"] = urljoin(values["URL"], "api/v2/")
 
         # freeze
         object.__setattr__(self, "_values", values)

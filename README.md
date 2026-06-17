@@ -18,9 +18,10 @@ Main use case of the Cat is to give [Pollo Watzlawick](https://www.youtube.com/@
 
 ## Quickstart
 
+In an empty folder:
+
 ```bash
-uv init --bare mycat
-cd mycat
+uv init --bare
 uv add cheshire-cat-ai
 uv run ccat
 ```

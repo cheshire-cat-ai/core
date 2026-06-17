@@ -22,7 +22,7 @@ class ChatSelect(CRUDSelect):
 def chats_crud():
     router = create_crud(
         db_model=ChatDB,
-        prefix="/api/v2/chats",
+        prefix="/chats",
         tag="Chats",
         restrict_by_user_id=True,
         search_fields=["name", "messages", "context"],

@@ -5,7 +5,7 @@ The multi-chat, multi-agent web frontend for the Cheshire Cat. This plugin is
 `/assets/...` static route.
 
 Conversation persistence is not its job — it talks to the [`chats`](../chats)
-plugin over the `/api/v2/chats` REST API. There is no Python import from `ui`
+plugin over the `/chats` REST API. There is no Python import from `ui`
 into `chats`; either plugin can be removed or replaced independently.
 
 ## Contents

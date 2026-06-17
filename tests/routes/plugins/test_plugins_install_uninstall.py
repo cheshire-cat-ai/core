@@ -14,13 +14,13 @@ def test_plugin_install_from_zip(client, just_installed_plugin, admin_headers):
     response = client.get("/plugins/mock_plugin", headers=admin_headers)
     assert response.status_code == 200
     json = response.json()
-    assert json["data"]["id"] == "mock_plugin"
-    assert isinstance(json["data"]["active"], bool)
-    assert json["data"]["active"]
+    assert json["id"] == "mock_plugin"
+    assert isinstance(json["active"], bool)
+    assert json["active"]
 
     # GET plugins endpoint lists the plugin
     response = client.get("/plugins", headers=admin_headers)
-    installed_plugins = response.json()["installed"]
+    installed_plugins = response.json()
     installed_plugins_names = list(map(lambda p: p["id"], installed_plugins))
     assert "mock_plugin" in installed_plugins_names
     # core_plugins and mock_plugin are active
@@ -42,10 +42,8 @@ def test_plugin_uninstall(client, just_installed_plugin, admin_headers):
 
     # mock_plugin is not installed in the cat (check both via endpoint and filesystem)
     response = client.get("/plugins", headers=admin_headers)
-    installed_plugins_names = list(map(lambda p: p["id"], response.json()["installed"]))
+    installed_plugins_names = list(map(lambda p: p["id"], response.json()))
     assert "mock_plugin" not in installed_plugins_names
     assert not os.path.exists(
         mock_plugin_final_folder
     )  # plugin folder removed from disk
-
-

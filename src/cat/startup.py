@@ -63,53 +63,61 @@ class RequestContextMiddleware:
             reset_ctx(token)
 
 
-# REST API
-cheshire_cat_api = FastAPI(
-    lifespan=lifespan,
-    docs_url=None,
-    redoc_url=None,
-    title="Cheshire Cat AI",
-    license_info={
-        "name": "GPL-3",
-        "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
-    },
-)
+def create_app() -> FastAPI:
+    """Build a fresh Cheshire Cat FastAPI application.
 
-# Populate the per-request context (user + stream) for every request.
-# Added before CORS so CORS stays the outermost layer (handles preflight).
-cheshire_cat_api.add_middleware(RequestContextMiddleware)
+    A factory (not a module-level singleton) so each test gets an isolated app
+    with its own routes and lifespan, while production still uses the single
+    `cheshire_cat_api` instance below.
+    """
+    app = FastAPI(
+        lifespan=lifespan,
+        docs_url=None,
+        redoc_url=None,
+        title="Cheshire Cat AI",
+        license_info={
+            "name": "GPL-3",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+        },
+    )
 
-# Configures the CORS middleware for the FastAPI app
-if config.CORS_ENABLED:
-    cors_allowed_origins_str = config.CORS_ALLOWED_ORIGINS
+    # Populate the per-request context (user + stream) for every request.
+    # Added before CORS so CORS stays the outermost layer (handles preflight).
+    app.add_middleware(RequestContextMiddleware)
 
-    # When credentials=True, browsers reject wildcard "*" for Access-Control-Allow-Origin.
-    # Using allow_origin_regex=".*" reflects the actual Origin header, which works with credentials.
-    if cors_allowed_origins_str in (None, "", "*"):
-        cheshire_cat_api.add_middleware(
-            CORSMiddleware,
-            allow_origin_regex=".*",
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-    else:
-        origins = cors_allowed_origins_str.split(",")
-        cheshire_cat_api.add_middleware(
-            CORSMiddleware,
-            allow_origins=origins,
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
+    # Configures the CORS middleware for the FastAPI app
+    if config.CORS_ENABLED:
+        cors_allowed_origins_str = config.CORS_ALLOWED_ORIGINS
 
-# API routers
-for r in [
-    me, status, settings, agents, oauth,
-    plugins
-]:
-    cheshire_cat_api.include_router(r.router, prefix="/api/v2")
+        # When credentials=True, browsers reject wildcard "*" for Access-Control-Allow-Origin.
+        # Using allow_origin_regex=".*" reflects the actual Origin header, which works with credentials.
+        if cors_allowed_origins_str in (None, "", "*"):
+            app.add_middleware(
+                CORSMiddleware,
+                allow_origin_regex=".*",
+                allow_credentials=True,
+                allow_methods=["*"],
+                allow_headers=["*"],
+            )
+        else:
+            origins = cors_allowed_origins_str.split(",")
+            app.add_middleware(
+                CORSMiddleware,
+                allow_origins=origins,
+                allow_credentials=True,
+                allow_methods=["*"],
+                allow_headers=["*"],
+            )
 
-# user facing routers
-for r in [ openapi, idp ]:
-    cheshire_cat_api.include_router(r.router)
+    # all routers mounted at root (no API prefix)
+    for r in [
+        me, status, settings, agents, oauth,
+        plugins, openapi, idp
+    ]:
+        app.include_router(r.router)
+
+    return app
+
+
+# REST API — the single production instance (uvicorn targets this).
+cheshire_cat_api = create_app()

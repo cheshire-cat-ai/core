@@ -44,6 +44,9 @@ packages = ["src/cat"]
 [tool.uv]
 package = true
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
 [project.scripts]
 # CLI
 ccat = "cat.main:main"

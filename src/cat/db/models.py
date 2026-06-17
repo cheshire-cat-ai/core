@@ -1,3 +1,4 @@
+import os
 from uuid import uuid4
 import datetime
 from piccolo.table import Table
@@ -56,6 +57,17 @@ class UserScopedDB(Table, db=DB):
         abstract = True
 
 
-# Init DB tables
-for DBTable in [KeyValueDB, UserKeyValueDB]:
-    DBTable.create_table(if_not_exists=True).run_sync()
+def create_tables():
+    """Create the core DB tables (idempotent).
+
+    Called during project setup (see `scaffolder.setup_project`), not at import:
+    importing this module only declares the tables, it never touches the DB. For
+    sqlite, the db directory is created here too, so a fresh project folder gets
+    `data/core/core.db` materialized on first setup.
+    """
+    db_path = getattr(DB, "path", None)
+    if db_path:  # sqlite: ensure the db directory exists
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
+    for DBTable in [KeyValueDB, UserKeyValueDB]:
+        DBTable.create_table(if_not_exists=True).run_sync()

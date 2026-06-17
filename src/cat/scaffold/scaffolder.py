@@ -10,11 +10,15 @@ from cat import config
 def setup_project():
     """
     Scaffold the project:
-     - populate the database with initial settings.
      - create minimal project folders/files if they do not exist.
+     - create the database and its tables.
+     - populate the database with initial settings.
     """
 
+    from cat.db.models import create_tables
+
     create_folders()
+    create_tables()
     populate_db()
 
 def installed_plugin_names():

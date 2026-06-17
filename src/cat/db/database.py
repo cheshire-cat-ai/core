@@ -10,8 +10,9 @@ DB_URL = config.SQL
 
 if DB_URL.startswith("sqlite"):
     # sqlite:///data/core/core.db
+    # Note: the db directory is created during project setup (scaffolder), not
+    # here — importing this module must not touch the filesystem.
     dialect, path = DB_URL.split(":///")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
     db_path = os.path.abspath(path)
     DB_URL = f"{dialect}:///{db_path}"
     DB = SQLiteEngine(path=db_path)

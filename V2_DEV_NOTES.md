@@ -150,7 +150,7 @@
 - Configuration (Django-style):
   - core ships a single source of defaults in `cat/defaults.py` (plain UPPERCASE constants, no `CCAT_` prefix). It is the reference for every available setting — there is no `.env.example`.
   - a project overrides defaults with an optional `config.py` in the project folder (cwd), redefining the constants it cares about. The file is plain Python, so a project can read `.env`/`os.environ` itself; core never parses env on its behalf.
-  - everything is accessed through one read-only merged object: `from cat import config; config.URL`. Project paths and derived URLs (`config.PROJECT_PATH`, `config.PLUGINS_PATH`, `config.DATA_PATH`, `config.UPLOADS_PATH`, `config.API_URL`) live on the same object. `cat.env`, `cat.paths` and `cat.urls` are gone.
+  - everything is accessed through one read-only merged object: `from cat import config; config.URL`. `cat.env`, `cat.paths` and `cat.urls` are gone.
   - `StrayCat` and `Agent` share `CatMixin` to use both llm, invoking agents, request/response and access to `CheshireCat` via `self.ccat`
 
 ## Hooks
