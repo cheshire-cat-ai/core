@@ -1,0 +1,11 @@
+{
+    "name": "LiteLLM Provider",
+    "version": "1.0.0",
+    "description": "LiteLLM AI gateway: access 100+ LLM providers (OpenAI, Anthropic, Bedrock, Vertex, Groq, etc.) through a single unified interface with automatic provider routing.",
+    "author_name": "Cheshire Cat AI Contributors",
+    "author_url": "https://cheshirecat.ai",
+    "plugin_url": "https://github.com/cheshire-cat-ai/core",
+    "tags": "llm, litellm, language model, providers, gateway, multi-provider",
+    "min_cat_version": "2.0.0",
+    "max_cat_version": "Unknown"
+}
