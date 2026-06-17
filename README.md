@@ -1,5 +1,9 @@
 <a name="readme-top"></a>
 
+<p align="center">
+    <img align="center" src=./readme/logo.svg width=400px alt="Cheshire Cat AI logo">
+</p>
+
 > [!WARNING]
 > **Version 2 is unstable alpha!** This new version is still under heavy development and needs work before it becomes stable. Expect breaking changes, rough edges, and incomplete features. Not recommended for production use yet.
 
