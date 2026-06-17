@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from cat import config
+from cat.context import Ctx, set_ctx, reset_ctx
 from cat.routes import (
     status,
     openapi,
@@ -28,6 +29,40 @@ async def lifespan(app: FastAPI):
     yield
 
 
+class RequestContextMiddleware:
+    """
+    Pure-ASGI middleware that authenticates each request and populates the
+    per-request `Ctx` (user + stream slot) in a contextvar.
+
+    Pure ASGI (not BaseHTTPMiddleware) so the contextvar is set in the *same*
+    async context the endpoint runs in — BaseHTTPMiddleware would set it in a
+    separate task and the endpoint would not see it. Authentication is
+    best-effort: public routes simply get `user = None`.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        from cat.capabilities import auth
+
+        request = Request(scope, receive)
+        try:
+            user = await auth(request)
+        except Exception:
+            user = None
+
+        token = set_ctx(Ctx(user=user, request=request))
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            reset_ctx(token)
+
+
 # REST API
 cheshire_cat_api = FastAPI(
     lifespan=lifespan,
@@ -39,6 +74,10 @@ cheshire_cat_api = FastAPI(
         "url": "https://www.gnu.org/licenses/gpl-3.0.en.html",
     },
 )
+
+# Populate the per-request context (user + stream) for every request.
+# Added before CORS so CORS stays the outermost layer (handles preflight).
+cheshire_cat_api.add_middleware(RequestContextMiddleware)
 
 # Configures the CORS middleware for the FastAPI app
 if config.CORS_ENABLED:

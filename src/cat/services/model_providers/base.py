@@ -1,7 +1,7 @@
 from typing import List, TYPE_CHECKING
 from abc import abstractmethod
 
-from cat.services.service import SingletonService
+from cat.services.service import Service
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from cat.mad_hatter.decorators import Tool
 
 
-class ModelProvider(SingletonService):
+class ModelProvider(Service):
     """
     Base class to expose deep learning models.
 

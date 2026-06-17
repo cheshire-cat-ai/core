@@ -28,15 +28,21 @@ class MCPClients():
         self.clients = TTLCache(maxsize=1000, ttl=60*10)
     
     def get_user_client(self, agent) -> MCPClient:
-        
-        need_new, config = self.need_new_client(agent)
-        if need_new:
-            self.clients[agent.user.id] = MCPClient(config)
 
-        return self.clients[agent.user.id]
-    
+        need_new, config = self.need_new_client(agent)
+        user_id = self._user_id()
+        if need_new:
+            self.clients[user_id] = MCPClient(config)
+
+        return self.clients[user_id]
+
+    def _user_id(self):
+        """Current user id, sourced from the request context."""
+        from cat.context import ctx
+        return ctx().user.id
+
     def need_new_client(self, agent) -> tuple[bool, dict]:
-        
+
         config = {
             "mcpServers": {}
         }
@@ -49,9 +55,10 @@ class MCPClients():
             config["mcpServers"][server_config.name] = {
                 "url": str(server_config.url)
             }
-        
-        need_new = (agent.user.id not in self.clients) \
-            or self.clients[agent.user.id].config != config
+
+        user_id = self._user_id()
+        need_new = (user_id not in self.clients) \
+            or self.clients[user_id].config != config
 
         return (
             need_new,

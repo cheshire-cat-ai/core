@@ -104,9 +104,10 @@ class Tool:
         # execute the tool
         try:
             if self.is_internal:
-                # internal tool
+                # internal tool — ambient state (user, capabilities) comes from
+                # `from cat import ...`, not a passed `caller`.
                 tool_result: str = await run_sync_or_async(
-                    self.func, **tool_call.args, caller=agent
+                    self.func, **tool_call.args
                 )
             else:
                 # MCP tool

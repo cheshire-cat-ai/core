@@ -5,20 +5,30 @@ from pydantic import BaseModel
 
 from cat.types import Message, Task, TaskResult
 from cat.mad_hatter.decorators import Tool
-
-from cat.mixin.llm import LLMMixin
+from cat.services.service import Service
+from cat.capabilities import llm, agui_event
 from cat import log
-from ..service import RequestService
 
 if TYPE_CHECKING:
     from cat.base import Directive
 
 
-class Agent(RequestService, LLMMixin):
+class Agent(Service):
+    """
+    An agent is a *verb you run*: a fresh, non-singleton instance per run that
+    holds its execution state as instance attributes (`task`, `result`,
+    `system_prompt`, `tools`) and is thrown away afterwards. Because every run
+    uses a new instance, mutating that state is safe under concurrency.
+
+    Ambient needs come from imports (`from cat import user, llm, hook`), never
+    from a `self.ccat`/`self.request` back-reference.
+    """
 
     service_type = "agents"
+    singleton = False
+
     system_prompt = "You are an Agent in the Cheshire Cat AI fleet. Help the user and other agents with their requests."
-    model = None # can be a slug like "openai:gpt-4o", if None will be taken from settings
+    model = None  # a slug like "openai:gpt-4o"; if None, taken from core settings
 
     directives: List["Directive"] = []
 
@@ -26,26 +36,16 @@ class Agent(RequestService, LLMMixin):
 
     async def __call__(self, task: Task) -> TaskResult:
         """
-        Main entry point for the agent, to run an agent like a function.
-        Calls main lifecycle hooks and runs the agentic loop.
-
-        Parameters
-        ----------
-        task : Task
-            Task object received from the client or from another agent.
-
-        Returns
-        -------
-        TaskResult
-            The agent's answer.
+        Main entry point: run the agent like a function. Sets up run state,
+        fires lifecycle hooks, and runs the agentic loop.
         """
 
         self._validate_args(task)
 
-        async with self.ccat.mcp_clients.get_user_client(self) as mcp_client:
+        async with self.mcp_clients.get_user_client(self) as mcp_client:
             self.mcp = mcp_client
 
-            # Set main attributes for the loop
+            # Per-run state on a fresh instance.
             self.task = task
             self.result = TaskResult()
             self.system_prompt = await self.get_system_prompt()
@@ -100,11 +100,12 @@ class Agent(RequestService, LLMMixin):
             for d in self.directives:
                 await d.step(self)
 
-            llm_mex: Message = await self.llm(
+            llm_mex: Message = await llm(
                 self.system_prompt,
+                model=self.model,
                 messages=self.task.messages + self.result.messages,
                 tools=self.tools,
-                stream=self.task.stream
+                stream=self.task.stream,
             )
 
             self.result.messages.append(llm_mex)
@@ -166,13 +167,14 @@ class Agent(RequestService, LLMMixin):
         agent_tools = self.instantiate_agent_tools()
 
         # Combine all tools
+        from cat.context import app
         tools = await self.execute_hook(
             "agent_allowed_tools",
-            mcp_tools + self.ccat.mad_hatter.tools + agent_tools
+            mcp_tools + app().mad_hatter.tools + agent_tools
         )
 
         return tools
-    
+
     async def call_tool(self, tool_call, *args, **kwargs):
         """Call a tool."""
 
@@ -180,25 +182,17 @@ class Agent(RequestService, LLMMixin):
         for t in await self.list_tools():
             if t.name == name:
                 return await t.execute(self, tool_call)
-            
+
         raise Exception(f"Tool {name} not found")
 
     async def call_agent(self, slug, task: Task) -> TaskResult:
-        """
-        Call an agent by its slug. Shortcut for:
-        ```python
-        a = self.get_agent("my_agent")
-        result = await a(task)
-        ```
-        """
-        
-        agent = await self.ccat.get(
-            "agents",
-            slug,
-            request=self.request,
-            raise_error=True
-        )
-        return await agent(task)
+        """Run another agent by slug. No request threading required."""
+        from cat.capabilities import call_agent
+        return await call_agent(slug, task)
+
+    async def agui_event(self, event):
+        """Emit an AGUI event to the current client (sourced from request context)."""
+        await agui_event(event)
 
     def _validate_args(self, task: Task) -> None:
         """Validate and inject ArgsSchema from task."""
@@ -213,4 +207,3 @@ class Agent(RequestService, LLMMixin):
             for name in dir(self.__class__)
             if isinstance(attr := getattr(self.__class__, name, None), Tool)
         ]
-

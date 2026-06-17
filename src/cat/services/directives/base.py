@@ -2,16 +2,17 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from ..service import RequestService
+from ..service import Service
 
 if TYPE_CHECKING:
     from cat.services.agents.base import Agent
 
 
-class Directive(RequestService):
+class Directive(Service):
     """Base class for a Directive, to inspect and change the Agent before generation."""
 
     service_type = "directives"
+    singleton = False
 
     async def start(self, agent: Agent) -> None:
         """Called once before the agentic loop begins. Use for permanent setup (filter tools, adjust base prompt).

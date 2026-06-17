@@ -4,7 +4,8 @@ from typing import List
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, UploadFile
 from cat import log
-from cat.auth import get_user, get_ccat
+from cat.auth import get_user
+from cat.context import app
 from cat.mad_hatter.plugin_manifest import PluginManifest
 
 router = APIRouter(prefix="/plugins")
@@ -20,10 +21,10 @@ class InstalledPlugin(BaseModel):
 async def get_plugins(
     search: str = None,
     _ = get_user(),
-    ccat = get_ccat()
 ) -> List[InstalledPlugin]:
     """List installed plugins"""
 
+    ccat = app()
     # get active plugins
     active_plugins = await ccat.mad_hatter.get_active_plugins()
 
@@ -48,10 +49,10 @@ async def get_plugins(
 async def get_plugin(
     id: str,
     _ = get_user(),
-    ccat = get_ccat(),
 ) -> InstalledPlugin:
     """Returns information on a single plugin"""
 
+    ccat = app()
     if not ccat.mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")
 
@@ -69,9 +70,10 @@ async def get_plugin(
 async def install_plugin(
     file: UploadFile,
     _ = get_user(role="admin"),
-    ccat = get_ccat(),
 ) -> InstalledPlugin:
     """Install a new plugin from a zip file"""
+
+    ccat = app()
 
     admitted_mime_types = [
         "application/zip", "application/x-tar"
@@ -106,10 +108,10 @@ async def install_plugin(
 async def toggle_plugin(
     id: str,
     _ = get_user(role="admin"),
-    ccat = get_ccat(),
 ):
     """Enable or disable a single plugin"""
 
+    ccat = app()
     # check if plugin exists
     if not ccat.mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")
@@ -126,10 +128,10 @@ async def toggle_plugin(
 async def remove_plugin(
     id: str,
     _ = get_user(role="admin"),
-    ccat = get_ccat(),
 ):
     """Physically remove plugin."""
 
+    ccat = app()
     # check if plugin exists
     if not ccat.mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter
 
-from cat.auth import get_ccat
+from cat.context import app
 
 router = APIRouter(prefix="/status", tags=["Status"])
 
@@ -22,12 +22,10 @@ class StatusResponse(BaseModel):
 
 
 @router.get("")
-async def status(
-    ccat=get_ccat(),
-) -> StatusResponse:
+async def status() -> StatusResponse:
     """Server status"""
 
-    ahs = await ccat.get_all("auths")
+    ahs = await app().get_all("auths")
 
     return StatusResponse(
         status="We're all mad here, dear!",

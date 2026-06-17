@@ -1,11 +1,14 @@
-from typing import Type, Literal
+from typing import Type, Literal, TYPE_CHECKING
 from pydantic import BaseModel, Field
 
-from cat.services.service import SingletonService
+from cat.services.service import Service
 from cat import log
 
+if TYPE_CHECKING:
+    from cat.looking_glass.cheshire_cat import CheshireCat
 
-class CoreSettings(SingletonService):
+
+class CoreSettings(Service):
     """Framework-wide installation settings (default LLM, embedder, etc.)."""
 
     service_type = "config"
@@ -17,15 +20,16 @@ class CoreSettings(SingletonService):
         default_llm: str = "default:default"
         default_embedder: str = "default:default"
 
-    async def settings_model(self) -> Type[BaseModel]:
-        """Build a dynamic settings model with enum options from all model providers."""
+    @classmethod
+    async def settings_schema(cls, app: "CheshireCat") -> Type[BaseModel]:
+        """Dynamic schema: enumerate available LLMs/embedders from all providers."""
 
         llm_options = ["default:default"]
         embedder_options = ["default:default"]
 
-        for slug in self.ccat.factory.class_index.get("model_providers", {}):
+        for slug in app.registry.classes.get("model_providers", {}):
             try:
-                provider = await self.ccat.get("model_providers", slug)
+                provider = await app.get("model_providers", slug)
                 for llm in await provider.list_llms():
                     llm_options.append(f"{slug}:{llm}")
                 for emb in await provider.list_embedders():

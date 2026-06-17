@@ -28,7 +28,6 @@ dependencies = [
     "ag-ui-protocol>=0.1.13",
     "cachetools>=6.2.0",
     "httpx>=0.28.1",
-    "punq>=0.7.0",
 ]
 [project.urls]
 Homepage = "https://github.com/cheshire-cat-ai/core"

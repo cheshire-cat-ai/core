@@ -2,9 +2,10 @@ from typing import List
 from inspect import isclass
 
 from pydantic import BaseModel
-from fastapi import APIRouter, Body, Request, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 
-from cat.auth import get_user, get_ccat
+from cat.auth import get_user
+from cat.context import app
 from cat.types import Task, TaskResult
 from cat.protocols.agui.streaming import AGUIStream
 
@@ -21,13 +22,12 @@ class AgentCard(BaseModel):
 
 @router.get("")
 async def list_agents(
-    ccat=get_ccat(),
     _=get_user(),
 ) -> List[AgentCard]:
     """List all registered agents with full details."""
 
     agents = []
-    for slug, Cls in ccat.factory.class_index.get("agents", {}).items():
+    for slug, Cls in app().registry.classes.get("agents", {}).items():
         args_schema = None
         ArgsSchema = getattr(Cls, 'ArgsSchema', None)
         if ArgsSchema is not None and isclass(ArgsSchema) and issubclass(ArgsSchema, BaseModel):
@@ -46,7 +46,6 @@ async def list_agents(
 @router.post("/{slug}/message")
 async def agent_message(
     slug: str,
-    http_request: Request,
     task: Task = Body(
         ...,
         openapi_examples={
@@ -77,16 +76,10 @@ async def agent_message(
         }
     ),
     _=get_user(),
-    ccat=get_ccat(),
 ) -> TaskResult:
     """Send a message to a specific agent identified by its slug."""
 
-    agent = await ccat.get(
-        "agents",
-        slug,
-        request=http_request,
-        raise_error=False
-    )
+    agent = await app().get("agents", slug, raise_error=False)
     if agent is None:
         raise HTTPException(
             status_code=404,

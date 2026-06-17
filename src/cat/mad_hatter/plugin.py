@@ -14,7 +14,7 @@ from cat.mad_hatter.decorators import (
     Endpoint
 )
 from cat.mad_hatter.plugin_manifest import PluginManifest
-from cat.services.service import Service, SingletonService, RequestService
+from cat.services.service import Service
 from cat import log, config
 
 
@@ -257,14 +257,13 @@ class Plugin:
     def _is_cat_tool(obj):
         return isinstance(obj, Tool)
     
-    # a plugin service is a subclass of SingletonService or RequestService,
-    # defined in the plugin module (not imported from core)
+    # a plugin service is a Service subclass DEFINED in the plugin module
+    # (not a framework base imported into it)
     @staticmethod
     def _is_cat_service(S, module_name=None):
         return isclass(S) \
-            and issubclass(S, (SingletonService, RequestService)) \
-            and S not in (Service, SingletonService, RequestService) \
-            and not any(base in S.__bases__ for base in (Service, SingletonService, RequestService)) \
+            and issubclass(S, Service) \
+            and S is not Service \
             and (module_name is None or S.__module__ == module_name)
             
 

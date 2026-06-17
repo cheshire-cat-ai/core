@@ -5,12 +5,11 @@ from fastapi import Request
 
 from cat.auth.jwt import JWTHelper
 from cat.auth.user import User
-from cat import log
 
-from ..service import SingletonService
+from ..service import Service
 
 
-class Auth(ABC, SingletonService):
+class Auth(ABC, Service):
     """
     Base class to build custom Auth systems.
     """

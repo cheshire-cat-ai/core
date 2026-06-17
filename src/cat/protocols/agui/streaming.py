@@ -70,8 +70,11 @@ class AgentStream:
         async for event in self._before_run():
             yield event
 
-        # Setup callback to populate queue
-        self.agent.request.state.stream_callback = lambda event: asyncio.create_task(
+        # Setup callback to populate queue, on the current request context.
+        # The runner task (below) is created in this same context, so it
+        # snapshots the same Ctx object and sees this stream callback.
+        from cat.context import ctx
+        ctx().stream = lambda event: asyncio.create_task(
             self.queue.put(event)
         )
 

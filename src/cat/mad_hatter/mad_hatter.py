@@ -2,7 +2,7 @@ import os
 import inspect
 import glob
 import shutil
-from typing import List, Dict, Any, Callable, Type, Union, TYPE_CHECKING
+from typing import List, Dict, Any, Callable, Type, TYPE_CHECKING
 
 from cat import log, config, utils
 from cat.db import DB
@@ -11,7 +11,6 @@ from cat.mad_hatter.registry import registry_download_plugin
 from cat.mad_hatter.plugin import Plugin
 
 if TYPE_CHECKING:
-    from cat.looking_glass.cheshire_cat import CheshireCat
     from cat.services.service import Service
     from cat.mad_hatter.decorators import (
         Hook,
@@ -260,19 +259,17 @@ class MadHatter:
 
 
     async def execute_hook(
-        self, hook_name: str, default_value: Any, caller: Union["CheshireCat", "Service", Callable]
+        self, hook_name: str, default_value: Any
     ) -> Any:
         """
-        Execute a hook with the given caller context.
+        Execute a hook by name, piping a value through every registered handler.
 
         Parameters
         ----------
         hook_name : str
             Name of the hook to execute.
         default_value : Any
-            Default value passed through hooks.
-        caller : Union[CheshireCat, Service, Callable]
-            The caller (CheshireCat or Service instance) passed directly to hooks.
+            Value piped through the hooks; each handler may mutate or replace it.
 
         Returns
         -------
@@ -285,9 +282,10 @@ class MadHatter:
             log.debug(f"Hook {hook_name} not present in any plugin")
             return default_value
 
-        # Hook with arguments.
-        #  First argument is passed to `execute_hook` is the pipeable one.
-        #  Plugins can mutate value and caller in place, or return a new value.
+        # Hook with one argument: the pipeable value.
+        #  Plugins mutate it in place or return a new value. Ambient state
+        #  (user, capabilities) is reached via `from cat import ...`, not a
+        #  passed `caller`.
         value = default_value
 
         # run hooks
@@ -299,7 +297,6 @@ class MadHatter:
                 returned = await utils.run_sync_or_async(
                     hook.function,
                     value,
-                    caller,
                 )
                 if returned is not None:
                     value = returned
