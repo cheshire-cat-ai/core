@@ -7,8 +7,7 @@ from fastapi.responses import HTMLResponse
 router = APIRouter()
 
 FAVICON = "https://cheshirecat.ai/wp-content/uploads/2023/10/Logo-Cheshire-Cat.svg"
-SWAGGER_CSS = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui.css"
-SWAGGER_JS = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/swagger-ui-bundle.js"
+RAPIDOC_JS = "https://unpkg.com/rapidoc/dist/rapidoc-min.js"
 
 
 # Endpoint playground
@@ -24,27 +23,30 @@ async def swagger_docs(r: Request):
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="icon" href="{FAVICON}" />
-            <link rel="stylesheet" href="{SWAGGER_CSS}" />
+            <script type="module" src="{RAPIDOC_JS}"></script>
         </head>
         <body>
-            <div id="swagger-ui"></div>
-            <script src="{SWAGGER_JS}"></script>
-            <script>
-                window.ui = SwaggerUIBundle({{
-                    url: '/openapi.json',
-                    dom_id: '#swagger-ui',
-                    // Send the browser's same-origin cookies (the httponly
-                    // `access_token` set at OAuth login). Swagger UI runs this
-                    // fetch in the top window, so the cookie rides along and a
-                    // logged-in session "just works" with no token to paste.
-                    // The "Authorize" button still lets you enter the master API
-                    // key / a JWT manually instead.
-                    requestInterceptor: (req) => {{
-                        req.credentials = 'include';
-                        return req;
-                    }},
-                }});
-            </script>
+            <!--
+              RapiDoc playground.
+              - fetch-credentials="include": "Try" requests send the browser's
+                httponly `access_token` cookie (run in the top window), so a
+                logged-in session "just works" with nothing to paste.
+              - The "Authentication" nav item is a single global box to paste the
+                master API key / a JWT once; it's then applied to every call.
+            -->
+            <rapi-doc
+                spec-url="/openapi.json"
+                render-style="view"
+                show-header="false"
+                allow-authentication="true"
+                allow-server-selection="false"
+                fetch-credentials="include"
+                theme="light"
+                primary-color="#e6007e"
+                regular-font="system-ui, sans-serif"
+            >
+                <img slot="logo" src="{FAVICON}" style="height:32px;width:auto;" />
+            </rapi-doc>
         </body>
         </html>
         """
