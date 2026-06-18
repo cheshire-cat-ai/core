@@ -6,50 +6,51 @@ instance to thread around. You don't import capabilities and hold them; you
 import *names* whose behaviour is resolved, per call, against the configured
 installation:
 
-    from cat import llm, embedder, memory, auth, hook, user
+    from cat import log, tool, endpoint, hook, config, user, llm
 
-Plus the building blocks for plugins (`Agent`, `tool`, `endpoint`, `config`,
-`log`) and a rarely-needed registry escape hatch (`get`, `call_agent`).
+Plus model/agent building blocks (`embedder`, `Agent`) and the advanced tier:
+base classes (`Service`, `User`) and the registry escape hatch (`get`,
+`call_agent`). Names are ordered here by how often plugins actually reach for
+them, most-used first.
 """
 
+# --- building blocks (most used) -------------------------------------------
+# (config is imported before log because log reads it at construction time;
+#  __all__ below is ordered by usage frequency, not import order.)
 from .config import config
 from .log import log
 from .mad_hatter.decorators import tool, endpoint
-from .services.service import Service
+from .capabilities import hook
+
+# --- ambient request context -----------------------------------------------
+from .context import user, plugin
+
+# --- models & agents -------------------------------------------------------
+from .capabilities import llm, embedder
 from .services.agents.base import Agent
+
+# --- advanced: base classes & registry escape hatch ------------------------
+from .services.service import Service
 from .auth import User
-
-# Ambient request context
-from .context import user
-
-# Ambient capabilities (functions resolved lazily at call time)
-from .capabilities import (
-    llm,
-    embedder,
-    memory,
-    auth,
-    hook,
-    get,
-    call_agent,
-)
+from .capabilities import get, call_agent
 
 __all__ = [
-    # building blocks
-    "config",
+    # building blocks (most used)
     "log",
     "tool",
     "endpoint",
-    "Service",
-    "Agent",
-    "User",
-    # ambient context
+    "hook",
+    "config",
+    # ambient request context
     "user",
-    # ambient capabilities
+    "plugin",
+    # models & agents
     "llm",
     "embedder",
-    "memory",
-    "auth",
-    "hook",
+    "Agent",
+    # advanced: base classes & registry escape hatch
+    "Service",
+    "User",
     "get",
     "call_agent",
 ]

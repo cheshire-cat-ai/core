@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, UploadFile
 from cat import log
-from cat.auth import get_user
+from cat.auth.depends import _get_user
 from cat.context import app
 from cat.mad_hatter.plugin_manifest import PluginManifest
 
@@ -20,7 +20,7 @@ class InstalledPlugin(BaseModel):
 @router.get("")
 async def get_plugins(
     search: str = None,
-    _ = get_user(),
+    _ = _get_user(),
 ) -> List[InstalledPlugin]:
     """List installed plugins"""
 
@@ -48,7 +48,7 @@ async def get_plugins(
 @router.get("/{id}")
 async def get_plugin(
     id: str,
-    _ = get_user(),
+    _ = _get_user(),
 ) -> InstalledPlugin:
     """Returns information on a single plugin"""
 
@@ -69,7 +69,7 @@ async def get_plugin(
 @router.post("")
 async def install_plugin(
     file: UploadFile,
-    _ = get_user(role="admin"),
+    _ = _get_user(role="admin"),
 ) -> InstalledPlugin:
     """Install a new plugin from a zip file"""
 
@@ -107,7 +107,7 @@ async def install_plugin(
 @router.put("/{id}/toggle", status_code=200)
 async def toggle_plugin(
     id: str,
-    _ = get_user(role="admin"),
+    _ = _get_user(role="admin"),
 ):
     """Enable or disable a single plugin"""
 
@@ -127,7 +127,7 @@ async def toggle_plugin(
 @router.delete("/{id}")
 async def remove_plugin(
     id: str,
-    _ = get_user(role="admin"),
+    _ = _get_user(role="admin"),
 ):
     """Physically remove plugin."""
 

@@ -98,7 +98,7 @@ def test_custom_endpoint_security(just_installed_plugin, client):
             assert response.status_code == 200
             n_open += 1
         else:
-            # closed endpoints (require get_user)
+            # closed endpoints
             assert response.status_code == 403
             n_protected += 1
 

@@ -100,6 +100,28 @@ class _UserProxy:
 user = _UserProxy()
 
 
+class _PluginProxy:
+    """Live proxy to the plugin that owns the calling code.
+
+    `from cat import plugin` binds this once; every attribute read resolves the
+    plugin of whatever code is currently executing (matched by call-stack file
+    path). Lets plugin code reach its own metadata/path — `plugin.path` — without
+    importing the app handle or threading `self`.
+    """
+
+    def _plugin(self):
+        return app().plugin
+
+    def __getattr__(self, name):
+        return getattr(self._plugin(), name)
+
+    def __repr__(self):
+        return "<cat.plugin (current)>"
+
+
+plugin = _PluginProxy()
+
+
 # ---------------------------------------------------------------------------
 # The single ambient app per process.
 # ---------------------------------------------------------------------------

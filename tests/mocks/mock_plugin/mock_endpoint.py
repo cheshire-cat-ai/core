@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-from cat.mad_hatter.decorators import endpoint
-from cat.auth import get_user, User
+from cat import endpoint, user
 
 class Item(BaseModel):
     name: str
@@ -15,35 +14,24 @@ def test_endpoint():
 def test_endpoint_prefix():
     return {"result":"endpoint prefix tests"}
 
-# from this one on endpoints are secured with role checks
-@endpoint.get(path="/crud", prefix="/tests", tags=["Tests"])
-def test_get(user: User = get_user(role="admin")):
+# from this one on endpoints are secured with the `role=` sugar; the authed
+# user is read ambiently via `from cat import user`.
+@endpoint.get(path="/crud", prefix="/tests", tags=["Tests"], role="admin")
+def test_get():
     return {"result":"ok", "user_id": str(user.id)}
 
-@endpoint.post(path="/crud", prefix="/tests", tags=["Tests"])
-def test_post(
-    item: Item,
-    user: User = get_user(role="admin")
-):
+@endpoint.post(path="/crud", prefix="/tests", tags=["Tests"], role="admin")
+def test_post(item: Item):
     return {"id": 1, "name": item.name, "description": item.description}
 
-@endpoint.put(path="/crud/{item_id}", prefix="/tests", tags=["Tests"])
-def test_put(
-    item_id: int,
-    item: Item,
-    user: User = get_user(role="admin")
-):
+@endpoint.put(path="/crud/{item_id}", prefix="/tests", tags=["Tests"], role="admin")
+def test_put(item_id: int, item: Item):
     return {"id": item_id, "name": item.name, "description": item.description}
 
-@endpoint.delete(path="/crud/{item_id}", prefix="/tests", tags=["Tests"])
-def test_delete(
-    item_id: int,
-    user: User = get_user(role="admin")
-):
+@endpoint.delete(path="/crud/{item_id}", prefix="/tests", tags=["Tests"], role="admin")
+def test_delete(item_id: int):
     return {"result": "ok", "deleted_id": item_id}
 
-@endpoint.get(path="/role", prefix="/tests", tags=["Tests"])
-def test_custom_role(
-    user: User = get_user(role="custom")
-):
+@endpoint.get(path="/role", prefix="/tests", tags=["Tests"], role="custom")
+def test_custom_role():
     return {"result": "ok"}

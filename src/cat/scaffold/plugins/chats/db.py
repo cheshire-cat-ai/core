@@ -1,6 +1,6 @@
 from piccolo.columns import JSON
 
-from cat.db.models import UserScopedDB
+from cat.db import UserScopedDB
 
 
 class ChatDB(UserScopedDB):

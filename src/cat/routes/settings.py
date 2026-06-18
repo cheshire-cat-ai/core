@@ -2,7 +2,7 @@ from typing import Dict, List
 from pydantic import BaseModel, Field, ValidationError
 from fastapi import APIRouter, HTTPException, Body
 
-from cat.auth import get_user
+from cat.auth.depends import _get_user
 from cat.context import app
 from cat.settings import settings as settings_manager
 
@@ -35,7 +35,7 @@ def _parse_id(id: str) -> tuple[str, str, str]:
 
 @router.get("")
 async def list_settings(
-    user=get_user(role="admin"),
+    user=_get_user(role="admin"),
 ) -> List[SettingsEntry]:
     """
     List all services that have settings, with metadata, current values, and
@@ -71,7 +71,7 @@ async def list_settings(
 async def update_settings(
     id: str,
     payload: Dict = Body(...),
-    user=get_user(role="admin"),
+    user=_get_user(role="admin"),
 ) -> SettingsEntry:
     """
     Save settings for a single service identified by its composite id.

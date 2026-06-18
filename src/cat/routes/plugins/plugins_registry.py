@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from cat import log
 from cat.mad_hatter.registry import registry_search_plugins
 from cat.mad_hatter.plugin_manifest import PluginManifest
-from cat.auth import get_user
+from cat.auth.depends import _get_user
 from cat.context import app
 
 router = APIRouter(prefix="/registry")
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/registry")
 @router.get("")
 async def registry_get_plugins(
     search: str = None,
-    _ = get_user(),
+    _ = _get_user(),
     # author: str = None, to be activated in case of more granular search
     # tag: str = None, to be activated in case of more granular search
 ) -> List[PluginManifest]:
@@ -61,7 +61,7 @@ class PluginRegistryUpload(BaseModel):
 @router.post("/install")
 async def registry_install_plugin(
     payload: PluginRegistryUpload,
-    _ = get_user(role="admin"),
+    _ = _get_user(role="admin"),
 ) -> PluginManifest:
     """Install a new plugin from registry"""
 

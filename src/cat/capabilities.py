@@ -1,7 +1,7 @@
 """
 Ambient capabilities — the `cat` front door.
 
-`from cat import llm, embedder, memory, auth, hook` binds *names to functions*.
+`from cat import llm, embedder, hook` binds *names to functions*.
 Importing builds nothing; each function resolves the configured implementation
 lazily through the registry when it is *called*. That is what lets the nice
 import surface coexist with runtime/plugin/config selection: the name is fixed,
@@ -141,14 +141,13 @@ async def embedder(text: str, model: str | None = None) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Memory / auth (resolved through the registry)
+# Auth — framework plumbing, not a plugin-facing capability.
+#
+# `auth()` is what the request-context middleware calls once per request to
+# populate `ctx().user` (see cat.startup). It is intentionally NOT exported from
+# the `cat` front door: plugins read the already-authenticated `user`, they do
+# not re-run authentication. Imported as `from cat.capabilities import auth`.
 # ---------------------------------------------------------------------------
-
-async def memory(slug: str = "default"):
-    """Resolve the configured memory service. (No memory provider ships in core
-    yet — this resolves lazily and raises only if none is registered.)"""
-    return await app().get("memory", slug, raise_error=True)
-
 
 async def auth(request, role: str | None = None) -> "User | None":
     """
