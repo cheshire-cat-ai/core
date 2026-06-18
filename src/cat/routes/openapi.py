@@ -49,6 +49,21 @@ def get_openapi_configuration_function(cheshire_cat_api: FastAPI):
             }
         )
 
+        # Auth now happens in the context middleware, not via a FastAPI security
+        # dependency, so FastAPI no longer emits this on its own. Declare it by
+        # hand so /docs shows the "Authorize" form: paste the master API key or a
+        # JWT and it's sent as `Authorization: Bearer <credential>` (see Auth.get_credential).
+        openapi_schema.setdefault("components", {})["securitySchemes"] = {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Master API key or a core-signed JWT.",
+            }
+        }
+        # Apply globally so every operation gets the auth form.
+        openapi_schema["security"] = [{"BearerAuth": []}]
+
         cheshire_cat_api.openapi_schema = openapi_schema
         return cheshire_cat_api.openapi_schema
 
