@@ -14,7 +14,7 @@ router = APIRouter(prefix="/registry")
 @router.get("")
 async def registry_get_plugins(
     search: str = None,
-    _ = _get_user(),
+    _ = _get_user(role="admin"),
     # author: str = None, to be activated in case of more granular search
     # tag: str = None, to be activated in case of more granular search
 ) -> List[PluginManifest]:

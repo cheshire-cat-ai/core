@@ -20,7 +20,7 @@ class InstalledPlugin(BaseModel):
 @router.get("")
 async def get_plugins(
     search: str = None,
-    _ = _get_user(),
+    _ = _get_user(role="admin"),
 ) -> List[InstalledPlugin]:
     """List installed plugins"""
 
@@ -48,7 +48,7 @@ async def get_plugins(
 @router.get("/{id}")
 async def get_plugin(
     id: str,
-    _ = _get_user(),
+    _ = _get_user(role="admin"),
 ) -> InstalledPlugin:
     """Returns information on a single plugin"""
 
