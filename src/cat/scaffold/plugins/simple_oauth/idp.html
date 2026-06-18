@@ -2,19 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Internal Cat IDP Login</title>
+    <title>Cheshire Cat — Simple OAuth login</title>
 </head>
 <body>
     <h2>Login</h2>
-    <p>Please use the internal identity provider only for developing, testing and personal usage.<br>
-        When going to production, install in the Cat a plugin with a SSO compliant Auth handler.</p>
+    <p>This is the built-in <em>mock</em> identity provider, for development,
+        testing and personal use only.<br>
+        For production, install a plugin with a real SSO-compliant Auth handler
+        (fork this one and point it at Google, Auth0, ...).</p>
     <form method="post" action="/auth/internal-idp/login">
-        <label>CCAT_API_KEY:<br>
+        <label>API_KEY (default is <b>meow</b>):<br>
             <input type="text" name="api_key" />
         </label>
         <br><br>
         <input type="hidden" name="redirect_uri" value="{{redirect_uri}}">
-        <br><br>
         <button type="submit">Login</button>
     </form>
 </body>

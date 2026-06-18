@@ -43,7 +43,10 @@ async def test_get_raises_when_not_found(cheshire_cat):
 async def test_get_all_auths(cheshire_cat):
     auths = await cheshire_cat.get_all("auths")
     assert isinstance(auths, dict)
-    assert "default" in auths
+    # The simple_oauth plugin ships by default and registers the "simple"
+    # handler, so the core "default" fallback steps aside.
+    assert "simple" in auths
+    assert "default" not in auths
 
 
 async def test_get_all_empty_type(cheshire_cat):

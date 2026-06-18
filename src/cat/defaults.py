@@ -17,8 +17,11 @@ URL = "http://localhost:1865"
 # e.g. "postgresql://user:password@localhost/dbname"
 SQL = "sqlite:///data/core/core.db"
 
-# Protect endpoints with an API key. None means open (handy in development).
-API_KEY = None
+# Master API key. Auth is always on: out of the box the key is the well-known
+# dev value "meow" (matching the default JWT secret below), so a fresh project
+# works immediately but is never silently wide open. Change it for production.
+# Setting it to None disables key auth entirely (JWT-only; no open gate).
+API_KEY = "meow"
 
 # JWT signing secret and token lifetime (in minutes).
 JWT_SECRET = "meow_jwt"

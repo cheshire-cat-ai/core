@@ -90,7 +90,16 @@ class CheshireCat:
         # Register default services (all core-provided, one place). Core ships
         # exactly one model provider — the generic OpenAI-compatible engine; the
         # named vendor presets live in the scaffolded `llms` plugin.
-        for ServiceClass in [CoreSettings, DefaultAuth, DefaultAgent, DefaultModelProvider, OpenAICompatibleProvider]:
+        core_defaults = [CoreSettings, DefaultAgent, DefaultModelProvider, OpenAICompatibleProvider]
+
+        # DefaultAuth is just the `Auth` base with a slug — it only exists so a
+        # plugin-less core can still verify JWTs and the master key. The moment a
+        # plugin registers its own auth handler, it steps aside (the plugin
+        # handler inherits the same verification from the base).
+        if not self.mad_hatter.service_classes.get("auths"):
+            core_defaults.insert(1, DefaultAuth)
+
+        for ServiceClass in core_defaults:
             ServiceClass.plugin_id = "core"
             self.registry.register(ServiceClass)
 

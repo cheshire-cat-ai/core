@@ -69,18 +69,28 @@ class Plugin:
         # Load of hook, tools and endpoints
         self._load_decorated_functions()
 
+    def _module_name(self, py_file: str) -> str:
+        """Dotted module name a plugin file is imported under.
+
+        Relative to `PLUGINS_PATH`, so it matches the key used both at import
+        time and in `sys.modules` (e.g. `ui.endpoints.frontend`). Import and
+        eviction MUST agree on this — otherwise deactivation silently leaves the
+        module cached, and a later import returns the stale object (with a
+        `__file__` from wherever it was first loaded).
+        """
+        module_rel_path = os.path.relpath(py_file, config.PLUGINS_PATH)
+        return module_rel_path.replace(".py", "").replace("/", ".")
+
     def deactivate(self):
         """Deactivate plugin."""
 
-        # Remove the imported modules
+        # Remove the imported modules so a later activation re-imports them fresh
+        # (using the same key they were imported under — see `_module_name`).
         for py_file in self.py_files:
-            py_filename = py_file.replace("/", ".").replace(".py", "")
-
-            # If the module is imported it is removed
-            # TODOV2: should be aligned with imports, because they changed
-            if py_filename in sys.modules:
-                log.debug(f"Remove module {py_filename}")
-                sys.modules.pop(py_filename)
+            module_name = self._module_name(py_file)
+            if module_name in sys.modules:
+                log.debug(f"Remove module {module_name}")
+                sys.modules.pop(module_name)
 
         self._hooks = []
         self._tools = []
@@ -175,10 +185,21 @@ class Plugin:
 
         for py_file in self.py_files:
 
-            # Turn file path in module notation and relative to plugins folders
-            if py_file.startswith(base_path):
-                module_rel_path = os.path.relpath(py_file, base_path)
-                module_name = module_rel_path.replace(".py", "").replace("/", ".")
+            # Turn file path into the dotted module name, relative to the plugins
+            # folder (same key used to evict on deactivation — see `_module_name`).
+            module_name = self._module_name(py_file)
+
+            # The dotted name is relative to PLUGINS_PATH, so it is NOT unique
+            # across different plugin paths. If a module by this name is cached
+            # from a *different* file (a previous app instance with another
+            # PLUGINS_PATH — as in tests — or a moved/reinstalled plugin), evict
+            # it so we import THIS file rather than getting the stale object back
+            # (whose __file__ would point elsewhere and break get_plugin()).
+            cached = sys.modules.get(module_name)
+            if cached is not None:
+                cached_file = getattr(cached, "__file__", None)
+                if cached_file and os.path.abspath(cached_file) != os.path.abspath(py_file):
+                    sys.modules.pop(module_name)
 
             log.debug(f"Import module {module_name}")
 

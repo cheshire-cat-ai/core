@@ -1,0 +1,12 @@
+{
+    "name": "Simple OAuth",
+    "version": "1.0.0",
+    "description": "Reference login flow: the generic OAuth dance (/auth/login, /auth/callback, /auth/logout) plus a built-in mock identity provider for development. Mints core JWTs from a login. Fork it into a real SSO plugin (Google, Auth0, ...) for production.",
+    "author_name": "Cheshire Cat AI",
+    "author_url": "https://cheshirecat.ai",
+    "plugin_url": "https://github.com/cheshire-cat-ai/simple-oauth",
+    "tags": "auth, oauth, login, idp, sso",
+    "thumb": "https://raw.githubusercontent.com/cheshire-cat-ai/simple-oauth/main/thumb.png",
+    "min_cat_version": "2.0.0",
+    "max_cat_version": "Unknown"
+}

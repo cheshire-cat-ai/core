@@ -14,8 +14,6 @@ from cat.routes import (
 
 from cat.routes.me import me
 from cat.routes.plugins import plugins
-from cat.routes.auth import oauth
-from cat.routes.auth.default_idp import idp
 from cat.looking_glass.cheshire_cat import CheshireCat
 
 
@@ -111,8 +109,8 @@ def create_app() -> FastAPI:
 
     # all routers mounted at root (no API prefix)
     for r in [
-        me, status, settings, agents, oauth,
-        plugins, openapi, idp
+        me, status, settings, agents,
+        plugins, openapi
     ]:
         app.include_router(r.router)
 

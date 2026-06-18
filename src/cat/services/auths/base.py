@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Dict
+from uuid import uuid5, NAMESPACE_DNS
 
 from fastapi import Request
 
@@ -12,11 +13,30 @@ from ..service import Service
 class Auth(ABC, Service):
     """
     Base class to build custom Auth systems.
+
+    Out of the box a handler is a complete verifier: it extracts the credential
+    from the request, trusts any core-signed JWT (`authorize_user_from_jwt`), and
+    accepts the master API key (`authorize_user_from_key` → the admin user). Every
+    method is overridable, so subclasses typically only add a *login* flow —
+    override `get_provider_login_url` + `authorize_user_from_oauth_code` to mint
+    those JWTs from an OAuth provider — or change the key/identity policy by
+    overriding `authorize_user_from_key` / `get_admin`.
+
+    Because verification lives here, the core `DefaultAuth` is just this base with
+    a slug, and can step aside the moment a plugin registers its own handler.
     """
 
     service_type = "auths"
 
     jwt = JWTHelper()
+
+    def get_admin(self) -> User:
+        """The user the master API key maps to. Override to change identity/roles."""
+        return User(
+            id=uuid5(NAMESPACE_DNS, "admin"),
+            name="admin",
+            roles=["admin"],
+        )
 
     def get_credential(self, request: Request) -> str | None:
         """Extract credential from request.
@@ -53,19 +73,39 @@ class Auth(ABC, Service):
         else:
             return await self.authorize_user_from_key(credential)
 
-    @abstractmethod
     async def authorize_user_from_jwt(
         self,
         token: str,
     ) -> User | None:
-        pass
+        """Verify a core-signed JWT and rebuild the User from its claims.
 
-    @abstractmethod
+        Generic to every handler: the Cat trusts the sessions any login flow
+        mints with `self.jwt.encode(user)`. Override only for non-core tokens
+        (e.g. verifying a third-party JWT against a JWKS).
+        """
+        payload = self.jwt.decode(token)
+        if not payload:
+            return None
+        return User(
+            id=payload["sub"],
+            name=payload["username"],
+            roles=payload.get("roles", []),
+        )
+
     async def authorize_user_from_key(
         self,
         api_key: str,
     ) -> User | None:
-        pass
+        """Authorize from the master API key (→ the admin user).
+
+        This is the simplest possible key policy. Override for custom schemes,
+        e.g. per-user keys looked up in a database.
+        """
+        from cat import config
+
+        if config.API_KEY is not None and api_key == config.API_KEY:
+            return self.get_admin()
+        return None
 
     async def get_provider_login_url(
         self,
