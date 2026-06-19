@@ -24,6 +24,7 @@ from .capabilities import hook
 
 # --- ambient request context -----------------------------------------------
 from .context import user, plugin
+from .capabilities import agui_event
 
 # --- models & agents -------------------------------------------------------
 from .capabilities import llm, embedder
@@ -44,6 +45,7 @@ __all__ = [
     # ambient request context
     "user",
     "plugin",
+    "agui_event",
     # models & agents
     "llm",
     "embedder",

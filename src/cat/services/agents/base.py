@@ -179,7 +179,7 @@ class Agent(Service):
         """Call a tool."""
 
         name = tool_call.name
-        for t in await self.list_tools():
+        for t in self.tools:
             if t.name == name:
                 return await t.execute(self, tool_call)
 
