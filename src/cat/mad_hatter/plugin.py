@@ -10,7 +10,7 @@ from inspect import getmembers, isclass
 from packaging.requirements import Requirement
 
 from cat.mad_hatter.decorators import (
-    Tool, Hook,
+    Hook,
     Endpoint
 )
 from cat.mad_hatter.plugin_manifest import PluginManifest
@@ -53,7 +53,6 @@ class Plugin:
         #   The MadHatter will cache them for easier access,
         #   but they are created and stored in each plugin instance
         self._hooks: List[Hook] = []  # list of plugin hooks
-        self._tools: List[Tool] = []  # list of plugin tools
         self._endpoints: List[Endpoint] = [] # list of plugin endpoints
         self._services: List[Type[Service]] = [] # list of service classes
 
@@ -93,7 +92,6 @@ class Plugin:
                 sys.modules.pop(module_name)
 
         self._hooks = []
-        self._tools = []
         self._endpoints = []
         self._services = []
 
@@ -171,10 +169,9 @@ class Plugin:
                     raise Exception(f"Error during plugin {self.id} requirements installation")
 
 
-    # lists of hooks and tools
+    # lists of hooks, endpoints and services
     def _load_decorated_functions(self):
         hooks = []
-        tools = []
         endpoints = []
         services = []
 
@@ -208,7 +205,6 @@ class Plugin:
 
                 # Collect references from the plugin module as before
                 hooks += getmembers(plugin_module, self._is_cat_hook)
-                tools += getmembers(plugin_module, self._is_cat_tool)
                 endpoints += getmembers(plugin_module, self._is_custom_endpoint)
                 services += getmembers(
                     plugin_module,
@@ -222,7 +218,6 @@ class Plugin:
 
         # clean and enrich instances
         self._hooks = list(map(self._clean_hook, hooks))
-        self._tools = list(map(self._clean_tool, tools))
         self._endpoints = list(map(self._clean_endpoint, endpoints))
         self._services = list(map(self._clean_service, services))
 
@@ -241,11 +236,6 @@ class Plugin:
         h = hook[1]
         h.plugin_id = self._id
         return h
-
-    def _clean_tool(self, tool: Tool):
-        t = tool[1]
-        t.plugin_id = self._id
-        return t
 
     def _clean_endpoint(self, endpoint: Endpoint):
         e = endpoint[1]
@@ -283,12 +273,6 @@ class Plugin:
     def _is_cat_hook(obj):
         return isinstance(obj, Hook)
 
-    # a plugin tool function has to be decorated with @tool
-    # (which returns an instance of Tool)
-    @staticmethod
-    def _is_cat_tool(obj):
-        return isinstance(obj, Tool)
-    
     # a plugin service is a Service subclass DEFINED in the plugin module
     # (not a framework base imported into it)
     @staticmethod
@@ -320,10 +304,6 @@ class Plugin:
     @property
     def hooks(self):
         return self._hooks
-
-    @property
-    def tools(self):
-        return self._tools
 
     @property
     def endpoints(self):

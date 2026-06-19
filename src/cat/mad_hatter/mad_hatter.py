@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from cat.services.service import Service
     from cat.mad_hatter.decorators import (
         Hook,
-        Tool,
         Endpoint
     )
 
@@ -31,7 +30,6 @@ class MadHatter:
 
         # caches for decorated functions
         self.hooks: Dict[str, List[Hook]] = {}
-        self.tools: List[Tool] = []
         self.endpoints: List[Endpoint] = []
         self.service_classes: Dict[str, Dict[str, Type[Service]]] = {}
 
@@ -150,13 +148,11 @@ class MadHatter:
         
         # emptying caches
         self.hooks = {}
-        self.tools = []
         self.endpoints = []
         self.service_classes = {}
 
         for _, plugin in self.plugins.items():
             # load decorated funcs from plugins (only active ones have them populated)
-            self.tools += plugin.tools
             self.endpoints += plugin.endpoints
 
             # index service classes by type and slug
