@@ -29,6 +29,7 @@ from .capabilities import agui_event
 # --- models & agents -------------------------------------------------------
 from .capabilities import llm, embedder
 from .services.agents.base import Agent
+from .services.directives.base import Directive
 
 # --- advanced: base classes & registry escape hatch ------------------------
 from .services.service import Service
@@ -50,6 +51,7 @@ __all__ = [
     "llm",
     "embedder",
     "Agent",
+    "Directive",
     # advanced: base classes & registry escape hatch
     "Service",
     "User",

@@ -15,13 +15,11 @@ if TYPE_CHECKING:
 
 class Agent(Service):
     """
-    An agent is a *verb you run*: a fresh, non-singleton instance per run that
-    holds its execution state as instance attributes (`task`, `result`,
+    Holds execution state as instance attributes (`task`, `result`,
     `system_prompt`, `tools`) and is thrown away afterwards. Because every run
     uses a new instance, mutating that state is safe under concurrency.
 
-    Ambient needs come from imports (`from cat import user, llm, hook`), never
-    from a `self.ccat`/`self.request` back-reference.
+    Ambient needs come from imports (`from cat import user, llm, hook`).
     """
 
     service_type = "agents"
@@ -30,7 +28,16 @@ class Agent(Service):
     system_prompt = "You are an Agent in the Cheshire Cat AI fleet. Help the user and other agents with their requests."
     model = None  # a slug like "openai:gpt-4o"; if None, taken from core settings
 
-    directives: List["Directive"] = []
+    # Directives attached to this agent. Each entry may be a Directive instance,
+    # a Directive subclass, or a registered directive slug (str). They are
+    # resolved to live instances per run by `_resolve_directives()`.
+    directives: List["Directive | type[Directive] | str"] = []
+
+    # Safety cap on the agentic loop's tool-call ping-pong within a single run.
+    # `None` means unbounded — the right default for long-running agents, which
+    # bound themselves (re-invoked per message, or awaiting external events).
+    # Set an int to stop and log after that many turns (runaway protection).
+    max_iterations: int | None = None
 
     args: BaseModel | None = None
 
@@ -50,6 +57,7 @@ class Agent(Service):
             self.result = TaskResult()
             self.system_prompt = await self.get_system_prompt()
             self.tools = await self.list_tools()
+            self.directives = await self._resolve_directives()
 
             self.task = await self.execute_hook(
                 "before_agent_execution", self.task
@@ -91,7 +99,17 @@ class Agent(Service):
         # snapshot system prompt to be reset before each step (good old RAG use cases)
         _base_prompt = self.system_prompt
 
+        iteration = 0
         while True:
+
+            # Runaway protection: stop if a finite cap is set and reached.
+            iteration += 1
+            if self.max_iterations is not None and iteration > self.max_iterations:
+                log.warning(
+                    f"Agent '{self.slug}' hit max_iterations={self.max_iterations}; "
+                    "stopping the loop. Raise max_iterations or set it to None to allow more turns."
+                )
+                return
 
             # reset system prompt to baseline
             self.system_prompt = _base_prompt
@@ -154,7 +172,15 @@ class Agent(Service):
         return prompt + prompt_suffix
 
     async def list_tools(self) -> List[Tool]:
-        """Get plugins' tools, MCP tools, and agent's own tools in CatTool format."""
+        """
+        The tools this agent can call: its own `@tool` methods (including any
+        inherited from base classes or mixins) plus connected MCP tools.
+
+        Tools are agent-scoped — an agent does NOT silently inherit every plugin's
+        tools. To share tools across agents, put them on a mixin and inherit it;
+        to add tools cross-cuttingly, append to `agent.tools` from a directive's
+        `start()`, or filter/extend the list here via the `agent_allowed_tools` hook.
+        """
 
         # Get MCP tools
         mcp_tools = await self.mcp.list_tools()
@@ -163,17 +189,45 @@ class Agent(Service):
             for t in mcp_tools
         ]
 
-        # Get agent's own internal tools
+        # Get agent's own internal tools (own + inherited via the class MRO)
         agent_tools = self.instantiate_agent_tools()
 
-        # Combine all tools
-        from cat.context import app
         tools = await self.execute_hook(
             "agent_allowed_tools",
-            mcp_tools + app().mad_hatter.tools + agent_tools
+            agent_tools + mcp_tools
         )
 
         return tools
+
+    async def _resolve_directives(self) -> List["Directive"]:
+        """
+        Normalise the declared `directives` list into live instances.
+
+        Each entry may be:
+        - a Directive instance      -> used as declared (author already configured it)
+        - a Directive subclass      -> resolved through the registry by its slug
+        - a registered slug (str)   -> resolved through the registry
+
+        The registry forms inject typed settings and run `setup()`, just like any
+        other service.
+        """
+        from cat.context import app
+        from cat.base import Directive
+
+        resolved: List["Directive"] = []
+        for d in self.directives:
+            if isinstance(d, Directive):
+                resolved.append(d)
+            elif isclass(d) and issubclass(d, Directive):
+                resolved.append(await app().get("directives", d.slug, raise_error=True))
+            elif isinstance(d, str):
+                resolved.append(await app().get("directives", d, raise_error=True))
+            else:
+                raise TypeError(
+                    f"Invalid directive {d!r} on agent '{self.slug}': "
+                    "expected a Directive instance, subclass, or registered slug."
+                )
+        return resolved
 
     async def call_tool(self, tool_call, *args, **kwargs):
         """Call a tool."""
