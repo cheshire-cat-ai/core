@@ -25,7 +25,7 @@ class UploadedFileResponse(BaseModel):
     mime_type: str
 
 
-@endpoint.post("/api/v2/uploads", tags=["Uploads"])
+@endpoint.post("/uploads", tags=["Uploads"])
 async def upload_file(
     file: UploadFile = File(...),
 ) -> UploadedFileResponse:
@@ -61,7 +61,7 @@ async def upload_file(
     )
 
 
-@endpoint.get("/api/v2/uploads", tags=["Uploads"])
+@endpoint.get("/uploads", tags=["Uploads"])
 async def get_uploaded_files() -> List[UploadedFileResponse]:
     """Retrieve list of uploaded file URLs uploaded by a specific user."""
 
@@ -81,7 +81,7 @@ async def get_uploaded_files() -> List[UploadedFileResponse]:
     return uploads
 
 
-@endpoint.get("/api/v2/uploads/{path:path}", tags=["Uploads"])
+@endpoint.get("/uploads/{path:path}", tags=["Uploads"])
 async def get_uploaded_file(
     path: str = Path(...),
 ) -> FileResponse:
