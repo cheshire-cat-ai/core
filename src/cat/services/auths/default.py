@@ -2,7 +2,7 @@ from .base import Auth
 
 
 class DefaultAuth(Auth):
-    """The bare fallback verifier — present only when no plugin provides its own.
+    """The bare fallback verifier - present only when no plugin provides its own.
 
     It adds nothing to `Auth`: it inherits core-signed-JWT verification and the
     master `API_KEY` → admin policy. It has no login flow (that lives in a
