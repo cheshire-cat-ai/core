@@ -55,15 +55,16 @@ class AnthropicProvider(OpenAICompatibleProvider):
         """
         import httpx
 
-        if not self.settings.api_key:
+        s = await self.load_settings()
+        if not s.api_key:
             return []
-        url = self.settings.base_url.rstrip("/") + "/models"
+        url = s.base_url.rstrip("/") + "/models"
         try:
             async with httpx.AsyncClient(timeout=self.DISCOVERY_TIMEOUT_S) as client:
                 resp = await client.get(
                     url,
                     headers={
-                        "x-api-key": self.settings.api_key,
+                        "x-api-key": s.api_key,
                         "anthropic-version": "2023-06-01",
                     },
                 )

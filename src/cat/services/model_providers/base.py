@@ -19,14 +19,6 @@ class ModelProvider(Service):
 
     service_type = "model_providers"
 
-    async def setup(self):
-        """
-        Setup the vendor (e.g. load API keys from settings).
-
-        Override this method to load configuration (API keys, hosts, etc.).
-        """
-        pass
-
     async def list_llms(self) -> List[str]:
         """
         Return a list of available LLM slugs (without provider prefix).

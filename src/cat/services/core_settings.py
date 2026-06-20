@@ -1,14 +1,11 @@
-from typing import Type, Literal, TYPE_CHECKING
+from typing import Type, Literal
 
 from pydantic import BaseModel, Field
 
 from cat.db import DB
-from cat.config.settings import settings as settings_manager
+from cat.ambient.runtime import ccat
 from cat.services.service import Service
 from cat import log
-
-if TYPE_CHECKING:
-    from cat.looking_glass.cheshire_cat import CheshireCat
 
 
 class CoreSettings(Service):
@@ -35,7 +32,7 @@ class CoreSettings(Service):
         )
 
     @classmethod
-    async def settings_schema(cls, app: "CheshireCat") -> Type[BaseModel]:
+    async def settings_schema(cls) -> Type[BaseModel]:
         """
         Dynamic schema: enumerate the LLMs/embedders every registered provider
         exposes, so the UI renders a dropdown instead of a free-text box.
@@ -57,27 +54,27 @@ class CoreSettings(Service):
         llm_options = ["default:default"]
         embedder_options = ["default:default"]
 
-        for slug, ProviderClass in app.registry.classes.get("model_providers", {}).items():
+        for slug, ProviderClass in ccat().registry.classes.get("model_providers", {}).items():
             if slug == "default":
                 continue  # already seeded above
 
             # Skip providers the user has never configured, so we only ever dial
             # endpoints the user explicitly opted into.
-            saved = await DB.load(settings_manager.key(ProviderClass))
+            saved = await DB.load(ProviderClass._settings_key())
             if not isinstance(saved, dict):
                 continue
 
             try:
-                provider = await app.get("model_providers", slug)
+                provider = await ccat().get("model_providers", slug)
                 llm_options += [f"{slug}:{m}" for m in await provider.list_llms()]
                 embedder_options += [f"{slug}:{m}" for m in await provider.list_embedders()]
             except Exception as e:
                 log.error(f"Error querying model provider {slug}: {e}")
 
         # Keep whatever is saved valid even if it is not in the live lists.
-        # Read the raw blob directly — calling settings_manager.load() here would
+        # Read the raw blob directly — calling load_settings() here would
         # recurse back into settings_schema().
-        raw = await DB.load(settings_manager.key(cls))
+        raw = await DB.load(cls._settings_key())
         if isinstance(raw, dict):
             if raw.get("default_llm"):
                 llm_options.append(raw["default_llm"])

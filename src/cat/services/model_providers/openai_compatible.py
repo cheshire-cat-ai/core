@@ -48,15 +48,23 @@ class OpenAICompatibleProvider(ModelProvider):
             description="API key for the endpoint. Leave empty for keyless local servers.",
         )
 
-    async def setup(self):
-        from openai import AsyncOpenAI
+    async def client(self):
+        """
+        The vendor client, built lazily from current settings and cached on the
+        (singleton) instance. Returns None when no key is configured, in which
+        case `llm()`/`embed()` answer with NO_KEY_MESSAGE instead of crashing.
 
-        api_key = self.settings.api_key
-        if not api_key:
-            # No key: stay unconfigured. `llm()` returns NO_KEY_MESSAGE.
-            self.client = None
-            return
-        self.client = AsyncOpenAI(base_url=self.settings.base_url, api_key=api_key)
+        Settings changes drop the singleton (registry.refresh), so the next
+        resolution rebuilds the client from the new settings.
+        """
+        if not hasattr(self, "_client"):
+            from openai import AsyncOpenAI
+
+            s = await self.load_settings()
+            self._client = (
+                AsyncOpenAI(base_url=s.base_url, api_key=s.api_key) if s.api_key else None
+            )
+        return self._client
 
     # -- model discovery ----------------------------------------------------
 
@@ -67,10 +75,11 @@ class OpenAICompatibleProvider(ModelProvider):
 
     async def _fetch_models(self) -> List[str]:
         """Fetch all model IDs from the vendor API. Returns [] on failure."""
-        if not getattr(self, "client", None):
+        client = await self.client()
+        if not client:
             return []
         try:
-            models = await self.client.with_options(timeout=self.DISCOVERY_TIMEOUT_S).models.list()
+            models = await client.with_options(timeout=self.DISCOVERY_TIMEOUT_S).models.list()
             return [m.id for m in models.data]
         except Exception as e:
             log.warning(f"{self.slug}: could not fetch model list ({e}); skipping autocomplete.")
@@ -206,7 +215,8 @@ class OpenAICompatibleProvider(ModelProvider):
         full_text = ""
         tool_calls_acc: dict[int, dict] = {}
 
-        stream = await self.client.chat.completions.create(stream=True, **kwargs)
+        client = await self.client()
+        stream = await client.chat.completions.create(stream=True, **kwargs)
         async for event in stream:
             if not event.choices:
                 continue
@@ -255,7 +265,8 @@ class OpenAICompatibleProvider(ModelProvider):
         from cat.types import Message
 
         # Unconfigured: answer with a clear next step instead of crashing.
-        if not getattr(self, "client", None):
+        client = await self.client()
+        if client is None:
             return Message(role="assistant", content=[TextContent(text=NO_KEY_MESSAGE)])
 
         oai_messages = await self.build_messages(messages, system_prompt)
@@ -268,7 +279,7 @@ class OpenAICompatibleProvider(ModelProvider):
         if oai_tools:
             kwargs["tools"] = oai_tools
 
-        response = await self.client.chat.completions.create(**kwargs)
+        response = await client.chat.completions.create(**kwargs)
         result = self.parse_response(response)
 
         if on_tool_call:
@@ -279,7 +290,8 @@ class OpenAICompatibleProvider(ModelProvider):
 
     async def embed(self, model: str, text: str) -> list[float]:
         """Embed text using the OpenAI embeddings API."""
-        if not getattr(self, "client", None):
+        client = await self.client()
+        if client is None:
             raise RuntimeError(NO_KEY_MESSAGE)
-        response = await self.client.embeddings.create(model=model, input=text)
+        response = await client.embeddings.create(model=model, input=text)
         return response.data[0].embedding

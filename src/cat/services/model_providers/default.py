@@ -29,9 +29,6 @@ class DefaultModelProvider(ModelProvider):
     name = "Default (not configured)"
     description = "Placeholder until you configure a real model provider."
 
-    async def setup(self):
-        pass
-
     async def list_llms(self) -> List[str]:
         return ["default"]
 

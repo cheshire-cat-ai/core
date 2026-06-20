@@ -59,8 +59,9 @@ def _split_slug(slug: str) -> tuple[str, str]:
 
 
 async def _default_model_slug(field: str) -> str:
-    core_settings = await ccat().get("config", "core")
-    return getattr(core_settings.settings, field)
+    core = await ccat().get("config", "core")
+    settings = await core.load_settings()
+    return getattr(settings, field)
 
 
 async def llm(

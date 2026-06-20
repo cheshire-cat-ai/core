@@ -2,9 +2,16 @@
 The service registry.
 
 A plain dictionary of registered classes plus a singleton-instance cache — no
-third-party DI container, no scopes, no double-checked locking. `get()`
-resolves a class, injects its typed settings, runs `setup()`, and caches it if
-it is a singleton. Non-singletons are built fresh every time.
+third-party DI container, no scopes, no double-checked locking. The registry
+owns exactly two things: the `type → slug → class` map (discovery), and the
+lifecycle of singleton instances (build-once cache + `teardown`). Settings are
+*not* its concern — every Service loads its own via `load_settings()`.
+
+`get()` resolves a class, constructs it, and caches it if it is a singleton.
+Construction is pure and synchronous, so `get(...)` and a hand-written
+`MyService()` build identical objects — `get` only adds caching. Any async
+wiring (open a client, read settings) happens lazily on first use inside the
+service, not in a build-time hook.
 
 The registry is the lazy cycle-breaker: nothing is built at import or
 registration time, only on first `get()`. A provider that needs another
@@ -15,7 +22,6 @@ get wrong (this is why v1's `cat.x → cat.y` cycles do not return).
 from typing import Dict, Type, Union, TYPE_CHECKING
 
 from cat import log
-from cat.config.settings import settings as settings_manager
 
 if TYPE_CHECKING:
     from cat.looking_glass.cheshire_cat import CheshireCat
@@ -51,8 +57,8 @@ class Registry:
         Resolve a service instance by type and slug.
 
         Singletons are built once and cached; non-singletons are built fresh.
-        On build, the typed settings are loaded and injected as `self.settings`
-        before `setup()` runs.
+        Construction is pure — settings and any client are pulled lazily by the
+        service itself, not injected here.
         """
         ServiceClass = self._lookup(type, slug, raise_error)
         if ServiceClass is None:
@@ -62,12 +68,6 @@ class Registry:
             return self.live[(type, slug)]
 
         service = ServiceClass()
-        service.settings = await settings_manager.load(ServiceClass, self.app)
-
-        try:
-            await service.setup()
-        except Exception as e:
-            log.error(f"Error during setup of {ServiceClass.__name__}: {e}")
 
         if ServiceClass.singleton:
             self.live[(type, slug)] = service
