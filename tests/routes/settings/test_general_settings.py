@@ -7,9 +7,9 @@ CoreSettings has `service_type = "config"` and `slug = "core"`, registered under
 CORE_ID = "core__config__core"
 
 
-def test_get_settings_list(client, admin_headers):
+def test_get_settings_list(client):
     """GET /settings returns a list of services that have settings."""
-    response = client.get("/settings", headers=admin_headers)
+    response = client.get("/settings")
     assert response.status_code == 200
 
     entries = response.json()
@@ -25,10 +25,10 @@ def test_get_settings_list(client, admin_headers):
     assert isinstance(core_entry["value"], dict)
 
 
-def test_put_settings_success(client, admin_headers):
+def test_put_settings_success(client):
     """PUT /settings/{id} updates core settings."""
     payload = {"default_llm": "default:default", "default_embedder": "default:default"}
-    response = client.put(f"/settings/{CORE_ID}", json=payload, headers=admin_headers)
+    response = client.put(f"/settings/{CORE_ID}", json=payload)
     assert response.status_code == 200, response.text
 
     data = response.json()
@@ -39,12 +39,12 @@ def test_put_settings_success(client, admin_headers):
     assert data["schema"] is not None
 
 
-def test_put_settings_persists(client, admin_headers):
+def test_put_settings_persists(client):
     """PUT then GET shows persisted settings."""
     payload = {"default_llm": "default:default", "default_embedder": "default:default"}
-    client.put(f"/settings/{CORE_ID}", json=payload, headers=admin_headers)
+    client.put(f"/settings/{CORE_ID}", json=payload)
 
-    response = client.get("/settings", headers=admin_headers)
+    response = client.get("/settings")
     assert response.status_code == 200
 
     core_entry = next((e for e in response.json() if e["id"] == CORE_ID), None)
@@ -52,27 +52,25 @@ def test_put_settings_persists(client, admin_headers):
     assert core_entry["value"]["default_llm"] == "default:default"
 
 
-def test_put_settings_unknown_service(client, admin_headers):
+def test_put_settings_unknown_service(client):
     """PUT /settings/{id} with unknown id returns 404."""
     response = client.put(
         "/settings/nonexistent__model_providers__fake",
         json={"key": "value"},
-        headers=admin_headers,
     )
     assert response.status_code == 404
 
 
-def test_put_settings_invalid_id_format(client, admin_headers):
+def test_put_settings_invalid_id_format(client):
     """PUT /settings/{id} with malformed id returns 404."""
     response = client.put(
         "/settings/invalid_id",
         json={"key": "value"},
-        headers=admin_headers,
     )
     assert response.status_code == 404
 
 
-def test_settings_requires_admin(client):
+def test_settings_requires_admin(anon_client):
     """GET /settings is admin-gated."""
-    response = client.get("/settings")
+    response = anon_client.get("/settings")
     assert response.status_code == 403

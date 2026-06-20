@@ -7,7 +7,6 @@ where possible; `execute_hook` uses the booted app to prove the no-hook path.
 
 import asyncio
 
-import pytest
 
 from cat.ambient import verbs
 from cat.types import Message, TextContent

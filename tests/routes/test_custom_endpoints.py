@@ -19,28 +19,28 @@ custom_endpoints = [
 ]
 
 
-def test_custom_endpoint_base(client, just_installed_plugin, admin_headers):
-    response = client.get("/endpoint", headers=admin_headers)
+def test_custom_endpoint_base(client, just_installed_plugin):
+    response = client.get("/endpoint")
     assert response.status_code == 200
     assert response.json()["result"] == "endpoint default prefix"
 
 
-def test_custom_endpoint_prefix(client, just_installed_plugin, admin_headers):
-    response = client.get("/tests/endpoint", headers=admin_headers)
+def test_custom_endpoint_prefix(client, just_installed_plugin):
+    response = client.get("/tests/endpoint")
     assert response.status_code == 200
     assert response.json()["result"] == "endpoint prefix tests"
 
 
-def test_custom_endpoint_get(client, just_installed_plugin, admin_headers):
-    response = client.get("/tests/crud", headers=admin_headers)
+def test_custom_endpoint_get(client, just_installed_plugin):
+    response = client.get("/tests/crud")
     assert response.status_code == 200
     assert response.json()["result"] == "ok"
     assert response.json()["user_id"] == ADMIN_USER_ID
 
 
-def test_custom_endpoint_post(client, just_installed_plugin, admin_headers):
+def test_custom_endpoint_post(client, just_installed_plugin):
     payload = {"name": "the cat", "description": "it's magic"}
-    response = client.post("/tests/crud", headers=admin_headers, json=payload)
+    response = client.post("/tests/crud", json=payload)
 
     assert response.status_code == 200
     assert response.json()["id"] == 1
@@ -48,9 +48,9 @@ def test_custom_endpoint_post(client, just_installed_plugin, admin_headers):
     assert response.json()["description"] == "it's magic"
 
 
-def test_custom_endpoint_put(client, just_installed_plugin, admin_headers):
+def test_custom_endpoint_put(client, just_installed_plugin):
     payload = {"name": "the cat", "description": "it's magic"}
-    response = client.put("/tests/crud/123", headers=admin_headers, json=payload)
+    response = client.put("/tests/crud/123", json=payload)
 
     assert response.status_code == 200
     assert response.json()["id"] == 123
@@ -58,8 +58,8 @@ def test_custom_endpoint_put(client, just_installed_plugin, admin_headers):
     assert response.json()["description"] == "it's magic"
 
 
-def test_custom_endpoint_delete(client, just_installed_plugin, admin_headers):
-    response = client.delete("/tests/crud/123", headers=admin_headers)
+def test_custom_endpoint_delete(client, just_installed_plugin):
+    response = client.delete("/tests/crud/123")
 
     assert response.status_code == 200
     assert response.json()["result"] == "ok"
@@ -68,31 +68,31 @@ def test_custom_endpoint_delete(client, just_installed_plugin, admin_headers):
 
 @pytest.mark.parametrize("switch_type", ["deactivation", "uninstall"])
 def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
-    switch_type, client, just_installed_plugin, admin_headers
+    switch_type, client, just_installed_plugin
 ):
     # custom endpoints are active
     for verb, endpoint, payload in custom_endpoints:
-        response = client.request(verb, endpoint, headers=admin_headers, json=payload)
+        response = client.request(verb, endpoint, json=payload)
         assert response.status_code == 200
 
     if switch_type == "deactivation":
-        response = client.put("/plugins/mock_plugin/toggle", headers=admin_headers)
+        response = client.put("/plugins/mock_plugin/toggle")
         assert response.status_code == 200
     else:
-        response = client.delete("/plugins/mock_plugin", headers=admin_headers)
+        response = client.delete("/plugins/mock_plugin")
         assert response.status_code == 200
 
     # no more custom endpoints
     for verb, endpoint, payload in custom_endpoints:
-        response = client.request(verb, endpoint, headers=admin_headers, json=payload)
+        response = client.request(verb, endpoint, json=payload)
         assert response.status_code == 404
 
 
-def test_custom_endpoint_security(just_installed_plugin, client):
+def test_custom_endpoint_security(just_installed_plugin, anon_client):
     n_open = 0
     n_protected = 0
     for verb, endpoint, payload in custom_endpoints:
-        response = client.request(verb, endpoint, json=payload)
+        response = anon_client.request(verb, endpoint, json=payload)
         if "/endpoint" in endpoint:
             # open endpoints (no auth dependency)
             assert response.status_code == 200

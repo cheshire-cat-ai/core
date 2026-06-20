@@ -7,17 +7,6 @@ TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 MOCKS_DIR = os.path.join(TESTS_DIR, "mocks")
 
 
-def get_core_plugins_ids():
-    """Ids of the plugins present in the project's `plugins/` folder.
-
-    In v2 a core-only test boots with zero plugins, so this is usually empty;
-    it tracks whatever the harness materialized into the tmp project's plugins
-    folder. Read from disk so the list always matches what is actually installed.
-    """
-    from cat.scaffold.scaffolder import installed_plugin_names
-    return installed_plugin_names()
-
-
 def get_mock_plugin_info():
     """Decorated objects the mock plugin exposes, per the v2 Plugin model.
 

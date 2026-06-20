@@ -7,7 +7,6 @@ under `/api/v2/uploads`.
 
 import os
 
-import pytest
 
 from cat import config
 
@@ -35,10 +34,10 @@ def test_serve_existing_file(client):
     assert response.text == "Meow"
 
 
-def test_upload_then_list(client, admin_headers):
+def test_upload_then_list(client):
     """Upload a file, then it shows up in the per-user listing."""
     files = {"file": ("hello.txt", b"hello cat", "text/plain")}
-    response = client.post("/api/v2/uploads", headers=admin_headers, files=files)
+    response = client.post("/api/v2/uploads", files=files)
     assert response.status_code == 200, response.text
 
     body = response.json()
@@ -47,6 +46,6 @@ def test_upload_then_list(client, admin_headers):
     assert body["url"].startswith(config.URL)
 
     # it appears in the authenticated user's upload listing
-    listing = client.get("/api/v2/uploads", headers=admin_headers)
+    listing = client.get("/api/v2/uploads")
     assert listing.status_code == 200
     assert any(u["url"].endswith("hello.txt") for u in listing.json())

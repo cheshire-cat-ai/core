@@ -35,7 +35,6 @@ Two invariants hold for every test:
 """
 
 import os
-import time
 import shutil
 from typing import Any, Generator
 
@@ -176,6 +175,11 @@ def isolated_project(monkeypatch, tmp_path, request):
     _set_active_plugins(sorted(selected))
 
 
+# The default master key ("meow") as a Bearer header. Baked into the standard
+# clients so the common case — an authenticated admin — needs no boilerplate.
+ADMIN_HEADERS = {"Authorization": "Bearer meow"}
+
+
 ####################################
 # Main fixture for the FastAPI app #
 ####################################
@@ -192,7 +196,22 @@ def app() -> Generator[FastAPI, Any, None]:
 ##############################
 @pytest.fixture(scope="function")
 def client(app) -> Generator[TestClient, Any, None]:
-    """A FastAPI TestClient bound to the per-test app (lifespan runs on enter)."""
+    """TestClient authenticated as admin by default (master key in every request).
+
+    Override per request with `headers=...` (e.g. a JWT for another user), or use
+    the `anon_client` fixture for unauthenticated calls.
+    """
+    with TestClient(app, headers=ADMIN_HEADERS) as client:
+        yield client
+
+
+@pytest.fixture(scope="function")
+def anon_client(app) -> Generator[TestClient, Any, None]:
+    """TestClient with no credentials — for testing public routes and auth gating.
+
+    Pass `headers={"Authorization": f"Bearer {credential}"}` per request to
+    authenticate as a specific key/JWT.
+    """
     with TestClient(app) as client:
         yield client
 
@@ -202,14 +221,9 @@ def client(app) -> Generator[TestClient, Any, None]:
 ###############################
 @pytest_asyncio.fixture(scope="function")
 async def async_client(app):
+    """Async client authenticated as admin by default (see `client`)."""
     async with LifespanManager(app):
         async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+            transport=ASGITransport(app=app), base_url="http://test", headers=ADMIN_HEADERS
         ) as ac:
             yield ac
-
-
-@pytest.fixture(scope="function")
-def admin_headers():
-    """Bearer header carrying the default master key ("meow")."""
-    yield {"Authorization": "Bearer meow"}
