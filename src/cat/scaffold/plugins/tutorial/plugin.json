@@ -1,0 +1,12 @@
+{
+    "name": "Tutorial",
+    "version": "1.0.0",
+    "description": "A hands-on tour of the Cheshire Cat agent model: an agent is a loop, directives hook the loop, tools are its hands. Browse the `agents/` and `directives/` folders — each file teaches one idea.",
+    "author_name": "Cheshire Cat AI",
+    "author_url": "https://cheshirecat.ai",
+    "plugin_url": "https://github.com/cheshire-cat-ai/tutorial",
+    "tags": "agents, directives, tools, education, tutorial, examples",
+    "thumb": "https://raw.githubusercontent.com/cheshire-cat-ai/tutorial/main/thumb.png",
+    "min_cat_version": "2.0.0",
+    "max_cat_version": "Unknown"
+}

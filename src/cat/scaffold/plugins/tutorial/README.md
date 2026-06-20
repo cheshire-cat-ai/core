@@ -1,0 +1,66 @@
+# Tutorial
+
+A hands-on tour of the Cheshire Cat **agent model**. Two folders, read in order —
+each file teaches one idea.
+
+```
+tutorial/
+├── agents/        # things you run
+│   ├── hello_agent.py        0 · prompt-only agent          (HaikuBot)
+│   ├── tool_agent.py         1 · @tool methods + the loop   (CalculatorAgent)
+│   └── time_aware_agent.py   2 · attaching a directive      (TimeAwareAgent)
+└── directives/    # middleware that hooks the agent loop
+    └── clock.py              the `clock` directive
+```
+
+## The mental model
+
+> **An agent is a loop. Directives hook the loop. Tools are its hands.**
+
+```
+   ┌─────────────────────────── Agent.__call__(task) ───────────────────────────┐
+   │                                                                             │
+   │   start()  ──►  ┌──────────────── loop ────────────────┐  ──►  finish()     │
+   │   directives    │  reset prompt                         │       directives   │
+   │   .start()      │  directives .step()                   │       .finish()    │
+   │                 │  llm(prompt, messages, tools)         │                    │
+   │                 │  run any tool calls ──► repeat        │                    │
+   │                 └───────────────────────────────────────┘                    │
+   └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Agent** — *a verb you run*. A fresh instance per request holds its own
+  `task`, `result`, `system_prompt` and `tools`. Define one by subclassing
+  `Agent` in `agents/`, and the Cat registers it automatically by its `slug`.
+- **Directive** — middleware with three lifecycle hooks (`start` / `step` /
+  `finish`) that edits the agent in place. "RAG", "guardrails" and "memory" are
+  not special features — they are all just directives. They live in `directives/`
+  and agents attach them by slug.
+- **Tool** — a method decorated with `@tool`. Its docstring and type hints are
+  the manual the LLM reads. Tools belong to an agent; share them by inheritance,
+  add them cross-cuttingly with a directive. There is no global tool pool.
+
+## Talking to an agent
+
+Send a message and name the agent by its `slug`:
+
+```json
+POST /message
+{ "agent": "calculator", "messages": [{ "role": "user", "content": "what is (3+4)*5?" }] }
+```
+
+The default agent is `default`. Any agent in any installed plugin can be
+addressed by its `slug`.
+
+## The extension gestures
+
+Everything reaches the framework the same way — you **import names**, you never
+thread a `cat` object around:
+
+```python
+from cat import Agent, Directive, tool, llm, hook, user, log
+```
+
+- Subclass `Agent` / `Directive` to add behaviour.
+- `@tool` a method to add a capability.
+- `from cat import llm` to generate; `user` for the caller; `log` to trace.
