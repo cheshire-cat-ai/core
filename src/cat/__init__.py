@@ -20,21 +20,21 @@ them, most-used first.
 from .config import config
 from .log import log
 from .mad_hatter.decorators import tool, endpoint
-from .capabilities import hook
+from .ambient import hook, execute_hook
 
 # --- ambient request context -----------------------------------------------
 from .context import user, plugin
-from .capabilities import agui_event
+from .ambient import agui_event
 
 # --- models & agents -------------------------------------------------------
-from .capabilities import llm, embedder
+from .ambient import llm, embedder
 from .services.agents.base import Agent
 from .services.directives.base import Directive
 
 # --- advanced: base classes & registry escape hatch ------------------------
 from .services.service import Service
 from .auth import User
-from .capabilities import get, call_agent
+from .ambient import get, call_agent
 
 __all__ = [
     # building blocks (most used)
@@ -42,6 +42,7 @@ __all__ = [
     "tool",
     "endpoint",
     "hook",
+    "execute_hook",
     "config",
     # ambient request context
     "user",

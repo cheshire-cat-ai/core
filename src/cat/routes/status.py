@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter
 
-from cat.context import app
+from cat.context import ccat
 from cat.services.auths.base import Auth
 
 router = APIRouter(prefix="/status", tags=["Status"])
@@ -30,7 +30,7 @@ async def status() -> StatusResponse:
     """Server status. Public on purpose: an unauthenticated single-page app reads
     `auth_handlers` from here to render its "login with ..." options."""
 
-    ahs = await app().get_all("auths")
+    ahs = await ccat().get_all("auths")
 
     return StatusResponse(
         status="We're all mad here, dear!",

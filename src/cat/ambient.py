@@ -1,5 +1,9 @@
 """
-Ambient capabilities — the `cat` front door.
+Ambient verbs — the `cat` front door.
+
+The actions you *call*: `llm`, `embedder`, `hook`, `execute_hook`, `agui_event`,
+`call_agent`. (The ambient *nouns* you read — `user`, `plugin` — live in
+`cat.context`.)
 
 `from cat import llm, embedder, hook` binds *names to functions*.
 Importing builds nothing; each function resolves the configured implementation
@@ -15,7 +19,7 @@ import time
 from uuid import uuid4
 from typing import TYPE_CHECKING
 
-from cat.context import ctx, app
+from cat.context import ctx, ccat
 from cat.protocols.agui import events
 
 if TYPE_CHECKING:
@@ -54,7 +58,7 @@ def _split_slug(slug: str) -> tuple[str, str]:
 
 
 async def _default_model_slug(field: str) -> str:
-    core_settings = await app().get("config", "core")
+    core_settings = await ccat().get("config", "core")
     return getattr(core_settings.settings, field)
 
 
@@ -74,7 +78,7 @@ async def llm(
     """
     slug = model or await _default_model_slug("default_llm")
     provider_slug, model_slug = _split_slug(slug)
-    provider = await app().get("model_providers", provider_slug, raise_error=True)
+    provider = await ccat().get("model_providers", provider_slug, raise_error=True)
 
     # The Anthropic Messages API rejects an empty `messages` array (400) and
     # requires the first message to be role="user" — the system prompt is a
@@ -136,7 +140,7 @@ async def embedder(text: str, model: str | None = None) -> list[float]:
     """Embed text with the configured embedder (or an explicit `model=`)."""
     slug = model or await _default_model_slug("default_embedder")
     provider_slug, model_slug = _split_slug(slug)
-    provider = await app().get("model_providers", provider_slug, raise_error=True)
+    provider = await ccat().get("model_providers", provider_slug, raise_error=True)
     return await provider.embed(model_slug, text)
 
 
@@ -146,7 +150,7 @@ async def embedder(text: str, model: str | None = None) -> list[float]:
 # `auth()` is what the request-context middleware calls once per request to
 # populate `ctx().user` (see cat.startup). It is intentionally NOT exported from
 # the `cat` front door: plugins read the already-authenticated `user`, they do
-# not re-run authentication. Imported as `from cat.capabilities import auth`.
+# not re-run authentication. Imported as `from cat.ambient import auth`.
 # ---------------------------------------------------------------------------
 
 async def auth(request, role: str | None = None) -> "User | None":
@@ -156,7 +160,7 @@ async def auth(request, role: str | None = None) -> "User | None":
     """
     from cat.auth.user import User
 
-    handlers = await app().get_all("auths")
+    handlers = await ccat().get_all("auths")
     for handler in handlers.values():
         candidate = await handler.authenticate(request)
         if candidate and isinstance(candidate, User):
@@ -167,30 +171,26 @@ async def auth(request, role: str | None = None) -> "User | None":
 
 
 # ---------------------------------------------------------------------------
-# Hooks — define with @hook, fire with await hook(name, value)
+# Hooks — define with @hook, fire with await execute_hook(name, value)
 # ---------------------------------------------------------------------------
 
-async def _execute_hook(name: str, value=None):
-    return await app().mad_hatter.execute_hook(name, value)
+async def execute_hook(name: str, value=None):
+    """
+    Fire a hook from anywhere, returning the (possibly mutated) value:
+
+        value = await execute_hook("before_agent_execution", value)
+    """
+    return await ccat().mad_hatter.execute_hook(name, value)
 
 
 def hook(*args, priority: int = 1):
     """
-    Dual purpose:
+    Decorator to *define* a hook:
 
-    - As a decorator to *define* a hook:
         `@hook`, `@hook("custom_name")`, `@hook(priority=2)`
-    - As an awaitable to *fire* a hook from anywhere:
-        `await hook("after_file_upload", value)`
 
-    The two are told apart by arity: firing passes a name *and* a value.
+    To *fire* a hook, use `await execute_hook(name, value)`.
     """
-    # Fire: hook("name", value)
-    if len(args) == 2 and isinstance(args[0], str):
-        name, value = args
-        return _execute_hook(name, value)
-
-    # Define: delegate to the decorator.
     from cat.mad_hatter.decorators import hook as hook_decorator
     return hook_decorator(*args, priority=priority)
 
@@ -201,10 +201,10 @@ def hook(*args, priority: int = 1):
 
 async def get(type: str, slug: str, raise_error: bool = True):
     """Low-level registry escape hatch. Rarely needed — prefer the capabilities."""
-    return await app().get(type, slug, raise_error=raise_error)
+    return await ccat().get(type, slug, raise_error=raise_error)
 
 
 async def call_agent(slug: str, task: "Task") -> "TaskResult":
     """Run another agent by slug. No request threading required."""
-    agent = await app().get("agents", slug, raise_error=True)
+    agent = await ccat().get("agents", slug, raise_error=True)
     return await agent(task)

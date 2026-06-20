@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, ValidationError
 from fastapi import APIRouter, HTTPException, Body
 
 from cat.auth.depends import _get_user
-from cat.context import app
+from cat.context import ccat
 from cat.settings import settings as settings_manager
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
@@ -42,17 +42,16 @@ async def list_settings(
     schemas. One resolution path — `settings_schema(app)` — for both static and
     dynamic schemas.
     """
-    ccat = app()
     entries = []
 
-    for service_type, service_dict in ccat.registry.classes.items():
+    for service_type, service_dict in ccat().registry.classes.items():
         for slug, ServiceClass in service_dict.items():
 
-            model = await ServiceClass.settings_schema(ccat)
+            model = await ServiceClass.settings_schema(ccat())
             if model is None:
                 continue
 
-            current = await settings_manager.load(ServiceClass, ccat)
+            current = await settings_manager.load(ServiceClass, ccat())
 
             entries.append(SettingsEntry(
                 id=_make_id(ServiceClass.plugin_id, service_type, slug),
@@ -79,14 +78,13 @@ async def update_settings(
     refreshes the affected service (del-and-rebuild) so the next resolution
     picks up the new `self.settings`.
     """
-    ccat = app()
     plugin_id, service_type, slug = _parse_id(id)
 
-    ServiceClass = ccat.registry.classes.get(service_type, {}).get(slug)
+    ServiceClass = ccat().registry.classes.get(service_type, {}).get(slug)
     if ServiceClass is None or ServiceClass.plugin_id != plugin_id:
         raise HTTPException(status_code=404, detail=f"Settings {id} not found")
 
-    model = await ServiceClass.settings_schema(ccat)
+    model = await ServiceClass.settings_schema(ccat())
     if model is None:
         raise HTTPException(
             status_code=400,
@@ -94,12 +92,12 @@ async def update_settings(
         )
 
     try:
-        saved = await settings_manager.save(ServiceClass, ccat, payload)
+        saved = await settings_manager.save(ServiceClass, ccat(), payload)
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=e.errors())
 
     # Targeted refresh — only restart the affected service.
-    await ccat.registry.refresh(service_type, slug)
+    await ccat().registry.refresh(service_type, slug)
 
     return SettingsEntry(
         id=id,

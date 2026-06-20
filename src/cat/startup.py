@@ -46,7 +46,7 @@ class RequestContextMiddleware:
             await self.app(scope, receive, send)
             return
 
-        from cat.capabilities import auth
+        from cat.ambient import auth
 
         request = Request(scope, receive)
         try:

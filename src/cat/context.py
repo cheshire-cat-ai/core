@@ -1,5 +1,5 @@
 """
-Ambient request context and the single app handle.
+Ambient request context and the single CheshireCat handle.
 
 Two ambient things live here, both reached lazily so importing this module
 builds nothing:
@@ -10,8 +10,10 @@ builds nothing:
   stream callback. `from cat import user` binds a live proxy that resolves the
   current request's user on every access.
 
-- `app()` — the one `CheshireCat` instance per process. It is internal plumbing
-  behind the `cat` package front door; user-facing code never names it.
+- `ccat()` — the one `CheshireCat` instance per process. It is internal plumbing
+  behind the `cat` package front door; user-facing code never names it. Named for
+  the `ccat_*` DB tables and the historical nickname; pairs with `ctx()` as the
+  two short ambient accessors. ("app" means the FastAPI app, nothing else.)
 """
 
 from contextlib import contextmanager
@@ -110,7 +112,7 @@ class _PluginProxy:
     """
 
     def _plugin(self):
-        return app().plugin
+        return ccat().plugin
 
     def __getattr__(self, name):
         return getattr(self._plugin(), name)
@@ -123,20 +125,20 @@ plugin = _PluginProxy()
 
 
 # ---------------------------------------------------------------------------
-# The single ambient app per process.
+# The single CheshireCat instance per process.
 # ---------------------------------------------------------------------------
 
-_app: "CheshireCat | None" = None
+_ccat: "CheshireCat | None" = None
 
 
-def app() -> "CheshireCat":
+def ccat() -> "CheshireCat":
     """Return the one CheshireCat instance. Internal usage only."""
-    if _app is None:
+    if _ccat is None:
         raise RuntimeError("CheshireCat is not bootstrapped yet.")
-    return _app
+    return _ccat
 
 
-def set_app(instance: "CheshireCat") -> None:
+def set_ccat(instance: "CheshireCat") -> None:
     """Register the process-wide CheshireCat instance (called at bootstrap)."""
-    global _app
-    _app = instance
+    global _ccat
+    _ccat = instance

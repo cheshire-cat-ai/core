@@ -2,7 +2,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from cat import log
-from cat.context import set_app
+from cat.context import set_ccat
 from cat.protocols.model_context.client import MCPClients
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.services.factory import Registry
@@ -16,9 +16,9 @@ class CheshireCat:
     """
     The Cheshire Cat.
 
-    The one ambient application per process. It is internal plumbing behind the
-    `cat` package front door — user code never names it; it reaches ambient
-    state with `from cat import ...`.
+    The one CheshireCat instance per process (reached internally via `ccat()`).
+    It is internal plumbing behind the `cat` package front door — user code never
+    names it; it reaches ambient state with `from cat import ...`.
     """
 
     async def bootstrap(self, fastapi_app):
@@ -29,8 +29,8 @@ class CheshireCat:
 
         # ^._.^
 
-        # register this as the one ambient app for the process
-        set_app(self)
+        # register this as the one CheshireCat instance for the process
+        set_ccat(self)
 
         # the registry: a plain dict of service classes + a singleton cache
         self.registry = Registry(self)

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, UploadFile
 from cat import log
 from cat.auth.depends import _get_user
-from cat.context import app
+from cat.context import ccat
 from cat.mad_hatter.plugin_manifest import PluginManifest
 
 router = APIRouter(prefix="/plugins")
@@ -24,13 +24,12 @@ async def get_plugins(
 ) -> List[InstalledPlugin]:
     """List installed plugins"""
 
-    ccat = app()
     # get active plugins
-    active_plugins = await ccat.mad_hatter.get_active_plugins()
+    active_plugins = await ccat().mad_hatter.get_active_plugins()
 
     # list installed plugins' manifest
     installed_plugins = []
-    for p in ccat.mad_hatter.plugins.values():
+    for p in ccat().mad_hatter.plugins.values():
         # filter by query
         plugin_text = p.manifest.model_dump_json()
         if (search is None) or (search.lower() in plugin_text):
@@ -52,12 +51,11 @@ async def get_plugin(
 ) -> InstalledPlugin:
     """Returns information on a single plugin"""
 
-    ccat = app()
-    if not ccat.mad_hatter.plugin_exists(id):
+    if not ccat().mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")
 
-    active_plugins = await ccat.mad_hatter.get_active_plugins()
-    plugin = ccat.mad_hatter.plugins[id]
+    active_plugins = await ccat().mad_hatter.get_active_plugins()
+    plugin = ccat().mad_hatter.plugins[id]
 
     return InstalledPlugin(
         id=plugin.id,
@@ -72,8 +70,6 @@ async def install_plugin(
     _ = _get_user(role="admin"),
 ) -> InstalledPlugin:
     """Install a new plugin from a zip file"""
-
-    ccat = app()
 
     admitted_mime_types = [
         "application/zip", "application/x-tar"
@@ -94,8 +90,8 @@ async def install_plugin(
         content = await file.read()
         await f.write(content)
 
-    plugin = await ccat.mad_hatter.install_plugin(plugin_archive_path)
-    active_plugins = await ccat.mad_hatter.get_active_plugins()
+    plugin = await ccat().mad_hatter.install_plugin(plugin_archive_path)
+    active_plugins = await ccat().mad_hatter.get_active_plugins()
 
     return InstalledPlugin(
         id=plugin.id,
@@ -111,14 +107,13 @@ async def toggle_plugin(
 ):
     """Enable or disable a single plugin"""
 
-    ccat = app()
     # check if plugin exists
-    if not ccat.mad_hatter.plugin_exists(id):
+    if not ccat().mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     try:
         # toggle plugin
-        await ccat.mad_hatter.toggle_plugin(id)
+        await ccat().mad_hatter.toggle_plugin(id)
     except Exception as e:
         log.error(f"Could not toggle plugin {id}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -131,13 +126,12 @@ async def remove_plugin(
 ):
     """Physically remove plugin."""
 
-    ccat = app()
     # check if plugin exists
-    if not ccat.mad_hatter.plugin_exists(id):
+    if not ccat().mad_hatter.plugin_exists(id):
         raise HTTPException(status_code=404, detail="Plugin not found")
 
     try:
         # remove folder, hooks and tools
-        await ccat.mad_hatter.uninstall_plugin(id)
+        await ccat().mad_hatter.uninstall_plugin(id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -14,11 +14,11 @@ injection. Settings are not loaded here either: the registry injects a typed
 `self.settings` before `setup()`.
 """
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from cat.context import app
+from cat.context import ccat
 
 if TYPE_CHECKING:
     from cat.mad_hatter.plugin import Plugin
@@ -46,11 +46,11 @@ class Service:
         """The Plugin that provided this service, if any."""
         if self.plugin_id is None:
             return None
-        return app().mad_hatter.plugins[self.plugin_id]
+        return ccat().mad_hatter.plugins[self.plugin_id]
 
     @property
     def mcp_clients(self) -> "MCPClients":
-        return app().mcp_clients
+        return ccat().mcp_clients
 
     async def setup(self) -> None:
         """Async setup (e.g. build a client from `self.settings`). Override."""
@@ -59,10 +59,6 @@ class Service:
     async def teardown(self) -> None:
         """Async cleanup for singletons on shutdown/refresh. Override."""
         pass
-
-    async def execute_hook(self, hook_name: str, default_value: Any) -> Any:
-        """Fire a hook. Convenience for `await hook(hook_name, value)`."""
-        return await app().mad_hatter.execute_hook(hook_name, default_value)
 
     @classmethod
     async def settings_schema(cls, app: "CheshireCat") -> type[BaseModel] | None:

@@ -7,7 +7,7 @@ from cat import log
 from cat.mad_hatter.registry import registry_search_plugins
 from cat.mad_hatter.plugin_manifest import PluginManifest
 from cat.auth.depends import _get_user
-from cat.context import app
+from cat.context import ccat
 
 router = APIRouter(prefix="/registry")
 
@@ -20,8 +20,6 @@ async def registry_get_plugins(
 ) -> List[PluginManifest]:
     """List available plugins from registry."""
 
-    ccat = app()
-
     # retrieve plugins from official repo
     registry_plugins = await registry_search_plugins(search)
     # index registry plugins by url
@@ -30,11 +28,11 @@ async def registry_get_plugins(
         registry_plugins_index[p.id] = p
 
     # get active plugins
-    active_plugins = await ccat.mad_hatter.get_active_plugins()
+    active_plugins = await ccat().mad_hatter.get_active_plugins()
 
     # list installed plugins' manifest
     installed_plugins = []
-    for p in ccat.mad_hatter.plugins.values():
+    for p in ccat().mad_hatter.plugins.values():
         # get manifest
         manifest: PluginManifest = deepcopy(
             p.manifest
@@ -65,9 +63,8 @@ async def registry_install_plugin(
 ) -> PluginManifest:
     """Install a new plugin from registry"""
 
-    ccat = app()
     try:
-        plugin = await ccat.mad_hatter.install_plugin(payload.url)
+        plugin = await ccat().mad_hatter.install_plugin(payload.url)
     except Exception:
         log.error("Could not install plugin from registry")
         raise HTTPException(status_code=500, detail="Could not install plugin from registry")

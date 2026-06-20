@@ -6,6 +6,7 @@ from typing import Callable, List, Dict, TYPE_CHECKING
 from fastmcp.tools.tool import FunctionTool, ParsedFunction
 from fastmcp.client.client import CallToolResult
 
+from cat.ambient import agui_event
 from cat.protocols.agui import events
 from cat.utils import run_sync_or_async
 
@@ -120,7 +121,7 @@ class Tool:
         tool_result = self.standardize_output(tool_call, tool_result)
 
         # Emit AGUI result event
-        await self.emit_agui_tool_result_event(agent, tool_call, tool_result)
+        await self.emit_agui_tool_result_event(tool_call, tool_result)
 
         # TODOV2: should return CallToolResult directly
         #   Only supporting text for now
@@ -150,8 +151,8 @@ class Tool:
             tool_call_id=tool_call.id,
         )
 
-    async def emit_agui_tool_result_event(self, agent, tool_call, tool_output):
-        await agent.agui_event(
+    async def emit_agui_tool_result_event(self, tool_call, tool_output):
+        await agui_event(
             events.ToolCallResultEvent(
                 timestamp=int(time.time()),
                 message_id=str(uuid4()),

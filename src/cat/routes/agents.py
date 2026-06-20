@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Body, HTTPException
 
 from cat.auth.depends import _get_user
-from cat.context import app
+from cat.context import ccat
 from cat.types import Task, TaskResult
 from cat.protocols.agui.streaming import AGUIStream
 
@@ -27,7 +27,7 @@ async def list_agents(
     """List all registered agents with full details."""
 
     agents = []
-    for slug, Cls in app().registry.classes.get("agents", {}).items():
+    for slug, Cls in ccat().registry.classes.get("agents", {}).items():
         args_schema = None
         ArgsSchema = getattr(Cls, 'ArgsSchema', None)
         if ArgsSchema is not None and isclass(ArgsSchema) and issubclass(ArgsSchema, BaseModel):
@@ -79,7 +79,7 @@ async def agent_message(
 ) -> TaskResult:
     """Send a message to a specific agent identified by its slug."""
 
-    agent = await app().get("agents", slug, raise_error=False)
+    agent = await ccat().get("agents", slug, raise_error=False)
     if agent is None:
         raise HTTPException(
             status_code=404,

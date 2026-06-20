@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from cat.types import Message, Task, TaskResult
 from cat.mad_hatter.decorators import Tool
 from cat.services.service import Service
-from cat.capabilities import llm, agui_event
+from cat.ambient import llm, execute_hook
 from cat import log
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ class Agent(Service):
     """
     Holds execution state as instance attributes (`task`, `result`,
     `system_prompt`, `tools`) and is thrown away afterwards. Because every run
-    uses a new instance, mutating that state is safe under concurrency.
+    uses a new instance, mutating state is safe under concurrency.
 
     Ambient needs come from imports (`from cat import user, llm, hook`).
     """
@@ -59,10 +59,10 @@ class Agent(Service):
             self.tools = await self.list_tools()
             self.directives = await self._resolve_directives()
 
-            self.task = await self.execute_hook(
+            self.task = await execute_hook(
                 "before_agent_execution", self.task
             )
-            self.task = await self.execute_hook(
+            self.task = await execute_hook(
                 f"before_{self.slug}_agent_execution", self.task
             )
 
@@ -70,10 +70,10 @@ class Agent(Service):
             await self.loop()
             await self.finish()
 
-            self.result = await self.execute_hook(
+            self.result = await execute_hook(
                 f"after_{self.slug}_agent_execution", self.result
             )
-            self.result = await self.execute_hook(
+            self.result = await execute_hook(
                 "after_agent_execution", self.result
             )
 
@@ -148,23 +148,23 @@ class Agent(Service):
         Base method delegates prompt construction to hooks.
         Prompt is built in two parts: prefix and suffix.
         Prefix is the main prompt, suffix can be used to append extra instructions and context (i.e. RAG).
-        Override for custom behavior.
+        For a static prompt just use class level attribute `Agent.system_prompt`. Override this method for dynamic behavior.
         """
 
         prompt = type(self).system_prompt
 
-        prompt = await self.execute_hook(
+        prompt = await execute_hook(
             "agent_prompt_prefix",
             prompt
         )
-        prompt = await self.execute_hook(
+        prompt = await execute_hook(
             f"agent_{self.slug}_prompt_prefix",
             prompt
         )
-        prompt_suffix = await self.execute_hook(
+        prompt_suffix = await execute_hook(
             "agent_prompt_suffix", ""
         )
-        prompt_suffix = await self.execute_hook(
+        prompt_suffix = await execute_hook(
             f"agent_{self.slug}_prompt_suffix",
             prompt_suffix
         )
@@ -192,7 +192,7 @@ class Agent(Service):
         # Get agent's own internal tools (own + inherited via the class MRO)
         agent_tools = self.instantiate_agent_tools()
 
-        tools = await self.execute_hook(
+        tools = await execute_hook(
             "agent_allowed_tools",
             agent_tools + mcp_tools
         )
@@ -211,7 +211,7 @@ class Agent(Service):
         The registry forms inject typed settings and run `setup()`, just like any
         other service.
         """
-        from cat.context import app
+        from cat.context import ccat
         from cat.base import Directive
 
         resolved: List["Directive"] = []
@@ -219,9 +219,9 @@ class Agent(Service):
             if isinstance(d, Directive):
                 resolved.append(d)
             elif isclass(d) and issubclass(d, Directive):
-                resolved.append(await app().get("directives", d.slug, raise_error=True))
+                resolved.append(await ccat().get("directives", d.slug, raise_error=True))
             elif isinstance(d, str):
-                resolved.append(await app().get("directives", d, raise_error=True))
+                resolved.append(await ccat().get("directives", d, raise_error=True))
             else:
                 raise TypeError(
                     f"Invalid directive {d!r} on agent '{self.slug}': "
@@ -238,15 +238,6 @@ class Agent(Service):
                 return await t.execute(self, tool_call)
 
         raise Exception(f"Tool {name} not found")
-
-    async def call_agent(self, slug, task: Task) -> TaskResult:
-        """Run another agent by slug. No request threading required."""
-        from cat.capabilities import call_agent
-        return await call_agent(slug, task)
-
-    async def agui_event(self, event):
-        """Emit an AGUI event to the current client (sourced from request context)."""
-        await agui_event(event)
 
     def _validate_args(self, task: Task) -> None:
         """Validate and inject ArgsSchema from task."""
