@@ -17,12 +17,20 @@ with `await self.load_settings()`. Nothing is pushed in or preloaded — code pu
 its settings when it needs them, so `MyService()` by hand and `get(...)` through
 the registry behave identically.
 
-`teardown()` is the one lifecycle hook that remains: a singleton holding a real
-resource (an open client/connection) overrides it to close that resource when the
-registry refreshes or shuts down. Cheap resources need none of this — build them
-lazily from `load_settings()` and let them be garbage-collected.
+Lifecycle is a single boolean, `singleton`, enforced by `ServiceMeta` on the
+*class*: a singleton's instance is cached on the class, so a hand import
+(`MyService()`) and a registry `get(...)` resolve to the same object. The default
+is `singleton = False` (build fresh); opt in to `True` only when the service holds
+a resource worth reusing (a model client, a db connection).
+
+`close()`/`refresh()` are the only lifecycle hooks. A singleton that opens a
+resource lazily on first use overrides `close()` to release it; `refresh()`
+(called by the settings endpoint after a save, and at shutdown) closes the live
+instance and drops it so the next use rebuilds it with fresh settings. There is no
+`setup()` — async wiring happens lazily on first use, not in a build hook.
 """
 
+from abc import ABCMeta
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ValidationError
@@ -31,14 +39,32 @@ from cat.ambient.runtime import ccat
 
 if TYPE_CHECKING:
     from cat.mad_hatter.plugin import Plugin
-    from cat.protocols.model_context.client import MCPClients
 
 
-class Service:
+class ServiceMeta(ABCMeta):
+    """Make `singleton = True` a property of the class.
+
+    Calling a singleton service (`MyService()`) returns one cached instance per
+    class, so a manual import and a registry `get(...)` resolve to the *same*
+    object. Non-singletons build fresh every call. Subclasses `ABCMeta`, so
+    `@abstractmethod` (e.g. on `ModelProvider`, `Auth`) still works.
+    """
+
+    def __call__(cls, *args, **kwargs):
+        if not cls.singleton:
+            return super().__call__(*args, **kwargs)
+        # `cls.__dict__` (not getattr) so each subclass caches its OWN instance
+        # instead of inheriting a parent singleton's.
+        if cls.__dict__.get("_instance") is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+
+class Service(metaclass=ServiceMeta):
     """Base class for framework and plugin services."""
 
     service_type: str = "base"
-    singleton: bool = True
+    singleton: bool = False
 
     slug: str | None = None
     name: str | None = None
@@ -52,17 +78,27 @@ class Service:
             return None
         return ccat().mad_hatter.plugins[self.plugin_id]
 
-    @property
-    def mcp_clients(self) -> "MCPClients":
-        return ccat().mcp_clients
+    async def close(self) -> None:
+        """Release a resource this singleton holds — e.g. `await self.db.close()`.
 
-    async def teardown(self) -> None:
-        """Close any resource this (singleton) service holds. Override when needed.
-
-        Called by the registry when a cached singleton is refreshed or on
-        shutdown. Services that build nothing persistent can ignore it.
+        Intended for `singleton = True` services that open something on first use
+        (a db connection, a client). Called by `refresh()` and at shutdown. Plain
+        or non-singleton services that build nothing persistent can ignore it.
         """
         pass
+
+    @classmethod
+    async def refresh(cls) -> None:
+        """Close the live singleton and drop it; the next use rebuilds it.
+
+        The settings endpoint calls this after saving, so a singleton that cached
+        a client/connection picks up the new settings on next resolution. A no-op
+        for non-singletons and for singletons that were never instantiated.
+        """
+        instance = cls.__dict__.get("_instance")
+        if instance is not None:
+            await instance.close()
+            cls._instance = None
 
     # -- settings ----------------------------------------------------------
     #

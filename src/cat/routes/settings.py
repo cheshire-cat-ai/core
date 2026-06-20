@@ -95,8 +95,9 @@ async def update_settings(
     except ValidationError as e:
         raise HTTPException(status_code=400, detail=e.errors())
 
-    # Targeted refresh — only restart the affected service.
-    await ccat().registry.refresh(service_type, slug)
+    # Targeted refresh — drop only the affected singleton so it rebuilds with
+    # the new settings on next use. Lives on the class, not the registry.
+    await ServiceClass.refresh()
 
     return SettingsEntry(
         id=id,

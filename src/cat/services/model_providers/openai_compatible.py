@@ -20,7 +20,7 @@ NO_KEY_MESSAGE = "No key set. Update it into the settings"
 
 class OpenAICompatibleProvider(ModelProvider):
     """
-    A model provider speaking the OpenAI wire format.
+    A model provider speaking the OpenAI API format.
 
     This is the default provider and the shared engine for most others: any
     endpoint that exposes an OpenAI-compatible API (OpenAI, Anthropic, Gemini,
@@ -54,7 +54,7 @@ class OpenAICompatibleProvider(ModelProvider):
         (singleton) instance. Returns None when no key is configured, in which
         case `llm()`/`embed()` answer with NO_KEY_MESSAGE instead of crashing.
 
-        Settings changes drop the singleton (registry.refresh), so the next
+        Settings changes drop the singleton (`Provider.refresh()`), so the next
         resolution rebuilds the client from the new settings.
         """
         if not hasattr(self, "_client"):

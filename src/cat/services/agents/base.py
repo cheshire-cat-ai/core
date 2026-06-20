@@ -11,6 +11,7 @@ from cat import log
 
 if TYPE_CHECKING:
     from cat.base import Directive
+    from cat.protocols.model_context.client import MCPClients
 
 
 class Agent(Service):
@@ -40,6 +41,12 @@ class Agent(Service):
     max_iterations: int | None = None
 
     args: BaseModel | None = None
+
+    @property
+    def mcp_clients(self) -> "MCPClients":
+        """The process-wide MCP client pool (agents connect per-user MCP tools)."""
+        from cat.ambient.runtime import ccat
+        return ccat().mcp_clients
 
     async def __call__(self, task: Task) -> TaskResult:
         """

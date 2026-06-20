@@ -1,15 +1,15 @@
 """
 The service registry.
 
-A plain dictionary of registered classes plus a singleton-instance cache — no
-third-party DI container, no scopes, no double-checked locking. The registry
-owns exactly two things: the `type → slug → class` map (discovery), and the
-lifecycle of singleton instances (build-once cache + `teardown`). Settings are
-*not* its concern — every Service loads its own via `load_settings()`.
+A plain dictionary of registered classes — no third-party DI container, no
+scopes, no instance cache. The registry owns exactly one thing: the
+`type → slug → class` map (discovery). Singleton caching lives on the classes
+themselves (`ServiceMeta`), and settings are loaded by each Service via
+`load_settings()` — neither is the registry's concern.
 
-`get()` resolves a class, constructs it, and caches it if it is a singleton.
-Construction is pure and synchronous, so `get(...)` and a hand-written
-`MyService()` build identical objects — `get` only adds caching. Any async
+`get()` just looks up a class and calls it. Construction is pure and
+synchronous, and the class (not the registry) decides singleton vs fresh, so
+`get(...)` and a hand-written `MyService()` build identical objects. Any async
 wiring (open a client, read settings) happens lazily on first use inside the
 service, not in a build-time hook.
 
@@ -29,12 +29,15 @@ if TYPE_CHECKING:
 
 
 class Registry:
-    """Holds service classes (type → slug → class) and a singleton cache."""
+    """Holds service classes (type → slug → class). Nothing else.
+
+    Singleton instances are cached on the classes themselves (`ServiceMeta`), so
+    the registry keeps no instance state — it is a pure discovery map.
+    """
 
     def __init__(self, app: "CheshireCat"):
         self.app = app
         self.classes: Dict[str, Dict[str, Type["Service"]]] = {}
-        self.live: Dict[tuple[str, str], "Service"] = {}
 
     def register(self, ServiceClass: Type["Service"]) -> None:
         type, slug = ServiceClass.service_type, ServiceClass.slug
@@ -56,43 +59,26 @@ class Registry:
         """
         Resolve a service instance by type and slug.
 
-        Singletons are built once and cached; non-singletons are built fresh.
-        Construction is pure — settings and any client are pulled lazily by the
-        service itself, not injected here.
+        Just "look up the class and call it" — `ServiceMeta` returns the cached
+        singleton or a fresh instance per the class's `singleton` flag, so
+        `get(...)` and a hand-written `ServiceClass()` agree. Settings and any
+        client are pulled lazily by the service itself.
         """
         ServiceClass = self._lookup(type, slug, raise_error)
         if ServiceClass is None:
             return None
-
-        if ServiceClass.singleton and (type, slug) in self.live:
-            return self.live[(type, slug)]
-
-        service = ServiceClass()
-
-        if ServiceClass.singleton:
-            self.live[(type, slug)] = service
-
-        return service
+        return ServiceClass()
 
     async def get_all(self, type: str) -> "Dict[str, Service]":
         """All instances of a given type, keyed by slug."""
         return {slug: await self.get(type, slug) for slug in self.classes.get(type, {})}
 
-    async def refresh(self, type: str, slug: str) -> None:
-        """Tear down a cached singleton and drop it; next get() rebuilds it."""
-        instance = self.live.pop((type, slug), None)
-        if instance is not None:
-            try:
-                await instance.teardown()
-            except Exception as e:
-                log.error(f"Error during teardown of {type}:{slug}: {e}")
-
     async def teardown(self) -> None:
-        """Tear down all singletons and clear the registry."""
-        for instance in self.live.values():
-            try:
-                await instance.teardown()
-            except Exception as e:
-                log.error(f"Error during teardown of {instance}: {e}")
+        """Close every live singleton (shutdown) and clear the class map."""
+        for type_map in self.classes.values():
+            for ServiceClass in type_map.values():
+                try:
+                    await ServiceClass.refresh()
+                except Exception as e:
+                    log.error(f"Error during teardown of {ServiceClass.__name__}: {e}")
         self.classes = {}
-        self.live = {}

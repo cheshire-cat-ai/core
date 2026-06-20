@@ -18,6 +18,7 @@ class ModelProvider(Service):
     """
 
     service_type = "model_providers"
+    singleton = True  # caches a lazily-built client; reused across calls
 
     async def list_llms(self) -> List[str]:
         """

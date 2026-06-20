@@ -27,6 +27,7 @@ class Auth(ABC, Service):
     """
 
     service_type = "auths"
+    singleton = True  # one shared, stateless handler, hit on every request
 
     jwt = JWTHelper()
 
