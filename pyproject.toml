@@ -46,9 +46,17 @@ package = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+# Collect the core suite and every plugin suite in one run.
+testpaths = ["tests", "plugins"]
 
 [project.scripts]
 # CLI
 ccat = "cat.main:main"
+
+[project.entry-points.pytest11]
+# The shared test harness (fixtures + `with_plugins` marker), auto-activated for
+# the core suite and every plugin suite whenever cheshire-cat-ai is installed.
+cheshire_cat = "cat.testing"
 
 

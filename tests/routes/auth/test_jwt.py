@@ -1,32 +1,46 @@
-import os
-import pytest
-import time
 import jwt
 
 from cat.auth import JWTHelper
+from cat.auth.user import User
+from cat import config
 
-from tests.utils import send_http_message
 
 jwt_helper = JWTHelper()
 
 JWT_ALGO = "HS256"
 
-def test_is_jwt(client):
+
+def test_is_jwt():
     assert not jwt_helper.is_jwt("not_a_jwt.not_a_jwt.not_a_jwt")
 
-    actual_jwt = jwt.encode(
-        {"username": "Alice"},
-        "some_secret",
-        algorithm=JWT_ALGO,
-    )
+    actual_jwt = jwt.encode({"username": "Alice"}, "some_secret", algorithm=JWT_ALGO)
     assert jwt_helper.is_jwt(actual_jwt)
 
 
-# TODOV2: these tests depend on /auth/token and /users endpoints that don't exist yet
-# def test_refuse_issue_jwt(client): ...
-# def test_issue_jwt(client): ...
-# def test_issue_jwt_for_new_user(client, admin_headers): ...
-# def test_jwt_expiration(client): ...
-# def test_jwt_imposes_user_id(client): ...
-# def test_jwt_self_signature_passes(client, admin_headers): ...
-# def test_jwt_self_signature_fails(client, admin_headers): ...
+def test_encode_decode_roundtrip():
+    from uuid import uuid4
+
+    user = User(id=uuid4(), name="Alice", roles=["editor"])
+    token = jwt_helper.encode(user)
+
+    assert jwt_helper.is_jwt(token)
+
+    payload = jwt_helper.decode(token)
+    assert payload is not None
+    assert payload["sub"] == str(user.id)
+    assert payload["username"] == "Alice"
+    assert payload["roles"] == ["editor"]
+
+
+def test_decode_wrong_secret_returns_none():
+    # a token signed with a different secret must not verify
+    bad = jwt.encode({"sub": "x", "username": "y", "roles": []}, "not_the_secret", algorithm=JWT_ALGO)
+    assert jwt_helper.decode(bad) is None
+
+
+def test_decode_uses_configured_secret():
+    # a token signed with the configured secret decodes
+    good = jwt.encode({"sub": "x", "username": "y", "roles": []}, config.JWT_SECRET, algorithm=JWT_ALGO)
+    payload = jwt_helper.decode(good)
+    assert payload is not None
+    assert payload["username"] == "y"

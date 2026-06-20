@@ -1,70 +1,70 @@
 import os
 import shutil
-from cat.types import Task, Message, TextContent
 
-# Anchor mock paths to this file, not the cwd: tests run after chdir-ing into a
-# temp project folder (see conftest), so cwd-relative paths no longer resolve.
+# Anchor mock paths to this file, not the cwd: tests run against a temp project
+# folder (see the harness), so cwd-relative paths no longer resolve.
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 MOCKS_DIR = os.path.join(TESTS_DIR, "mocks")
 
 
 def get_core_plugins_ids():
-    """Ids of the always-present plugins on a fresh install.
+    """Ids of the plugins present in the project's `plugins/` folder.
 
-    In v2 the baseline is the scaffolded starters copied into the project's
-    plugins folder (e.g. ['chats', 'llms', 'ui']), not a single 'core_plugin'
-    like v1. Read from disk so the list tracks whatever the scaffolder ships.
+    In v2 a core-only test boots with zero plugins, so this is usually empty;
+    it tracks whatever the harness materialized into the tmp project's plugins
+    folder. Read from disk so the list always matches what is actually installed.
     """
     from cat.scaffold.scaffolder import installed_plugin_names
     return installed_plugin_names()
 
 
 def get_mock_plugin_info():
+    """Decorated objects the mock plugin exposes, per the v2 Plugin model.
+
+    v2 plugins collect hooks, endpoints and services (no `tools`/`forms` lists —
+    those concepts were removed from the Plugin in core). Counts mirror
+    `tests/mocks/mock_plugin/`:
+      - 2 hooks   (`mock_hook` + `nested_folder/mock_another_hook`)
+      - 7 endpoints (`mock_endpoint`)
+      - 1 service (`models/mock_llm.MockModelProvider`)
+    """
     return {
         "id": "mock_plugin",
-        "hooks": 4,
-        "tools": 1,
-        "forms": 1,
-        "endpoints": 7
+        "hooks": 2,
+        "endpoints": 7,
+        "services": 1,
     }
 
-def get_request(msg="meow"):
-    return Task(
-        messages=[
-            Message(
-                role="user",
-                content=[
-                    TextContent(text=msg)
-                ]
-            )
-        ],
-        stream=False
-    )
 
-def send_http_message(
-        msg,
-        client,
-        streaming=False,
-        headers={}
-    ):
+def send_http_message(msg, client, agent="default", streaming=False, headers={}):
+    """Send a chat message to an agent and return its TaskResult json.
+
+    v2 chat goes through `POST /agents/{slug}/message` (there is no `/chat`
+    route). For convenience the returned dict also carries a flattened `text`
+    key: the concatenated text of the last assistant message.
+    """
     res = client.post(
-        "/chat",
+        f"/agents/{agent}/message",
         headers=headers,
         json={
             "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": str(msg)}
-                    ]
-                }
+                {"role": "user", "content": [{"type": "text", "text": str(msg)}]}
             ],
-            "stream": streaming
-        }
+            "stream": streaming,
+        },
     )
 
-    assert res.status_code == 200
-    return res.json()
+    assert res.status_code == 200, res.text
+    body = res.json()
+
+    # flatten the last assistant message's text for easy assertions
+    text = ""
+    for message in reversed(body.get("messages", [])):
+        if message.get("role") == "assistant":
+            text = message.get("text", "")
+            break
+    body["text"] = text
+    return body
 
 
 # create a plugin zip out of the mock plugin folder.

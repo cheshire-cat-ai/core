@@ -1,42 +1,44 @@
+"""GET /plugins and GET /plugins/{id} — the v2 installed-plugins listing.
 
-def test_list_plugins(client, admin_headers):
+The response is a flat list of `InstalledPlugin` objects ({id, active, manifest});
+there is no `installed`/`registry`/`filters` envelope (registry browsing lives at
+`/registry`).
+"""
+
+
+def test_list_plugins_core_only(client, admin_headers):
+    """Core-only: no plugins installed, so the list is empty."""
     response = client.get("/plugins", headers=admin_headers)
-    json = response.json()
-
     assert response.status_code == 200
-    for key in ["filters", "installed", "registry"]:
-        assert key in json.keys()
-
-    # query
-    for key in ["query"]:  # ["query", "author", "tag"]:
-        assert key in json["filters"].keys()
-
-    # installed plugins
-    for p in json["installed"]:
-        assert p["id"] in ["da_sistemare"]
-        assert isinstance(p["active"], bool)
-        assert p["active"]
-
-    # registry (see more registry tests in `./test_plugins_registry.py`)
-    assert isinstance(json["registry"], list)
-    assert len(json["registry"]) > 0
+    assert response.json() == []
 
 
-def test_get_plugin_id(client, admin_headers):
-    response = client.get("/plugins/qdrant_vector_memory", headers=admin_headers) # one of the core plugins
+def test_list_plugins_with_installed(client, just_installed_plugin, admin_headers):
+    response = client.get("/plugins", headers=admin_headers)
+    assert response.status_code == 200
 
-    json = response.json()
+    plugins = response.json()
+    assert isinstance(plugins, list)
 
-    assert "data" in json.keys()
-    assert json["data"] is not None
-    assert json["data"]["id"] == "qdrant_vector_memory"
-    assert isinstance(json["data"]["active"], bool)
-    assert json["data"]["active"]
+    mock = next(p for p in plugins if p["id"] == "mock_plugin")
+    assert isinstance(mock["active"], bool)
+    assert mock["active"]
+    # manifest is embedded; no plugin.json in the mock, so name == id
+    assert mock["manifest"]["name"] == "mock_plugin"
+
+
+def test_get_plugin_by_id(client, just_installed_plugin, admin_headers):
+    response = client.get("/plugins/mock_plugin", headers=admin_headers)
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["id"] == "mock_plugin"
+    assert isinstance(body["active"], bool)
+    assert body["active"]
+    assert body["manifest"]["name"] == "mock_plugin"
 
 
 def test_get_non_existent_plugin(client, admin_headers):
     response = client.get("/plugins/no_plugin", headers=admin_headers)
-    json = response.json()
-
     assert response.status_code == 404
-    assert json["detail"] == "Plugin not found"
+    assert response.json()["detail"] == "Plugin not found"

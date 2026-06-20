@@ -1,9 +1,15 @@
+from uuid import uuid5, NAMESPACE_DNS
+
 import pytest
 
 
-# endpoints added via mock_plugin (verb, endpoint, payload)
+# The admin user the master API key ("meow") maps to (see services/auths/base).
+ADMIN_USER_ID = str(uuid5(NAMESPACE_DNS, "admin"))
+
+
+# endpoints added via mock_plugin (verb, path, payload), matching mock_endpoint.py
 custom_endpoints = [
-    ("GET", "/custom/endpoint", None),
+    ("GET", "/endpoint", None),
     ("GET", "/tests/endpoint", None),
     ("GET", "/tests/crud", None),
     ("POST", "/tests/crud", {"name": "the cat", "description": "it's magic"}),
@@ -12,31 +18,28 @@ custom_endpoints = [
     ("GET", "/tests/role", None),
 ]
 
-def test_custom_endpoint_base(client, just_installed_plugin, admin_headers):
 
-    response = client.get("/custom/endpoint", headers=admin_headers)
+def test_custom_endpoint_base(client, just_installed_plugin, admin_headers):
+    response = client.get("/endpoint", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["result"] == "endpoint default prefix"
 
 
 def test_custom_endpoint_prefix(client, just_installed_plugin, admin_headers):
-
     response = client.get("/tests/endpoint", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["result"] == "endpoint prefix tests"
 
 
 def test_custom_endpoint_get(client, just_installed_plugin, admin_headers):
-
     response = client.get("/tests/crud", headers=admin_headers)
     assert response.status_code == 200
     assert response.json()["result"] == "ok"
-    assert response.json()["user_id"] == "user"
+    assert response.json()["user_id"] == ADMIN_USER_ID
 
 
 def test_custom_endpoint_post(client, just_installed_plugin, admin_headers):
-
-    payload = {"name": "the cat", "description" : "it's magic"}
+    payload = {"name": "the cat", "description": "it's magic"}
     response = client.post("/tests/crud", headers=admin_headers, json=payload)
 
     assert response.status_code == 200
@@ -54,6 +57,7 @@ def test_custom_endpoint_put(client, just_installed_plugin, admin_headers):
     assert response.json()["name"] == "the cat"
     assert response.json()["description"] == "it's magic"
 
+
 def test_custom_endpoint_delete(client, just_installed_plugin, admin_headers):
     response = client.delete("/tests/crud/123", headers=admin_headers)
 
@@ -64,20 +68,17 @@ def test_custom_endpoint_delete(client, just_installed_plugin, admin_headers):
 
 @pytest.mark.parametrize("switch_type", ["deactivation", "uninstall"])
 def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
-        switch_type, client, just_installed_plugin, admin_headers
-    ):
-
+    switch_type, client, just_installed_plugin, admin_headers
+):
     # custom endpoints are active
     for verb, endpoint, payload in custom_endpoints:
         response = client.request(verb, endpoint, headers=admin_headers, json=payload)
         assert response.status_code == 200
 
     if switch_type == "deactivation":
-        # deactivate plugin
-        response = client.put("/plugins/toggle/mock_plugin", headers=admin_headers)
+        response = client.put("/plugins/mock_plugin/toggle", headers=admin_headers)
         assert response.status_code == 200
     else:
-        # uninstall plugin
         response = client.delete("/plugins/mock_plugin", headers=admin_headers)
         assert response.status_code == 200
 
@@ -88,7 +89,6 @@ def test_custom_endpoints_on_plugin_deactivation_or_uninstall(
 
 
 def test_custom_endpoint_security(just_installed_plugin, client):
-
     n_open = 0
     n_protected = 0
     for verb, endpoint, payload in custom_endpoints:

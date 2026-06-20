@@ -50,8 +50,10 @@ class Config:
         values.setdefault("DATA_PATH", os.path.join(values["PROJECT_PATH"], "data"))
         values.setdefault("UPLOADS_PATH", os.path.join(values["DATA_PATH"], "uploads"))
 
-        # package installation directory (not overridable)
-        values["BASE_PATH"] = os.path.dirname(os.path.abspath(__file__))
+        # package installation directory (not overridable): the `cat` package
+        # root, where `scaffold/` and `welcome.txt` live. `config` is a subpackage,
+        # so go one level up from this file's directory.
+        values["BASE_PATH"] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
         # freeze
         object.__setattr__(self, "_values", values)

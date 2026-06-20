@@ -1,7 +1,7 @@
 import pytest
 import pytest_asyncio
 
-from cat.context import app
+from cat.ambient.runtime import ccat
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.services.model_providers.openai_compatible import (
     OpenAICompatibleProvider,
@@ -10,10 +10,11 @@ from cat.services.model_providers.openai_compatible import (
 
 
 # async_client bootstraps the cat in the test's own event loop (no blocking
-# TestClient portal), and the ambient instance is reached via cat.context.app().
+# TestClient portal inside an async test), so ccat() is the live instance.
+# The core suite is core-only: the cat boots with zero plugins.
 @pytest_asyncio.fixture(scope="function")
 async def cheshire_cat(async_client):
-    yield app()
+    yield ccat()
 
 
 async def test_main_modules_loaded(cheshire_cat):
@@ -21,6 +22,7 @@ async def test_main_modules_loaded(cheshire_cat):
 
 
 async def test_default_provider_loaded(cheshire_cat):
+    # OpenAICompatibleProvider is a core-provided default provider.
     provider = await cheshire_cat.get("model_providers", "openai_compatible")
     assert isinstance(provider, OpenAICompatibleProvider)
     # No key configured in tests: no live models, and llm() replies with a
@@ -40,13 +42,13 @@ async def test_get_raises_when_not_found(cheshire_cat):
         await cheshire_cat.get("model_providers", "nonexistent")
 
 
-async def test_get_all_auths(cheshire_cat):
+async def test_get_all_auths_core_only(cheshire_cat):
+    # Core-only: no auth plugin is active, so the core "default" fallback handler
+    # is present (plugins like simple_oauth would replace it — tested in their
+    # own suites).
     auths = await cheshire_cat.get_all("auths")
     assert isinstance(auths, dict)
-    # The simple_oauth plugin ships by default and registers the "simple"
-    # handler, so the core "default" fallback steps aside.
-    assert "simple" in auths
-    assert "default" not in auths
+    assert "default" in auths
 
 
 async def test_get_all_empty_type(cheshire_cat):
