@@ -7,8 +7,6 @@ mocked — these tests exercise core's install plumbing, not the live registry.
 
 import os
 
-import pytest
-
 from cat import config
 from cat.mad_hatter.plugin_manifest import PluginManifest
 from tests.utils import create_mock_plugin_zip
@@ -38,15 +36,6 @@ def test_list_registry_plugins_empty(client, admin_headers, monkeypatch):
     assert response.json() == []
 
 
-@pytest.mark.xfail(
-    reason=(
-        "FROZEN-CODE BUG: plugins_registry.py:28 reads `p.id` on a PluginManifest, "
-        "but PluginManifest has no `id` field and registry_search_plugins' extra "
-        "`id` key is dropped by pydantic — GET /registry 500s on any non-empty "
-        "registry. Reported to maintainer; do not fix src under the freeze."
-    ),
-    strict=True,
-)
 def test_list_registry_plugins_nonempty(client, admin_headers, monkeypatch):
     monkeypatch.setattr(
         "cat.routes.plugins.plugins_registry.registry_search_plugins", _fake_search_nonempty
@@ -55,6 +44,34 @@ def test_list_registry_plugins_nonempty(client, admin_headers, monkeypatch):
     response = client.get("/registry", headers=admin_headers)
     assert response.status_code == 200
     assert any(p["name"] == "Some Registry Plugin" for p in response.json())
+
+
+def test_registry_dedups_installed_by_plugin_url(client, just_installed_plugin, admin_headers, monkeypatch):
+    """A registry entry sharing an installed plugin's plugin_url is not duplicated."""
+
+    # mock_plugin has no plugin.json, so its manifest.plugin_url defaults to "Unknown".
+    async def _search(search=None):
+        return [
+            PluginManifest(name="Already Installed", plugin_url="Unknown"),
+            PluginManifest(name="Fresh From Registry", plugin_url="https://example.com/p"),
+        ]
+
+    monkeypatch.setattr(
+        "cat.routes.plugins.plugins_registry.registry_search_plugins", _search
+    )
+
+    response = client.get("/registry", headers=admin_headers)
+    assert response.status_code == 200
+    plugins = response.json()
+
+    names = [p["name"] for p in plugins]
+    # the installed mock appears once (as installed), annotated active
+    mock = next(p for p in plugins if p["name"] == "mock_plugin")
+    assert mock["local_info"]["active"] is True
+    # the registry twin (same plugin_url) is deduped away
+    assert "Already Installed" not in names
+    # an unrelated registry plugin still shows
+    assert "Fresh From Registry" in names
 
 
 def test_registry_requires_admin(client):

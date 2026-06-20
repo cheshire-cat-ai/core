@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 
 from urllib.parse import urljoin
 
-from cat import config, endpoint, user, hook
+from cat import config, endpoint, user, execute_hook
 
 
 class UploadedFile(BaseModel):
@@ -44,9 +44,9 @@ async def upload_file(
     if not mime_type:
         mime_type = "application/octet-stream"
 
-    url = urljoin(config.API_URL, f"uploads/{hashed_user_id}/{safe_filename}")
+    url = urljoin(config.URL, f"uploads/{hashed_user_id}/{safe_filename}")
 
-    await hook(
+    await execute_hook(
         "after_file_upload",
         UploadedFile(
             path=file_location,
@@ -74,7 +74,7 @@ async def get_uploaded_files() -> List[UploadedFileResponse]:
     for path in file_paths:
         uploads.append(
             UploadedFileResponse(
-                url=path.replace(config.UPLOADS_PATH, urljoin(config.API_URL, "uploads")),
+                url=path.replace(config.UPLOADS_PATH, urljoin(config.URL, "uploads")),
                 mime_type=mimetypes.guess_type(path)[0]
             )
         )

@@ -22,10 +22,11 @@ async def registry_get_plugins(
 
     # retrieve plugins from official repo
     registry_plugins = await registry_search_plugins(search)
-    # index registry plugins by url
-    registry_plugins_index = {}
-    for p in registry_plugins:
-        registry_plugins_index[p.id] = p
+    # index registry plugins by their canonical home/repo URL — the natural join
+    # key with installed plugins (both carry it as manifest.plugin_url). Local
+    # identity is the folder name (Plugin.id); the registry download URL is
+    # transport, not identity, so it is never used as an id here.
+    registry_plugins_index = {p.plugin_url: p for p in registry_plugins}
 
     # get active plugins
     active_plugins = await ccat().mad_hatter.get_active_plugins()
@@ -33,25 +34,24 @@ async def registry_get_plugins(
     # list installed plugins' manifest
     installed_plugins = []
     for p in ccat().mad_hatter.plugins.values():
-        # get manifest
-        manifest: PluginManifest = deepcopy(
-            p.manifest
-        )  # we make a copy to avoid modifying the plugin obj
+        # copy so we annotate the response, not the live plugin object
+        manifest: PluginManifest = deepcopy(p.manifest)
         manifest.local_info["active"] = p.id in active_plugins
 
-        # do not show already installed plugins among registry plugins
+        # do not show already installed plugins among registry results
         r = registry_plugins_index.pop(manifest.plugin_url, None)
 
         manifest.local_info["upgrade"] = None
+        if r is not None and r.version is not None and r.version != p.manifest.version:
+            manifest.local_info["upgrade"] = r.version
+
         # filter by query
         plugin_text = manifest.model_dump_json()
         if (search is None) or (search.lower() in plugin_text):
-            if r is not None:
-                if r.version is not None and r.version != p.manifest.version:
-                    manifest["upgrade"] = r["version"]
             installed_plugins.append(manifest)
 
-    return installed_plugins + registry_plugins
+    # registry results minus the ones already installed (popped above)
+    return installed_plugins + list(registry_plugins_index.values())
 
 class PluginRegistryUpload(BaseModel):
     url: str

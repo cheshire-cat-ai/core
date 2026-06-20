@@ -35,16 +35,18 @@ def test_serve_existing_file(client):
     assert response.text == "Meow"
 
 
-@pytest.mark.xfail(
-    reason=(
-        "FROZEN-CODE BUG: uploads/endpoints.py uses `config.API_URL`, which is not "
-        "defined in cat.config (only `URL` exists). POST /api/v2/uploads and "
-        "GET /api/v2/uploads therefore 500. Reported to maintainer; not fixed "
-        "under the code freeze."
-    ),
-    strict=True,
-)
-def test_upload_file(client, admin_headers):
+def test_upload_then_list(client, admin_headers):
+    """Upload a file, then it shows up in the per-user listing."""
     files = {"file": ("hello.txt", b"hello cat", "text/plain")}
     response = client.post("/api/v2/uploads", headers=admin_headers, files=files)
-    assert response.status_code == 200
+    assert response.status_code == 200, response.text
+
+    body = response.json()
+    assert body["mime_type"] == "text/plain"
+    assert "uploads/" in body["url"]
+    assert body["url"].startswith(config.URL)
+
+    # it appears in the authenticated user's upload listing
+    listing = client.get("/api/v2/uploads", headers=admin_headers)
+    assert listing.status_code == 200
+    assert any(u["url"].endswith("hello.txt") for u in listing.json())

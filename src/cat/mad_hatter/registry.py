@@ -43,7 +43,6 @@ async def registry_search_plugins(
 
     manifests = []
     for r in plugins:
-        r["id"] = r["url"]
         manifests.append(
             PluginManifest(**r)
         )
