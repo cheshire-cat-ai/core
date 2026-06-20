@@ -6,6 +6,7 @@ from cat import utils
 
 
 class MCPServer(BaseModel):
+    # TODOV2: new fastmcp has a dedicated RemoteMCPServer
     name: str
     description: str
     url: HttpUrl
