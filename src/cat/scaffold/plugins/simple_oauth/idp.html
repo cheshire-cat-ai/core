@@ -2,21 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cheshire Cat — Simple OAuth login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #333;
+            --muted: #999;
+            --line: #ccc;
+            --bg: #fff;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: "Roboto Mono", monospace;
+            color: var(--ink);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: 100%;
+            max-width: 560px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 30px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin: 0 0 16px;
+            color: var(--muted);
+        }
+        .note {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--muted);
+            margin: 0 0 48px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            align-items: center;
+        }
+        label {
+            font-size: 22px;
+            color: var(--muted);
+            text-align: center;
+        }
+        label b { color: var(--ink); font-weight: 500; }
+        input[type="text"] {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px 18px;
+            font-family: inherit;
+            font-size: 20px;
+            color: var(--ink);
+            background: var(--bg);
+            border: none;
+            border-radius: 6px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
+            transition: box-shadow 0.2s;
+        }
+        input[type="text"]:focus { box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.22); }
+        input[type="text"]::placeholder { color: var(--line); }
+        button {
+            font-family: inherit;
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--ink);
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.5; }
+    </style>
 </head>
 <body>
-    <h2>Login</h2>
-    <p>This is the built-in <em>mock</em> identity provider, for development,
-        testing and personal use only.<br>
-        For production, install a plugin with a real SSO-compliant Auth handler
-        (fork this one and point it at Google, Auth0, ...).</p>
-    <form method="post" action="/auth/internal-idp/login">
-        <label>API_KEY (default is <b>meow</b>):<br>
-            <input type="text" name="api_key" />
-        </label>
-        <br><br>
-        <input type="hidden" name="redirect_uri" value="{{redirect_uri}}">
-        <button type="submit">Login</button>
-    </form>
+    <div class="card">
+        <h1>Simple identity provider</h1>
+        <p class="note">
+            This is a <em>mock</em> identity provider, for development,
+            testing and personal use only.<br>
+            For production, install a plugin with a real SSO-compliant Auth
+            handler (Google, Auth0, Keycloak, etc).
+        </p>
+
+        <form method="post" action="/auth/internal-idp/login">
+            <label>
+                API_KEY (default is <b>meow</b>)
+                <input type="text" name="api_key" placeholder="insert your key" autofocus />
+            </label>
+            <input type="hidden" name="redirect_uri" value="{{redirect_uri}}">
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>
