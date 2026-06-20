@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, Body, HTTPException
 
 from cat.auth.depends import _get_user
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 from cat.types import Task, TaskResult
 from cat.protocols.agui.streaming import AGUIStream
 

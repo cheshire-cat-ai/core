@@ -1,19 +1,12 @@
 """
-Ambient request context and the single CheshireCat handle.
+Per-request ambient context, stored in a `contextvars.ContextVar`.
 
-Two ambient things live here, both reached lazily so importing this module
-builds nothing:
+Set once per request by the middleware in `cat.startup`; each asyncio Task gets
+its own copy, so concurrent requests never see each other's user or stream
+callback. Importing builds nothing — `ctx()` resolves the current request lazily.
 
-- `ctx()` / `user` — per-request state stored in a `contextvars.ContextVar`,
-  set once per request by the middleware in `cat.startup`. Each asyncio Task
-  gets its own copy, so concurrent requests never see each other's user or
-  stream callback. `from cat import user` binds a live proxy that resolves the
-  current request's user on every access.
-
-- `ccat()` — the one `CheshireCat` instance per process. It is internal plumbing
-  behind the `cat` package front door; user-facing code never names it. Named for
-  the `ccat_*` DB tables and the historical nickname; pairs with `ctx()` as the
-  two short ambient accessors. ("app" means the FastAPI app, nothing else.)
+`from cat import user` binds a live proxy that resolves the current request's
+user on every access. The process-wide CheshireCat handle lives in `cat.ambient.runtime`.
 """
 
 from contextlib import contextmanager
@@ -24,7 +17,6 @@ from typing import Callable, TYPE_CHECKING
 if TYPE_CHECKING:
     from fastapi import Request
     from cat.auth.user import User
-    from cat.looking_glass.cheshire_cat import CheshireCat
 
 
 @dataclass
@@ -100,45 +92,3 @@ class _UserProxy:
 
 
 user = _UserProxy()
-
-
-class _PluginProxy:
-    """Live proxy to the plugin that owns the calling code.
-
-    `from cat import plugin` binds this once; every attribute read resolves the
-    plugin of whatever code is currently executing (matched by call-stack file
-    path). Lets plugin code reach its own metadata/path — `plugin.path` — without
-    importing the app handle or threading `self`.
-    """
-
-    def _plugin(self):
-        return ccat().plugin
-
-    def __getattr__(self, name):
-        return getattr(self._plugin(), name)
-
-    def __repr__(self):
-        return "<cat.plugin (current)>"
-
-
-plugin = _PluginProxy()
-
-
-# ---------------------------------------------------------------------------
-# The single CheshireCat instance per process.
-# ---------------------------------------------------------------------------
-
-_ccat: "CheshireCat | None" = None
-
-
-def ccat() -> "CheshireCat":
-    """Return the one CheshireCat instance. Internal usage only."""
-    if _ccat is None:
-        raise RuntimeError("CheshireCat is not bootstrapped yet.")
-    return _ccat
-
-
-def set_ccat(instance: "CheshireCat") -> None:
-    """Register the process-wide CheshireCat instance (called at bootstrap)."""
-    global _ccat
-    _ccat = instance

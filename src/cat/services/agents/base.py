@@ -211,7 +211,7 @@ class Agent(Service):
         The registry forms inject typed settings and run `setup()`, just like any
         other service.
         """
-        from cat.context import ccat
+        from cat.ambient.runtime import ccat
         from cat.base import Directive
 
         resolved: List["Directive"] = []

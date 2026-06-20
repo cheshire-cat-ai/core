@@ -3,7 +3,7 @@ from typing import Type, Literal, TYPE_CHECKING
 from pydantic import BaseModel, Field
 
 from cat.db import DB
-from cat.settings import settings as settings_manager
+from cat.config.settings import settings as settings_manager
 from cat.services.service import Service
 from cat import log
 

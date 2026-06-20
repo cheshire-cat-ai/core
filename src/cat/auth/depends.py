@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException
 
 from cat.auth.user import User
-from cat.context import ctx
+from cat.ambient.context_vars import ctx
 
 
 # Reserved role value meaning "any authenticated user, regardless of roles".

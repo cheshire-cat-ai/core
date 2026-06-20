@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter
 
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 from cat.services.auths.base import Auth
 
 router = APIRouter(prefix="/status", tags=["Status"])

@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from cat import config
-from cat.context import Ctx, set_ctx, reset_ctx
+from cat.ambient.context_vars import Ctx, set_ctx, reset_ctx
 from cat.routes import (
     status,
     openapi,
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 class RequestContextMiddleware:
     """
     Pure-ASGI middleware that authenticates each request and populates the
-    per-request `Ctx` (user + stream slot) in a contextvar.
+    per-request context vars.
 
     Pure ASGI (not BaseHTTPMiddleware) so the contextvar is set in the *same*
     async context the endpoint runs in — BaseHTTPMiddleware would set it in a

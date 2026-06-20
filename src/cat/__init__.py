@@ -23,7 +23,8 @@ from .mad_hatter.decorators import tool, endpoint
 from .ambient import hook, execute_hook
 
 # --- ambient request context -----------------------------------------------
-from .context import user, plugin
+from .ambient.context_vars import user
+from .ambient.runtime import plugin
 from .ambient import agui_event
 
 # --- models & agents -------------------------------------------------------

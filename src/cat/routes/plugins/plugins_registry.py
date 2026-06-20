@@ -7,7 +7,7 @@ from cat import log
 from cat.mad_hatter.registry import registry_search_plugins
 from cat.mad_hatter.plugin_manifest import PluginManifest
 from cat.auth.depends import _get_user
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 
 router = APIRouter(prefix="/registry")
 

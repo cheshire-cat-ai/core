@@ -38,7 +38,7 @@ class MCPClients():
 
     def _user_id(self):
         """Current user id, sourced from the request context."""
-        from cat.context import ctx
+        from cat.ambient.context_vars import ctx
         return ctx().user.id
 
     def need_new_client(self, agent) -> tuple[bool, dict]:

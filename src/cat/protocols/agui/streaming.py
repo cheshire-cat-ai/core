@@ -73,7 +73,7 @@ class AgentStream:
         # Setup callback to populate queue, on the current request context.
         # The runner task (below) is created in this same context, so it
         # snapshots the same Ctx object and sees this stream callback.
-        from cat.context import ctx
+        from cat.ambient.context_vars import ctx
         ctx().stream = lambda event: asyncio.create_task(
             self.queue.put(event)
         )

@@ -15,7 +15,7 @@ get wrong (this is why v1's `cat.x → cat.y` cycles do not return).
 from typing import Dict, Type, Union, TYPE_CHECKING
 
 from cat import log
-from cat.settings import settings as settings_manager
+from cat.config.settings import settings as settings_manager
 
 if TYPE_CHECKING:
     from cat.looking_glass.cheshire_cat import CheshireCat

@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 
 if TYPE_CHECKING:
     from cat.mad_hatter.plugin import Plugin

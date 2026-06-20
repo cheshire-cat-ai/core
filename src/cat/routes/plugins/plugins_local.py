@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, UploadFile
 from cat import log
 from cat.auth.depends import _get_user
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 from cat.mad_hatter.plugin_manifest import PluginManifest
 
 router = APIRouter(prefix="/plugins")

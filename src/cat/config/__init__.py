@@ -2,7 +2,7 @@
 Configuration loader.
 
 Resolves the single, read-only `config` object used across core: it starts from
-the defaults in `cat.defaults`, then overrides any UPPERCASE constant redefined
+the defaults in `cat.config.defaults`, then overrides any UPPERCASE constant redefined
 in a `config.py` found in the project folder (current working directory).
 
 Project paths and derived URLs are computed once here and exposed on the same

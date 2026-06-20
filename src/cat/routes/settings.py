@@ -3,8 +3,8 @@ from pydantic import BaseModel, Field, ValidationError
 from fastapi import APIRouter, HTTPException, Body
 
 from cat.auth.depends import _get_user
-from cat.context import ccat
-from cat.settings import settings as settings_manager
+from cat.ambient.runtime import ccat
+from cat.config.settings import settings as settings_manager
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -74,7 +74,7 @@ async def update_settings(
 ) -> SettingsEntry:
     """
     Save settings for a single service identified by its composite id.
-    Validates against the current schema, saves via `cat.settings`, then
+    Validates against the current schema, saves via `cat.config.settings`, then
     refreshes the affected service (del-and-rebuild) so the next resolution
     picks up the new `self.settings`.
     """

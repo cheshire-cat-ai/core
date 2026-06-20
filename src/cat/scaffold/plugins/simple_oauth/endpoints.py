@@ -16,7 +16,7 @@ from fastapi import Request, HTTPException, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 
 from cat import endpoint, config
-from cat.context import ccat
+from cat.ambient.runtime import ccat
 
 
 @endpoint.get("/auth/login/{name}", tags=["Auth"])

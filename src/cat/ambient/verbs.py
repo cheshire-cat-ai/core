@@ -1,9 +1,9 @@
 """
-Ambient verbs — the `cat` front door.
+Ambient utilities to avoid deeply nested objects.
 
 The actions you *call*: `llm`, `embedder`, `hook`, `execute_hook`, `agui_event`,
 `call_agent`. (The ambient *nouns* you read — `user`, `plugin` — live in
-`cat.context`.)
+`cat.ambient.context_vars` and `cat.ambient.runtime`.)
 
 `from cat import llm, embedder, hook` binds *names to functions*.
 Importing builds nothing; each function resolves the configured implementation
@@ -19,7 +19,8 @@ import time
 from uuid import uuid4
 from typing import TYPE_CHECKING
 
-from cat.context import ctx, ccat
+from cat.ambient.context_vars import ctx
+from cat.ambient.runtime import ccat
 from cat.protocols.agui import events
 
 if TYPE_CHECKING:

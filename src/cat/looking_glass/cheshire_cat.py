@@ -2,7 +2,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from cat import log
-from cat.context import set_ccat
+from cat.ambient.runtime import set_ccat
 from cat.protocols.model_context.client import MCPClients
 from cat.mad_hatter.mad_hatter import MadHatter
 from cat.services.factory import Registry
