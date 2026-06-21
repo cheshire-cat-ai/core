@@ -3,7 +3,6 @@ import shutil
 import datetime
 from uuid import uuid4
 
-from cat.db import DB
 from cat import config
 
 

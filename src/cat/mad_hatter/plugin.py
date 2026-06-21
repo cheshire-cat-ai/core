@@ -5,7 +5,7 @@ import glob
 import tempfile
 import importlib
 import subprocess
-from typing import List, Type, TYPE_CHECKING
+from typing import List, Type
 from inspect import getmembers, isclass
 from packaging.requirements import Requirement
 

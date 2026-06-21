@@ -12,7 +12,6 @@ from cat.utils import run_sync_or_async
 
 if TYPE_CHECKING:
     from cat.types import Message
-    from cat.types.messages import TextContent
 
 class Tool:
     """Cat tool uniforming @tool decorated functions in plugins and MCP tools."""
