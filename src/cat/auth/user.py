@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import List, Any
 from uuid import UUID
 from pydantic import BaseModel, field_validator
 
@@ -67,42 +67,68 @@ class User(BaseModel):
         """
         return "admin" in self.roles
 
-    async def save_settings(self, settings: Dict) -> Dict:
+    async def save(self, key: str, value: Any) -> Any:
         """
-        Save user-specific settings.
-        Will overwrite existing settings, so load existing settings first, update the dictionary, and then save.
+        Save a value scoped to this user, under `key` (full replacement).
+
+        The data lives in a per-user key-value store, so two users never see
+        each other's data. To update a collection, load it, change it, save it
+        back.
 
         Parameters
         ----------
-        settings : Dict
-            The settings to store (must be JSON serialized).
+        key : str
+            The key to store the value under.
+        value : Any
+            Any JSON-serializable value.
 
         Returns
         -------
-        Dict
-            The saved settings.
+        Any
+            The saved value.
 
         Examples
         --------
-        >>> await user.save_settings({"theme": "dark"})
-        {"theme": "dark"}
+        >>> await user.save("todos", [{"text": "buy milk", "done": False}])
+        [{"text": "buy milk", "done": False}]
         """
+        return await UserDB.save(self.id, key, value)
 
-        await UserDB.save(self.id, "settings", settings)
-        return settings
-
-    async def load_settings(self) -> Dict:
+    async def load(self, key: str, default: Any = None) -> Any:
         """
-        Load user-specific value by key.
-        Returns an empty dict if no settings are found.
+        Load a value scoped to this user. Returns `default` if the key is unset.
+
+        Parameters
+        ----------
+        key : str
+            The key to read.
+        default : Any
+            Value to return if the key is not found.
 
         Returns
         -------
-        Dict
-            The stored settings, or an empty dict if not found.
+        Any
+            The stored value, or `default`.
+
         Examples
         --------
-        >>> await user.load_settings()
-        {"theme": "dark"}
+        >>> await user.load("todos", [])
+        [{"text": "buy milk", "done": False}]
         """
-        return await UserDB.load(self.id, "settings", {})
+        return await UserDB.load(self.id, key, default)
+
+    async def delete(self, key: str) -> bool:
+        """
+        Delete a user-scoped key.
+
+        Parameters
+        ----------
+        key : str
+            The key to delete.
+
+        Returns
+        -------
+        bool
+            True if a value was removed, False if the key was unset.
+        """
+        return await UserDB.delete(self.id, key)

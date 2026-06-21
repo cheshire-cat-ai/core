@@ -1,16 +1,17 @@
 # Tutorial
 
-A hands-on tour of the Cheshire Cat **agent model**. Two folders, read in order —
-each file teaches one idea.
+A hands-on tour of the Cheshire Cat **agent model**. Two folders, each file an
+idea — open them in any order.
 
 ```
 tutorial/
 ├── agents/        # things you run
-│   ├── hello_agent.py        0 · prompt-only agent          (HaikuBot)
-│   ├── tool_agent.py         1 · @tool methods + the loop   (CalculatorAgent)
-│   └── time_aware_agent.py   2 · attaching a directive      (TimeAwareAgent)
+│   ├── hello_agent.py          prompt-only agent             (Poet)
+│   ├── tool_agent.py           tools + a user-scoped db      (TodoAgent)
+│   ├── time_aware_agent.py     attaching a directive         (TimeAwareAgent)
+│   └── introspective_agent.py  a tool with a guardrail       (IntrospectiveAgent)
 └── directives/    # middleware that hooks the agent loop
-    └── clock.py              the `clock` directive
+    └── clock.py                the `clock` directive
 ```
 
 ## The mental model
@@ -46,7 +47,7 @@ Send a message and name the agent by its `slug`:
 
 ```json
 POST /message
-{ "agent": "calculator", "messages": [{ "role": "user", "content": "what is (3+4)*5?" }] }
+{ "agent": "todo", "messages": [{ "role": "user", "content": "add milk and eggs, then show my list" }] }
 ```
 
 The default agent is `default`. Any agent in any installed plugin can be

@@ -1,5 +1,5 @@
 """
-Agents · 2 — An agent that uses a directive.
+An agent that uses a directive.
 
 A directive is reusable middleware over the agent loop. This agent attaches the
 `clock` directive (see `directives/clock.py`), which injects the current time on
