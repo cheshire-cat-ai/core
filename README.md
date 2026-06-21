@@ -11,9 +11,11 @@
 
 Best framework to learn how AI agents work.
 
-It is designed bottom up to be easy to understand and easy to extend with coding agents.
+It is designed bottom up to be easy to understand and easy to extend via vibe coding / agentic engineering.
 
 Main use case of the Cat is education & research. Many companies and institutions use it to publish agents on the web.
+
+Give the project a star ⭐ if you like creative cats!
 
 
 ## Quickstart
@@ -41,8 +43,6 @@ uv run ccat
 Roadmaps are for amateurs.
 
 If you have a proposal, open an issue and only do a PR if the issue is assigned to you. Read the [contributor guide](./readme/CONTRIBUTING.md)
-
-Give the project a star ⭐!
 
 ## License and trademark
 
