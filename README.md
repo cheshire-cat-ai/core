@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <p align="center">
-    <img align="center" src=./readme/logo.svg width=400px alt="Cheshire Cat AI logo">
+    <img align="center" src=./readme/logo.svg width=200px alt="Cheshire Cat AI logo">
 </p>
 
 > [!WARNING]
@@ -13,7 +13,7 @@ Best framework to learn how AI agents work.
 
 It is designed bottom up to be easy to understand and easy to extend with coding agents.
 
-Main use case of the Cat is to give [Pollo Watzlawick](https://www.youtube.com/@PieroSavastano) a real consciousness. But you can also use it to have fun, learn AI and bring your agents on the web.
+Main use case of the Cat is education & research. Many companies and institutions use it to publish agents on the web.
 
 
 ## Quickstart
@@ -25,8 +25,8 @@ uv init --bare
 uv add cheshire-cat-ai
 uv run ccat
 ```
-- Chat with the Cat on [localhost:1865](http://localhost:1865)
-- Try out the REST API on [localhost:1865/docs](http://localhost:1865/docs)
+- UI on [localhost:1865](http://localhost:1865)
+- REST API playground on [localhost:1865/docs](http://localhost:1865/docs)
 
 
 ## Docs and Resources
@@ -40,9 +40,7 @@ uv run ccat
 
 Roadmaps are for amateurs.
 
-If you have a proposal, open an issue and only do a PR if the issue is assigned to you.
-
-I will be accepting PRs directly on branch `main` and only for assigned issues.
+If you have a proposal, open an issue and only do a PR if the issue is assigned to you. Read the [contributor guide](./readme/CONTRIBUTING.md)
 
 Give the project a star ⭐!
 
