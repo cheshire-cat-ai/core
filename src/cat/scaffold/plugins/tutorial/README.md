@@ -46,22 +46,10 @@ tutorial/
 Send a message and name the agent by its `slug`:
 
 ```json
-POST /message
-{ "agent": "todo", "messages": [{ "role": "user", "content": "add milk and eggs, then show my list" }] }
+POST /agents/{slug}/message
+{ "messages": [{ "role": "user", "content": "add milk and eggs, then show my list" }] }
 ```
 
 The default agent is `default`. Any agent in any installed plugin can be
 addressed by its `slug`.
 
-## The extension gestures
-
-Everything reaches the framework the same way — you **import names**, you never
-thread a `cat` object around:
-
-```python
-from cat import Agent, Directive, tool, llm, hook, user, log
-```
-
-- Subclass `Agent` / `Directive` to add behaviour.
-- `@tool` a method to add a capability.
-- `from cat import llm` to generate; `user` for the caller; `log` to trace.
