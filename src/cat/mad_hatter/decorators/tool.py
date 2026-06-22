@@ -1,7 +1,7 @@
 import inspect
 import time
 from uuid import uuid4
-from typing import Callable, List, Dict, TYPE_CHECKING
+from typing import Callable, Dict, TYPE_CHECKING
 
 from fastmcp.tools.tool import FunctionTool, ParsedFunction
 from fastmcp.client.client import CallToolResult
@@ -24,17 +24,13 @@ class Tool:
         input_schema: Dict,
         output_schema: Dict,
         is_internal: bool = True,
-        return_direct: bool = False,
-        examples: List[str] = [],
     ):
         self.func = func
-        self.name = name 
-        self.description = description 
-        self.input_schema = input_schema 
+        self.name = name
+        self.description = description
+        self.input_schema = input_schema
         self.output_schema = output_schema
 
-        self.return_direct = return_direct
-        self.examples = examples
         self.is_internal = is_internal
     
         # will be assigned by MadHatter
@@ -44,10 +40,8 @@ class Tool:
     def from_decorated_function(
         cls,
         func: Callable,
-        return_direct: bool = False,
-        examples: List[str] = []
     ) -> 'Tool':
-        
+
         parsed_function = ParsedFunction.from_function(
             func,
             exclude_args=["caller", "self"], # awesome, will only be used at execution
@@ -60,8 +54,6 @@ class Tool:
             description = parsed_function.description,
             input_schema = parsed_function.input_schema,
             output_schema = parsed_function.output_schema,
-            return_direct = return_direct,
-            examples = examples
         )
 
     @classmethod
@@ -189,27 +181,17 @@ class Tool:
             description=self.description,
             input_schema=self.input_schema,
             output_schema=self.output_schema,
-            return_direct=self.return_direct,
-            examples=self.examples,
             is_internal=self.is_internal
         )
 
 
-def tool(*args, return_direct: bool = False, examples: List[str] = []) -> Tool:
+def tool(*args) -> Tool:
 
     if len(args) == 1 and callable(args[0]):
-        return Tool.from_decorated_function(
-            args[0],
-            return_direct=return_direct,
-            examples=examples
-        )
+        return Tool.from_decorated_function(args[0])
     else:
         def wrapper(func):
-            return Tool.from_decorated_function(
-                func,
-                return_direct=return_direct,
-                examples=examples
-            )
+            return Tool.from_decorated_function(func)
         return wrapper
 
 

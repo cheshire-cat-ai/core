@@ -11,6 +11,7 @@ venv
 /dist/
 
 # agents
+/skills/
 .claude/
 openspec
 AGENTS.md

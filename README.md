@@ -42,7 +42,7 @@ uv run ccat
 
 Roadmaps are for amateurs.
 
-If you have a proposal, open an issue and only do a PR if the issue is assigned to you. Read the [contributor guide](./readme/CONTRIBUTING.md)
+If you have a proposal, open an issue and only do a PR if the issue is assigned to you. Read the [contributor guide](./readme/CONTRIBUTING.md).
 
 ## License and trademark
 
