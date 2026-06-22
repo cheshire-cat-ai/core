@@ -161,13 +161,13 @@ class Service(metaclass=ServiceMeta):
         stored record: a missing/corrupted blob falls back to defaults, and a
         blob that no longer fully validates is salvaged field-by-field.
         """
-        from cat.db import DB
+        from cat.db import store
 
         model = await cls.value_schema()
         if model is None:
             return None
 
-        raw = await DB.load(cls._settings_key())
+        raw = await store.load(cls._settings_key())
         if not isinstance(raw, dict):
             return cls._settings_defaults(model)
 
@@ -179,7 +179,7 @@ class Service(metaclass=ServiceMeta):
     @classmethod
     async def save_settings(cls, payload: "dict | BaseModel") -> BaseModel:
         """Validate against the value schema, persist, and return the model."""
-        from cat.db import DB
+        from cat.db import store
 
         model = await cls.value_schema()
         if model is None:
@@ -187,7 +187,7 @@ class Service(metaclass=ServiceMeta):
         validated = (
             payload if isinstance(payload, BaseModel) else model.model_validate(payload)
         )
-        await DB.save(cls._settings_key(), validated.model_dump(mode="json"))
+        await store.save(cls._settings_key(), validated.model_dump(mode="json"))
         return validated
 
     # -- settings internals -------------------------------------------------

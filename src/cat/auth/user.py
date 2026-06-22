@@ -2,7 +2,7 @@ from typing import List, Any
 from uuid import UUID
 from pydantic import BaseModel, field_validator
 
-from cat.db import UserDB
+from cat.db import UserStore
 
 
 class User(BaseModel):
@@ -92,7 +92,7 @@ class User(BaseModel):
         >>> await user.save("todos", [{"text": "buy milk", "done": False}])
         [{"text": "buy milk", "done": False}]
         """
-        return await UserDB.save(self.id, key, value)
+        return await UserStore.save(self.id, key, value)
 
     async def load(self, key: str, default: Any = None) -> Any:
         """
@@ -115,7 +115,7 @@ class User(BaseModel):
         >>> await user.load("todos", [])
         [{"text": "buy milk", "done": False}]
         """
-        return await UserDB.load(self.id, key, default)
+        return await UserStore.load(self.id, key, default)
 
     async def delete(self, key: str) -> bool:
         """
@@ -131,4 +131,4 @@ class User(BaseModel):
         bool
             True if a value was removed, False if the key was unset.
         """
-        return await UserDB.delete(self.id, key)
+        return await UserStore.delete(self.id, key)

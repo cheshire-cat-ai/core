@@ -5,7 +5,7 @@ import shutil
 from typing import List, Dict, Any, Callable, Type, TYPE_CHECKING
 
 from cat import log, config, utils
-from cat.db import DB
+from cat.db import store
 from cat.mad_hatter.plugin_extractor import PluginExtractor
 from cat.mad_hatter.registry import registry_download_plugin
 from cat.mad_hatter.plugin import Plugin
@@ -180,12 +180,12 @@ class MadHatter:
         return plugin_id in self.plugins.keys()
 
     async def get_active_plugins(self):
-        """Get list of active plugins from DB."""
-        return await DB.load("active_plugins", default=[])
+        """Get list of active plugins from the global store."""
+        return await store.load("active_plugins", default=[])
 
     async def set_active_plugins(self, active_plugins):
-        """Set DB list of active plugins."""
-        await DB.save("active_plugins", list(set(active_plugins)))
+        """Save list of active plugins to the global store."""
+        await store.save("active_plugins", list(set(active_plugins)))
 
     async def toggle_plugin(self, plugin_id):
         """Activate / deactivate a plugin."""

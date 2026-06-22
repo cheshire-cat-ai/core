@@ -30,11 +30,20 @@ class KeyValueDB(Table, db=DB):
 ### user scoped tables ###
 ##########################
 
-class UserKeyValueDB(KeyValueDB, db=DB):
-    """Key Value table to store arbitrary user scoped data."""
-    
+class UserKeyValueDB(Table, db=DB):
+    """Key Value table to store arbitrary user scoped data.
+
+    Standalone (not a subclass of KeyValueDB): the global table makes `key` its
+    primary key, but here the same key must coexist across users, so the key is
+    scoped by `user_id`. A surrogate `id` is the primary key; `(user_id, key)`
+    uniqueness is enforced in the application layer (UserStore.save upserts).
+    """
+
+    id = UUID(primary_key=True, default=uuid4)
     user_id = UUID(index=True)
-    
+    key = Varchar(length=1024, index=True)
+    value = JSON()
+
     class Meta:
         tablename = "ccat_user_key_value"
 

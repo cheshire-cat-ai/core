@@ -6,7 +6,7 @@ instance to thread around. You don't import capabilities and hold them; you
 import *names* whose behaviour is resolved, per call, against the configured
 installation:
 
-    from cat import log, tool, endpoint, hook, config, user, llm
+    from cat import log, tool, endpoint, hook, config, user, store, llm
 
 Plus model/agent building blocks (`embedder`, `Agent`) and the advanced tier:
 base classes (`Service`, `User`) and the registry escape hatch (`get`,
@@ -24,6 +24,7 @@ from .ambient import hook, execute_hook
 
 # --- ambient request context -----------------------------------------------
 from .ambient.context_vars import user
+from .db import store
 from .ambient.runtime import plugin
 from .ambient import agui_event
 
@@ -47,6 +48,7 @@ __all__ = [
     "config",
     # ambient request context
     "user",
+    "store",
     "plugin",
     "agui_event",
     # models & agents

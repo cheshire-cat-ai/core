@@ -3,7 +3,7 @@ from typing import Type, Literal
 
 from pydantic import BaseModel, Field
 
-from cat.db import DB
+from cat.db import store
 from cat.ambient.runtime import ccat
 from cat.services.service import Service
 from cat import log, config
@@ -78,7 +78,7 @@ class CoreSettings(Service):
         # Keep whatever is saved valid even if it is not in the live lists.
         # Read the raw blob directly — calling load_settings() here would
         # recurse back into settings_schema().
-        raw = await DB.load(cls._settings_key())
+        raw = await store.load(cls._settings_key())
         if isinstance(raw, dict):
             if raw.get("default_llm"):
                 llm_options.append(raw["default_llm"])
