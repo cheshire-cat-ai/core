@@ -30,6 +30,9 @@ class AnthropicProvider(OpenAICompatibleProvider):
         `Authorization: Bearer` with a 401 "Invalid bearer token" — so
         `client.models.list()` can never work here, valid key or not. Query it
         directly with the headers Anthropic expects.
+
+        Overriding `fetch_models` (not `list_models`) keeps the singleton
+        cache and the empty-result retry from the base class.
         """
         import httpx
 
@@ -37,8 +40,14 @@ class AnthropicProvider(OpenAICompatibleProvider):
         if not s.api_key:
             return []
         url = self.resolve_base_url(s).rstrip("/") + "/models"
+        timeout = httpx.Timeout(
+            connect=self.DISCOVERY_CONNECT_TIMEOUT_S,
+            read=self.DISCOVERY_READ_TIMEOUT_S,
+            write=self.DISCOVERY_READ_TIMEOUT_S,
+            pool=self.DISCOVERY_READ_TIMEOUT_S,
+        )
         try:
-            async with httpx.AsyncClient(timeout=self.DISCOVERY_TIMEOUT_S) as client:
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 resp = await client.get(
                     url,
                     headers={

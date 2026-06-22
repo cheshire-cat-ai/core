@@ -74,6 +74,16 @@ class OpenAICompatibleProvider(ModelProvider):
             )
         return self._client
 
+    async def close(self) -> None:
+        """Hand the cached vendor client's HTTP pool back on refresh/shutdown.
+
+        `refresh()` drops the whole singleton — and with it `_models` below — so
+        cache invalidation is automatic; this only closes the open connection.
+        """
+        client = getattr(self, "_client", None)
+        if client is not None:
+            await client.close()
+
     def resolve_base_url(self, settings) -> str:
         """Endpoint to talk to: the Settings `base_url` if the provider exposes
         one (customizable), else the fixed class-level `base_url`."""
@@ -81,21 +91,52 @@ class OpenAICompatibleProvider(ModelProvider):
 
     # -- model discovery ----------------------------------------------------
 
-    # Short timeout for model discovery only: this runs on the settings page,
-    # so a misconfigured or offline endpoint must fail fast instead of blocking
-    # the UI. Real llm()/embed() calls keep the client's default (generous) timeout.
-    DISCOVERY_TIMEOUT_S = 3.0
+    # Discovery runs on the settings page, so it must fail fast instead of
+    # blocking the UI. Split the budget: a dead host has nothing listening and
+    # should fail the TCP connect almost immediately; a slow-but-alive host gets
+    # a longer read window. Real llm()/embed() calls keep the client's default
+    # (generous) timeout — these only bound the autocomplete probe.
+    DISCOVERY_CONNECT_TIMEOUT_S = 1.0
+    DISCOVERY_READ_TIMEOUT_S = 3.0
+
+    async def list_models(self) -> List[str]:
+        """All model ids from the endpoint, cached on the singleton instance.
+
+        Discovery is a network round-trip whose result only changes when settings
+        (base_url / api_key) change — and a settings save drops this whole
+        singleton (`Service.refresh`), taking the cache with it. So the cache can
+        safely live for the instance's lifetime with no explicit invalidation.
+
+        Only a non-empty result is cached: a transient failure or a local server
+        that isn't up yet stays uncached and retries on the next call, instead of
+        being pinned to an empty list until the next settings save.
+        """
+        if not getattr(self, "_models", None):
+            self._models = await self.fetch_models()
+        return self._models
 
     async def fetch_models(self) -> List[str]:
-        """Fetch all model IDs from the vendor API. Returns [] on failure."""
+        """Raw, uncached vendor call. Returns [] on failure (never raises).
+
+        The override point for vendors whose discovery differs — subclass this
+        and `list_models()` gives you caching and empty-result retry for free.
+        """
+        import httpx
+
         client = await self.client()
         if not client:
             return []
+        timeout = httpx.Timeout(
+            connect=self.DISCOVERY_CONNECT_TIMEOUT_S,
+            read=self.DISCOVERY_READ_TIMEOUT_S,
+            write=self.DISCOVERY_READ_TIMEOUT_S,
+            pool=self.DISCOVERY_READ_TIMEOUT_S,
+        )
         try:
-            models = await client.with_options(timeout=self.DISCOVERY_TIMEOUT_S).models.list()
+            models = await client.with_options(timeout=timeout).models.list()
             return [m.id for m in models.data]
         except Exception as e:
-            log.warning(f"{self.slug}: could not fetch model list ({e}); skipping autocomplete.")
+            log.warning(f"{self.slug}: could not fetch model list ({e}); skipping.")
             return []
 
     def is_embedder(self, model_id: str) -> bool:
@@ -112,11 +153,11 @@ class OpenAICompatibleProvider(ModelProvider):
         Optional discovery for a UI autocomplete — never a hard constraint on
         what model can be used. The model is always a free-text string.
         """
-        return [m for m in await self.fetch_models() if self.is_llm(m)]
+        return [m for m in await self.list_models() if self.is_llm(m)]
 
     async def list_embedders(self) -> List[str]:
         """Live embedder model ids from the endpoint. Empty until a key is set."""
-        return [m for m in await self.fetch_models() if self.is_embedder(m)]
+        return [m for m in await self.list_models() if self.is_embedder(m)]
 
     # -- format conversion (public, overridable) ----------------------------
 
