@@ -32,7 +32,7 @@ class AnthropicProvider(OpenAICompatibleProvider):
         directly with the headers Anthropic expects.
 
         Overriding `fetch_models` (not `list_models`) keeps the singleton
-        cache and the empty-result retry from the base class.
+        cache from the base class — discovery runs once per instance.
         """
         import httpx
 

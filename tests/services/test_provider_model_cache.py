@@ -3,9 +3,9 @@
 The contract under test (the thing that's annoying to verify by hand):
 
 - `list_models()` is the cached entry point: discovery is a network round-trip,
-  so the result is cached on the singleton *instance*.
-- A non-empty result sticks; an empty/failed one does NOT (so a local server
-  that wasn't up yet retries instead of being pinned empty).
+  so the result is cached on the singleton *instance*. A `None` sentinel means
+  "never fetched"; any list — including an empty one — counts as fetched and is
+  not re-probed, so two callers (list_llms + list_embedders) share one fetch.
 - `refresh()` — what the settings endpoint calls after a save — drops the
   singleton, and with it the cache, so the next call re-discovers.
 
@@ -64,18 +64,6 @@ async def test_list_llms_and_embedders_share_one_fetch():
     assert await p.list_embedders() == ["text-embedding-3-small"]
 
     assert Probe.count == 1
-
-
-@pytest.mark.asyncio
-async def test_empty_result_is_not_cached():
-    # a server that wasn't reachable yet must retry, not stay pinned empty
-    Probe = make_provider([])
-    p = Probe()
-
-    await p.list_models()
-    await p.list_models()
-
-    assert Probe.count == 2
 
 
 @pytest.mark.asyncio

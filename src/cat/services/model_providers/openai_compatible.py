@@ -107,11 +107,17 @@ class OpenAICompatibleProvider(ModelProvider):
         singleton (`Service.refresh`), taking the cache with it. So the cache can
         safely live for the instance's lifetime with no explicit invalidation.
 
-        Only a non-empty result is cached: a transient failure or a local server
-        that isn't up yet stays uncached and retries on the next call, instead of
-        being pinned to an empty list until the next settings save.
+        The cache uses `None` as a "never fetched" sentinel, so an empty result
+        (`[]`) counts as fetched and is NOT re-probed. This matters when a
+        provider is unreachable: `fetch_models` returns `[]`, and without the
+        sentinel both `list_llms()` and `list_embedders()` — two separate callers
+        — would each re-probe within a single request. A dead host is therefore
+        contacted once per instance, not once per caller. Trade-off: a server
+        that comes up *after* discovery (without a settings change) won't be seen
+        until the next refresh (settings save or restart), which drops the
+        instance and resets the sentinel.
         """
-        if not getattr(self, "_models", None):
+        if getattr(self, "_models", None) is None:
             self._models = await self.fetch_models()
         return self._models
 
