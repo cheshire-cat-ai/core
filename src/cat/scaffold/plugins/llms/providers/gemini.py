@@ -14,8 +14,7 @@ class GeminiProvider(OpenAICompatibleProvider):
     name = "Google Gemini"
     description = "Google Gemini models (OpenAI-compatible endpoint)."
 
+    base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
     class Settings(BaseModel):
-        base_url: str = Field(
-            "https://generativelanguage.googleapis.com/v1beta/openai/", title="Base URL"
-        )
         api_key: str = Field(os.getenv("GEMINI_KEY", ""), title="Gemini API Key")

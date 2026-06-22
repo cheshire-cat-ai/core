@@ -36,11 +36,17 @@ class OpenAICompatibleProvider(ModelProvider):
     name = "OpenAI-compatible"
     description = "Any OpenAI-compatible API. Set base_url and api_key."
 
+    # Fixed endpoint for hosted providers that don't expose `base_url` in their
+    # Settings (OpenAI, Anthropic, Gemini, OpenRouter). When `Settings` *does*
+    # carry a `base_url` field (this base, vLLM, Ollama, OpenAI-compatible), that
+    # value wins and the user can point it anywhere.
+    base_url: str = "https://api.openai.com/v1"
+
     class Settings(BaseModel):
         base_url: str = Field(
             default="https://api.openai.com/v1",
             title="Base URL",
-            description="OpenAI-compatible endpoint (e.g. http://localhost:11434/v1).",
+            description="OpenAI-compatible endpoint.",
         )
         api_key: str = Field(
             default="",
@@ -62,9 +68,16 @@ class OpenAICompatibleProvider(ModelProvider):
 
             s = await self.load_settings()
             self._client = (
-                AsyncOpenAI(base_url=s.base_url, api_key=s.api_key) if s.api_key else None
+                AsyncOpenAI(base_url=self.resolve_base_url(s), api_key=s.api_key)
+                if s.api_key
+                else None
             )
         return self._client
+
+    def resolve_base_url(self, settings) -> str:
+        """Endpoint to talk to: the Settings `base_url` if the provider exposes
+        one (customizable), else the fixed class-level `base_url`."""
+        return getattr(settings, "base_url", None) or self.base_url
 
     # -- model discovery ----------------------------------------------------
 
@@ -73,7 +86,7 @@ class OpenAICompatibleProvider(ModelProvider):
     # the UI. Real llm()/embed() calls keep the client's default (generous) timeout.
     DISCOVERY_TIMEOUT_S = 3.0
 
-    async def _fetch_models(self) -> List[str]:
+    async def fetch_models(self) -> List[str]:
         """Fetch all model IDs from the vendor API. Returns [] on failure."""
         client = await self.client()
         if not client:
@@ -85,13 +98,13 @@ class OpenAICompatibleProvider(ModelProvider):
             log.warning(f"{self.slug}: could not fetch model list ({e}); skipping autocomplete.")
             return []
 
-    def _is_embedder(self, model_id: str) -> bool:
+    def is_embedder(self, model_id: str) -> bool:
         """Return True if model_id is an embedder. Override for custom filtering."""
         return "embed" in model_id
 
-    def _is_llm(self, model_id: str) -> bool:
+    def is_llm(self, model_id: str) -> bool:
         """Return True if model_id is a chat/LLM model. Override for custom filtering."""
-        return not self._is_embedder(model_id)
+        return not self.is_embedder(model_id)
 
     async def list_llms(self) -> List[str]:
         """Live LLM model ids from the endpoint. Empty until a key is set.
@@ -99,11 +112,11 @@ class OpenAICompatibleProvider(ModelProvider):
         Optional discovery for a UI autocomplete — never a hard constraint on
         what model can be used. The model is always a free-text string.
         """
-        return [m for m in await self._fetch_models() if self._is_llm(m)]
+        return [m for m in await self.fetch_models() if self.is_llm(m)]
 
     async def list_embedders(self) -> List[str]:
         """Live embedder model ids from the endpoint. Empty until a key is set."""
-        return [m for m in await self._fetch_models() if self._is_embedder(m)]
+        return [m for m in await self.fetch_models() if self.is_embedder(m)]
 
     # -- format conversion (public, overridable) ----------------------------
 

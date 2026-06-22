@@ -14,6 +14,7 @@ class OpenAIProvider(OpenAICompatibleProvider):
     name = "OpenAI"
     description = "OpenAI models via the official API."
 
+    base_url = "https://api.openai.com/v1"
+
     class Settings(BaseModel):
-        base_url: str = Field("https://api.openai.com/v1", title="Base URL")
         api_key: str = Field(os.getenv("OPENAI_KEY", ""), title="OpenAI API Key")

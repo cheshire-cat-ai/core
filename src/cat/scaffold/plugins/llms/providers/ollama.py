@@ -20,4 +20,4 @@ class OllamaProvider(OpenAICompatibleProvider):
         )
         # Ollama ignores the key but the OpenAI client requires a non-empty one,
         # so the unconfigured "No key set" path is never triggered.
-        api_key: str = Field("ollama", title="API Key")
+        api_key: str = Field(os.getenv("OLLAMA_KEY", "ollama"), title="API Key")

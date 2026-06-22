@@ -19,4 +19,4 @@ class VLLMProvider(OpenAICompatibleProvider):
             os.getenv("VLLM_URL", "http://localhost:8000/v1"), title="Base URL"
         )
         # vLLM ignores the key but the OpenAI client requires a non-empty one.
-        api_key: str = Field("EMPTY", title="API Key")
+        api_key: str = Field(os.getenv("VLLM_KEY", "EMPTY"), title="API Key")

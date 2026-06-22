@@ -14,6 +14,7 @@ class OpenRouterProvider(OpenAICompatibleProvider):
     name = "OpenRouter"
     description = "OpenRouter models."
 
+    base_url = "https://openrouter.ai/api/v1"
+
     class Settings(BaseModel):
-        base_url: str = Field("https://openrouter.ai/api/v1", title="Base URL")
         api_key: str = Field(os.getenv("OPENROUTER_KEY", ""), title="OpenRouter API Key")

@@ -16,11 +16,12 @@ class AnthropicProvider(OpenAICompatibleProvider):
     name = "Anthropic"
     description = "Anthropic Claude models (OpenAI-compatible endpoint)."
 
+    base_url = "https://api.anthropic.com/v1/"
+
     class Settings(BaseModel):
-        base_url: str = Field("https://api.anthropic.com/v1/", title="Base URL")
         api_key: str = Field(os.getenv("ANTHROPIC_KEY", ""), title="Anthropic API Key")
 
-    async def _fetch_models(self) -> List[str]:
+    async def fetch_models(self) -> List[str]:
         """Override discovery to use Anthropic's *native* /v1/models endpoint.
 
         Anthropic's OpenAI-compatibility layer only covers /v1/chat/completions.
@@ -35,7 +36,7 @@ class AnthropicProvider(OpenAICompatibleProvider):
         s = await self.load_settings()
         if not s.api_key:
             return []
-        url = s.base_url.rstrip("/") + "/models"
+        url = self.resolve_base_url(s).rstrip("/") + "/models"
         try:
             async with httpx.AsyncClient(timeout=self.DISCOVERY_TIMEOUT_S) as client:
                 resp = await client.get(
