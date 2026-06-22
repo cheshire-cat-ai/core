@@ -3,10 +3,10 @@ Single source of configuration defaults for the Cheshire Cat.
 
 These are plain UPPERCASE module constants and this file is the reference for
 every available setting. To override any of them, create a `config.py` in your
-project folder (the current working directory) and redefine the constant there.
+project folder and redefine the constant there.
 
 That `config.py` is plain Python, so you can read `.env` / `os.environ` yourself
-if you want — core never parses environment files on your behalf.
+if you want.
 """
 
 # Public address the Cat is reachable at (protocol, host, port).
@@ -42,6 +42,13 @@ CORS_FORWARDED_ALLOW_IPS = "*"
 CORS_ENABLED = True
 # Comma separated list of allowed origins, or "*" to allow all.
 CORS_ALLOWED_ORIGINS = "*"
+
+# Default LLM and embedder, as a "provider:model" string (e.g. "openai:gpt-4o",
+# "ollama:llama3.2"). "default:default" is the keyless built-in fallback — a fresh
+# install answers with a clear "configure me" message instead of crashing.
+# CoreSettings starts from these; the settings page can override and persist them.
+DEFAULT_LLM = "default:default"
+DEFAULT_EMBEDDER = "default:default"
 
 # Anonymous telemetry.
 TELEMETRY = True

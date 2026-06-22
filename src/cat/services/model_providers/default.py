@@ -19,9 +19,9 @@ class DefaultModelProvider(ModelProvider):
     """
     The "nothing configured yet" provider.
 
-    It is the safe `default:default` fallback a fresh Cat boots with: it never
-    needs a key, always lists a single `default` model, and answers every call
-    with a clear next step instead of crashing. Selecting a real provider in the
+    It is the safe keyless fallback a fresh Cat boots with (slug `default`, a
+    single `default` model): it never needs a key and answers every call with a
+    clear next step instead of crashing. Selecting a real provider in the
     settings replaces it.
     """
 
