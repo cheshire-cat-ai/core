@@ -1,7 +1,7 @@
 """
 The Service base.
 
-A service is a *noun you hold* — shared infrastructure resolved through the
+A service is a object resolved through the internal cat
 registry. There is exactly one base class; lifecycle is a single boolean:
 
 - `singleton = True`  (default) → built once, cached, reused.
@@ -113,17 +113,44 @@ class Service(metaclass=ServiceMeta):
         return f"settings_{cls.plugin_id}_{cls.service_type}_{cls.slug}"
 
     @classmethod
-    async def settings_schema(cls) -> "type[BaseModel] | None":
+    async def value_schema(cls) -> "type[BaseModel] | None":
         """
-        The Pydantic model describing this service's settings, or None.
+        The static shape persisted settings are stored and validated against:
+        the nested `class Settings(BaseModel)` if declared, else None.
 
-        Default: the nested `class Settings(BaseModel)` if declared. Override to
-        build a dynamic model (e.g. an enum derived from installed plugins).
+        Cheap and side-effect-free, so it is safe on the hot path —
+        `load_settings()` / `save_settings()` resolve it on every read and write.
+        `settings_schema()` may *present* these same fields more richly (e.g.
+        dropdowns), but values always round-trip through this plain shape.
         """
         nested = getattr(cls, "Settings", None)
         if isinstance(nested, type) and issubclass(nested, BaseModel):
             return nested
+
+        # A dynamic settings_schema() with no static Settings has nothing to
+        # validate or persist against — fail loudly instead of silently dropping
+        # the values. settings_schema() is presentation; Settings is storage.
+        if cls.settings_schema.__func__ is not Service.settings_schema.__func__:
+            raise TypeError(
+                f"{cls.__name__} overrides settings_schema() but declares no nested "
+                "`class Settings(BaseModel)`. settings_schema() is presentation only; "
+                "declare a static `Settings` as the stored shape (or override "
+                "value_schema())."
+            )
         return None
+
+    @classmethod
+    async def settings_schema(cls) -> "type[BaseModel] | None":
+        """
+        The schema the settings UI renders. Defaults to `value_schema()`.
+
+        Override to build a dynamic/enriched presentation (e.g. an enum derived
+        from installed plugins). ONLY the settings route calls this — reads and
+        writes go through `value_schema()`, so an expensive override never lands
+        on the hot path. A dynamic override MUST be backed by a static `Settings`
+        (the stored shape); otherwise `value_schema()` raises.
+        """
+        return await cls.value_schema()
 
     @classmethod
     async def load_settings(cls) -> "BaseModel | None":
@@ -136,7 +163,7 @@ class Service(metaclass=ServiceMeta):
         """
         from cat.db import DB
 
-        model = await cls.settings_schema()
+        model = await cls.value_schema()
         if model is None:
             return None
 
@@ -151,10 +178,10 @@ class Service(metaclass=ServiceMeta):
 
     @classmethod
     async def save_settings(cls, payload: "dict | BaseModel") -> BaseModel:
-        """Validate against the current schema, persist, and return the model."""
+        """Validate against the value schema, persist, and return the model."""
         from cat.db import DB
 
-        model = await cls.settings_schema()
+        model = await cls.value_schema()
         if model is None:
             raise ValueError(f"{cls.__name__} declares no settings to save.")
         validated = (
