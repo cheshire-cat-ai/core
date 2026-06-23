@@ -76,9 +76,12 @@ class Plugin:
         eviction MUST agree on this — otherwise deactivation silently leaves the
         module cached, and a later import returns the stale object (with a
         `__file__` from wherever it was first loaded).
+
+        The path is normalized so Windows separators are handled correctly.
         """
         module_rel_path = os.path.relpath(py_file, config.PLUGINS_PATH)
-        return module_rel_path.replace(".py", "").replace("/", ".")
+        module_rel_path = os.path.normpath(module_rel_path)
+        return os.path.splitext(module_rel_path)[0].replace(os.sep, ".")
 
     def deactivate(self):
         """Deactivate plugin."""
