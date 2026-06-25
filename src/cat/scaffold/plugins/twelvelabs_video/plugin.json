@@ -1,0 +1,12 @@
+{
+    "name": "TwelveLabs",
+    "version": "1.0.0",
+    "description": "A video-understanding agent powered by TwelveLabs Pegasus. Give it a public video URL and a question — it watches the video and answers in natural language.",
+    "author_name": "Mohit Varikuti",
+    "author_url": "https://twelvelabs.io",
+    "plugin_url": "https://github.com/cheshire-cat-ai/core",
+    "tags": "video, multimodal, twelvelabs, pegasus, video understanding",
+    "thumb": "https://raw.githubusercontent.com/twelvelabs-io/twelvelabs-developer-experience/main/assets/twelvelabs.png",
+    "min_cat_version": "2.0.0",
+    "max_cat_version": "Unknown"
+}
