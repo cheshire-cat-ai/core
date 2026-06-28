@@ -85,9 +85,17 @@ async def get_uploaded_files() -> List[UploadedFileResponse]:
 async def get_uploaded_file(
     path: str = Path(...),
 ) -> FileResponse:
-    full_path = os.path.join(config.UPLOADS_PATH, path)
+    # Resolve the requested path against UPLOADS_PATH and confirm the result
+    # stays inside it. Without this, URL-encoded `..` segments (e.g. `%2e%2e/`,
+    # `..%2f`) survive the router and `os.path.join` happily yields a path
+    # outside the uploads directory, letting an unauthenticated caller fetch
+    # arbitrary readable files (CWE-22).
+    uploads_root = os.path.realpath(config.UPLOADS_PATH)
+    full_path = os.path.realpath(os.path.join(uploads_root, path))
+    if full_path != uploads_root and not full_path.startswith(uploads_root + os.sep):
+        raise HTTPException(status_code=404, detail="File not found")
 
-    if os.path.exists(full_path) and os.path.isfile(full_path):
+    if os.path.isfile(full_path):
         return FileResponse(full_path)
     else:
         raise HTTPException(
