@@ -68,6 +68,7 @@ class MadHatter:
             Installed plugin object.
         """
         
+        plugin_path = None
         try:
             if plugin_origin.startswith("http"):
                 plugin_zip_path = await registry_download_plugin(plugin_origin)
@@ -85,8 +86,9 @@ class MadHatter:
             plugin = Plugin(plugin_path)
             self.plugins[plugin.id] = plugin
         except Exception as e:
-            log.error("Could not install plugin in {plugin_path}. Removing it.")
-            shutil.rmtree(plugin_path, ignore_errors=True)
+            log.error(f"Could not install plugin in {plugin_path}. Removing it.")
+            if plugin_path:
+                shutil.rmtree(plugin_path, ignore_errors=True)
             raise e
 
         if activate:

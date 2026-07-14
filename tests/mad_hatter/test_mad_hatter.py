@@ -57,6 +57,23 @@ async def test_plugin_install(mad_hatter: MadHatter, plugin_is_flat):
     assert "mock_plugin" in await mad_hatter.get_active_plugins()
 
 
+async def test_plugin_install_bad_extension_raises_original_error(mad_hatter: MadHatter, tmp_path):
+    # core-only baseline
+    assert set(mad_hatter.plugins.keys()) == set()
+
+    # a file with an unsupported extension fails before `plugin_path` is ever
+    # assigned inside install_plugin - the cleanup in the except block must not
+    # mask that original error with an UnboundLocalError
+    bad_file = tmp_path / "not_a_plugin.txt"
+    bad_file.write_text("not a plugin")
+
+    with pytest.raises(Exception) as excinfo:
+        await mad_hatter.install_plugin(str(bad_file))
+
+    assert "Invalid package extension" in str(excinfo.value)
+    assert set(mad_hatter.plugins.keys()) == set()
+
+
 async def test_plugin_uninstall_non_existent(mad_hatter: MadHatter):
     # core-only baseline
     assert set(mad_hatter.plugins.keys()) == set()
