@@ -131,27 +131,36 @@ class Plugin:
             try:
                 with open(req_file, "r") as read_file:
                     requirements = read_file.readlines()
-
-                for req in requirements:
-
-                    # get package name
-                    package_name = Requirement(req).name
-
-                    # check if package is installed
-                    if package_name not in installed_packages:
-                        log.debug(f"\t Installing {package_name}")
-                        filtered_requirements.append(req)
-                    else:
-                        log.debug(f"\t {package_name} is already installed")
-
             except Exception:
-                log.error(f"Error during requirements checks for plugin {self.id}")
+                log.error(f"Error reading requirements file for plugin {self.id}")
+                requirements = []
+
+            for req in requirements:
+                req = req.strip()
+                if not req or req.startswith("#"):
+                    continue
+
+                # get package name, skipping lines that aren't a valid requirement
+                # instead of aborting the whole file (a blank/comment line elsewhere
+                # in requirements.txt should not silently drop every later dependency)
+                try:
+                    package_name = Requirement(req).name
+                except Exception:
+                    log.error(f"Skipping invalid requirement line for plugin {self.id}: {req!r}")
+                    continue
+
+                # check if package is installed
+                if package_name not in installed_packages:
+                    log.debug(f"\t Installing {package_name}")
+                    filtered_requirements.append(req)
+                else:
+                    log.debug(f"\t {package_name} is already installed")
 
             if len(filtered_requirements) == 0:
                 return
 
             with tempfile.NamedTemporaryFile(mode="w") as tmp:
-                tmp.write("".join(filtered_requirements))
+                tmp.write("\n".join(filtered_requirements))
                 # If flush is not performed, when pip reads the file it is empty
                 tmp.flush()
 

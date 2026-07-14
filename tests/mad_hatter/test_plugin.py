@@ -3,6 +3,7 @@ import pytest
 import shutil
 
 from inspect import isfunction
+from unittest.mock import patch
 
 from tests.utils import get_mock_plugin_info
 
@@ -11,6 +12,12 @@ from cat.mad_hatter.decorators import Hook, Endpoint
 from cat.mad_hatter.plugin_manifest import PluginManifest
 from cat.services.service import Service
 from cat import config
+
+# The `cat.testing` autouse fixture monkeypatches Plugin._install_requirements
+# to a no-op for every test (to avoid real package installs). Capture the real
+# implementation here, at module import time, before any test-scoped monkeypatch
+# has run, so test_install_requirements_skips_invalid_lines can exercise it.
+_real_install_requirements = Plugin._install_requirements
 
 
 # this fixture gives test functions a ready-instantiated plugin in an isolated
@@ -89,3 +96,38 @@ def test_deactivate_plugin(plugin):
     assert len(plugin.hooks) == 0
     assert len(plugin.endpoints) == 0
     assert len(plugin.services) == 0
+
+
+def test_install_requirements_skips_invalid_lines(client):
+    """A blank line or comment in requirements.txt (both completely standard
+    syntax) must not abort processing of the rest of the file - every valid
+    requirement after it should still be queued for install."""
+
+    plugin_path = os.path.join(config.PLUGINS_PATH, "req_plugin")
+    os.makedirs(plugin_path)
+    with open(os.path.join(plugin_path, "requirements.txt"), "w") as f:
+        f.write("# core deps\nsome-fake-package-aaa\nsome-fake-package-bbb\n")
+
+    plugin = Plugin.__new__(Plugin)
+    plugin._path = plugin_path
+    plugin._id = "req_plugin"
+
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        with open(args[-1]) as tmp:
+            captured["content"] = tmp.read()
+
+        class Result:
+            returncode = 0
+
+        return Result()
+
+    with patch("importlib.metadata.distributions", return_value=[]), patch(
+        "subprocess.run", side_effect=fake_run
+    ):
+        _real_install_requirements(plugin)
+
+    assert captured["content"] == "some-fake-package-aaa\nsome-fake-package-bbb"
+
+    shutil.rmtree(plugin_path)
