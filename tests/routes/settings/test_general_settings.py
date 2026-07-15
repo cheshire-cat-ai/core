@@ -4,7 +4,16 @@ CoreSettings has `service_type = "config"` and `slug = "core"`, registered under
 `plugin_id = "core"`, so its composite id is `core__config__core`.
 """
 
+from cat.routes.settings import _make_id, _parse_id
+
 CORE_ID = "core__config__core"
+
+
+def test_parse_id_roundtrips_plugin_id_containing_double_underscore():
+    """A plugin folder name containing "__" must not break the round trip."""
+    composite_id = _make_id("my__plugin", "model_providers", "openai")
+
+    assert _parse_id(composite_id) == ("my__plugin", "model_providers", "openai")
 
 
 def test_get_settings_list(client):

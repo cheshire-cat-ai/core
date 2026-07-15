@@ -26,7 +26,10 @@ def _make_id(plugin_id: str | None, service_type: str, slug: str) -> str:
 
 
 def _parse_id(id: str) -> tuple[str, str, str]:
-    parts = id.split("__")
+    # rsplit from the right: service_type/slug are internal identifiers that
+    # never contain "__", so any "__" in a plugin folder name (plugin_id) is
+    # safely absorbed into the first part instead of splitting it apart.
+    parts = id.rsplit("__", 2)
     if len(parts) != 3:
         raise HTTPException(status_code=404, detail=f"Invalid settings id: {id}")
     return parts[0], parts[1], parts[2]
