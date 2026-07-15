@@ -252,7 +252,7 @@ class OpenAICompatibleProvider(ModelProvider):
                 tool_calls.append(ToolCall(
                     id=tc.id,
                     name=tc.function.name,
-                    args=json.loads(tc.function.arguments),
+                    args=json.loads(tc.function.arguments or "{}"),
                 ))
 
         content = [TextContent(type="text", text=text)] if text else []
