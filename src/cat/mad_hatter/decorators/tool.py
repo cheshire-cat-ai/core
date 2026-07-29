@@ -2,7 +2,7 @@ import inspect
 import time
 from uuid import uuid4
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING
 
 from fastmcp.tools.function_tool import FunctionTool, ParsedFunction
 from fastmcp.client.client import CallToolResult
@@ -41,13 +41,14 @@ class Tool:
 
     def __init__(
         self,
-        func: Callable,
+        func: Callable | None,
         name: str,
         description: str,
         input_schema: Dict,
         output_schema: Dict,
         is_internal: bool = True,
         meta: Optional[ToolMeta] = None,
+        execution_location: Literal["server", "client"] = "server",
     ):
         self.func = func
         self.name = name
@@ -59,6 +60,10 @@ class Tool:
 
         # UI metadata (resource_uri, visibility). Absent = non-UI, model-visible.
         self.meta = meta or ToolMeta()
+
+        # Client tools are model-visible declarations whose implementation lives
+        # in the AG-UI frontend. The server must never invoke their callable path.
+        self.execution_location = execution_location
 
         # will be assigned by MadHatter
         self.plugin_id = None
@@ -107,9 +112,37 @@ class Tool:
             is_internal = False,
             meta = meta,
         )
+
+    @classmethod
+    def from_client_definition(
+        cls,
+        name: str,
+        description: str,
+        input_schema: Dict,
+    ) -> "Tool":
+        """Create a model-visible tool that only its AG-UI client may execute."""
+
+        return cls(
+            func=None,
+            name=name,
+            description=description,
+            input_schema=input_schema,
+            output_schema={},
+            is_internal=False,
+            execution_location="client",
+        )
+
+    @property
+    def is_client_side(self) -> bool:
+        """Whether execution must be deferred to the requesting AG-UI client."""
+
+        return self.execution_location == "client"
     
     def __repr__(self) -> str:
-        return f"Tool(name={self.name}, input_schema={self.input_schema}, internal={self.is_internal})"
+        return (
+            f"Tool(name={self.name}, input_schema={self.input_schema}, "
+            f"execution_location={self.execution_location})"
+        )
 
     async def execute(self, agent, tool_call) -> "Message":
         """
@@ -129,8 +162,15 @@ class Tool:
             A Message with role="tool" and the tool output.
         """
 
-        # a tool belongs to the plugin that defined the agent carrying it, so
-        # `from cat import plugin` resolves while the tool body runs
+        if self.is_client_side:
+            # This guard is defense in depth: Agent.loop normally intercepts the
+            # call, but direct callers must not turn a client declaration into code.
+            raise RuntimeError(
+                f"Client tool '{self.name}' must be executed by the AG-UI client."
+            )
+
+        # A server tool belongs to the plugin that defined its agent, so
+        # `from cat import plugin` resolves while the implementation runs.
         plugin_id = self.plugin_id or getattr(type(agent), "plugin_id", None)
 
         # execute the tool
@@ -192,9 +232,10 @@ class Tool:
         )
 
     async def emit_agui_tool_result_event(self, tool_call, tool_output):
+        # AG-UI timestamps use JavaScript-compatible epoch milliseconds.
         await agui_event(
             events.ToolCallResultEvent(
-                timestamp=int(time.time()),
+                timestamp=int(time.time() * 1000),
                 message_id=str(uuid4()),
                 tool_call_id=str(tool_call.id),
                 content=tool_output.text,
@@ -232,6 +273,7 @@ class Tool:
             output_schema=self.output_schema,
             is_internal=self.is_internal,
             meta=self.meta,
+            execution_location=self.execution_location,
         )
 
 
@@ -243,5 +285,3 @@ def tool(*args) -> Tool:
         def wrapper(func):
             return Tool.from_decorated_function(func)
         return wrapper
-
-
