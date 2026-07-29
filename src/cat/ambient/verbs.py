@@ -15,6 +15,7 @@ Streaming is sourced from the request context (`ctx().stream`), never from a
 `self.request` back-reference.
 """
 
+import json
 import time
 from uuid import uuid4
 from typing import TYPE_CHECKING
@@ -42,7 +43,11 @@ async def send_json(data: dict) -> None:
 
 async def agui_event(event: "events.BaseEvent") -> None:
     """Send an AGUI event to the current client."""
-    await send_json(dict(event))
+    stream = ctx().stream
+    if stream is not None:
+        # Keep the typed event intact so the protocol encoder can apply aliases
+        # such as messageId, toolCallId and rawEvent at the transport boundary.
+        await stream(event)
 
 
 # ---------------------------------------------------------------------------
@@ -111,27 +116,31 @@ async def llm(
                 return
             if not text_started:
                 await agui_event(events.TextMessageStartEvent(
-                    message_id=message_id, timestamp=int(time.time())
+                    message_id=message_id, timestamp=int(time.time() * 1000)
                 ))
                 text_started = True
             await agui_event(events.TextMessageContentEvent(
-                message_id=message_id, delta=token, timestamp=int(time.time())
+                message_id=message_id,
+                delta=token,
+                timestamp=int(time.time() * 1000),
             ))
 
     async def on_tool_call(tool_call):
         await agui_event(events.ToolCallStartEvent(
-            timestamp=int(time.time()),
+            timestamp=int(time.time() * 1000),
             tool_call_id=str(tool_call.id),
             tool_call_name=tool_call.name,
+            parent_message_id=message_id,
         ))
         await agui_event(events.ToolCallArgsEvent(
-            timestamp=int(time.time()),
+            timestamp=int(time.time() * 1000),
             tool_call_id=str(tool_call.id),
-            delta=str(tool_call.args),
+            # AG-UI tool argument deltas are JSON fragments, not Python repr.
+            delta=json.dumps(tool_call.args),
             raw_event=tool_call.model_dump(),
         ))
         await agui_event(events.ToolCallEndEvent(
-            timestamp=int(time.time()),
+            timestamp=int(time.time() * 1000),
             tool_call_id=str(tool_call.id),
         ))
 
@@ -141,7 +150,7 @@ async def llm(
 
     if text_started:
         await agui_event(events.TextMessageEndEvent(
-            message_id=message_id, timestamp=int(time.time())
+            message_id=message_id, timestamp=int(time.time() * 1000)
         ))
 
     return result

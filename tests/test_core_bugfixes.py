@@ -29,8 +29,10 @@ async def test_text_events_share_one_message_id(fake_llm, run_agent, booted_app)
     with use_ctx(Ctx(user=None, stream=collect)):
         await llm("say something", stream=True)
 
-    text_events = [e for e in events if e["type"].startswith("TEXT_MESSAGE")]
-    ids = {e["message_id"] for e in text_events}
+    text_events = [
+        event for event in events if event.type.value.startswith("TEXT_MESSAGE")
+    ]
+    ids = {event.message_id for event in text_events}
 
     assert len(text_events) >= 3  # start + deltas + end
     assert len(ids) == 1, f"expected one message_id, got {ids}"
@@ -53,8 +55,36 @@ async def test_two_responses_get_different_message_ids(fake_llm, booted_app):
         await llm("a", stream=True)
         await llm("b", stream=True)
 
-    ids = {e["message_id"] for e in events if e["type"].startswith("TEXT_MESSAGE")}
+    ids = {
+        event.message_id
+        for event in events
+        if event.type.value.startswith("TEXT_MESSAGE")
+    }
     assert len(ids) == 2
+
+
+async def test_tool_call_events_use_json_and_parent_message_id(fake_llm, booted_app):
+    """AG-UI tool arguments must be JSON and belong to one assistant message."""
+    import json
+
+    from cat.ambient import llm
+    from cat.ambient.context_vars import Ctx, use_ctx
+
+    events = []
+
+    async def collect(data):
+        events.append(data)
+
+    fake_llm.reply_with_tool("lookup", query="cat")
+
+    with use_ctx(Ctx(user=None, stream=collect)):
+        await llm("find the cat", stream=True)
+
+    start = next(event for event in events if event.type.value == "TOOL_CALL_START")
+    args = next(event for event in events if event.type.value == "TOOL_CALL_ARGS")
+
+    assert start.parent_message_id is not None
+    assert json.loads(args.delta) == {"query": "cat"}
 
 
 async def test_unsupported_embed_returns_none_not_a_fake_vector():

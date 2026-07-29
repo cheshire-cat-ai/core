@@ -54,13 +54,20 @@ class Agent(Service):
         self.result = TaskResult()
         self.system_prompt = await self.get_system_prompt()
         self.tools = await self.list_tools()
+        # AG-UI client tools share the provider's tool schema but retain their
+        # client execution marker so they cannot enter Python or MCP execution.
+        self.tools.extend(task._client_tools)
         self.directives = await self._resolve_directives()
 
         # data-only hook: mutate the Task in place or return a replacement.
         # Per-agent scoping is a directive's job, not a {slug} hook variant.
         self.task = await execute_hook("before_agent_run", self.task)
 
+        self._validate_client_tool_namespace()
         await self.start()
+        # Directives may add MCP or plugin tools during start, so validate again
+        # before any provider can observe an ambiguous client/server name.
+        self._validate_client_tool_namespace()
         await self.loop()
         await self.finish()
 
@@ -127,10 +134,19 @@ class Agent(Service):
                 # No tool calls, exit the loop
                 return
             else:
-                # LLM has chosen to use tools, run them
+                # Server tools execute immediately. Client tools only emit their
+                # AG-UI call events; the frontend returns results in a later run.
+                waiting_for_client = False
                 for tool_call in llm_mex.tool_calls:
+                    selected_tool = self._find_tool(tool_call.name)
+                    if selected_tool is not None and selected_tool.is_client_side:
+                        waiting_for_client = True
+                        continue
                     tool_message = await self.call_tool(tool_call)
                     self.result.messages.append(tool_message)
+
+                if waiting_for_client:
+                    return
 
     async def get_system_prompt(self) -> str:
         """
@@ -200,9 +216,15 @@ class Agent(Service):
         """
 
         name = tool_call.name
-        for t in self.tools:
-            if t.name == name:
-                return await t.execute(self, tool_call)
+        selected_tool = self._find_tool(name)
+        if selected_tool is not None:
+            if selected_tool.is_client_side:
+                # Keep direct or future call sites from bypassing the loop's
+                # client-side execution boundary.
+                raise RuntimeError(
+                    f"Client tool '{name}' must be executed by the AG-UI client."
+                )
+            return await selected_tool.execute(self, tool_call)
 
         available = ", ".join(sorted(t.name for t in self.tools)) or "none"
         log.warning(
@@ -215,6 +237,31 @@ class Agent(Service):
                 text=f"Tool '{name}' not found. Available tools: {available}."
             )],
         )
+
+    def _find_tool(self, name: str) -> Tool | None:
+        """Resolve an offered tool by its provider-visible name."""
+
+        return next((tool for tool in self.tools if tool.name == name), None)
+
+    def _validate_client_tool_namespace(self) -> None:
+        """Reject ambiguity between client tools and server-owned implementations."""
+
+        client_names = {
+            tool.name for tool in self.tools if tool.is_client_side
+        }
+        conflicts = sorted(
+            name
+            for name in client_names
+            if sum(tool.name == name for tool in self.tools) > 1
+        )
+        if conflicts:
+            # Reject instead of choosing precedence: silent shadowing could run a
+            # server tool when the frontend expected to retain execution control.
+            raise ValueError(
+                "Client tool names conflict with other available tools: "
+                + ", ".join(conflicts)
+                + "."
+            )
 
     def _validate_args(self, task: Task) -> None:
         """Validate and inject ArgsSchema from task."""

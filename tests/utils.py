@@ -25,12 +25,12 @@ def get_mock_plugin_info():
     }
 
 
-def send_http_message(msg, client, agent="default", streaming=False, headers={}):
-    """Send a chat message to an agent and return its TaskResult json.
+def send_http_message(msg, client, agent="default", headers={}):
+    """Send a non-streaming Task and return its TaskResult json.
 
     v2 chat goes through `POST /agents/{slug}/message` (there is no `/chat`
-    route). For convenience the returned dict also carries a flattened `text`
-    key: the concatenated text of the last assistant message.
+    route). Streaming uses an AG-UI RunAgentInput and is tested separately.
+    The returned dict also carries a flattened `text` convenience key.
     """
     res = client.post(
         f"/agents/{agent}/message",
@@ -39,7 +39,7 @@ def send_http_message(msg, client, agent="default", streaming=False, headers={})
             "messages": [
                 {"role": "user", "content": [{"type": "text", "text": str(msg)}]}
             ],
-            "stream": streaming,
+            "stream": False,
         },
     )
 

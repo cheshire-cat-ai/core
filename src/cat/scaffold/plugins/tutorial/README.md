@@ -44,12 +44,48 @@ tutorial/
 
 ## Talking to an agent
 
-Send a message and name the agent by its `slug`:
+Send a streaming AG-UI request and name the agent by its `slug`:
 
 ```json
 POST /agents/{slug}/message
-{ "messages": [{ "role": "user", "content": "add milk and eggs, then show my list" }] }
+{
+  "threadId": "thread-1",
+  "runId": "run-1",
+  "state": {},
+  "messages": [
+    {
+      "id": "message-1",
+      "role": "user",
+      "content": "add milk and eggs, then show my list"
+    }
+  ],
+  "tools": [
+    {
+      "name": "confirm_action",
+      "description": "Ask the user to confirm an action in the frontend.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        },
+        "required": ["message"]
+      }
+    }
+  ],
+  "context": [],
+  "forwardedProps": {}
+}
 ```
+
+The response is an SSE stream of AG-UI events. For a non-streaming call, send
+the internal `Task` format with `"stream": false`; a streaming `Task` is rejected
+because native AG-UI clients select streaming by sending `RunAgentInput`.
+
+Tools in `RunAgentInput.tools` belong to the requesting frontend. Cheshire Cat
+offers their schemas to the model and emits `TOOL_CALL_START`, `TOOL_CALL_ARGS`
+and `TOOL_CALL_END`, but never executes them on the server. The frontend executes
+the selected tool and sends its result in the next run as a `ToolMessage` with
+the matching `toolCallId`. Client tool names must not shadow agent or MCP tools.
 
 The default agent is `default`. Any agent in any installed plugin can be
 addressed by its `slug`.

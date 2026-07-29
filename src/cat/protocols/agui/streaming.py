@@ -1,12 +1,11 @@
 import asyncio
-import json
 import time
 from asyncio import Queue
-from uuid import uuid4
 from typing import AsyncGenerator, Any, TYPE_CHECKING
 
+from ag_ui.core import RunAgentInput
 from fastapi.responses import StreamingResponse
-from cat.protocols.agui import events
+from cat.protocols.agui import encoder, events
 from cat import log
 
 if TYPE_CHECKING:
@@ -125,33 +124,39 @@ class AGUIStream(AgentStream):
     Adds AGUI lifecycle events and formats as Server-Sent Events (SSE).
     """
 
-    def __init__(self, agent: "Agent", task: "Task"):
+    def __init__(
+        self,
+        agent: "Agent",
+        task: "Task",
+        input_data: RunAgentInput,
+    ):
         super().__init__(agent, task)
-        self.run_id = str(uuid4())
-        self.thread_id = "_"  # TODOV2: should come from request/session
+        self.run_id = input_data.run_id
+        self.thread_id = input_data.thread_id
+        self.parent_run_id = input_data.parent_run_id
 
     async def _before_run(self) -> AsyncGenerator[Any, None]:
         """Emit RunStartedEvent before agent execution."""
         yield events.RunStartedEvent(
-            timestamp=int(time.time()),
+            timestamp=int(time.time() * 1000),
             thread_id=self.thread_id,
-            run_id=self.run_id
+            run_id=self.run_id,
+            parent_run_id=self.parent_run_id,
         )
 
     async def _after_run(self, result: Any) -> AsyncGenerator[Any, None]:
         """Emit RunFinishedEvent after successful agent execution."""
         yield events.RunFinishedEvent(
-            timestamp=int(time.time()),
+            timestamp=int(time.time() * 1000),
             thread_id=self.thread_id,
             run_id=self.run_id,
-            result=result.model_dump()
+            result=result.model_dump(),
         )
 
     async def _on_error(self, error: Exception) -> AsyncGenerator[Any, None]:
         """Emit RunErrorEvent when an error occurs."""
         yield events.RunErrorEvent(
-            timestamp=int(time.time()),
-            message=str(error)
+            timestamp=int(time.time() * 1000), message=str(error)
         )
 
     async def _event_generator(self) -> AsyncGenerator[str, None]:
@@ -160,4 +165,8 @@ class AGUIStream(AgentStream):
         Yields formatted SSE messages for AGUI clients.
         """
         async for event in self._stream_events():
-            yield f"data: {json.dumps(dict(event))}\n\n"
+            if not isinstance(event, events.BaseEvent):
+                # Legacy send_json payloads are wrapped so every SSE item remains
+                # a valid AG-UI event instead of leaking arbitrary JSON.
+                event = events.CustomEvent(name="json", value=event)
+            yield encoder.encode(event)
