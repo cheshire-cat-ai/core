@@ -11,6 +11,7 @@ Python dependencies**.
 | `gemini`     | `https://generativelanguage.googleapis.com/v1beta/openai/` | `GEMINI_KEY`               |
 | `openrouter` | `https://openrouter.ai/api/v1`                             | `OPENROUTER_KEY`           |
 | `ollama`     | `http://localhost:11434/v1`                                | `OLLAMA_URL`, `OLLAMA_KEY` |
+| `llmman`     | `http://localhost:17434/v1`                                | `LLMMAN_URL`, `LLMMAN_KEY` |
 | `vllm`       | `http://localhost:8000/v1`                                 | `VLLM_URL`, `VLLM_KEY`     |
 
 ## 1. Configure a provider
