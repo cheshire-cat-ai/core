@@ -141,6 +141,9 @@ class Plugin:
                     requirements = read_file.readlines()
 
                 for req in requirements:
+                    req = req.strip()
+                    if not req:
+                        continue
 
                     # get package name
                     package_name = Requirement(req).name
@@ -159,7 +162,7 @@ class Plugin:
                 return
 
             with tempfile.NamedTemporaryFile(mode="w") as tmp:
-                tmp.write("".join(filtered_requirements))
+                tmp.write("\n".join(filtered_requirements))
                 # If flush is not performed, when pip reads the file it is empty
                 tmp.flush()
 

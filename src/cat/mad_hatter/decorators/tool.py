@@ -2,6 +2,7 @@ import inspect
 import time
 from uuid import uuid4
 from dataclasses import dataclass, field
+from functools import wraps
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING
 
 from fastmcp.tools.function_tool import FunctionTool, ParsedFunction
@@ -34,6 +35,24 @@ class ToolMeta:
     def is_model_visible(self) -> bool:
         """Whether this tool should be offered to the LLM."""
         return "model" in self.visibility
+
+
+def _without_params(func: Callable, excluded: set) -> Callable:
+    """A view of `func` with `excluded` parameters dropped, for schema use only."""
+    sig = inspect.signature(func)
+    kept_params = [p for name, p in sig.parameters.items() if name not in excluded]
+
+    if len(kept_params) == len(sig.parameters):
+        return func
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    wrapper.__signature__ = inspect.Signature(
+        kept_params, return_annotation=sig.return_annotation
+    )
+    return wrapper
 
 
 class Tool:
@@ -69,9 +88,12 @@ class Tool:
         func: Callable,
     ) -> 'Tool':
 
+        # fastmcp 4.x dropped `exclude_args`; hide `self`/`caller` from the
+        # schema ourselves, they're only bound/resolved at execution time.
+        schema_func = _without_params(func, {"self", "caller"})
+
         parsed_function = ParsedFunction.from_function(
-            func,
-            exclude_args=["caller", "self"], # awesome, will only be used at execution
+            schema_func,
             validate=False
         )
 
@@ -102,8 +124,8 @@ class Tool:
             func = mcp_client_func,
             name = t.name,
             description = t.description or t.name,
-            input_schema = t.inputSchema,
-            output_schema = t.outputSchema,
+            input_schema = t.input_schema,
+            output_schema = t.output_schema,
             is_internal = False,
             meta = meta,
         )
